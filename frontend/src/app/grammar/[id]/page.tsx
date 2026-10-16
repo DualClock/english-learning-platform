@@ -193,7 +193,7 @@ export default function GrammarUnitPage() {
           >
             ← К грамматике
           </Link>
-          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
             <p className="text-[var(--color-ink)] mb-4">{error || 'Юнит не найден'}</p>
             <button onClick={loadUnit} className="btn-primary">
               Попробовать снова
@@ -222,7 +222,7 @@ export default function GrammarUnitPage() {
         </div>
 
         {/* Теория */}
-        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
+        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
           <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Теория</h2>
           <div
             className="text-[var(--color-ink)] leading-relaxed text-[15px] [&_p]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_strong]:font-semibold [&_em]:italic [&_code]:bg-[var(--color-surface)] [&_code]:px-1 [&_code]:rounded [&_blockquote]:border-l-4 [&_blockquote]:border-[var(--color-tint-yellow-bold)] [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-[var(--color-slate)] [&_a]:text-[var(--color-primary)] [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4 [&_th]:bg-[var(--color-surface)] [&_th]:border [&_th]:border-[var(--color-hairline-strong)] [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-[var(--color-hairline-strong)] [&_td]:px-2 [&_td]:py-1"
@@ -232,7 +232,7 @@ export default function GrammarUnitPage() {
 
         {/* Итог */}
         {score !== null && (
-          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 mb-6 text-center">
+          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 mb-6 text-center">
             <p className="text-2xl font-bold text-[var(--color-ink)]">
               Результат: {correctCount} из {sortedExercises.length} ({score}%)
             </p>
@@ -259,7 +259,7 @@ export default function GrammarUnitPage() {
         )}
 
         {/* Упражнения */}
-        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
+        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
           <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-6">
             Упражнения
           </h2>

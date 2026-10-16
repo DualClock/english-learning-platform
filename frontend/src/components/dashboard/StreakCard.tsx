@@ -24,7 +24,7 @@ function pluralizeDays(n: number) {
 export default function StreakCard({ streak }: Props) {
   if (!streak) {
     return (
-      <div className="animate-pulse bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 mb-8">
+      <div className="animate-pulse bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 mb-8">
         <div className="h-8 w-40 bg-[var(--color-tint-mint)] rounded mb-3"></div>
         <div className="h-4 w-56 bg-[var(--color-tint-mint)] rounded mb-4"></div>
         <div className="h-2 w-full bg-[var(--color-tint-mint)] rounded-full"></div>
@@ -37,7 +37,7 @@ export default function StreakCard({ streak }: Props) {
   const progress = dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
 
   return (
-    <section className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 shadow-sm mb-8">
+    <section className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-sm mb-8">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-2xl font-bold text-[var(--color-ink)] leading-tight">

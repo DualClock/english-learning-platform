@@ -27,7 +27,7 @@ export default function RecommendedShelf({ level, books, token }: Props) {
         <div className="animate-pulse h-5 w-64 bg-[var(--color-tint-mint)] rounded mb-4"></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5">
+            <div key={i} className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5">
               <div className="h-5 w-40 bg-[var(--color-tint-mint)] rounded mb-2"></div>
               <div className="h-3 w-24 bg-[var(--color-tint-mint)] rounded mb-4"></div>
               <div className="h-3 w-full bg-[var(--color-tint-mint)] rounded mb-2"></div>
@@ -46,7 +46,7 @@ export default function RecommendedShelf({ level, books, token }: Props) {
         <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">
           Подобрано под ваш уровень {level.toUpperCase()}
         </h2>
-        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
           <p className="text-[var(--color-slate)]">Скоро добавим книги для вашего уровня</p>
         </div>
       </section>
@@ -78,7 +78,7 @@ export default function RecommendedShelf({ level, books, token }: Props) {
           return (
             <div
               key={book.gutenbergId}
-              className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col"
+              className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col"
             >
               <div className="flex items-start justify-between gap-2 mb-1">
                 <h3 className="font-semibold text-[var(--color-ink)] leading-snug">{book.title}</h3>

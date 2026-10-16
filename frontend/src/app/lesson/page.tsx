@@ -129,7 +129,7 @@ export default function LessonPage() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 md:p-12 shadow-soft">
+        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 md:p-12 shadow-soft">
           {lessonContent.paragraphs.map((paragraph) => (
             <p key={paragraph.id} className="text-lg md:text-xl leading-relaxed text-[var(--color-ink)] mb-6 font-serif">
               {renderParagraph(paragraph)}

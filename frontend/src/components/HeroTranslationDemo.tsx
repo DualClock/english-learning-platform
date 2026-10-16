@@ -168,7 +168,7 @@ export default function HeroTranslationDemo() {
     <div>
       <div
         ref={cardRef}
-        className={`relative bg-white rounded-2xl border border-[var(--color-hairline)] p-8 shadow-sm transition-opacity duration-700 ${
+        className={`relative bg-white rounded-xl border border-[var(--color-hairline)] p-8 shadow-sm transition-opacity duration-700 ${
           phase === 'fade' ? 'opacity-0' : 'opacity-100'
         }`}
       >

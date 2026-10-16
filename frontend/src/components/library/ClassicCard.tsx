@@ -21,7 +21,7 @@ interface ClassicCardProps {
 
 export default function ClassicCard({ book, inLibrary, adding, onAdd }: ClassicCardProps) {
   return (
-    <div className="flex flex-col rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-3 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-primary-pressed)] hover:shadow-lg">
+    <div className="flex flex-col rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-primary-pressed)] hover:shadow-lg">
       <div className="relative">
         <BookCover
           title={book.title}

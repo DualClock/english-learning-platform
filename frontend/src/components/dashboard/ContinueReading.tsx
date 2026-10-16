@@ -31,7 +31,7 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
     <section className="mb-8">
       <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Продолжить чтение</h2>
 
-      <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row gap-6 hover:shadow-md transition-shadow duration-200">
+      <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row gap-6 hover:shadow-md transition-shadow duration-200">
         <Cover book={hero} className="w-28 aspect-[3/4]" textSize="text-5xl" />
 
         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -69,7 +69,7 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
             <Link
               key={book.id}
               href={`/reader/${book.id}`}
-              className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-3 flex items-center gap-3 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-3 flex items-center gap-3 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
               <Cover book={book} className="w-10 aspect-[3/4] !rounded-lg !shadow" textSize="text-lg" />
               <div className="min-w-0 flex-1">

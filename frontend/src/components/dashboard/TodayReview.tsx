@@ -5,8 +5,8 @@ export default function TodayReview({ reviewCount }: { reviewCount: number }) {
   if (reviewCount > 0) {
     return (
       <section className="mb-8">
-        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row sm:items-center gap-5 hover:shadow-md transition-shadow duration-200">
-          <div className="w-14 h-14 rounded-2xl bg-[rgba(249,231,159,0.30)] flex items-center justify-center shrink-0">
+        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row sm:items-center gap-5 hover:shadow-md transition-shadow duration-200">
+          <div className="w-14 h-14 rounded-xl bg-[rgba(249,231,159,0.30)] flex items-center justify-center shrink-0">
             <svg className="w-7 h-7 text-[var(--color-primary-pressed)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
@@ -29,8 +29,8 @@ export default function TodayReview({ reviewCount }: { reviewCount: number }) {
 
   return (
     <section className="mb-8">
-      <div className="bg-white rounded-2xl border border-dashed border-[var(--color-hairline-strong)] p-6 flex items-center gap-5">
-        <div className="w-14 h-14 rounded-2xl bg-[var(--color-tint-mint)] flex items-center justify-center shrink-0">
+      <div className="bg-white rounded-xl border border-dashed border-[var(--color-hairline-strong)] p-6 flex items-center gap-5">
+        <div className="w-14 h-14 rounded-xl bg-[var(--color-tint-mint)] flex items-center justify-center shrink-0">
           <svg className="w-7 h-7 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>

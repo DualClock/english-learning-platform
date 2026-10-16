@@ -1256,7 +1256,7 @@ export default function ReaderPage() {
                 />
                 {/* Карточка с текстом шага */}
                 <div
-                  className="absolute w-80 max-w-[90vw] bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 shadow-2xl transition-all duration-200"
+                  className="absolute w-80 max-w-[90vw] bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-2xl transition-all duration-200"
                   style={{
                     top: step.card.top,
                     left: step.card.left,

@@ -60,7 +60,7 @@ export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }
       {stats.map((stat, i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 flex items-center gap-4 shadow-sm"
+          className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 flex items-center gap-4 shadow-sm"
         >
           <div className="w-11 h-11 rounded-xl bg-[var(--color-tint-mint)] flex items-center justify-center shrink-0">
             {stat.icon}

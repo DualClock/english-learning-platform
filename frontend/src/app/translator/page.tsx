@@ -216,7 +216,7 @@ export default function TranslatorPage() {
                 <div key={idx} className="flex gap-2 items-end assistant-message-in">
                   <AlexAvatar size="sm" />
                   <div className="max-w-[80%]">
-                    <div className="bg-white border border-[var(--color-hairline-strong)] rounded-2xl rounded-bl-sm px-4 py-2.5 text-[var(--color-ink)] whitespace-pre-wrap">
+                    <div className="bg-white border border-[var(--color-hairline-strong)] rounded-xl rounded-bl-sm px-4 py-2.5 text-[var(--color-ink)] whitespace-pre-wrap">
                       {message.text}
                     </div>
                     <button
@@ -237,7 +237,7 @@ export default function TranslatorPage() {
                   >
                     💡
                   </button>
-                  <div className="max-w-[80%] bg-[var(--color-primary)] text-white rounded-2xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
+                  <div className="max-w-[80%] bg-[var(--color-primary)] text-white rounded-xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
                     {message.text}
                   </div>
                   {openAnalyses[idx] && (
@@ -267,7 +267,7 @@ export default function TranslatorPage() {
             {sending && (
               <div className="flex gap-2 items-end">
                 <AlexAvatar size="sm" />
-                <div className="bg-white border border-[var(--color-hairline-strong)] rounded-2xl rounded-bl-sm px-4 py-3 inline-flex items-center gap-2 text-sm text-[var(--color-slate)]">
+                <div className="bg-white border border-[var(--color-hairline-strong)] rounded-xl rounded-bl-sm px-4 py-3 inline-flex items-center gap-2 text-sm text-[var(--color-slate)]">
                   Alex печатает
                   <span className="inline-flex gap-0.5">
                     <span className="assistant-typing-dot">·</span>

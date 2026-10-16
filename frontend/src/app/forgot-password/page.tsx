@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
         Lexicon
       </Link>
 
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8">
+      <div className="w-full max-w-md bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8">
         {success ? (
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">

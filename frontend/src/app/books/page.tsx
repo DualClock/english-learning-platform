@@ -284,7 +284,7 @@ export default function BooksPage() {
         <div>
           <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-3">
+              <div key={i} className="rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3">
                 <div className="aspect-[2/3] w-full rounded-xl bg-[var(--color-tint-mint)]" />
                 <div className="mt-3 h-3 w-full rounded bg-[var(--color-tint-mint)]" />
                 <div className="mt-2 h-3 w-2/3 rounded bg-[var(--color-tint-mint)]" />
@@ -293,7 +293,7 @@ export default function BooksPage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-4">
+              <div key={i} className="h-28 rounded-xl border border-[var(--color-hairline-strong)] bg-white p-4">
                 <div className="flex h-full items-center gap-4">
                   <div className="h-20 w-14 shrink-0 rounded-lg bg-[var(--color-tint-mint)]" />
                   <div className="flex-1">
@@ -325,7 +325,7 @@ export default function BooksPage() {
           )}
 
           {books.length === 0 && (
-            <div className="mb-10 rounded-2xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
+            <div className="mb-10 rounded-xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
               <p className="font-medium text-[var(--color-ink)]">В библиотеке пока пусто</p>
               <p className="mt-1 text-sm text-[var(--color-slate)]">
                 Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB.
@@ -361,7 +361,7 @@ export default function BooksPage() {
                 return (
                   <div
                     key={level}
-                    className={`relative mb-8 rounded-2xl p-4 ${
+                    className={`relative mb-8 rounded-xl p-4 ${
                       recommended ? 'bg-[rgba(249,231,159,0.10)] ring-2 ring-[var(--color-tint-yellow-bold)]' : ''
                     }`}
                   >
@@ -392,7 +392,7 @@ export default function BooksPage() {
                 );
               })}
               {uncategorized.length > 0 && (
-                <div className="mb-8 rounded-2xl p-4">
+                <div className="mb-8 rounded-xl p-4">
                   <div className="mb-4 flex items-center gap-2">
                     <h3 className="font-semibold text-[var(--color-ink)]">Без указания уровня</h3>
                     <span className="text-sm text-[var(--color-slate)]">{uncategorized.length}</span>
@@ -414,7 +414,7 @@ export default function BooksPage() {
           )}
 
           {classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
+            <div className="rounded-xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
               <p className="font-medium text-[var(--color-ink)]">Каталог пока недоступен</p>
               <p className="mt-1 text-sm text-[var(--color-slate)]">
                 Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги».

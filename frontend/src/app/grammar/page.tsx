@@ -73,7 +73,7 @@ export default function GrammarPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 animate-pulse"
+                className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 animate-pulse"
               >
                 <div className="h-4 w-16 bg-[var(--color-tint-mint)] rounded mb-4" />
                 <div className="h-5 w-3/4 bg-[var(--color-tint-mint)] rounded mb-3" />
@@ -84,14 +84,14 @@ export default function GrammarPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
             <p className="text-[var(--color-ink)] mb-4">{error}</p>
             <button onClick={loadUnits} className="btn-primary">
               Попробовать снова
             </button>
           </div>
         ) : units.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
               <svg
                 className="w-8 h-8 text-[var(--color-slate)]"
@@ -136,7 +136,7 @@ export default function GrammarPage() {
                   {sectionUnits.map((unit) => (
                     <div
                       key={unit.id}
-                      className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 flex flex-col"
+                      className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 flex flex-col"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex items-center gap-3 min-w-0">

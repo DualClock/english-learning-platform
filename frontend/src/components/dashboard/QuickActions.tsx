@@ -52,7 +52,7 @@ export default function QuickActions() {
           <Link
             key={action.href}
             href={action.href}
-            className="group bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-4 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+            className="group bg-white rounded-xl border border-[var(--color-hairline-strong)] p-4 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
           >
             <div className="w-10 h-10 rounded-xl bg-[var(--color-tint-mint)] text-[var(--color-primary)] flex items-center justify-center mb-3 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-colors duration-200">
               {action.icon}

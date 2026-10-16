@@ -46,7 +46,7 @@ export default function LoginPage() {
       </Link>
 
       {/* Карточка */}
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8">
+      <div className="w-full max-w-md bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8">
         <h1 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           С возвращением 👋
         </h1>

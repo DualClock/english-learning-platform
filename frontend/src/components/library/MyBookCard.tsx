@@ -39,7 +39,7 @@ export default function MyBookCard({ book, onOpen, onDelete }: MyBookCardProps) 
     <div className="group">
       <div
         onClick={() => onOpen(book.id)}
-        className="cursor-pointer rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-2 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-primary-pressed)] hover:shadow-lg"
+        className="cursor-pointer rounded-xl border border-[var(--color-hairline-strong)] bg-white p-2 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-primary-pressed)] hover:shadow-lg"
       >
         <div className="relative">
           <BookCover

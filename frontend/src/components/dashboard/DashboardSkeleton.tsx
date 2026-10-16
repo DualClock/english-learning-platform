@@ -13,7 +13,7 @@ export default function DashboardSkeleton() {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 flex items-center gap-4"
+            className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 flex items-center gap-4"
           >
             <div className="w-11 h-11 rounded-xl bg-[var(--color-tint-mint)] shrink-0"></div>
             <div className="flex-1">
@@ -26,7 +26,7 @@ export default function DashboardSkeleton() {
 
       {/* Главная карточка */}
       <div className="h-5 w-44 bg-[var(--color-tint-mint)] rounded mb-4"></div>
-      <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 flex flex-col sm:flex-row gap-6 mb-8">
+      <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 flex flex-col sm:flex-row gap-6 mb-8">
         <div className="w-28 aspect-[3/4] bg-[var(--color-tint-mint)] rounded-xl shrink-0"></div>
         <div className="flex-1 flex flex-col justify-center">
           <div className="h-6 w-64 max-w-full bg-[var(--color-tint-mint)] rounded mb-3"></div>
@@ -40,7 +40,7 @@ export default function DashboardSkeleton() {
       <div className="h-5 w-40 bg-[var(--color-tint-mint)] rounded mb-4"></div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-4">
+          <div key={i} className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-4">
             <div className="w-10 h-10 rounded-xl bg-[var(--color-tint-mint)] mb-3"></div>
             <div className="h-4 w-24 bg-[var(--color-tint-mint)] rounded mb-2"></div>
             <div className="h-3 w-20 bg-[var(--color-tint-mint)] rounded"></div>

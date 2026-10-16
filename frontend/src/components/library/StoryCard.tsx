@@ -22,7 +22,7 @@ interface StoryCardProps {
 
 export default function StoryCard({ story, addedBookId, adding, onAdd, onOpen }: StoryCardProps) {
   return (
-    <div className="flex gap-4 rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-4 transition-all duration-200 hover:border-[var(--color-primary-pressed)] hover:shadow-md">
+    <div className="flex gap-4 rounded-xl border border-[var(--color-hairline-strong)] bg-white p-4 transition-all duration-200 hover:border-[var(--color-primary-pressed)] hover:shadow-md">
       <BookCover
         title={story.title}
         coverUrl={story.coverUrl}
