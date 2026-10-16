@@ -161,38 +161,38 @@ export default function HeroTranslationDemo() {
 
   const caret = (index: number) =>
     phase === 'typing' && activeSegment === index && typed > STARTS[index] ? (
-      <span className="hero-caret text-[#356B52]">▎</span>
+      <span className="hero-caret text-[var(--color-primary)]">▎</span>
     ) : null;
 
   return (
     <div>
       <div
         ref={cardRef}
-        className={`relative bg-white rounded-2xl border border-[#D6D3CC] p-8 shadow-sm transition-opacity duration-700 ${
+        className={`relative bg-white rounded-2xl border border-[var(--color-hairline)] p-8 shadow-sm transition-opacity duration-700 ${
           phase === 'fade' ? 'opacity-0' : 'opacity-100'
         }`}
       >
         {/* Бар мини-окна читалки */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#B85C5C]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#EBCB75]"></div>
-            <div className="w-3 h-3 rounded-full bg-[#4A7C59]"></div>
+            <div className="w-3 h-3 rounded-full bg-[var(--color-error)]"></div>
+            <div className="w-3 h-3 rounded-full bg-[var(--color-tint-yellow-bold)]"></div>
+            <div className="w-3 h-3 rounded-full bg-[var(--color-success)]"></div>
           </div>
-          <span className="text-xs text-[#5A5F5A] bg-[#F7F5EF] border border-[#D6D3CC] rounded-full px-3 py-1">
+          <span className="text-xs text-[var(--color-slate)] bg-[var(--color-surface)] border border-[var(--color-hairline)] rounded-full px-3 py-1">
             «1984» · Глава 1
           </span>
         </div>
 
         {/* Текст цитаты */}
-        <div className="space-y-3 font-serif text-[#20231F]">
+        <div className="space-y-3 font-serif text-[var(--color-ink)]">
           <p className="text-lg leading-relaxed">
             It was a bright cold day in April, and the clocks were striking{' '}
             <span
               ref={wordRef}
               className={`px-1 rounded cursor-pointer transition-colors duration-300 ${
                 wordActive
-                  ? 'bg-[#EBCB75] shadow-[0_0_0_3px_rgba(235,203,117,0.45)]'
+                  ? 'bg-[var(--color-tint-yellow-bold)] shadow-[0_0_0_3px_rgba(14,124,123,0.25)]'
                   : 'hero-word-invite'
               }`}
             >
@@ -200,7 +200,7 @@ export default function HeroTranslationDemo() {
             </span>
             .
           </p>
-          <p className="text-sm text-[#5A5F5A] italic">— George Orwell, «1984»</p>
+          <p className="text-sm text-[var(--color-slate)] italic">— George Orwell, «1984»</p>
         </div>
 
         {/* Зона перевода: фиксированная высота, чтобы карточка не прыгала */}
@@ -211,37 +211,37 @@ export default function HeroTranslationDemo() {
               showThinking ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
-            <div className="h-full p-4 bg-[#E7ECE4] rounded-lg flex items-center gap-3">
+            <div className="h-full p-4 bg-[var(--color-tint-mint)] rounded-lg flex items-center gap-3">
               <span className="flex items-center gap-1.5">
-                <span className="hero-dot w-2 h-2 rounded-full bg-[#356B52]"></span>
-                <span className="hero-dot w-2 h-2 rounded-full bg-[#356B52]"></span>
-                <span className="hero-dot w-2 h-2 rounded-full bg-[#356B52]"></span>
+                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
+                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
+                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
               </span>
-              <span className="text-sm text-[#5A5F5A]">ИИ анализирует контекст…</span>
+              <span className="text-sm text-[var(--color-slate)]">ИИ анализирует контекст…</span>
             </div>
           </div>
 
           {/* Карточка перевода */}
           <div
-            className={`absolute inset-0 p-4 bg-[#E7ECE4] rounded-lg transition-opacity duration-500 ${
+            className={`absolute inset-0 p-4 bg-[var(--color-tint-mint)] rounded-lg transition-opacity duration-500 ${
               showCard ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
             <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-[#20231F]">
+              <span className="font-semibold text-[var(--color-ink)]">
                 {typedSlice(0, typed)}
                 {caret(0)}
               </span>
-              <span className="text-xs text-[#5A5F5A]">
+              <span className="text-xs text-[var(--color-slate)]">
                 {typedSlice(1, typed)}
                 {caret(1)}
               </span>
             </div>
-            <p className="text-[#356B52] font-medium">
+            <p className="text-[var(--color-primary)] font-medium">
               {typedSlice(2, typed)}
               {caret(2)}
             </p>
-            <p className="mt-1.5 text-xs text-[#5A5F5A] leading-snug">
+            <p className="mt-1.5 text-xs text-[var(--color-slate)] leading-snug">
               {typedSlice(3, typed)}
               {caret(3)}
             </p>
@@ -252,8 +252,8 @@ export default function HeroTranslationDemo() {
                 pressed ? 'scale-95' : 'scale-100'
               } ${
                 saved
-                  ? 'bg-[#356B52] text-white'
-                  : 'bg-white/70 text-[#356B52] border border-[#356B52]/30'
+                  ? 'bg-[var(--color-primary)] text-white'
+                  : 'bg-white/70 text-[var(--color-primary)] border border-[rgba(14,124,123,0.3)]'
               }`}
             >
               {saved ? '✓ В словаре' : '+ В словарь'}
@@ -264,7 +264,7 @@ export default function HeroTranslationDemo() {
         {/* Ripple по клику */}
         {phase === 'click' && target && (
           <span
-            className="hero-ripple absolute z-10 rounded-full border-2 border-[#356B52] pointer-events-none"
+            className="hero-ripple absolute z-10 rounded-full border-2 border-[var(--color-primary)] pointer-events-none"
             style={{
               left: target.x,
               top: target.y,
@@ -287,7 +287,7 @@ export default function HeroTranslationDemo() {
             }}
           >
             <div
-              className={`-translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#356B52]/25 border-2 border-[#356B52] transition-transform duration-150 ${
+              className={`-translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[rgba(14,124,123,0.25)] border-2 border-[var(--color-primary)] transition-transform duration-150 ${
                 phase === 'click' ? 'scale-75' : 'scale-100'
               }`}
             />
@@ -296,7 +296,7 @@ export default function HeroTranslationDemo() {
       </div>
 
       {/* Продающая подпись под карточкой */}
-      <p className="mt-5 text-sm text-[#5A5F5A] leading-relaxed">
+      <p className="mt-5 text-sm text-[var(--color-slate)] leading-relaxed">
         Нажмите на любое слово в книге — ИИ переведёт его с учётом контекста
         и бережно сохранит в ваш личный словарь.
       </p>
