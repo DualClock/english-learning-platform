@@ -1,0 +1,58 @@
+'use client';
+
+import Link from 'next/link';
+
+interface Props {
+  name?: string | null;
+  level?: string | null;
+}
+
+export default function GreetingHeader({ name, level }: Props) {
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting =
+    hour >= 5 && hour < 12
+      ? 'Доброе утро'
+      : hour >= 12 && hour < 18
+        ? 'Добрый день'
+        : hour >= 18 && hour < 23
+          ? 'Добрый вечер'
+          : 'Доброй ночи';
+
+  const dateStr = new Intl.DateTimeFormat('ru-RU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(now);
+
+  return (
+    <header className="mb-8">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-sm font-medium text-[#C4A77D] mb-1 capitalize">{dateStr}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#20231F] tracking-tight">
+            {greeting}, {name?.trim() || 'друг'}
+          </h1>
+          <p className="text-[#5A5F5A] mt-2">
+            Немного чтения каждый день — и словарный запас растёт сам.
+          </p>
+        </div>
+        {level ? (
+          <span
+            title="Пересдать тест можно в настройках"
+            className="shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full bg-[#EBCB75]/30 border border-[#EBCB75] text-[#20231F]"
+          >
+            Уровень: {level.toUpperCase()}
+          </span>
+        ) : (
+          <Link
+            href="/onboarding"
+            className="shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full border-2 border-dashed border-[#C4A77D] text-[#356B52] hover:bg-[#E7ECE4] transition-colors"
+          >
+            Определить уровень
+          </Link>
+        )}
+      </div>
+    </header>
+  );
+}

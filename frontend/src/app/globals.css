@@ -1,0 +1,347 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #F7F5EF;
+  --bg-secondary: #E7ECE4;
+  --text-primary: #20231F;
+  --text-secondary: #5A5F5A;
+  --accent-primary: #356B52;
+  --accent-secondary: #EBCB75;
+  --accent-warm: #C4A77D;
+  --error: #B85C5C;
+  --success: #4A7C59;
+  --border: #D6D3CC;
+}
+
+@layer base {
+  body {
+    @apply bg-[#F7F5EF] text-[#20231F] font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Анимации */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  /* Кнопки */
+  .btn-primary {
+    @apply bg-[#356B52] text-white px-6 py-3 rounded-lg font-medium
+           hover:bg-[#2A5542] transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent text-[#20231F] px-6 py-3 rounded-lg font-medium
+           border border-[#D6D3CC] hover:bg-[#E7ECE4] transition-colors duration-200
+           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
+  }
+  
+  .btn-ghost {
+    @apply text-[#5A5F5A] px-4 py-2 rounded-lg font-medium
+           hover:text-[#20231F] hover:bg-[#E7ECE4] transition-colors duration-200;
+  }
+
+  /* Карточки */
+  .card {
+    @apply bg-white rounded-xl border border-[#D6D3CC] 
+           hover:border-[#C4A77D] transition-colors duration-200;
+  }
+  
+  .card-interactive {
+    @apply bg-white rounded-xl border border-[#D6D3CC] 
+           hover:border-[#356B52] hover:shadow-lg transition-all duration-200
+           cursor-pointer;
+  }
+
+  /* Поля ввода */
+  .input {
+    @apply w-full px-4 py-3 rounded-lg border border-[#D6D3CC] bg-white
+           text-[#20231F] placeholder-[#5A5F5A]
+           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent
+           transition-shadow duration-200;
+  }
+
+  /* Заголовки секций */
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold text-[#20231F] mb-2;
+  }
+  
+  .section-subtitle {
+    @apply text-[#5A5F5A] text-lg mb-8;
+  }
+
+  /* Бейджи */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-primary {
+    @apply bg-[#E7ECE4] text-[#356B52];
+  }
+  
+  .badge-secondary {
+    @apply bg-[#EBCB75] text-[#20231F];
+  }
+
+  /* Прогресс-бар */
+  .progress-bar {
+    @apply h-2 bg-[#E7ECE4] rounded-full overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-[#356B52] rounded-full transition-all duration-500;
+  }
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F7F5EF;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D6D3CC;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C4A77D;
+}
+
+/* Выделение текста */
+::selection {
+  background: #EBCB75;
+  color: #20231F;
+}
+
+/* Анимация курсора печатания */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.animate-pulse {
+  animation: blink 1s infinite;
+}
+
+/* === Hero: живое демо ИИ-перевода === */
+
+/* Приглашающая пульсация слова */
+@keyframes hero-word-invite {
+  0%, 100% {
+    background-color: rgba(235, 203, 117, 0.30);
+    box-shadow: 0 0 0 0 rgba(235, 203, 117, 0.35);
+  }
+  50% {
+    background-color: rgba(235, 203, 117, 0.65);
+    box-shadow: 0 0 0 5px rgba(235, 203, 117, 0.18);
+  }
+}
+
+.hero-word-invite {
+  animation: hero-word-invite 1.8s ease-in-out infinite;
+}
+
+/* Кольцо-ripple в точке касания */
+@keyframes hero-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.2);
+    opacity: 0;
+  }
+}
+
+.hero-ripple {
+  animation: hero-ripple 0.6s ease-out forwards;
+}
+
+/* Три точки "ИИ думает" */
+@keyframes hero-dot {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.hero-dot {
+  animation: hero-dot 1s ease-in-out infinite;
+}
+
+.hero-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.hero-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Каретка печатной машинки */
+@keyframes hero-caret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.hero-caret {
+  animation: hero-caret 0.8s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-word-invite,
+  .hero-ripple,
+  .hero-dot,
+  .hero-caret {
+    animation: none !important;
+  }
+}
+
+/* === AI Собеседник (Alex) === */
+
+/* Мягкое покачивание аватара */
+@keyframes assistant-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.assistant-float {
+  animation: assistant-float 3.2s ease-in-out infinite;
+}
+
+/* Расходящиеся волны вокруг аватара */
+@keyframes assistant-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.assistant-wave {
+  animation: assistant-wave 2.4s ease-out infinite;
+}
+
+.assistant-wave:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+/* Пульс свечения аватара */
+@keyframes assistant-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(53, 107, 82, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(53, 107, 82, 0);
+  }
+}
+
+.assistant-glow {
+  animation: assistant-glow 2.4s ease-in-out infinite;
+}
+
+/* Появление снизу с задержкой (stagger) */
+@keyframes assistant-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.assistant-fade-up {
+  opacity: 0;
+  animation: assistant-fade-up 0.55s ease-out forwards;
+}
+
+/* Три точки «Alex печатает…» */
+@keyframes assistant-typing {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.assistant-typing-dot {
+  animation: assistant-typing 1.1s ease-in-out infinite;
+}
+
+.assistant-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.assistant-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Появление сообщения в чате */
+@keyframes assistant-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.assistant-message-in {
+  animation: assistant-message-in 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-float,
+  .assistant-wave,
+  .assistant-glow,
+  .assistant-typing-dot {
+    animation: none !important;
+  }
+
+  .assistant-fade-up,
+  .assistant-message-in {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
