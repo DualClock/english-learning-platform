@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from './Sidebar';
 
 export default function AppLayout({
@@ -14,6 +14,7 @@ export default function AppLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -35,9 +36,25 @@ export default function AppLayout({
 
   return (
     <div className="min-h-screen bg-[var(--color-surface)]">
-      <Sidebar />
-      <main className="ml-64 min-h-screen">
-        <div className={fullWidth ? 'px-8 py-8' : 'max-w-5xl mx-auto px-8 py-8'}>
+      {/* Мобильная шапка с бургером */}
+      <header className="lg:hidden sticky top-0 z-20 h-14 bg-navy flex items-center gap-3 px-4">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="p-2.5 -ml-2 text-white rounded-md hover:bg-white/10 transition-colors"
+          aria-label="Открыть меню"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span className="text-lg font-semibold text-white font-heading">Lexicon</span>
+      </header>
+
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <main className="lg:ml-64 min-h-screen">
+        <div className={fullWidth ? 'px-4 sm:px-6 lg:px-8 py-6 lg:py-8' : 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8'}>
           {children}
         </div>
       </main>

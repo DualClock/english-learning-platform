@@ -34,82 +34,107 @@ function GrammarIcon() {
   );
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ open = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
+  const linkClass = (isActive: boolean) =>
+    `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-white text-[var(--color-navy)]'
+        : 'text-[var(--color-on-dark-muted)] hover:bg-white/10 hover:text-white'
+    }`;
+
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-[var(--color-hairline-strong)] flex flex-col z-30">
-      <div className="h-16 flex items-center px-6 border-b border-[var(--color-hairline-strong)]">
-        <Link href="/dashboard" className="text-xl font-bold text-[var(--color-ink)]">
-          Lexicon
-        </Link>
-      </div>
-
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
-                  : 'text-[var(--color-slate)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]'
-              }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="p-4 border-t border-[var(--color-hairline-strong)]">
-        <Link
-          href="/settings"
-          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors mb-2 ${
-            pathname === '/settings'
-              ? 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
-              : 'text-[var(--color-slate)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)]'
+    <>
+      {/* Оверлей для мобильного drawer */}
+      {open !== undefined && (
+        <div
+          className={`fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden ${
+            open ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            viewBox="0 0 24 24"
-            aria-hidden="true"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 h-full w-64 bg-navy flex flex-col z-40 transition-transform duration-200
+          ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        aria-label="Основная навигация"
+      >
+        <div className="h-16 flex items-center px-6 border-b border-white/10">
+          <Link href="/dashboard" className="text-xl font-semibold text-white font-heading" onClick={onClose}>
+            Lexicon
+          </Link>
+        </div>
+
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                className={linkClass(isActive)}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <span className="text-lg leading-none" aria-hidden="true">{item.icon}</span>
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-white/10">
+          <Link
+            href="/settings"
+            onClick={onClose}
+            className={`${linkClass(pathname === '/settings')} mb-3`}
+            aria-current={pathname === '/settings' ? 'page' : undefined}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Настройки
-        </Link>
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-semibold">
-            {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[var(--color-ink)] truncate">
-              {session?.user?.email}
-            </p>
-            <Link 
-              href="/api/auth/signout" 
-              className="text-xs text-[var(--color-slate)] hover:text-[var(--color-ink)]"
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              viewBox="0 0 24 24"
+              aria-hidden="true"
             >
-              Выйти
-            </Link>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Настройки
+          </Link>
+          <div className="flex items-center gap-3 px-2 py-2">
+            <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-semibold shrink-0">
+              {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">
+                {session?.user?.email}
+              </p>
+              <Link
+                href="/api/auth/signout"
+                className="text-xs text-[var(--color-on-dark-muted)] hover:text-white"
+              >
+                Выйти
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
