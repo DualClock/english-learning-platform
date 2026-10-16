@@ -1,0 +1,3866 @@
+{
+  "units": [
+    {
+      "order": 1,
+      "title": "Глагол to be: am / is / are",
+      "cefrLevel": "a1",
+      "section": "Настоящее время",
+      "shortDescription": "Самый важный глагол английского языка: как сказать «я есть», «она есть», «они есть».",
+      "theoryHtml": "<p>В английском предложении почти всегда есть глагол. В русских предложениях вида «Я студент» глагола нет, но по-английски мы обязаны сказать <b>I am a student</b> — буквально «Я есть студент». Глагол <b>to be</b> меняет форму в зависимости от того, кто действует.</p><table><tr><th>Местоимение</th><th>Форма</th><th>Пример</th></tr><tr><td>I</td><td>am</td><td>I am tired.</td></tr><tr><td>he / she / it</td><td>is</td><td>She is a doctor.</td></tr><tr><td>you / we / they</td><td>are</td><td>They are at home.</td></tr></table><p>В разговорной речи формы сокращаются: <b>I am → I'm</b>, <b>he is → he's</b>, <b>they are → they're</b>. Отрицание строится просто — после формы ставим <b>not</b>: <b>She is not (isn't) a doctor</b>, <b>We are not (aren't) ready</b>. Формы <b>am</b> и <b>is</b> сокращаются с <b>not</b>, а вот <b>am not</b> в короткой форме обычно звучит как <b>I'm not</b>.</p><ul><li>Вопрос: выносим форму to be в начало — <b>Are you hungry? Is he your brother?</b></li><li>Ответ: <b>Yes, I am. / No, he isn't.</b></li></ul><p>Запомните: to be нужен не только про профессии и состояния, но и про место: <b>The keys are on the table</b> — «Ключи на столе».</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I ___ a student.",
+          "options": [
+            "am",
+            "is",
+            "are",
+            "be"
+          ],
+          "correctAnswer": "0",
+          "explanation": "С местоимением I всегда используем am."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ my sister.",
+          "options": [
+            "am",
+            "is",
+            "are",
+            "were"
+          ],
+          "correctAnswer": "1",
+          "explanation": "He/she/it — is."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "They ___ from Spain.",
+          "options": [
+            "is",
+            "am",
+            "are",
+            "been"
+          ],
+          "correctAnswer": "2",
+          "explanation": "They — are."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "___ you hungry?",
+          "options": [
+            "Is",
+            "Am",
+            "Are",
+            "Does"
+          ],
+          "correctAnswer": "2",
+          "explanation": "В вопросе форма to be выносится в начало: Are you...?"
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "We ___ not ready yet.",
+          "options": [
+            "is",
+            "am",
+            "are",
+            "was"
+          ],
+          "correctAnswer": "2",
+          "explanation": "We — are, отрицание: are not (aren't)."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Where ___ your parents from?",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Parents — множественное число, значит are."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "He ___ my best friend.",
+          "correctAnswer": "is",
+          "explanation": "He — is."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "The keys ___ on the table.",
+          "correctAnswer": "are",
+          "explanation": "Keys — множественное число."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I ___ not tired.",
+          "correctAnswer": "am|'m",
+          "explanation": "I — am; 'm тоже допустимо."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She is not a doctor. Напишите сокращённую форму: She ___ a doctor.",
+          "correctAnswer": "isn't|is not",
+          "explanation": "is not = isn't."
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Present Simple",
+      "cefrLevel": "a1",
+      "section": "Настоящее время",
+      "shortDescription": "Настоящее простое время: привычки, факты и расписания.",
+      "theoryHtml": "<p><b>Present Simple</b> — время для того, что происходит регулярно или вообще всегда: привычки, расписания, общеизвестные факты. <b>I drink coffee every morning. Water boils at 100 degrees. The train leaves at 7 am.</b></p><p>Главная ловушка времени — окончание <b>-s</b> для третьего лица единственного числа (he, she, it): <b>He works</b>, но <b>I work</b>, <b>They work</b>. После -o, -s, -sh, -ch, -x добавляем <b>-es</b>: <b>go → goes, watch → watches, wash → washes</b>. Глагол <b>have</b> ведёт себя особняком: <b>She has a car</b>.</p><table><tr><th>Утверждение</th><th>Отрицание</th><th>Вопрос</th></tr><tr><td>I work</td><td>I don't work</td><td>Do I work?</td></tr><tr><td>He works</td><td>He doesn't work</td><td>Does he work?</td></tr><tr><td>They work</td><td>They don't work</td><td>Do they work?</td></tr></table><p>Обратите внимание: в отрицании и вопросе окончания -s уже нет — «эстафету» принимает вспомогательный глагол <b>does</b>: <b>Does she like tea?</b> — а не «Does she likes tea».</p><ul><li>Частотные маркеры: <b>always, usually, often, sometimes, never, every day</b>.</li><li>Маркеры частоты ставим перед обычным глаголом, но после to be: <b>I never smoke</b>, но <b>He is never late</b>.</li></ul>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "He ___ to the gym every Friday.",
+          "options": [
+            "go",
+            "goes",
+            "going",
+            "is go"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Третье лицо ед. ч. — окончание -es."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "I ___ coffee in the morning.",
+          "options": [
+            "drinks",
+            "drink",
+            "drinking",
+            "is drink"
+          ],
+          "correctAnswer": "1",
+          "explanation": "С I окончание -s не добавляется."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "___ she like jazz?",
+          "options": [
+            "Do",
+            "Does",
+            "Is",
+            "Has"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вопрос с she строится через Does."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "They ___ live in Paris.",
+          "options": [
+            "doesn't",
+            "don't",
+            "isn't",
+            "aren't"
+          ],
+          "correctAnswer": "1",
+          "explanation": "They — отрицание don't."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "My brother ___ TV after dinner.",
+          "options": [
+            "watch",
+            "watchs",
+            "watches",
+            "watching"
+          ],
+          "correctAnswer": "2",
+          "explanation": "После -ch добавляем -es: watches."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "He ___ never late.",
+          "options": [
+            "is",
+            "are",
+            "does",
+            "be"
+          ],
+          "correctAnswer": "0",
+          "explanation": "После to be маркер частоты стоит дальше: He is never late."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "Water ___ at 100 degrees. (boil)",
+          "correctAnswer": "boils",
+          "explanation": "Вода — she/it, добавляем -s."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "We ___ English on Mondays. (study)",
+          "correctAnswer": "study",
+          "explanation": "We — без окончания -s."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She does not eat meat. Напишите сокращённую форму: She ___ eat meat.",
+          "correctAnswer": "doesn't|does not",
+          "explanation": "does not = doesn't."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "___ they work at the weekend? (вспомогательный глагол)",
+          "correctAnswer": "do",
+          "explanation": "Вопрос во множественном числе — Do they...?"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Артикли a / an / the",
+      "cefrLevel": "a1",
+      "section": "Существительные и артикли",
+      "shortDescription": "Маленькие слова с большим смыслом: когда ставить a, когда an, а когда the.",
+      "theoryHtml": "<p>В русском артиклей нет, поэтому поначалу они кажутся лишними. На самом деле артикль — это сигнал для слушателя: знает он, о каком предмете речь, или нет.</p><ul><li><b>a / an</b> — неопределённый артикль, «какой-то, один из многих». <b>a</b> перед согласным звуком: <b>a book, a city</b>. <b>an</b> перед гласным звуком: <b>an apple, an hour</b> (h здесь не произносится).</li><li><b>the</b> — определённый артикль, «тот самый, о котором мы оба знаем». <b>I saw a dog. The dog was black.</b> — сначала вводим собаку, потом говорим о ней как о конкретной.</li></ul><p>Правило звука, а не буквы: <b>a university</b> (звук «ю» — согласный), но <b>an hour</b> (звук «а» — гласный).</p><p>Когда артикль не нужен вообще (нулевой артикль): перед именами (<b>Mary</b>), городами и странами (<b>Moscow, Spain</b>), приёмами пищи (<b>have breakfast</b>), видами спорта (<b>play football</b>) и обобщёнными множествами: <b>Cats are funny</b> — «Коты (как вид) забавные».</p><ul><li>Повторное упоминание → <b>the</b>: <b>There is a shop here. The shop is closed today.</b></li><li>Уникальные вещи → <b>the</b>: <b>the sun, the moon, the internet</b>.</li><li>Музыкальные инструменты → <b>the</b>: <b>play the piano</b>, но виды спорта → без артикля: <b>play tennis</b>.</li></ul>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I bought ___ new phone yesterday.",
+          "options": [
+            "a",
+            "an",
+            "the",
+            "— (ничего)"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Один из многих, звук согласный — a."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She is ___ engineer.",
+          "options": [
+            "a",
+            "an",
+            "the",
+            "— (ничего)"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Профессия с неопределённым артиклем; звук гласный — an."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "___ sun rises in the east.",
+          "options": [
+            "A",
+            "An",
+            "The",
+            "— (ничего)"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Уникальные объекты — the."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "He waited for ___ hour.",
+          "options": [
+            "a",
+            "an",
+            "the",
+            "— (ничего)"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Буква h не произносится, звук гласный — an hour."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "Can you close ___ door, please?",
+          "options": [
+            "a",
+            "an",
+            "the",
+            "— (ничего)"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Обеим сторонам известно, о какой двери речь — the."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "My sister plays ___ piano beautifully.",
+          "options": [
+            "a",
+            "an",
+            "the",
+            "— (ничего)"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Музыкальные инструменты — the."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "___ Paris is the capital of France.",
+          "options": [
+            "A",
+            "An",
+            "The",
+            "— (ничего)"
+          ],
+          "correctAnswer": "3",
+          "explanation": "Названия городов — без артикля."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "This is ___ interesting book.",
+          "correctAnswer": "an",
+          "explanation": "Звук гласный — an."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "___ Moon is bright tonight. (определённый артикль)",
+          "correctAnswer": "the",
+          "explanation": "Луна уникальна — the Moon."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "I need ___ umbrella.",
+          "correctAnswer": "an",
+          "explanation": "Звук гласный — an."
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Множественное число существительных",
+      "cefrLevel": "a1",
+      "section": "Существительные и артикли",
+      "shortDescription": "Как из одного book сделать много books: правила и исключения.",
+      "theoryHtml": "<p>Основное правило простое: добавляем <b>-s</b> — <b>book → books, cat → cats</b>. Но есть несколько групп исключений, которые стоит выучить сразу.</p><table><tr><th>Правило</th><th>Пример</th></tr><tr><td>После -s, -ss, -sh, -ch, -x, -o → -es</td><td>bus → buses, box → boxes, tomato → tomatoes</td></tr><tr><td>Согласная + y → меняем y на -ies</td><td>city → cities, baby → babies</td></tr><tr><td>Гласная + y → просто -s</td><td>day → days, key → keys</td></tr><tr><td>-f / -fe → -ves</td><td>wolf → wolves, knife → knives</td></tr><tr><td>Особые формы</td><td>man → men, woman → women, child → children, foot → feet, tooth → teeth, person → people</td></tr></table><p>Несколько существительных множественное число не меняют, особенно после числительных: <b>two fish, five sheep, ten deer</b>. А вот слово <b>people</b> само по себе уже «много» — не говорите «two peoples» в значении «два человека».</p><p>Слова латинского происхождения иногда имеют «двойное» множественное: <b>cactus → cacti / cactuses</b>, но для базового уровня достаточно обычного -s: <b>photos, pianos, videos</b> — без -es, хотя слово кончается на -o.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "There are three ___ in the parking lot.",
+          "options": [
+            "car",
+            "cars",
+            "car's",
+            "caries"
+          ],
+          "correctAnswer": "1",
+          "explanation": "После three — множественное число -s."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "How many ___ are there in a football team?",
+          "options": [
+            "mans",
+            "men",
+            "mens",
+            "man"
+          ],
+          "correctAnswer": "1",
+          "explanation": "man — неправильное множественное: men."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "Look at those ___ in the sky!",
+          "options": [
+            "sheeps",
+            "sheep",
+            "sheepes",
+            "sheep's"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Sheep не меняется во множественном числе."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "My ___ hurt after the long walk.",
+          "options": [
+            "feet",
+            "foots",
+            "footes",
+            "feets"
+          ],
+          "correctAnswer": "0",
+          "explanation": "foot → feet."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "I need two ___ of bread.",
+          "options": [
+            "loafs",
+            "loaves",
+            "loafes",
+            "loaf"
+          ],
+          "correctAnswer": "1",
+          "explanation": "loaf → loaves (-f → -ves)."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Two ___ are waiting for you downstairs.",
+          "options": [
+            "womans",
+            "women",
+            "womens",
+            "woman"
+          ],
+          "correctAnswer": "1",
+          "explanation": "woman → women."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "The city has five ___. (city)",
+          "correctAnswer": "cities",
+          "explanation": "Согласная + y → -ies."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "One child, two ___.",
+          "correctAnswer": "children",
+          "explanation": "child → children."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She brushed her ___ after dinner. (tooth)",
+          "correctAnswer": "teeth",
+          "explanation": "tooth → teeth."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "There are four ___ in the year. (season)",
+          "correctAnswer": "seasons",
+          "explanation": "Обычное множественное число -s."
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "title": "There is / There are",
+      "cefrLevel": "a1",
+      "section": "Конструкции и модальность",
+      "shortDescription": "Как сказать «есть, имеется, находится»: конструкция there is / there are.",
+      "theoryHtml": "<p>Когда мы сообщаем о <b>существовании</b> чего-то — «в комнате есть диван», «в городе есть парк» — по-английски используется конструкция <b>there is / there are</b>. Выбор формы зависит от числа того, что идёт дальше: <b>There is a sofa in the room</b>, но <b>There are two parks in the city</b>.</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>There is + ед. ч.</td><td>There is a lamp on the desk.</td></tr><tr><td>There are + мн. ч.</td><td>There are three chairs here.</td></tr><tr><td>Отрицание</td><td>There isn't any milk. / There aren't any shops nearby.</td></tr><tr><td>Вопрос</td><td>Is there a bank near here? — Yes, there is. / No, there isn't.</td></tr></table><p>Важная деталь: после перечисления первым идёт <b>ближайший</b> предмет, и по нему выбирается форма: <b>There is a table and two chairs in the kitchen</b> — а не «there are», потому что первым идёт <b>a table</b>.</p><ul><li>Не путайте <b>there is</b> («существует, находится») с <b>it is</b> («это — ...»): <b>There is a cat on the sofa. It is black.</b></li><li>Для прошедшего времени: <b>there was / there were</b>: <b>There was a storm last night.</b></li></ul>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "___ a bank near here?",
+          "options": [
+            "Is there",
+            "Are there",
+            "There is",
+            "Have there"
+          ],
+          "correctAnswer": "0",
+          "explanation": "a bank — ед. ч., вопрос: Is there...?"
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "___ two museums in our town.",
+          "options": [
+            "There is",
+            "There are",
+            "It is",
+            "They are"
+          ],
+          "correctAnswer": "1",
+          "explanation": "two museums — мн. ч., значит There are."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "There ___ any milk in the fridge.",
+          "options": [
+            "isn't",
+            "aren't",
+            "is not any",
+            "aren't any"
+          ],
+          "correctAnswer": "0",
+          "explanation": "milk — неисчисляемое, ед. ч.: There isn't any milk."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "Is there a pharmacy nearby? — Yes, ___.",
+          "options": [
+            "there is",
+            "is there",
+            "it is",
+            "there are"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Короткий ответ: Yes, there is."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "In the kitchen there ___ a table and two chairs.",
+          "options": [
+            "are",
+            "is",
+            "have",
+            "has"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Форма выбирается по первому предмету перечисления — a table (ед. ч.)."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "___ there any questions?",
+          "options": [
+            "Is",
+            "Are",
+            "Do",
+            "Does"
+          ],
+          "correctAnswer": "1",
+          "explanation": "questions — мн. ч.: Are there...?"
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "___ there a problem? (вопрос)",
+          "correctAnswer": "is",
+          "explanation": "a problem — ед. ч.: Is there...?"
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "There are not many cafés here. Напишите сокращённую форму: There ___ many cafés here.",
+          "correctAnswer": "aren't|are not",
+          "explanation": "are not = aren't."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "There ___ five new words in this text.",
+          "correctAnswer": "are",
+          "explanation": "five new words — мн. ч."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "There ___ a lot of people at the party yesterday. (was/were)",
+          "correctAnswer": "were",
+          "explanation": "Прошедшее время + people (мн. ч.) — were."
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Модальный глагол can / can't",
+      "cefrLevel": "a1",
+      "section": "Конструкции и модальность",
+      "shortDescription": "Умение, разрешение и просьба: один глагол на все случаи.",
+      "theoryHtml": "<p><b>Can</b> — модальный глагол, который выражает <b>умение</b> (<b>I can swim</b> — «я умею плавать»), <b>разрешение</b> (<b>You can park here</b>) и <b>просьбу</b> (<b>Can you help me?</b>).</p><p>Главная особенность модальных глаголов: после них смысловой глагол идёт в <b>чистой форме</b> без to, и can <b>никогда не меняется</b> по лицам — <b>He can drive</b>, а не «He cans drive». Вопрос и отрицание строятся без вспомогательных do/does: <b>Can you swim?</b>, <b>I can't swim</b>.</p><table><tr><th>Утверждение</th><th>Отрицание</th><th>Вопрос</th></tr><tr><td>I can cook.</td><td>I can't (cannot) cook.</td><td>Can you cook?</td></tr><tr><td>She can sing.</td><td>She can't sing.</td><td>Can she sing?</td></tr></table><ul><li>Короткий ответ: <b>Yes, I can. / No, I can't.</b></li><li>Вежливая просьба: <b>Can you open the window, please?</b> — ещё вежливее: <b>Could you...?</b></li><li>Для прошедшего времени используйте <b>could</b>: <b>When I was five, I could already read.</b></li></ul><p>Порядок слов простой: подлежащее + can + глагол + всё остальное. <b>We can speak three languages.</b></p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "She ___ swim very well.",
+          "options": [
+            "can",
+            "cans",
+            "is can",
+            "can to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "После can — чистая форма глагола без to."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "___ you help me with this bag?",
+          "options": [
+            "Do",
+            "Can",
+            "Are",
+            "Does"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Просьба: Can you...?"
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "Parrots ___ talk.",
+          "options": [
+            "cans",
+            "can",
+            "can to",
+            "are can"
+          ],
+          "correctAnswer": "1",
+          "explanation": "can не меняется по лицам."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "I ___ come to the party, sorry.",
+          "options": [
+            "can't not",
+            "can't",
+            "cans't",
+            "no can"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Отрицание: can't (cannot)."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "When I was a child, I ___ climb trees.",
+          "options": [
+            "can",
+            "could",
+            "cans",
+            "can to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Прошедшее время от can — could."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Can she drive? — No, she ___.",
+          "options": [
+            "can't",
+            "cansn't",
+            "doesn't can",
+            "no can"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Короткий отрицательный ответ: No, she can't."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "___ you swim? (вопрос)",
+          "correctAnswer": "can",
+          "explanation": "Вопрос: Can you swim?"
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "I can not hear you. Напишите сокращённую форму: I ___ hear you.",
+          "correctAnswer": "can't|cannot",
+          "explanation": "can not = can't / cannot."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "You ___ park here — it's forbidden. (отрицание)",
+          "correctAnswer": "can't|cannot",
+          "explanation": "Запрет: You can't park here."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "He ___ play the guitar. (утверждение)",
+          "correctAnswer": "can",
+          "explanation": "Умение: He can play the guitar."
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Present Continuous",
+      "cefrLevel": "a2",
+      "section": "Времена: продолженное и прошедшее",
+      "shortDescription": "Действие происходит прямо сейчас: am/is/are + глагол-ing.",
+      "theoryHtml": "<p><b>Present Continuous</b> описывает действие <b>в процессе в момент речи</b>: <b>I am reading now</b> — «я читаю (прямо сейчас)». Сравните с Present Simple: <b>I read every day</b> — «читаю вообще, habitually».</p><p>Форма строится из двух частей: <b>am/is/are</b> + глагол с окончанием <b>-ing</b>. Окончание меняет глагол: <b>work → working, make → making</b> (немое e отпадает), <b>sit → sitting, run → running</b> (удвоение согласной), <b>lie → lying</b>.</p><table><tr><th>Утверждение</th><th>Отрицание</th><th>Вопрос</th></tr><tr><td>I am working.</td><td>I am not working.</td><td>Am I working?</td></tr><tr><td>She is working.</td><td>She isn't working.</td><td>Is she working?</td></tr><tr><td>They are working.</td><td>They aren't working.</td><td>Are they working?</td></tr></table><p>Не используйте Continuous с глаголами состояния: <b>like, love, hate, want, know, understand, need, believe</b>. Правильно: <b>I want coffee</b>, а не «I am wanting coffee».</p><ul><li>Маркеры: <b>now, right now, at the moment, today, currently</b>.</li><li>Запланированное будущее тоже выражается Continuous: <b>We are meeting Anna tomorrow.</b></li></ul>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "Look! It ___ raining.",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "correctAnswer": "0",
+          "explanation": "It — is."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "They ___ watching TV at the moment.",
+          "options": [
+            "is",
+            "am",
+            "are",
+            "be"
+          ],
+          "correctAnswer": "2",
+          "explanation": "They — are."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "I ___ not listening to you.",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "correctAnswer": "2",
+          "explanation": "I — am not."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "What ___ she doing?",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "do"
+          ],
+          "correctAnswer": "0",
+          "explanation": "She — is doing."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "The children ___ sleeping now.",
+          "options": [
+            "is",
+            "are",
+            "am",
+            "be"
+          ],
+          "correctAnswer": "1",
+          "explanation": "children — мн. ч.: are sleeping."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "I ___ for my keys right now.",
+          "options": [
+            "looking",
+            "am looking",
+            "look",
+            "looks"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Действие сейчас: am + looking."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "He ___ cooking dinner right now. (форма глагола be)",
+          "correctAnswer": "is",
+          "explanation": "He — is."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "We are ___ a film. (watch)",
+          "correctAnswer": "watching",
+          "explanation": "Окончание -ing."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "Sit down → He is ___ down. (sit)",
+          "correctAnswer": "sitting",
+          "explanation": "Краткая ударная гласная — удвоение согласной: sitting."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She is not running. Напишите сокращённую форму: She ___ running.",
+          "correctAnswer": "isn't|is not",
+          "explanation": "is not = isn't."
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Past Simple",
+      "cefrLevel": "a2",
+      "section": "Времена: продолженное и прошедшее",
+      "shortDescription": "Законченное действие в прошлом: -ed у правильных глаголов и вторая форма у неправильных.",
+      "theoryHtml": "<p><b>Past Simple</b> — время для завершённых действий в прошлом с указанием времени: <b>yesterday, last week, in 2010, two days ago</b>. <b>We watched a film yesterday. She lived in Rome for five years.</b></p><p>Правильные глаголы образуют прошедшее время окончанием <b>-ed</b>: <b>work → worked, play → played</b>. Если глагол кончается на -e, добавляем только -d: <b>live → lived</b>. После согласной + y меняем y на -ied: <b>study → studied</b>. Удвоение конечной согласной: <b>stop → stopped, plan → planned</b>.</p><p>Неправильные глаголы меняют форму целиком, их надо запоминать: <b>go → went, see → saw, buy → bought, take → took, eat → ate, have → had, be → was/were</b>. Форма to be особенная: <b>I/he/she/it was</b>, <b>you/we/they were</b>.</p><table><tr><th>Тип</th><th>Утверждение</th><th>Отрицание</th><th>Вопрос</th></tr><tr><td>Правильный</td><td>I worked.</td><td>I didn't work.</td><td>Did you work?</td></tr><tr><td>Неправильный</td><td>She went home.</td><td>She didn't go home.</td><td>Did she go home?</td></tr></table><p>В отрицаниях и вопросах появляется вспомогательный <b>did</b>, а смысловой глагол возвращается в первую форму: <b>Did you see him?</b> — а не «Did you saw him». Это самая частая ошибка новичков.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "We ___ to the beach last Sunday.",
+          "options": [
+            "go",
+            "went",
+            "goes",
+            "gone"
+          ],
+          "correctAnswer": "1",
+          "explanation": "go — неправильный глагол: went."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ her keys yesterday.",
+          "options": [
+            "losed",
+            "lost",
+            "loses",
+            "losing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "lose → lost."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "I ___ TV last night.",
+          "options": [
+            "watch",
+            "watched",
+            "watching",
+            "am watching"
+          ],
+          "correctAnswer": "1",
+          "explanation": "last night — Past Simple: watched."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "___ you see the film?",
+          "options": [
+            "Did",
+            "Do",
+            "Was",
+            "Are"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вопрос в Past Simple — через Did."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He ___ not answer my call.",
+          "options": [
+            "did",
+            "does",
+            "is",
+            "was"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Отрицание в прошлом: did not (didn't)."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "When I was a child, we ___ in a small house.",
+          "options": [
+            "live",
+            "lived",
+            "lives",
+            "living"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Правильный глагол: live → lived."
+        },
+        {
+          "order": 7,
+          "type": "fill",
+          "prompt": "They ___ in London in 2015. (live)",
+          "correctAnswer": "lived",
+          "explanation": "Окончание -ed."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "I ___ up at seven this morning. (get)",
+          "correctAnswer": "got",
+          "explanation": "get → got."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "Yesterday I ___ a new coat. (buy)",
+          "correctAnswer": "bought",
+          "explanation": "buy — неправильный глагол: bought."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She did not come to class. Напишите сокращённую форму: She ___ come to class.",
+          "correctAnswer": "didn't|did not",
+          "explanation": "did not = didn't."
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "title": "Past Continuous: was / were + -ing",
+      "cefrLevel": "a2",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "Действие в процессе в прошлом: что происходило в конкретный момент вчера, позавчера, в детстве.",
+      "theoryHtml": "<p><b>Past Continuous</b> описывает действие, которое было <b>в процессе</b> в определённый момент в прошлом. По-русски это звучит как «я делал (в тот момент)», «происходило». Форма: <b>was / were + глагол с окончанием -ing</b>.</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>I / he / she / it was working</td><td>I was reading at 10 pm.</td></tr><tr><td>утверждение</td><td>you / we / they were working</td><td>They were living in Rome then.</td></tr><tr><td>отрицание</td><td>wasn't / weren't + -ing</td><td>She wasn't sleeping.</td></tr><tr><td>вопрос</td><td>Was / Were + подлежащее + -ing?</td><td>Were you waiting long?</td></tr></table><p>Выбор <b>was</b> или <b>were</b> зависит от подлежащего: единственное число (кроме you) — was, множественное и you — were. Короткие ответы: <b>Yes, I was. / No, they weren't.</b></p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>He was play football</i> → правильно: <b>He was playing</b> — не забывайте -ing. <i>I was knowing the answer</i> → правильно: <b>I knew the answer</b> — глаголы состояния (know, believe, want, understand, love, hate) в Continuous не употребляются. И ещё: <i>Did you was working?</i> → правильно: <b>Were you working?</b> — was/were сами выносятся в вопрос, вспомогательный did не нужен.</p><p><b>Маркеры времени:</b> at 5 o'clock yesterday, at that moment, all day, all evening, from 6 to 8, while, when.</p><p><b>Примечание:</b> Past Continuous часто рисует «фон» сцены: <b>The sun was shining, the birds were singing</b> — а Past Simple подаёт события по очереди.</p><p><b>Мини-диалог:</b> — What were you doing at 9 pm yesterday? — I was watching a film. — The whole evening? — Well, I was also eating pizza. — That's why the box was empty!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "She ___ dinner when I called.",
+          "options": [
+            "was cooking",
+            "cooked",
+            "is cooking",
+            "cooks"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Действие было в процессе в момент звонка — was cooking."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "They ___ football at 4 pm yesterday.",
+          "options": [
+            "play",
+            "were playing",
+            "played",
+            "are playing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "They — were, действие в процессе в указанный момент."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "I ___ TV when the lights went out.",
+          "options": [
+            "watched",
+            "am watching",
+            "was watching",
+            "watch"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Фон в прошлом — Past Continuous: was watching."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "___ you sleeping at midnight?",
+          "options": [
+            "Did",
+            "Was",
+            "Were",
+            "Are"
+          ],
+          "correctAnswer": "2",
+          "explanation": "С you всегда were."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "We ___ to music while mom was cooking.",
+          "options": [
+            "listened",
+            "were listening",
+            "are listening",
+            "listen"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Два параллельных процесса — оба в Past Continuous."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "He ___ the answer, but he didn't say anything.",
+          "options": [
+            "was knowing",
+            "knew",
+            "were knowing",
+            "is knowing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Know — глагол состояния, в Continuous не употребляется."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "It ___ raining all morning yesterday.",
+          "options": [
+            "was",
+            "were",
+            "is",
+            "did"
+          ],
+          "correctAnswer": "0",
+          "explanation": "It — единственное число, was."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "___ (be) she working at 8 o'clock last night?",
+          "correctAnswer": "was",
+          "explanation": "Вопрос в Past Continuous с she — was."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "At 6 o'clock I ___ (do) my homework.",
+          "correctAnswer": "was doing",
+          "explanation": "Процесс в конкретный момент прошлого: was doing."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "They ___ (not / sleep) at that time.",
+          "correctAnswer": "weren't sleeping|were not sleeping",
+          "explanation": "They — were, отрицание: weren't sleeping."
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "title": "Past Simple vs Past Continuous",
+      "cefrLevel": "a2",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "Короткое событие или длительный фон: как выбрать между «сделал» и «делал» в прошлом.",
+      "theoryHtml": "<p>Оба времени про прошлое, но они отвечают на разные вопросы. <b>Past Simple</b> — законченное событие, «что случилось»: <b>I lost my keys yesterday</b>. <b>Past Continuous</b> — процесс, «что происходило в тот момент»: <b>I was losing... нет, I was looking for my keys all morning</b>.</p><p>Классическая связка — <b>прерванное действие</b>: длительный процесс идёт (Past Continuous), а короткое событие его прерывает (Past Simple).</p><table><tr><th>Длительный фон (Continuous)</th><th>Короткое событие (Simple)</th><th>Перевод</th></tr><tr><td>I was sleeping</td><td>when the phone rang</td><td>Я спал, когда зазвонил телефон.</td></tr><tr><td>She was cooking</td><td>when he arrived</td><td>Она готовила, когда он пришёл.</td></tr><tr><td>We were walking home</td><td>when it started to rain</td><td>Мы шли домой, когда начался дождь.</td></tr></table><p><b>While</b> обычно вводит именно процесс: <b>While I was waiting, I read a magazine</b>. <b>When</b> может вводить и то и другое: <b>When I came home, she was cooking</b> — «пришёл» (событие), «готовила» (фон).</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>When I was coming home, I saw an accident</i> → правильно: <b>When I came home</b> — само событие «пришёл» не процесс. <i>I was seeing him yesterday</i> → правильно: <b>I saw him yesterday</b> — единичное событие, а не процесс. И наоборот: <i>While she cooked, I watched TV</i> звучит бедно — лучше <b>While she was cooking, I was watching TV</b> для параллельных процессов.</p><p><b>Маркеры:</b> Past Simple — yesterday, last week, ago, in 2019; Past Continuous — while, at that moment, all day, this time yesterday.</p><p><b>Мини-диалог:</b> — Why didn't you answer my call? — I was driving. — At 10 pm? — Yes, and while I was driving, my phone was in my bag. — OK, next time pull over!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I saw an accident while I ___ home.",
+          "options": [
+            "walked",
+            "was walking",
+            "walk",
+            "am walking"
+          ],
+          "correctAnswer": "1",
+          "explanation": "After while идёт процесс — was walking."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "When the phone ___, she was taking a shower.",
+          "options": [
+            "was ringing",
+            "rang",
+            "rings",
+            "is ringing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Короткое событие — Past Simple: rang."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He ___ the window when he heard the noise.",
+          "options": [
+            "was opening",
+            "opened",
+            "opens",
+            "open"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Реакция на шум — единичное действие, opened."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "While we ___ dinner, it started to rain.",
+          "options": [
+            "had",
+            "were having",
+            "have",
+            "are having"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Процесс во время которого начался дождь — were having."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "What ___ when the teacher came in?",
+          "options": [
+            "did you do",
+            "were you doing",
+            "you did",
+            "do you do"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Спрашиваем о процессе в тот момент: were you doing."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "She ___ two letters yesterday.",
+          "options": [
+            "was writing",
+            "wrote",
+            "writes",
+            "has written"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Завершённое действие с yesterday — Past Simple."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "The sun ___ brightly, so we went to the beach.",
+          "options": [
+            "shone",
+            "was shining",
+            "shines",
+            "shined"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Описание фона сцены — was shining."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "While he ___ (drive) home, he saw a fox.",
+          "correctAnswer": "was driving",
+          "explanation": "Процесс, который длился, пока он не увидел лису."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I ___ (break) my leg while I was skiing.",
+          "correctAnswer": "broke",
+          "explanation": "Короткое событие внутри процесса — broke."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "When I ___ (be) a child, we often went fishing.",
+          "correctAnswer": "was",
+          "explanation": "Состояние с when в прошлом — Past Simple: was."
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "title": "Used to: привычки прошлого",
+      "cefrLevel": "a2",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "«Раньше я делал, а теперь нет»: как говорить о привычках и состояниях, которые остались в прошлом.",
+      "theoryHtml": "<p>Конструкция <b>used to + инфинитив</b> говорит о привычке или состоянии в прошлом, которых <b>сейчас уже нет</b>: <b>I used to smoke</b> — «раньше я курил (а теперь нет)». Она работает и с действиями, и с состояниями: <b>There used to be a cinema here</b> — «здесь раньше был кинотеатр».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>used to + V</td><td>He used to live in Paris.</td></tr><tr><td>отрицание</td><td>didn't use to + V</td><td>I didn't use to like fish.</td></tr><tr><td>вопрос</td><td>Did ... use to + V?</td><td>Did you use to play chess?</td></tr></table><p>Обратите внимание: в отрицании и вопросе <b>d</b> в конце пропадает — <b>didn't use to</b>, <b>did you use to</b>. В утверждении окончание -d есть: used to.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I used to played</i> → правильно: <b>I used to play</b> — после used to идёт инфинитив без to-изменений. <i>Did you used to smoke?</i> → правильно: <b>Did you use to smoke?</b> — после did форма без -d. <i>I am used to play tennis</i> → это другая конструкция: <b>I am used to playing</b> значит «я привык играть», а «раньше играл» — это <b>I used to play</b>.</p><p><b>Не путать три похожие конструкции:</b> <b>used to do</b> — раньше делал; <b>be used to doing</b> — привык делать (I am used to getting up early — я привык вставать рано); <b>get used to doing</b> — привыкать (You'll get used to it — привыкнешь).</p><p><b>Примечание:</b> для повторявшихся действий можно также использовать <b>would</b>: <b>We would go fishing every summer</b>. Но would не работает с состояниями: нельзя «I would have a dog», зато можно «I used to have a dog».</p><p><b>Мини-диалог:</b> — Did you use to be shy at school? — Very! I didn't use to talk to anyone. — And now you give presentations. — People change, but I still hate small talk.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I ___ smoke, but I quit two years ago.",
+          "options": [
+            "use to",
+            "used to",
+            "am used to",
+            "use"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Привычка в прошлом, которой больше нет — used to smoke."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ like coffee, but now she drinks it every day.",
+          "options": [
+            "didn't use to",
+            "didn't used to",
+            "not used",
+            "doesn't use to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Отрицание — didn't use to (без -d)."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "___ you ___ play chess as a child?",
+          "options": [
+            "Did ... use to",
+            "Did ... used to",
+            "Do ... use to",
+            "Were ... used to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вопрос: Did you use to play...?"
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "There ___ a cinema here, but it closed ten years ago.",
+          "options": [
+            "used to be",
+            "is used to be",
+            "used to being",
+            "was use to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Состояние в прошлом — there used to be."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He isn't ___ getting up early, so mornings are hard for him.",
+          "options": [
+            "used to",
+            "use to",
+            "usually",
+            "used"
+          ],
+          "correctAnswer": "0",
+          "explanation": "be used to doing — «привык делать»: isn't used to getting up."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "I ___ live in a small town. Now I am in the capital.",
+          "options": [
+            "used to",
+            "am used to",
+            "was used to",
+            "use to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Прошлое состояние, которого больше нет — used to live."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "Did people really ___ write letters by hand?",
+          "options": [
+            "used to",
+            "use to",
+            "usually",
+            "used"
+          ],
+          "correctAnswer": "1",
+          "explanation": "После did — use to без -d."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "We ___ (go) to the lake every summer as kids.",
+          "correctAnswer": "used to go|would go",
+          "explanation": "Повторявшееся действие в прошлом — used to go или would go."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She ___ (not / use to) drive to work.",
+          "correctAnswer": "didn't use to drive|did not use to drive",
+          "explanation": "Отрицание: didn't use to drive."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "I ___ (be) afraid of dogs when I was little.",
+          "correctAnswer": "used to be",
+          "explanation": "Прошлое состояние — used to be."
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "title": "Future: will vs going to",
+      "cefrLevel": "a2",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "Спонтанное решение, обещание, план и прогноз: два главных способа сказать о будущем.",
+      "theoryHtml": "<p>Оба варианта переводятся как «буду делать», но у них разные роли. <b>Will</b> — решение, принятое <b>прямо сейчас</b>, обещания, предложения помощи и прогнозы-мнения: <b>The phone is ringing — I'll answer it</b>. <b>Be going to</b> — намерение или план, о котором уже <b>подумали заранее</b>, и прогноз на основе очевидных признаков: <b>Look at those clouds — it's going to rain</b>.</p><table><tr><th>Тип</th><th>will + V</th><th>be going to + V</th></tr><tr><td>утверждение</td><td>I will (I'll) call you.</td><td>I'm going to call her tonight.</td></tr><tr><td>отрицание</td><td>He won't be late.</td><td>We aren't going to buy it.</td></tr><tr><td>вопрос</td><td>Will you help me?</td><td>Are you going to tell him?</td></tr></table><p>Сокращения: <b>I'll</b>, <b>won't</b> (will not), <b>she's going to</b>. В разговорной речи going to часто звучит как gonna, но в письме так писать нельзя.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I will to go</i> → правильно: <b>I will go</b> — после will инфинитив без to. <i>I will going home</i> → правильно: <b>I'm going to go home</b> или просто <b>I'll go home</b>. <i>Look! It will rain</i> → при явных признаках англичане говорят <b>it's going to rain</b>. И наоборот: спонтанное обещание «Я помогу!» — это <b>I'll help</b>, а не «I'm going to help».</p><p><b>Маркеры:</b> tomorrow, soon, next week, in an hour, probably, I think, I'm sure, maybe.</p><p><b>Примечание:</b> <b>I think / probably / maybe</b> почти всегда тянет за собой will: <b>I think she'll agree</b>. А если план уже есть (билеты куплены, встреча назначена) — going to или Present Continuous: <b>We're going to visit grandma on Sunday</b>.</p><p><b>Мини-диалог:</b> — This bag is so heavy! — I'll carry it for you. — Thanks! And are you going to visit us on Saturday? — Yes, we're going to bring the cake. — Then I'll buy some tea.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "Look at those clouds! It ___ rain.",
+          "options": [
+            "will",
+            "is going to",
+            "goes to",
+            "is raining"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Прогноз на основе очевидного признака — is going to."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "The phone is ringing. — OK, I ___ answer it.",
+          "options": [
+            "am going to",
+            "will",
+            "will to",
+            "am answering"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Спонтанное решение в момент речи — will."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "We ___ get married in June. We have already booked the restaurant.",
+          "options": [
+            "will",
+            "are going to",
+            "going to",
+            "will be"
+          ],
+          "correctAnswer": "1",
+          "explanation": "План, о котором уже позаботились — are going to."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "I think our team ___ win tonight.",
+          "options": [
+            "is going to",
+            "will",
+            "wins",
+            "will to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Прогноз-мнение с I think — will."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "She has bought the paint. She ___ the kitchen blue.",
+          "options": [
+            "will paint",
+            "is going to paint",
+            "paints",
+            "painted"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Намерение с подготовкой — is going to paint."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Don't worry, I ___ help you with your luggage.",
+          "options": [
+            "am going to",
+            "will",
+            "am helping",
+            "help"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Предложение помощи в момент речи — will."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "___ you ___ come to the party tomorrow?",
+          "options": [
+            "Do ... will",
+            "Will ... ",
+            "Are ... going to",
+            "Did ... "
+          ],
+          "correctAnswer": "2",
+          "explanation": "Вопрос о планах: Are you going to come?"
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "They ___ (visit) their grandparents next weekend — it is already planned.",
+          "correctAnswer": "are going to visit|'re going to visit",
+          "explanation": "Заранее составленный план — are going to visit."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I promise I ___ (call) you every day.",
+          "correctAnswer": "will call|'ll call",
+          "explanation": "Обещание — will call."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "I am sure she ___ (not / be) late.",
+          "correctAnswer": "won't be|will not be",
+          "explanation": "Прогноз-мнение с отрицанием — won't be."
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "title": "Present Continuous для будущего",
+      "cefrLevel": "a2",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "«Мы встречаемся в пятницу»: настоящее время для личных планов и договорённостей.",
+      "theoryHtml": "<p><b>Present Continuous</b> может говорить о будущем, если это <b>личная договорённость</b>: дата назначена, билеты куплены, люди условились. <b>We are flying to Prague on Friday</b> — «мы летим в Прагу в пятницу (всё уже организовано)».</p><table><tr><th>Ситуация</th><th>Пример</th><th>Перевод</th></tr><tr><td>встреча назначена</td><td>I am seeing the dentist at 5 pm tomorrow.</td><td>Я иду к стоматологу завтра в 5.</td></tr><tr><td>билеты куплены</td><td>We are flying to Rome next Tuesday.</td><td>Мы летим в Рим в следующий вторник.</td></tr><tr><td>место и время известны</td><td>They are having a party on Saturday.</td><td>Они устраивают вечеринку в субботу.</td></tr><tr><td>вопрос о планах</td><td>What are you doing this evening?</td><td>Что ты делаешь сегодня вечером?</td></tr></table><p>Ключевое отличие от Present Continuous «сейчас»: при будущем значении <b>обязательно есть указание на будущее время</b> — tomorrow, on Friday, next week, this evening. Без него фраза будет понята как «прямо сейчас».</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I am meeting him</i> без контекста времени → англичанин поймёт «я встречаюсь с ним (сейчас)». Добавьте <b>tomorrow</b>. <i>He will come tomorrow, we arranged it</i> → лучше: <b>He is coming tomorrow</b> — для договорённостей Continuous звучит естественнее. И не путайте с конструкцией going to: <b>I'm going shopping</b> (собираюсь за покупками — движение) и <b>I'm going to go shopping</b> (то же самое, но более громоздко).</p><p><b>Примечание:</b> глаголы <b>go, come, arrive, leave, fly, drive</b> особенно любят эту конструкцию — движение с уже назначенным временем. А вот прогнозы погоды или мнения так не строятся: «I think it will rain», не «it is raining tomorrow» без причины.</p><p><b>Мини-диалог:</b> — What are you doing this weekend? — I'm visiting my parents on Saturday. — And on Sunday? — Nothing yet. Are you offering something? — I'm cooking lunch, and you are eating it. — Deal!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "We ___ to Prague on Friday — the tickets are booked.",
+          "options": [
+            "fly",
+            "are flying",
+            "will fly",
+            "flew"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Договорённость с датой — are flying."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "I ___ my dentist at 5 pm tomorrow.",
+          "options": [
+            "see",
+            "am seeing",
+            "will see",
+            "saw"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Назначенная встреча — am seeing."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "What ___ this evening?",
+          "options": [
+            "do you do",
+            "are you doing",
+            "you do",
+            "did you do"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вопрос о планах на вечер — are you doing."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "She ___ us next week — her train arrives on Monday.",
+          "options": [
+            "is visiting",
+            "visits",
+            "will visited",
+            "visit"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Запланированный визит — is visiting."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "Are you free tonight? — Sorry, I ___ dinner with my boss.",
+          "options": [
+            "have",
+            "am having",
+            "will have",
+            "had"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Договорённость на вечер — am having."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "The bus ___ at 7 o'clock tomorrow morning.",
+          "options": [
+            "leave",
+            "is leaving",
+            "left",
+            "leaves"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Отъезд по договорённости — is leaving."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "They ___ a party on Saturday. Everything is already ready.",
+          "options": [
+            "are having",
+            "have",
+            "will have",
+            "had"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Организованное событие — are having."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "He ___ (fly) to Rome next Tuesday.",
+          "correctAnswer": "is flying|'s flying",
+          "explanation": "Билеты куплены, дата назначена — is flying."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I ___ (meet) Anna at the station tomorrow morning.",
+          "correctAnswer": "am meeting|'m meeting",
+          "explanation": "Договорённая встреча — am meeting."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "We ___ (not / work) next Monday — it is a holiday.",
+          "correctAnswer": "aren't working|are not working|'re not working",
+          "explanation": "Отрицание: aren't working."
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "title": "Future Continuous и Future Perfect (обзор)",
+      "cefrLevel": "b1",
+      "section": "Прошедшее и будущее время",
+      "shortDescription": "«В это время завтра я буду лететь», «к 2030 году она закончит книгу»: два сложных будущих времени.",
+      "theoryHtml": "<p><b>Future Continuous</b> (will be + -ing) описывает действие, которое будет <b>в процессе</b> в определённый момент будущего: <b>This time tomorrow we will be flying over the Atlantic</b> — «завтра в это время мы будем лететь над Атлантикой».</p><p><b>Future Perfect</b> (will have + V3) описывает действие, которое <b>завершится к</b> определённому моменту будущего: <b>By 2030 she will have written her second novel</b> — «к 2030 году она напишет (уже закончит) свой второй роман».</p><table><tr><th>Время</th><th>Форма</th><th>Пример</th><th>Фокус</th></tr><tr><td>Future Continuous</td><td>will be working</td><td>At 8 pm I will be cooking dinner.</td><td>процесс в момент</td></tr><tr><td>Future Perfect</td><td>will have worked</td><td>By 8 pm I will have cooked dinner.</td><td>результат к моменту</td></tr><tr><td>Future Simple</td><td>will work</td><td>I will cook dinner tomorrow.</td><td>просто факт о будущем</td></tr></table><p><b>Маркеры:</b> Future Continuous — this time tomorrow, at 9 pm tonight, all day tomorrow; Future Perfect — by Monday, by the time, by 2030, by then, in two weeks from now.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>He will be play tennis at 6</i> → правильно: <b>He will be playing</b> — не теряйте -ing. <i>By Friday they will have finish the report</i> → правильно: <b>will have finished</b> — после will have нужна третья форма. Отрицания: <b>won't be playing</b>, <b>won't have finished</b>.</p><p><b>Примечание:</b> в разговоре Future Continuous часто можно заменить Future Simple без большой потери смысла: <b>Don't call at 8 — I will be cooking / I will cook</b>. Но Future Perfect с <b>by</b> замена обедняет: <b>by</b> прямо указывает на «к какому сроку закончится».</p><p><b>Мини-диалог:</b> — Will you be working late tonight? — Yes, I will be finishing the presentation until midnight. — Really? By tomorrow morning they will have moved the meeting to Friday. — Then I will be sleeping at midnight after all!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "This time tomorrow we ___ over the Atlantic.",
+          "options": [
+            "fly",
+            "will fly",
+            "will be flying",
+            "are flying"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Процесс в момент в будущем — will be flying."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "By 2030 she ___ her second novel.",
+          "options": [
+            "will finish",
+            "will have finished",
+            "will be finishing",
+            "finishes"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Завершение к сроку (by 2030) — will have finished."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "Do not call at 8 — I ___ dinner.",
+          "options": [
+            "will cook",
+            "will be cooking",
+            "have cooked",
+            "cook"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Действие в процессе в указанный момент — will be cooking."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "By the time you arrive, I ___ the flat.",
+          "options": [
+            "will clean",
+            "will have cleaned",
+            "will be cleaning",
+            "clean"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Результат к моменту прибытия — will have cleaned."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "Tomorrow at 10 am he ___ an exam.",
+          "options": [
+            "will take",
+            "will be taking",
+            "takes",
+            "will have taken"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Процесс в момент завтра в 10 — will be taking."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "In an hour I ___ on the beach with a book.",
+          "options": [
+            "will lie",
+            "will be lying",
+            "will have lain",
+            "am lying"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Процесс в момент в будущем — will be lying."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "By Friday, they ___ the report.",
+          "options": [
+            "will complete",
+            "will be completing",
+            "will have completed",
+            "complete"
+          ],
+          "correctAnswer": "2",
+          "explanation": "К пятнице работа будет завершена — will have completed."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "At 9 pm tomorrow I ___ (drive) home.",
+          "correctAnswer": "will be driving|'ll be driving",
+          "explanation": "Процесс в момент в будущем — will be driving."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "By June we ___ (move) to the new office.",
+          "correctAnswer": "will have moved|'ll have moved",
+          "explanation": "Завершение к июню — will have moved."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "This time next week I ___ (lie) on a beach.",
+          "correctAnswer": "will be lying|'ll be lying",
+          "explanation": "Процесс в момент в будущем — will be lying."
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "title": "Present Perfect: have / has + V3",
+      "cefrLevel": "b1",
+      "section": "Перфектные времена",
+      "shortDescription": "Главное время для новостей, опыта и результатов: «я потерял ключи — и до сих пор не нашёл».",
+      "theoryHtml": "<p><b>Present Perfect</b> связывает прошлое с настоящим: действие произошло когда-то до момента речи, но результат или опыт <b>важны сейчас</b>. Форма: <b>have / has + третья форма глагола</b> (для правильных глаголов — окончание -ed).</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>have / has + V3</td><td>She has finished the report.</td></tr><tr><td>отрицание</td><td>haven't / hasn't + V3</td><td>I haven't seen him today.</td></tr><tr><td>вопрос</td><td>Have / Has + подлежащее + V3?</td><td>Have you ever eaten sushi?</td></tr></table><p>Три главных значения: <b>результат сейчас</b> (I have lost my keys — их нет у меня и сейчас), <b>жизненный опыт</b> (I have been to Japan — вообще когда-то), <b>новость</b> (The plane has landed!).</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I have seen him yesterday</i> → правильно: <b>I saw him yesterday</b> — есть точное время в прошлом (yesterday), значит Past Simple. <i>I have went</i> → правильно: <b>I have gone</b> — нужна третья форма, не вторая. <i>I live here since 2019</i> или <i>I am living here since 2019</i> → правильно: <b>I have lived (been living) here since 2019</b>. И путаница for/since: <b>for</b> — период (for two years), <b>since</b> — начальная точка (since 2019).</p><p><b>Маркеры времени:</b> just (только что), already (уже), yet (уже/ещё — в вопросах и отрицаниях), ever (когда-либо), never, recently, lately, so far, today, this week, since, for.</p><p><b>Примечание:</b> запомните пару <b>have been to</b> (съездил и вернулся) и <b>have gone to</b> (уехал и ещё там): <b>She has been to Paris</b> — была и вернулась; <b>She has gone to Paris</b> — уехала и там сейчас.</p><p><b>Мини-диалог:</b> — Have you finished your project yet? — I have just sent it! — Really? You have worked fast. — I have had a lot of coffee today.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I ___ my keys. I can't open the door.",
+          "options": [
+            "lose",
+            "have lost",
+            "lost",
+            "am losing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Результат важен сейчас — have lost."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "___ you ever ___ sushi?",
+          "options": [
+            "Did ... eat",
+            "Have ... eaten",
+            "Do ... eat",
+            "Are ... eating"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Опыт с ever — Present Perfect: Have you ever eaten?"
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "She ___ to London three times.",
+          "options": [
+            "was",
+            "has been",
+            "had been",
+            "is"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Опыт: сколько раз вообще — has been."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "We have ___ finished dinner, so we can go out.",
+          "options": [
+            "yet",
+            "ever",
+            "already",
+            "since"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Already — «уже» в утверждениях."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He has lived here ___ 2015.",
+          "options": [
+            "for",
+            "since",
+            "from",
+            "during"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Since — начальная точка: since 2015."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "They have known each other ___ ten years.",
+          "options": [
+            "since",
+            "for",
+            "from",
+            "already"
+          ],
+          "correctAnswer": "1",
+          "explanation": "For — период: for ten years."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "Where is Tom? — He ___ to the bank.",
+          "options": [
+            "has been",
+            "has gone",
+            "went",
+            "is going"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Он уехал и ещё там — has gone."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "My parents ___ (live) in this house for twenty years.",
+          "correctAnswer": "have lived|'ve lived",
+          "explanation": "Действие началось в прошлом и продолжается — have lived."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She ___ (not / finish) her report yet.",
+          "correctAnswer": "hasn't finished|has not finished",
+          "explanation": "Yet с отрицанием — hasn't finished."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "I ___ (never / be) to Australia.",
+          "correctAnswer": "have never been|'ve never been",
+          "explanation": "Опыт с never — have never been."
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "title": "Present Perfect vs Past Simple",
+      "cefrLevel": "b1",
+      "section": "Перфектные времена",
+      "shortDescription": "«Я потерял ключи» или «я терял ключи вчера»? Главное русскоязычное затруднение — решаем.",
+      "theoryHtml": "<p>Разница проста в принципе, но требует внимания. <b>Past Simple</b> — действие в <b>законченном</b> отрезке прошлого, часто с указанием времени: yesterday, last week, in 2010, two days ago. <b>Present Perfect</b> — отрезок <b>не закончился или не назван</b>, и результат важен сейчас: today, this week, ever, never, just, yet, since, for.</p><table><tr><th>Ситуация</th><th>Past Simple</th><th>Present Perfect</th></tr><tr><td>время указано</td><td>I saw him yesterday.</td><td>—</td></tr><tr><td>время не указано, важен факт</td><td>—</td><td>I have seen this film.</td></tr><tr><td>тот же день, но с деталью</td><td>I saw him today at the station.</td><td>—</td></tr><tr><td>новость → детали</td><td>The plane landed. It was late, so we took a taxi.</td><td>The plane has landed!</td></tr></table><p>Классический паттерн: новость — в Present Perfect, а детали и ответы на вопросы «когда? где? как?» — в Past Simple: <b>I have lost my wallet. — When did you lose it? — I think I lost it on the bus.</b></p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>Have you seen him yesterday?</i> → правильно: <b>Did you see him yesterday?</b> — при вопросе «когда» всегда Past Simple. <i>I have bought this phone last month</i> → правильно: <b>I bought this phone last month</b>. Но: <b>I have bought a new phone!</b> (без времени — новость) — верно. <i>Did you ever eat sushi?</i> → для опыта без времени лучше <b>Have you ever eaten sushi?</b></p><p><b>Примечание:</b> <b>this morning / this week / today</b> работают по правилу «закончился ли период»: вечером говорят <b>I saw him this morning</b> (утро прошло), а утром того же дня — <b>I have seen him this morning</b>.</p><p><b>Мини-диалог:</b> — Have you heard the news? Anna has got a new job! — Really? When did she get it? — Last Friday. — And has she moved to Berlin yet? — No, she hasn't. She is still looking for a flat.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I ___ him yesterday at the station.",
+          "options": [
+            "have seen",
+            "saw",
+            "see",
+            "had seen"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Yesterday — законченное время, Past Simple."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "___ your homework yet?",
+          "options": [
+            "Did you do",
+            "Have you done",
+            "Do you do",
+            "Were you doing"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Yet — сигнал Present Perfect."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "She ___ in 1998.",
+          "options": [
+            "has been born",
+            "was born",
+            "is born",
+            "had been born"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Точный год в прошлом — Past Simple."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "We ___ this film twice this week.",
+          "options": [
+            "saw",
+            "have seen",
+            "had seen",
+            "see"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Неделя ещё не закончилась — have seen."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "When ___ they ___?",
+          "options": [
+            "did ... arrive",
+            "have ... arrived",
+            "do ... arrive",
+            "had ... arrived"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вопрос «когда» о прошлом — Past Simple."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "He ___ his phone last month and he still can't find it.",
+          "options": [
+            "lost",
+            "has lost",
+            "loses",
+            "had lost"
+          ],
+          "correctAnswer": "0",
+          "explanation": "last month — Past Simple, даже если следствие живо до сих пор."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "___ you ever ___ to Paris?",
+          "options": [
+            "Have ... been",
+            "Did ... go",
+            "Are ... going",
+            "Do ... go"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Опыт без указания времени — Present Perfect."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "The plane ___ (land) — let's go to the meeting area.",
+          "correctAnswer": "has landed",
+          "explanation": "Новость с результатом сейчас — has landed."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I ___ (see) that film last weekend.",
+          "correctAnswer": "saw",
+          "explanation": "last weekend — Past Simple."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She ___ (not / call) me today yet.",
+          "correctAnswer": "hasn't called|has not called",
+          "explanation": "yet и today (день не кончился) — Present Perfect."
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "title": "Present Perfect Continuous",
+      "cefrLevel": "b1",
+      "section": "Перфектные времена",
+      "shortDescription": "«Я учу английский уже пять лет»: длительность действия, которое началось в прошлом и ещё идёт.",
+      "theoryHtml": "<p><b>Present Perfect Continuous</b> = <b>have / has been + глагол с -ing</b>. Он подчёркивает <b>длительность</b> действия, которое началось в прошлом, продолжалось (и, возможно, продолжается) до сих пор: <b>I have been learning English for five years</b> — «я учу английский уже пять лет».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>have / has been + -ing</td><td>He has been working since 8 am.</td></tr><tr><td>отрицание</td><td>haven't / hasn't been + -ing</td><td>It hasn't been raining long.</td></tr><tr><td>вопрос</td><td>How long have you been ...ing?</td><td>How long have you been waiting?</td></tr></table><p>Второе значение — действие только что закончилось, и <b>видны последствия</b>: <b>Your eyes are red — have you been crying?</b> <b>He is out of breath — he has been running.</b></p><p><b>Отличие от Present Perfect:</b> «сколько / как долго / продолжается» — Continuous (<b>I have been painting the flat all day</b>), а «сколько сделано / сколько раз» — простой Perfect (<b>I have painted two rooms</b>). С глаголами состояния (know, have, be, love) Continuous не используется: <b>I have known him for years</b>, не «have been knowing».</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I am working here since 2019</i> → правильно: <b>I have been working here since 2019</b>. <i>How long are you learning English?</i> → правильно: <b>How long have you been learning English?</b> <i>She has been knowing him</i> → правильно: <b>She has known him</b> — know глагол состояния.</p><p><b>Маркеры времени:</b> for, since, all day, all morning, lately, recently, how long. Слова-сигналы «процесс до сих пор»: still, so far.</p><p><b>Мини-диалог:</b> — You look tired! — I have been cleaning the garage all afternoon. — Have you finished? — I have been trying to finish, but the mess keeps winning.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I ___ English for five years.",
+          "options": [
+            "learn",
+            "have been learning",
+            "am learning",
+            "learned"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длительность до сих пор — have been learning."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "It ___ raining since morning.",
+          "options": [
+            "is",
+            "has been",
+            "had been",
+            "will be"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Началось в прошлом и продолжается — has been."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "She is tired because she ___ all night.",
+          "options": [
+            "works",
+            "has been working",
+            "worked",
+            "will work"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длительное действие с видимым результатом (усталость)."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "How long ___ you ___ chess?",
+          "options": [
+            "did ... play",
+            "have ... been playing",
+            "are ... playing",
+            "do ... play"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вопрос о длительности до сих пор — have you been playing."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He ___ this car since 2010.",
+          "options": [
+            "has had",
+            "has been having",
+            "is having",
+            "had"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Have — глагол состояния, Continuous невозможен: has had."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "They ___ TV all evening — that's why dinner isn't ready.",
+          "options": [
+            "watch",
+            "have been watching",
+            "watched",
+            "are watching"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Процесс длился весь вечер — have been watching."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "Your hands are dirty! What ___ you ___?",
+          "options": [
+            "did ... do",
+            "have ... been doing",
+            "are ... doing",
+            "do ... do"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Видимы последствия действия — have you been doing."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "I ___ (wait) for you for two hours! Where have you been?",
+          "correctAnswer": "have been waiting|'ve been waiting",
+          "explanation": "Длительное действие до момента речи — have been waiting."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "We ___ (wait) for the bus for 20 minutes.",
+          "correctAnswer": "have been waiting|'ve been waiting",
+          "explanation": "Длительность действия — have been waiting."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She ___ (not / feel) well lately.",
+          "correctAnswer": "hasn't been feeling|has not been feeling",
+          "explanation": "Lately и процесс — hasn't been feeling."
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "title": "Past Perfect: had + V3",
+      "cefrLevel": "b1",
+      "section": "Перфектные времена",
+      "shortDescription": "«Предпрошедшее»: действие случилось ещё ДО другого прошлого события.",
+      "theoryHtml": "<p><b>Past Perfect</b> = <b>had + третья форма глагола</b>. Это «шаг назад в прошлое»: действие произошло <b>до</b> другого прошедшего момента. <b>When I arrived at the station, the train had already left</b> — «я пришёл, а поезд уже ушёл до этого».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>had + V3</td><td>She had finished dinner by 8 pm.</td></tr><tr><td>отрицание</td><td>hadn't + V3</td><td>I hadn't seen the film before that day.</td></tr><tr><td>вопрос</td><td>Had + подлежащее + V3?</td><td>Had you met him before?</td></tr></table><p>Типичные связки: <b>by the time</b> (к тому времени как), <b>before</b>, <b>after</b>, <b>when</b>, <b>already / just / never</b>: <b>By the time we got home, the guests had left</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>When I arrived, the train already left</i> → чтобы показать «ещё раньше», нужно <b>had already left</b>. <i>She had went home</i> → правильно: <b>She had gone home</b> — третья форма, не вторая. И наоборот — <b>не злоупотребляйте</b>: если события идут по порядку, Past Perfect не нужен: <b>I came home and had dinner</b> — не «had come... had dinner».</p><p><b>Примечание:</b> с <b>after</b> и <b>before</b> последовательность и так ясна, поэтому Past Perfect там факультативен: <b>After she wrote (had written) the letter, she went out</b> — оба варианта верны. Но Past Perfect обязателен, когда без него порядок событий непонятен: <b>He told me he had read the book</b> — «прочитал до того, как рассказал».</p><p><b>Мини-диалог:</b> — Why were you so calm at the meeting? — Because I had prepared everything the night before. — Lucky you! I hadn't even opened my laptop until the boss called.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "When we arrived, the film ___.",
+          "options": [
+            "already started",
+            "had already started",
+            "starts",
+            "has already started"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Началось до нашего прихода — had already started."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ by the time I got home.",
+          "options": [
+            "had left",
+            "left",
+            "has left",
+            "was leaving"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Ушла до момента прихода — had left."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He told me he ___ the book.",
+          "options": [
+            "read",
+            "had read",
+            "has read",
+            "reads"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Прочитал раньше, чем рассказал — had read."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "After she ___ the letter, she went to the post office.",
+          "options": [
+            "wrote",
+            "had written",
+            "writes",
+            "has written"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Сначала написала, потом пошла — had written."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "By 10 pm all the guests ___.",
+          "options": [
+            "left",
+            "had left",
+            "have left",
+            "leave"
+          ],
+          "correctAnswer": "1",
+          "explanation": "By + момент в прошлом — had left."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "I didn't know the answer because I ___ the lesson.",
+          "options": [
+            "missed",
+            "had missed",
+            "have missed",
+            "miss"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Пропустил урок раньше, чем не знал ответ — had missed."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "The train ___ before we reached the platform.",
+          "options": [
+            "departed",
+            "had departed",
+            "has departed",
+            "departs"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Ушёл до того, как мы добрались — had departed."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "He was nervous because he ___ (never / take) such a test before.",
+          "correctAnswer": "had never taken",
+          "explanation": "Опыт до прошлого момента — had never taken."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "When I got to the shop, it ___ (close).",
+          "correctAnswer": "had closed",
+          "explanation": "Закрылась до моего прихода — had closed."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She ___ (never / see) snow before that trip.",
+          "correctAnswer": "had never seen",
+          "explanation": "Опыт до прошлого момента — had never seen."
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "title": "Past Perfect Continuous",
+      "cefrLevel": "b2",
+      "section": "Перфектные времена",
+      "shortDescription": "«Она жила там двадцать лет, пока не переехала»: длительное действие до момента в прошлом.",
+      "theoryHtml": "<p><b>Past Perfect Continuous</b> = <b>had been + глагол с -ing</b>. Это Past Perfect в его «длительном» варианте: действие <b>продолжалось какое-то время</b> до момента в прошлом. <b>She had been working there for ten years before she quit</b> — «она проработала там десять лет, прежде чем уволилась».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>had been + -ing</td><td>He had been driving for six hours.</td></tr><tr><td>отрицание</td><td>hadn't been + -ing</td><td>I hadn't been sleeping long when the alarm went off.</td></tr><tr><td>вопрос</td><td>Had you been waiting long?</td><td>How long had you been looking for a job?</td></tr></table><p>Как и с Present Perfect Continuous, вторая роль — <b>видимые последствия в прошлом</b>: <b>The ground was wet — it had been raining.</b> <b>He was out of breath because he had been running.</b></p><p><b>Отличие от Past Perfect:</b> Continuous подчёркивает процесс и длительность (<b>They had been walking for hours</b>), простой Perfect — результат или однократное действие (<b>They had walked twenty kilometres</b>). С глаголами состояния Continuous не употребляется: <b>She had known him for years</b>, не «had been knowing».</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I was waiting for two hours when he finally came</i> → чтобы показать длительность до его прихода: <b>I had been waiting for two hours when he finally came</b>. <i>She had been work there</i> → правильно: <b>had been working</b>. <i>He had been knowing her</i> → правильно: <b>He had known her</b>.</p><p><b>Маркеры времени:</b> for, since, all day, all night, before, by the time, how long. Часто рядом стоит Past Simple, объясняющий, «что случилось потом».</p><p><b>Мини-диалог:</b> — Why were you so angry yesterday? — I had been waiting for the delivery all day, and it never came. — Had you been calling the courier? — Three times! In the end they said the parcel had been lying at their office since morning.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "She was tired because she ___ since 6 am.",
+          "options": [
+            "worked",
+            "had been working",
+            "has been working",
+            "works"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длительное действие до прошлого момента — had been working."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "They ___ for two hours when the bus finally came.",
+          "options": [
+            "waited",
+            "had been waiting",
+            "have been waiting",
+            "were waiting"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Ждали два часа до прихода автобуса — had been waiting."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He ___ tennis for years before he won his first match.",
+          "options": [
+            "played",
+            "had been playing",
+            "has been playing",
+            "plays"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Процесс до прошлого момента — had been playing."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "The ground was wet. It ___.",
+          "options": [
+            "rained",
+            "had been raining",
+            "has been raining",
+            "rains"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Последствия в прошлом — had been raining."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "How long ___ you ___ before you found a job?",
+          "options": [
+            "did ... look",
+            "had ... been looking",
+            "have ... been looking",
+            "are ... looking"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длительность до момента в прошлом — had you been looking."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "She ___ at the company for twenty years when it closed.",
+          "options": [
+            "worked",
+            "had been working",
+            "has worked",
+            "works"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Проработала 20 лет до закрытия — had been working."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "He ___ the book for a week before he finally finished it.",
+          "options": [
+            "read",
+            "had been reading",
+            "has been reading",
+            "was reading"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длительный процесс до завершения — had been reading."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "Her eyes were red because she ___ (cry).",
+          "correctAnswer": "had been crying",
+          "explanation": "Видимое последствие в прошлом — had been crying."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "He was angry because we ___ (wait) for him for an hour.",
+          "correctAnswer": "had been waiting",
+          "explanation": "Ждали час до его появления — had been waiting."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "By midnight she ___ (drive) for six hours.",
+          "correctAnswer": "had been driving",
+          "explanation": "Вела машину шесть часов к полуночи — had been driving."
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "title": "Must, have to, mustn't, don't have to",
+      "cefrLevel": "b1",
+      "section": "Модальные глаголы",
+      "shortDescription": "Обязанность и запрет: чем must отличается от have to и почему mustn't — это не «не обязательно».",
+      "theoryHtml": "<p><b>Must</b> и <b>have to</b> оба выражают обязанность («должен»). <b>Must</b> — субъективная обязанность: от говорящего, от правил, от самого себя: <b>I must finish this today</b>. <b>Have to</b> — обязанность из внешних обстоятельств: <b>I have to wear a uniform at work</b> (таков дресс-код).</p><table><tr><th>Тип</th><th>must</th><th>have to</th></tr><tr><td>утверждение</td><td>You must wear a seat belt.</td><td>She has to get up at 6.</td></tr><tr><td>отрицание</td><td>You mustn't smoke here (запрещено!)</td><td>I don't have to work on Sundays (не обязательно)</td></tr><tr><td>вопрос</td><td>Must I ...? (редко)</td><td>Do you have to ...?</td></tr></table><p><b>Важно:</b> у must <b>нет прошедшего и будущего</b> — в прошлом и будущем используется have to: <b>Yesterday I had to stay late</b>, <b>Tomorrow I will have to call her</b>.</p><p><b>⚠ Не перепутайте отрицания — они означают разное:</b> <b>mustn't</b> = «нельзя, запрещено» (You mustn't tell anyone — никому не говори!), а <b>don't have to</b> = «можно не делать, не обязательно» (You don't have to come — можешь не приходить). Русскоговорящие часто говорят <i>You must not come, it's optional</i> — это звучит как запрет. Для «не обязательно» — только <b>don't have to</b> или <b>don't need to</b>.</p><p><b>⚠ Ещё ошибки:</b> <i>He musts go</i> → правильно: <b>He must go</b> — must не меняется по лицам и не принимает -s. <i>He must to go</i> → правильно: <b>must go</b> — без to. <i>I must went</i> → в прошедшем: <b>I had to go</b>.</p><p><b>Примечание:</b> в вопросах о необходимости чаще спрашивают <b>Do I have to...?</b>, а ответ «да, обязательно» звучит как <b>Yes, you must / Yes, you do</b>.</p><p><b>Мини-диалог:</b> — Do we have to register before the course? — Yes, you must do it today, the deadline is at 6. — What if I miss it? — Then you will have to wait for the next term. Mustn't happen!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "You ___ smoke here — it's a hospital.",
+          "options": [
+            "don't have to",
+            "mustn't",
+            "haven't to",
+            "must not to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Запрет — mustn't."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "It's Sunday, so I ___ get up early.",
+          "options": [
+            "mustn't",
+            "don't have to",
+            "must not",
+            "can't"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Не обязательно — don't have to."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "Yesterday I ___ work until midnight.",
+          "options": [
+            "must",
+            "musted",
+            "had to",
+            "have to"
+          ],
+          "correctAnswer": "2",
+          "explanation": "В прошедшем must заменяется на had to."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "She ___ wear a uniform at school.",
+          "options": [
+            "have to",
+            "has to",
+            "must to",
+            "haves to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "She — has to."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "___ you ___ work on Saturdays?",
+          "options": [
+            "Must ... ",
+            "Do ... have to",
+            "Are ... have to",
+            "Have ... to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вопрос о необходимости: Do you have to work?"
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "I ___ finish this report today — the deadline is real.",
+          "options": [
+            "must",
+            "must to",
+            "musts",
+            "had to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Субъективная обязанность сейчас — must."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "Tomorrow I ___ visit the dentist at 3 pm.",
+          "options": [
+            "must to go",
+            "have to",
+            "will have to",
+            "had to"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Будущее — will have to."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "Passengers ___ (must / fasten) their seat belts during take-off.",
+          "correctAnswer": "must fasten",
+          "explanation": "Правило безопасности — must fasten."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "You ___ (not / must) be rude to clients.",
+          "correctAnswer": "mustn't be|must not be",
+          "explanation": "Запрет — mustn't be."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She ___ (have to) study last night because of the exam.",
+          "correctAnswer": "had to study",
+          "explanation": "Прошедшее — had to study."
+        }
+      ]
+    },
+    {
+      "order": 21,
+      "title": "Should: советы и рекомендации",
+      "cefrLevel": "b1",
+      "section": "Модальные глаголы",
+      "shortDescription": "«Тебе стоит...», «мне следовало...»: как давать советы и высказывать мнение по-английски.",
+      "theoryHtml": "<p><b>Should</b> — совет, рекомендация, мнение о том, что правильно: <b>You should see a doctor</b> — «тебе стоит показаться врачу». Это мягче, чем must: should не приказ, а «я так думаю».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>совет</td><td>should + V</td><td>You should apologize.</td></tr><tr><td>отрицание</td><td>shouldn't + V</td><td>You shouldn't eat so late.</td></tr><tr><td>вопрос</td><td>Should I / we ...?</td><td>Should I call him?</td></tr><tr><td>совет в прошлом</td><td>should have + V3</td><td>You should have called me!</td></tr></table><p><b>Ought to</b> — почти синоним should, но звучит более формально: <b>You ought to see a lawyer</b>. <b>Had better</b> — жёстче, почти предупреждение: <b>You had better hurry, or you'll miss the train</b> (сокращённо 'd better).</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>You should to see a doctor</i> → правильно: <b>You should see</b> — после should нет to. <i>He shoulds study</i> → правильно: <b>He should study</b> — should не меняется по лицам. <i>You should have called me yesterday</i> нельзя путать с <i>You should call me</i>: первое — «надо было позвонить (и не позвонил)», упрёк в прошлом; второе — совет сейчас. И не говорите <i>You must see a doctor</i> человеку, которому просто сочувствуете, — это прозвучит как приказ; для совета — should.</p><p><b>Примечание:</b> чтобы совет звучал мягче, англичане добавляют I think / maybe / if I were you: <b>If I were you, I would accept the offer</b> — тоже вариант совета.</p><p><b>Мини-диалог:</b> — I feel terrible. I worked all weekend. — You shouldn't work so much. You should take a day off. — I know, but the project... — The project can wait. You should have rested on Sunday — now look at you.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "You look ill. You ___ see a doctor.",
+          "options": [
+            "should to",
+            "should",
+            "shoulds",
+            "are should"
+          ],
+          "correctAnswer": "1",
+          "explanation": "После should — инфинитив без to."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "You ___ eat so much sugar — it's bad for you.",
+          "options": [
+            "should",
+            "shouldn't",
+            "don't should",
+            "not should"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Отрицательный совет — shouldn't."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "___ I apologize to her?",
+          "options": [
+            "Do I should",
+            "Should I",
+            "Am I should",
+            "Shall I to"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вопрос-совет: Should I...?"
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "You ___ have called me! I was worried all evening.",
+          "options": [
+            "should",
+            "shouldn't",
+            "shouldn't have",
+            "should have"
+          ],
+          "correctAnswer": "3",
+          "explanation": "Упрёк в прошлом: should have called."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He ___ drive so fast — the roads are icy.",
+          "options": [
+            "shouldn't",
+            "should",
+            "don't should",
+            "shouldn't to"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Совет-предупреждение — shouldn't drive."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "You ___ better hurry, or you'll miss the flight.",
+          "options": [
+            "should",
+            "have",
+            "had",
+            "must"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Устойчивое had better + инфинитив."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "If I ___ you, I would take the job.",
+          "options": [
+            "am",
+            "was",
+            "were",
+            "be"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Совет: If I were you..."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "Students ___ (should / hand in) their essays by Friday.",
+          "correctAnswer": "should hand in",
+          "explanation": "Рекомендация — should hand in."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "You ___ (not / should) stay up so late.",
+          "correctAnswer": "shouldn't stay|should not stay",
+          "explanation": "Отрицательный совет — shouldn't stay."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "He failed the test. He ___ (should / study) harder.",
+          "correctAnswer": "should have studied|should've studied",
+          "explanation": "Упрёк о прошлом: should have studied."
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "title": "May, might, could: вероятность",
+      "cefrLevel": "b1",
+      "section": "Модальные глаголы",
+      "shortDescription": "«Возможно, может быть»: как говорить о вероятности и спрашивать разрешение.",
+      "theoryHtml": "<p><b>May</b>, <b>might</b> и <b>could</b> выражают вероятность — что-то возможно, но не точно: <b>It may rain tomorrow</b>, <b>She might be at home</b>, <b>He could be late</b>. Разница между may и might минимальна; might звучит чуть менее уверенно. Перевод: «возможно», «может быть».</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>may / might / could + V</td><td>She might know the answer.</td></tr><tr><td>отрицание</td><td>may not / might not + V</td><td>He might not come tonight.</td></tr><tr><td>вопрос о вероятности</td><td>Do you think he will...?</td><td>may в вопросе о вероятности не используется</td></tr><tr><td>разрешение</td><td>May I ...? / Could I ...?</td><td>May I come in?</td></tr></table><p>Про прошлое: <b>may have / might have + V3</b> — «возможно, сделал»: <b>He might have missed the train</b>. Степень уверенности: <b>will</b> (уверен) → <b>may</b> (возможно) → <b>might / could</b> (менее вероятно).</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>He mays come</i> → правильно: <b>He may come</b> — may не принимает -s и не спрягается. <i>She may not to know</i> → правильно: <b>may not know</b> — без to. Не путайте «might not» (возможно, не...) с «couldn't» в значении вывода: <b>He couldn't have done it</b> — «не мог этого сделать (точно нет)», а <b>He might not have done it</b> — «возможно, не делал». Для просьбы о разрешении вежливо именно <b>May I...?</b>, а «Can I...?» — разговорный вариант.</p><p><b>Примечание:</b> отрицание «may not» обычно не сокращается: не говорят «mayn't». Сокращения есть у might not → mightn't, но оно редко в разговоре.</p><p><b>Мини-диалог:</b> — Where is Sam? — He might be in the lab, or he may have gone home. — It's 9 pm. — Then he might not answer his phone. — I'll email him. He could be sleeping, but the email will wait.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "Take an umbrella — it ___ rain later.",
+          "options": [
+            "mays",
+            "may",
+            "may to",
+            "is may"
+          ],
+          "correctAnswer": "1",
+          "explanation": "May + инфинитив, без изменений."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ be at home — her car is in the driveway.",
+          "options": [
+            "might",
+            "might to",
+            "mights",
+            "is might"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Might + инфинитив — предположение."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He ___ come tonight; he hasn't decided yet.",
+          "options": [
+            "might not",
+            "not might",
+            "may not to",
+            "couldn't"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Мягкое отрицание вероятности — might not."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "Where is Anna? — I'm not sure. She ___ have gone to the gym.",
+          "options": [
+            "may",
+            "may to",
+            "might have",
+            "might to have"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Предположение о прошлом — might have gone."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "___ I open the window?",
+          "options": [
+            "May",
+            "Will",
+            "Am",
+            "Do"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вежливая просьба о разрешении — May I...?"
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "This road ___ be dangerous at night, so drive carefully.",
+          "options": [
+            "may",
+            "mays",
+            "may to",
+            "is may"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Возможность — may be."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "I don't know where he is. He ___ be at work or at the gym.",
+          "options": [
+            "could",
+            "cans",
+            "could to",
+            "is could"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Could тоже выражает вероятность."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "They look lost. They ___ (might / not / know) this city at all.",
+          "correctAnswer": "might not know|may not know",
+          "explanation": "Слабое отрицание вероятности — might not know."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She ___ (not / may) like the surprise.",
+          "correctAnswer": "may not like",
+          "explanation": "Отрицание вероятности — may not like."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "He didn't answer. He ___ (might / sleep).",
+          "correctAnswer": "might be sleeping|might be sleep",
+          "explanation": "Возможно, он спит — might be sleeping."
+        }
+      ]
+    },
+    {
+      "order": 23,
+      "title": "Would: вежливость, привычки и воображение",
+      "cefrLevel": "b1",
+      "section": "Модальные глаголы",
+      "shortDescription": "«Я бы...», «не могли бы вы...»: would для просьб, предложений и нереальных ситуаций.",
+      "theoryHtml": "<p><b>Would</b> — «бы». Три главных применения: <b>воображаемые ситуации</b> (I would travel more if I had time — «я бы путешествовал больше»), <b>вежливые просьбы и предложения</b> (Would you help me? Would you like some tea?), и <b>повторявшиеся действия в прошлом</b> (When we were kids, we would swim every day).</p><table><tr><th>Тип</th><th>Форма</th><th>Пример</th></tr><tr><td>утверждение</td><td>would ('d) + V</td><td>I would ('d) call her.</td></tr><tr><td>отрицание</td><td>wouldn't + V</td><td>He wouldn't say that.</td></tr><tr><td>вопрос</td><td>Would you ...?</td><td>Would you open the window?</td></tr><tr><td>вежливое предложение</td><td>Would you like ...?</td><td>Would you like a coffee?</td></tr></table><p>В условных предложениях второго типа: <b>If I won a million, I would buy a house</b> — после would идёт инфинитив, а не would бы + прошедшее. Сокращения: <b>I'd, he'd, we'd</b>; отрицательное — <b>wouldn't</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>If I would have time, I would call you</i> → правильно: <b>If I had time, I would call you</b> — в части с if wouldn't не ставится. <i>I would to help</i> → правильно: <b>I would help</b> — без to. <i>Would you like to go? — Yes, I would like</i> → правильно: <b>Yes, I would / I'd love to</b>. И не забывайте: would не используется с состоянием в прошлом вместо used to: <b>I used to have a dog</b>, не «I would have a dog».</p><p><b>Примечание:</b> «Would you mind + -ing?» — сверхвежливая просьба: <b>Would you mind closing the window?</b> Ответ «конечно» здесь ловушка: <b>Not at all</b> = «конечно, закрою».</p><p><b>Мини-диалог:</b> — Would you like some tea? — I'd love some, thanks. — Would you mind moving your bag? — Not at all. — By the way, if I were rich, I would buy this whole café. — And I would hire you as the cashier!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "If I had more time, I ___ learn the guitar.",
+          "options": [
+            "will",
+            "would",
+            "had",
+            "am"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Нереальное условие — would + инфинитив."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "___ you like some dessert?",
+          "options": [
+            "Do",
+            "Would",
+            "Will",
+            "Are"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Вежливое предложение — Would you like...?"
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "If I won the lottery, I ___ buy a boat.",
+          "options": [
+            "would",
+            "will",
+            "would have",
+            "had"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вторая часть условного — would buy."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "I ___ help you, but I'm too busy this week.",
+          "options": [
+            "would to",
+            "would",
+            "will to",
+            "woulds"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Would + инфинитив без to."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "___ you mind closing the window?",
+          "options": [
+            "Do",
+            "Would",
+            "Are",
+            "Will"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Сверхвежливая просьба — Would you mind...?"
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "When we were kids, we ___ play outside until dark.",
+          "options": [
+            "will",
+            "would",
+            "are",
+            "used"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Повторявшееся действие в прошлом — would play."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "He promised he ___ call me in the evening.",
+          "options": [
+            "will",
+            "would",
+            "is",
+            "had"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Косвенная речь: will → would."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "I wish I ___ (can) speak French.",
+          "correctAnswer": "could",
+          "explanation": "Wish о нереальном умении сейчас — could."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "I ___ (would / travel) more if I didn't work so much.",
+          "correctAnswer": "would travel|'d travel",
+          "explanation": "Воображаемая ситуация — would travel."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She said she ___ (would / be) late.",
+          "correctAnswer": "would be|'d be",
+          "explanation": "Косвенная речь — would be."
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "title": "Догадки: must be, can't be, might be",
+      "cefrLevel": "b2",
+      "section": "Модальные глаголы",
+      "shortDescription": "«Это точно он», «этого не может быть»: как делать уверенные выводы по-английски.",
+      "theoryHtml": "<p>Когда мы делаем вывод по признакам, используем модальные глаголы. <b>Must be</b> — «наверняка, точно»: уверенный вывод (<b>He must be rich — he drives a Ferrari</b>). <b>Can't be</b> — «не может быть»: уверенный вывод об отрицании (<b>That can't be true!</b>). <b>Might / may / could be</b> — «возможно» (<b>She might be at work</b>).</p><table><tr><th>Уверенность</th><th>Настоящее</th><th>Прошлое</th></tr><tr><td>точно да</td><td>must be / must be doing</td><td>must have + V3</td></tr><tr><td>возможно</td><td>might / may / could be</td><td>might have + V3</td></tr><tr><td>точно нет</td><td>can't be</td><td>can't have + V3</td></tr></table><p>Примеры прошлого: <b>The ground is wet — it must have rained</b>. <b>He can't have passed the exam — he didn't even study.</b> <b>She might have forgotten our meeting.</b></p><p><b>⚠ Частые ошибки русскоговорящих:</b> главное — отрицание must. Логически хочется сказать <i>He mustn't be tired</i> в смысле «не может быть, что он устал», но mustn't — это <b>запрет</b>. Верный вывод-отрицание: <b>He can't be tired</b>. <i>He can't to be</i> → правильно: <b>He can't be</b> — без to. <i>He must has left</i> → правильно: <b>He must have left</b> — после must have третья форма. И не путайте might not be (возможно, нет) с can't be (точно нет): <b>He might not be at work</b> — может и не быть; <b>He can't be at work</b> — он точно не там (я видел его в парке).</p><p><b>Примечание:</b> в американском английском вместо must have часто говорят <b>must've</b> (звучит почти как must of — но так писать нельзя!). Вопросов с этими формами почти не строят: вместо «Must he be tired?» спрашивают <b>Do you think he is tired?</b></p><p><b>Мини-диалог:</b> — Someone ate my sandwich! — It must have been Dan — he was starving. — It can't have been Dan, he is vegetarian now. — Then it might have been the intern... — The intern? He doesn't even work on Tuesdays!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "He drives a Ferrari. He ___ be rich.",
+          "options": [
+            "must",
+            "can't",
+            "might not",
+            "shouldn't"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Уверенный вывод — must be."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "That ___ be true! I saw him yesterday in Moscow.",
+          "options": [
+            "must",
+            "can't",
+            "has to",
+            "should"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Уверенный вывод-отрицание — can't be."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "The lights are on. They ___ be at home.",
+          "options": [
+            "must",
+            "can't",
+            "should",
+            "mustn't"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вывод по признаку — must be."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "I'm not sure where she is. She ___ be at the library.",
+          "options": [
+            "might",
+            "must",
+            "can't",
+            "should"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Слабая уверенность — might be."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He mustn't be rude to customers. (Выберите верный перевод ситуации: ему ЗАПРЕЩЕНО грубить.)",
+          "options": [
+            "This is a deduction",
+            "This is a prohibition",
+            "This is a possibility",
+            "This is advice"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Mustn't — запрет, а не вывод-отрицание."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "The ground is wet. It ___ have rained at night.",
+          "options": [
+            "must",
+            "can't",
+            "should",
+            "would"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Вывод о прошлом — must have rained."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "She can't have passed the test — she didn't even study. Значит:",
+          "options": [
+            "она наверняка сдала",
+            "она точно не сдала",
+            "возможно, сдала",
+            "ей следовало сдать"
+          ],
+          "correctAnswer": "1",
+          "explanation": "can't have + V3 — уверенное отрицание о прошлом."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "John is in Paris today, so he ___ (can't / be) at this meeting.",
+          "correctAnswer": "can't be|cannot be",
+          "explanation": "Точно не может быть — can't be."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She ___ (must / leave) early — her coat isn't here.",
+          "correctAnswer": "must have left",
+          "explanation": "Уверенный вывод о прошлом — must have left."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "He ___ (can't / be) tired — he slept 12 hours!",
+          "correctAnswer": "can't be|cannot be",
+          "explanation": "Уверенное отрицание о настоящем — can't be."
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "title": "Условные: Zero и First Conditional",
+      "cefrLevel": "b1",
+      "section": "Условные предложения и пассив",
+      "shortDescription": "«Если нагреть — закипит» и «если пойдёт дождь — останемся дома»: реальные условия.",
+      "theoryHtml": "<p><b>Zero Conditional</b> — закономерность, правило, всегда правда: <b>If you heat ice, it melts</b> — «если нагреть лёд, он тает». Форма: <b>If + Present Simple, Present Simple</b>. Ноль-условное — про то, что верно всегда, а не про конкретное будущее.</p><p><b>First Conditional</b> — реальное будущее условие: <b>If it rains tomorrow, we will stay at home</b>. Форма: <b>If + Present Simple, will + V</b>. В русской голове соблазн сказать «если пойдёт дождь» с будущим в обеих частях — по-английски после if будущее время не ставится.</p><table><tr><th>Тип</th><th>Придаточное (if)</th><th>Главная часть</th><th>Пример</th></tr><tr><td>Zero</td><td>Present Simple</td><td>Present Simple</td><td>If you press this button, the light turns on.</td></tr><tr><td>First</td><td>Present Simple</td><td>will + V</td><td>If you press this button, the light will turn on.</td></tr></table><p>Вместо if можно: <b>unless</b> (= если не: <b>Unless you hurry, you will be late</b>), <b>when / as soon as / until / before</b> — с ними тоже Present Simple в придаточном: <b>I'll call you as soon as I get home</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>If it will rain, we will stay at home</i> → правильно: <b>If it rains</b> — no will после if. <i>I'll call you when I will get home</i> → правильно: <b>when I get home</b>. <i>If you don't hurry, you miss the bus</i> → в будущем: <b>you will miss the bus</b>. И не путайте if и unless: <b>I'll go unless it rains</b> = «пойду, если НЕ будет дождя».</p><p><b>Примечание:</b> в главную часть вместо will можно поставить модальный глагол или императив: <b>If you are tired, go to bed</b>. Но правила одного не отменяют: придаточное с if/when/unless — всегда Present.</p><p><b>Мини-диалог:</b> — If I finish work early, I'll come to the gym. — And if you don't finish early? — Then I'll come tomorrow. — If you say that every day, you will never come. — Unless you stop nagging, of course!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "If you heat water to 100°C, it ___.",
+          "options": [
+            "boils",
+            "will boil",
+            "boiled",
+            "would boil"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Всегда верная закономерность — Zero Conditional, Present Simple."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "If it ___ tomorrow, we will stay at home.",
+          "options": [
+            "will rain",
+            "rains",
+            "rained",
+            "would rain"
+          ],
+          "correctAnswer": "1",
+          "explanation": "После if будущее время не ставится — rains."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "I'll call you as soon as I ___ home.",
+          "options": [
+            "will get",
+            "get",
+            "got",
+            "would get"
+          ],
+          "correctAnswer": "1",
+          "explanation": "as soon as — как if: Present Simple."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "If you don't hurry, you ___ the bus.",
+          "options": [
+            "miss",
+            "will miss",
+            "missed",
+            "would miss"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Реальное будущее — will miss."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "We will go to the beach tomorrow ___ it rains.",
+          "options": [
+            "if",
+            "unless",
+            "when",
+            "whether"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Unless = if not: пойдём, если НЕ будет дождя."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "If she ___ me, I will help her.",
+          "options": [
+            "will ask",
+            "asks",
+            "asked",
+            "ask"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Придаточное — Present Simple: asks."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "If you are tired, ___ to bed.",
+          "options": [
+            "you will go",
+            "go",
+            "you go",
+            "went"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Императив в главной части — go to bed."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "Plants ___ (die) if you don't water them.",
+          "correctAnswer": "die",
+          "explanation": "Zero Conditional — Present Simple: die."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "If you ___ (not / study), you will fail the test.",
+          "correctAnswer": "don't study|do not study",
+          "explanation": "Придаточное — Present Simple: don't study."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "If the shop ___ (be) open, I will buy some milk.",
+          "correctAnswer": "is",
+          "explanation": "Придаточное с if — Present Simple: is."
+        }
+      ]
+    },
+    {
+      "order": 26,
+      "title": "Second Conditional: нереальное настоящее",
+      "cefrLevel": "b1",
+      "section": "Условные предложения и пассив",
+      "shortDescription": "«Если бы я был богат...»: мечты, воображение и советы про то, чего нет.",
+      "theoryHtml": "<p><b>Second Conditional</b> — воображаемая ситуация в настоящем или будущем, которая скорее всего не случится: <b>If I were rich, I would travel the world</b> — «если бы я был богат, я бы путешествовал». Форма: <b>If + Past Simple, would + V</b>.</p><table><tr><th>Тип</th><th>Придаточное (if)</th><th>Главная часть</th><th>Пример</th></tr><tr><td>Second</td><td>Past Simple</td><td>would + V</td><td>If I had a car, I would drive you.</td></tr><tr><td>сравните: First</td><td>Present Simple</td><td>will + V</td><td>If I get a car, I will drive you.</td></tr></table><p>В придаточном прошедшее время — не про прошлое! <b>If I had time now...</b> значит «если бы у меня было время сейчас». Это условное прошедшее, «сослагательное наклонение».</p><p>Особая форма: со всеми лицами используется <b>were</b>: <b>If I were you, I would apologize</b> — стандартный вежливый совет «на твоём месте я бы...». Разговорно встречается «If I was you», но приличный вариант — were.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>If I would have money, I would buy a car</i> → правильно: <b>If I had money</b> — would не ставится в придаточном с if. <i>If I was you</i> → лучше: <b>If I were you</b>. <i>If he will come, I would be happy</i> → смешение типов: либо <b>If he comes, I will be happy</b> (реально), либо <b>If he came, I would be happy</b> (маловероятно).</p><p><b>Примечание:</b> в главной части вместо would возможны could / might: <b>If I had a helicopter, I could fly to work</b>. А вопрос «What would you do if...?» — любимый способ философской беседы.</p><p><b>Мини-диалог:</b> — What would you do if you won a million? — I would buy a house by the sea. — If I won, I would invest everything. — Really? If I were you, I would at least buy a cake first.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "If I ___ rich, I would travel the world.",
+          "options": [
+            "am",
+            "will be",
+            "were",
+            "have been"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Second Conditional — Past Simple (were)."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "If she had a car, she ___ drive to work.",
+          "options": [
+            "will",
+            "would",
+            "would have",
+            "had"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Главная часть — would + V."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "If I ___ you, I would accept the offer.",
+          "options": [
+            "am",
+            "was",
+            "were",
+            "be"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Совет: If I were you..."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "What ___ you do if you saw a ghost?",
+          "options": [
+            "will",
+            "would",
+            "do",
+            "did"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Воображаемая ситуация — would."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He would be healthier if he ___ smoking.",
+          "options": [
+            "stops",
+            "stopped",
+            "would stop",
+            "will stop"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Придаточное — Past Simple: stopped."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "If we ___ a garden, we would grow tomatoes.",
+          "options": [
+            "have",
+            "had",
+            "will have",
+            "had had"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Second Conditional — had."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "I would help you if I ___ how.",
+          "options": [
+            "know",
+            "knew",
+            "would know",
+            "had known"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Придаточное — Past Simple: knew."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "If she ___ (be) here, she would help us.",
+          "correctAnswer": "were|was",
+          "explanation": "Second Conditional: were (разговорно was)."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "If I ___ (have) wings, I would fly.",
+          "correctAnswer": "had",
+          "explanation": "Придаточное — Past Simple: had."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "If they lived closer, we ___ (see) them more often.",
+          "correctAnswer": "would see|'d see",
+          "explanation": "Главная часть — would see."
+        }
+      ]
+    },
+    {
+      "order": 27,
+      "title": "Third Conditional: нереальное прошлое",
+      "cefrLevel": "b2",
+      "section": "Условные предложения и пассив",
+      "shortDescription": "«Если бы я знал, я бы пришёл»: сожаления о том, что уже не изменить.",
+      "theoryHtml": "<p><b>Third Conditional</b> — воображение о прошлом, которое уже нельзя изменить: <b>If I had known about the party, I would have come</b> — «если бы я знал о вечеринке, я бы пришёл (но не знал и не пришёл)». Форма: <b>If + had + V3, would have + V3</b>.</p><table><tr><th>Тип</th><th>Придаточное (if)</th><th>Главная часть</th><th>Пример</th></tr><tr><td>Third</td><td>had + V3</td><td>would have + V3</td><td>If she had left earlier, she wouldn't have missed the flight.</td></tr></table><p>Это время для сожалений, оправданий и разбора полётов: <b>If you had told me, I could have helped</b>. Сокращения: <b>hadn't</b>, <b>wouldn't have</b> (в речи — wouldn't've).</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>If I would have known...</i> → в придаточном: <b>If I had known</b> — would не живёт в части с if. <i>If I had knew</i> → правильно: <b>had known</b> — третья форма, не вторая. <i>I would have went</i> → правильно: <b>would have gone</b>. И не смешивайте со Second: <b>If I had money</b> (сейчас) vs <b>If I had had money</b> (тогда).</p><p><b>Примечание:</b> в главной части возможны <b>could have</b> (мог бы: If I had studied, I could have passed) и <b>might have</b> (может быть, бы: If we had left earlier, we might have caught it). Смешанный тип (Mixed): <b>If I had taken that job, I would be in London now</b> — прошлое условие + настоящее следствие.</p><p><b>Мини-диалог:</b> — You look upset. — If I had checked the weather, I wouldn't have got soaked. — If you had taken my umbrella, it wouldn't have happened. — True. And if I had listened to you more often... — ...you would have been perfect by now!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "If I had known, I ___ you.",
+          "options": [
+            "will tell",
+            "would tell",
+            "would have told",
+            "had told"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Third Conditional — would have told."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "If she ___ the train, she would have arrived on time.",
+          "options": [
+            "didn't miss",
+            "hadn't missed",
+            "wouldn't miss",
+            "hasn't missed"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Придаточное — had + V3: hadn't missed."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "They ___ the match if their best player had been fit.",
+          "options": [
+            "would have",
+            "will have",
+            "would",
+            "had"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Главная часть — would have won."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "If you had asked me, I ___ you.",
+          "options": [
+            "would help",
+            "would have helped",
+            "will help",
+            "had helped"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Нереальное прошлое — would have helped."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He ___ the job if he had prepared better.",
+          "options": [
+            "would get",
+            "would have got",
+            "will get",
+            "got"
+          ],
+          "correctAnswer": "1",
+          "explanation": "would have got — о прошлом."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "If we ___ earlier, we wouldn't have got stuck in traffic.",
+          "options": [
+            "left",
+            "had left",
+            "would leave",
+            "leave"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Придаточное — had left."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "I ___ that film if you hadn't recommended it.",
+          "options": [
+            "wouldn't see",
+            "wouldn't have seen",
+            "will not see",
+            "didn't see"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Отрицание главной части — wouldn't have seen."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "If I had taken that job, I ___ (be) in London now.",
+          "correctAnswer": "would be|'d be",
+          "explanation": "Mixed Conditional: прошлое условие + настоящее следствие."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "If it hadn't rained, we ___ (go) to the park.",
+          "correctAnswer": "would have gone",
+          "explanation": "Главная часть — would have gone."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "She would have called you if she ___ (have) your number.",
+          "correctAnswer": "had had",
+          "explanation": "Придаточное: if she had had your number."
+        }
+      ]
+    },
+    {
+      "order": 28,
+      "title": "Passive Voice: страдательный залог",
+      "cefrLevel": "b1",
+      "section": "Условные предложения и пассив",
+      "shortDescription": "«Письмо было отправлено»: когда важнее действие и объект, а не тот, кто сделал.",
+      "theoryHtml": "<p><b>Passive Voice</b> смещает фокус с исполнителя на действие и объект: <b>The letter was sent yesterday</b> — «письмо отправили вчера» (неважно, кто именно). Форма: <b>be в нужном времени + третья форма глагола</b>.</p><table><tr><th>Время</th><th>Форма</th><th>Пример</th></tr><tr><td>Present Simple</td><td>am / is / are + V3</td><td>English is spoken here.</td></tr><tr><td>Past Simple</td><td>was / were + V3</td><td>The bridge was built in 1932.</td></tr><tr><td>Future Simple</td><td>will be + V3</td><td>The work will be done tomorrow.</td></tr><tr><td>Present Perfect</td><td>have / has been + V3</td><td>The room has been cleaned.</td></tr></table><p>Если исполнитель важен, добавляем <b>by</b>: <b>Hamlet was written by Shakespeare</b>. А инструмент — <b>with</b>: <b>The door was opened with a key</b>.</p><p>Когда пассив предпочтительнее: исполнитель очевиден или неважен (<b>The thief was arrested</b> — ясно, кем), новость обобщённого характера (<b>Smoking is not allowed</b>), и в научном/деловом стиле.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>The house is build</i> → правильно: <b>is built</b> — нужна третья форма. <i>The book was wrote</i> → правильно: <b>was written</b>. <i>This city was founded by he</i> → правильно: <b>by him</b> — после by объектная форма. Русская привычка «мне сказали» передаётся личной конструкцией: <b>I was told</b>, <b>He was given a present</b> (а не «it was given to him» обязательно).</p><p><b>Примечание:</b> не каждый глагол имеет пассив — только переходные (с дополнением): нельзя «was arrived», потому что arrive не берёт дополнение. Модальные в пассиве: <b>must be done</b>, <b>can't be seen</b>.</p><p><b>Мини-диалог:</b> — Was the report sent? — It was sent an hour ago. — And was it checked by anyone? — It has already been checked twice. — Perfect. Then the meeting can be cancelled.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "The letter ___ yesterday.",
+          "options": [
+            "sent",
+            "was sent",
+            "is sent",
+            "was send"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Past Simple passive — was sent."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "English ___ all over the world.",
+          "options": [
+            "speaks",
+            "is spoken",
+            "is speaked",
+            "has spoken"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Present Simple passive — is spoken."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "This bridge ___ in 1932.",
+          "options": [
+            "built",
+            "was built",
+            "is built",
+            "has built"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Датированное прошлое событие — was built."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "The office ___ cleaned every day.",
+          "options": [
+            "is",
+            "are",
+            "was",
+            "being"
+          ],
+          "correctAnswer": "0",
+          "explanation": "The office — единственное число: is cleaned."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "The thief ___ by the police last night.",
+          "options": [
+            "caught",
+            "was caught",
+            "was catching",
+            "is caught"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Past passive с by — was caught."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "My phone ___ at the concert.",
+          "options": [
+            "stole",
+            "was stolen",
+            "was stealing",
+            "is stolen"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Телефон украли — was stolen."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "The new hospital ___ next year.",
+          "options": [
+            "will build",
+            "will be built",
+            "was built",
+            "is building"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Future passive — will be built."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "Hamlet ___ (write) by Shakespeare.",
+          "correctAnswer": "was written",
+          "explanation": "Past passive с исполнителем — was written."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "The documents ___ (sign) by the director tomorrow.",
+          "correctAnswer": "will be signed|'ll be signed",
+          "explanation": "Future passive — will be signed."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "This cake ___ (make) by my grandmother every Sunday.",
+          "correctAnswer": "is made",
+          "explanation": "Регулярное действие — Present passive: is made."
+        }
+      ]
+    },
+    {
+      "order": 29,
+      "title": "Степени сравнения прилагательных",
+      "cefrLevel": "a2",
+      "section": "Сравнения и конструкции",
+      "shortDescription": "Больше, лучше, самый интересный: -er/-est, more/most и коварные исключения.",
+      "theoryHtml": "<p>Короткие прилагательные (1 слог, иногда 2) образуют сравнительную степень через <b>-er</b>, превосходную — через <b>-est</b>: <b>tall — taller — the tallest</b>. Длинные (3+ слога и многие на -ful, -ous, -ing) — через <b>more / the most</b>: <b>expensive — more expensive — the most expensive</b>.</p><table><tr><th>Прилагательное</th><th>Сравнительная</th><th>Превосходная</th></tr><tr><td>big</td><td>bigger (удвоение согласной)</td><td>the biggest</td></tr><tr><td>easy</td><td>easier (y → i)</td><td>the easiest</td></tr><tr><td>interesting</td><td>more interesting</td><td>the most interesting</td></tr><tr><td>good</td><td>better</td><td>the best</td></tr><tr><td>bad</td><td>worse</td><td>the worst</td></tr><tr><td>far</td><td>farther / further</td><td>the farthest / furthest</td></tr></table><p>После сравнительной — <b>than</b>: <b>bigger than mine</b>. Равенство — <b>as ... as</b>: <b>She is as tall as her sister</b>; неравенство — <b>not as ... as</b>. С превосходной всегда артикль the: <b>the best</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>more bigger</i> → правильно: <b>bigger</b> — не смешивайте два способа. <i>the most easy</i> → правильно: <b>the easiest</b>. <i>bigger then mine</i> → правильно: <b>than</b> — than для сравнения, then = «потом». <i>She is more taller</i> → правильно: <b>taller</b>.</p><p><b>Примечание:</b> двусложные прилагательные типа clever, narrow, simple допускают оба варианта: <b>cleverer / more clever</b>. А «the more..., the better...» — конструкция «чем..., тем...»: <b>The sooner, the better</b>.</p><p><b>Мини-диалог:</b> — This hotel is more expensive than the last one. — But it is also the cleanest in town. — Is the breakfast better than last time? — Much better. The earlier you wake up, the more pancakes you get!</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "This book is ___ than that one.",
+          "options": [
+            "interesting",
+            "more interesting",
+            "interestinger",
+            "most interesting"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Длинное прилагательное — more interesting."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She is the ___ student in the class.",
+          "options": [
+            "good",
+            "better",
+            "best",
+            "most good"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Good — исключение: the best."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "Today is ___ than yesterday.",
+          "options": [
+            "hot",
+            "more hot",
+            "hotter",
+            "hottest"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Короткое прилагательное с удвоением — hotter."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "My brother is two years ___ than me.",
+          "options": [
+            "older",
+            "more old",
+            "oldest",
+            "more older"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Old — oldеr, без more."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "He runs ___ than anyone in the team.",
+          "options": [
+            "faster",
+            "more fast",
+            "fastest",
+            "more faster"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Наречие fast — faster."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "It was ___ film of the year.",
+          "options": [
+            "the worse",
+            "the worst",
+            "the most bad",
+            "worse"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Bad — the worst."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "She is as ___ as her sister.",
+          "options": [
+            "tall",
+            "taller",
+            "tallest",
+            "more tall"
+          ],
+          "correctAnswer": "0",
+          "explanation": "as ... as — прилагательное в базовой форме."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "The sooner we start, the ___ (good) it will be.",
+          "correctAnswer": "better",
+          "explanation": "Конструкция the more..., the better."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "Winter is the ___ (cold) season.",
+          "correctAnswer": "coldest",
+          "explanation": "Превосходная степень — the coldest."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "My car is ___ (cheap) than yours.",
+          "correctAnswer": "cheaper",
+          "explanation": "Сравнительная степень — cheaper."
+        }
+      ]
+    },
+    {
+      "order": 30,
+      "title": "Герундий и инфинитив",
+      "cefrLevel": "b1",
+      "section": "Сравнения и конструкции",
+      "shortDescription": "«Мне нравится плавать» или «хочу поплавать»? Какой глагол после какого — полный разбор.",
+      "theoryHtml": "<p>После одних глаголов нужен <b>герундий</b> (-ing), после других — <b>инфинитив</b> (to + V), после третьих — и то и то, но с разницей в смысле. Это надо запоминать списками — логики мало.</p><table><tr><th>+ -ing</th><th>+ to V</th><th>оба, но смысл разный</th></tr><tr><td>enjoy, finish, mind, avoid, suggest, practise, keep</td><td>want, decide, hope, plan, promise, agree, refuse</td><td>stop, remember, forget, try</td></tr><tr><td>I enjoy swimming.</td><td>I want to swim.</td><td>stop smoking (перестал курить) / stop to smoke (остановился, чтобы закурить)</td></tr></table><p>После предлогов всегда герундий: <b>be good at cooking</b>, <b>instead of waiting</b>, <b>before leaving</b>. После <b>would like / would love / would prefer</b> — инфинитив: <b>I'd like to book a table</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>I enjoy to swim</i> → правильно: <b>I enjoy swimming</b>. <i>I want swimming</i> → правильно: <b>I want to swim</b>. <i>She suggested to go</i> → правильно: <b>She suggested going</b>. <i>He is interested in to learn</i> → правильно: <b>in learning</b> — после предлога -ing. Отрицание инфинитива — <b>not to</b>: <b>He promised not to be late</b>.</p><p><b>Примечание:</b> remember/forget: <b>remember doing</b> — «помню, как делал (в прошлом)»; <b>remember to do</b> — «не забудь сделать (надо сделать)». Compare: <b>I remembered to lock the door</b> (не забыл запереть) vs <b>I remember locking the door</b> (помню сам процесс).</p><p><b>Мини-диалог:</b> — Would you like to join us for a run? — I'd love to, but I hate getting up early. — But you suggested going jogging last week! — I suggested it at 8 pm. I keep forgetting that morning me is a different person.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "I enjoy ___ to music.",
+          "options": [
+            "listen",
+            "listening",
+            "to listen",
+            "listened"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Enjoy + герундий: listening."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She decided ___ a new car.",
+          "options": [
+            "buying",
+            "buy",
+            "to buy",
+            "bought"
+          ],
+          "correctAnswer": "2",
+          "explanation": "Decide + инфинитив: to buy."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He avoided ___ the question.",
+          "options": [
+            "to answer",
+            "answering",
+            "answer",
+            "answered"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Avoid + герундий: answering."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "We hope ___ you soon.",
+          "options": [
+            "seeing",
+            "to see",
+            "see",
+            "saw"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Hope + инфинитив: to see."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "Do you mind ___ the window?",
+          "options": [
+            "to open",
+            "opening",
+            "open",
+            "opened"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Mind + герундий: opening."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Remember ___ the door when you leave.",
+          "options": [
+            "locking",
+            "to lock",
+            "lock",
+            "locked"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Помни сделать (впереди) — to lock."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "I stopped ___ coffee — now I feel much better.",
+          "options": [
+            "drink",
+            "drinking",
+            "to drink",
+            "drank"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Перестал делать — stopped drinking."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "He is good at ___ (understand) people.",
+          "correctAnswer": "understanding",
+          "explanation": "После предлога at — герундий."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She suggested ___ (go) to the cinema.",
+          "correctAnswer": "going",
+          "explanation": "Suggest + герундий: going."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "I want ___ (learn) Spanish.",
+          "correctAnswer": "to learn",
+          "explanation": "Want + инфинитив: to learn."
+        }
+      ]
+    },
+    {
+      "order": 31,
+      "title": "Косвенная речь (Reported Speech)",
+      "cefrLevel": "b2",
+      "section": "Сравнения и конструкции",
+      "shortDescription": "«Он сказал, что придёт»: как передать чужие слова и сдвинуть времена на шаг назад.",
+      "theoryHtml": "<p>Прямая речь передаётся дословно: <b>He said, «I am tired»</b>. В косвенной речи время сдвигается на шаг назад: <b>He said (that) he was tired</b>. Present → Past, Past → Past Perfect, will → would, can → could.</p><table><tr><th>Прямая речь</th><th>Косвенная речь</th></tr><tr><td>I am tired.</td><td>He said he was tired.</td></tr><tr><td>I will call you.</td><td>She said she would call me.</td></tr><tr><td>I saw him yesterday.</td><td>He said he had seen him the day before.</td></tr><tr><td>Where do you live?</td><td>She asked where I lived.</td></tr><tr><td>Do you like it?</td><td>He asked if/whether I liked it.</td></tr></table><p><b>Said vs told:</b> <b>said (that)...</b>, но <b>told me / told us (that)...</b> — told требует слушателя без to. Вопросы в косвенной речи теряют вопросительный порядок слов и вопросительное слово do/does/did: <b>She asked where I lived</b>, не «where did I live».</p><p>Слова времени тоже сдвигаются: <b>now → then, today → that day, tomorrow → the next day, yesterday → the day before, ago → before</b>.</p><p><b>⚠ Частые ошибки русскоговорящих:</b> <i>He said me that...</i> → правильно: <b>He told me</b> или <b>He said to me</b>. <i>He said that he will come</i> → правильно: <b>he would come</b> — не забывайте сдвиг. <i>She asked where did I live</i> → правильно: <b>where I lived</b> — прямой порядок слов.</p><p><b>Примечание:</b> если информация всё ещё актуальна, сдвиг факультативен: <b>He said he lives / lived in Paris</b> — оба верны, если он и сейчас там живёт. Просьбы и приказы: <b>told/asked + to V</b>: <b>He told me to wait</b>, <b>She asked me not to leave</b>.</p><p><b>Мини-диалог:</b> — What did the boss say? — He said he would be late and told us to start without him. — And Anna? — She asked if I had seen her presentation. — Did you? — I said I hadn't. Which was true. Mostly.</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "He said he ___ tired.",
+          "options": [
+            "is",
+            "was",
+            "will be",
+            "has been"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Present → Past: was."
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She ___ me that she was leaving.",
+          "options": [
+            "said",
+            "told",
+            "said to",
+            "spoke"
+          ],
+          "correctAnswer": "1",
+          "explanation": "told + слушатель: told me."
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "He ___ that he liked coffee.",
+          "options": [
+            "said",
+            "told",
+            "told to",
+            "said me"
+          ],
+          "correctAnswer": "0",
+          "explanation": "said без слушателя — said that..."
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "«I will call you» → He said he ___ me.",
+          "options": [
+            "will call",
+            "would call",
+            "calls",
+            "called"
+          ],
+          "correctAnswer": "1",
+          "explanation": "will → would."
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "«I am reading» → She said she ___ a book.",
+          "options": [
+            "is reading",
+            "was reading",
+            "reads",
+            "read"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Present Continuous → Past Continuous."
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "«Did you see it?» → He asked ___ it.",
+          "options": [
+            "did I see",
+            "if I had seen",
+            "that I saw",
+            "have I seen"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Общий вопрос → if + прямой порядок, сдвиг в Past Perfect."
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "«Where do you live?» → She asked where I ___.",
+          "options": [
+            "live",
+            "lived",
+            "do live",
+            "did live"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Специальный вопрос: слово-вопрос + подлежащее + сказуемое в Past."
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "«I saw him yesterday» → He said he ___ (see) him the day before.",
+          "correctAnswer": "had seen",
+          "explanation": "Past Simple → Past Perfect: had seen."
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "«I will be busy tomorrow» → She said she ___ busy the next day.",
+          "correctAnswer": "would be|'d be",
+          "explanation": "will → would, tomorrow → the next day."
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "«I don't have any money» → He told me he ___ any money.",
+          "correctAnswer": "didn't have|did not have",
+          "explanation": "Present Simple → Past Simple: didn't have."
+        }
+      ]
+    },
+    {
+      "order": 32,
+      "title": "Разделительные вопросы (tag questions)",
+      "cefrLevel": "a2",
+      "section": "Сравнения и конструкции",
+      "shortDescription": "«...не так ли?», «...правда?»: хвостик-вопрос в конце фразы и его правила.",
+      "theoryHtml": "<p><b>Tag question</b> — короткий вопрос-«хвостик» в конце утверждения: <b>It's cold, isn't it?</b> — «холодно, не так ли?». Правило простое: <b>утверждение → отрицательный хвостик</b>, <b>отрицание → положительный</b>. Хвостик берёт тот же вспомогательный глагол, что в основной фразе.</p><table><tr><th>Фраза</th><th>Хвостик</th></tr><tr><td>You are a student, ...</td><td>aren't you?</td></tr><tr><td>She doesn't like coffee, ...</td><td>does she?</td></tr><tr><td>They went home, ...</td><td>didn't they?</td></tr><tr><td>He can swim, ...</td><td>can't he?</td></tr><tr><td>I'm late, ...</td><td>aren't I? (исключение!)</td></tr><tr><td>Let's go, ...</td><td>shall we?</td></tr><tr><td>Open the window, ...</td><td>will you?</td></tr></table><p>В Present Simple и Past Simple, где нет вспомогательного глагола, хвостик строится через <b>do / does / did</b>: <b>She works here, doesn't she? You saw him, didn't you?</b></p><p><b>⚠ Частые ошибки русскоговорящих:</b> главный соблазн — универсальный хвостик <i>isn't it</i> для всего: <i>You like it, isn't it?</i> → правильно: <b>don't you?</b> — хвостик копирует сказуемое. <i>He is a doctor, is he?</i> → после утверждения хвостик отрицательный: <b>isn't he?</b> (положительный is he? — уже не вопрос, а удивление или сарказм). <i>I am late, amn't I?</i> → такой формы нет: <b>aren't I?</b>.</p><p><b>Примечание:</b> интонация меняет смысл: падающий тон — вы ждёте подтверждения, восходящий — настоящий вопрос. Слова-исключения: <b>nobody, no one, nothing</b> — отрицательные по смыслу, хвостик положительный: <b>Nobody called, did they?</b></p><p><b>Мини-диалог:</b> — Nice day, isn't it? — Yes, lovely. You are on holiday, aren't you? — That's right. You work in the café, don't you? — I do. Let's have a coffee, shall we? — You won't charge me, will you? — ...Nice weather, isn't it?</p>",
+      "exercises": [
+        {
+          "order": 1,
+          "type": "mc",
+          "prompt": "You are a student, ___?",
+          "options": [
+            "are you",
+            "aren't you",
+            "isn't it",
+            "is you"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Утверждение → отрицательный хвостик: aren't you?"
+        },
+        {
+          "order": 2,
+          "type": "mc",
+          "prompt": "She doesn't like coffee, ___?",
+          "options": [
+            "does she",
+            "doesn't she",
+            "is she",
+            "doesn't he"
+          ],
+          "correctAnswer": "0",
+          "explanation": "Отрицание → положительный хвостик: does she?"
+        },
+        {
+          "order": 3,
+          "type": "mc",
+          "prompt": "It's a nice day, ___?",
+          "options": [
+            "is it",
+            "isn't it",
+            "doesn't it",
+            "hasn't it"
+          ],
+          "correctAnswer": "1",
+          "explanation": "It is → isn't it?"
+        },
+        {
+          "order": 4,
+          "type": "mc",
+          "prompt": "They went home, ___?",
+          "options": [
+            "did they",
+            "didn't they",
+            "went they",
+            "wasn't it"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Past Simple: didn't they?"
+        },
+        {
+          "order": 5,
+          "type": "mc",
+          "prompt": "I'm late, ___?",
+          "options": [
+            "amn't I",
+            "aren't I",
+            "not am I",
+            "am not I"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Исключение: aren't I?"
+        },
+        {
+          "order": 6,
+          "type": "mc",
+          "prompt": "Let's go for a walk, ___?",
+          "options": [
+            "will we",
+            "shall we",
+            "do we",
+            "won't we"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Let's → shall we?"
+        },
+        {
+          "order": 7,
+          "type": "mc",
+          "prompt": "Open the window, ___?",
+          "options": [
+            "do you",
+            "will you",
+            "shall you",
+            "open you"
+          ],
+          "correctAnswer": "1",
+          "explanation": "Императив → will you?"
+        },
+        {
+          "order": 8,
+          "type": "fill",
+          "prompt": "He can swim, ___? (напишите хвостик)",
+          "correctAnswer": "can't he|cannot he",
+          "explanation": "Утверждение с can → can't he?"
+        },
+        {
+          "order": 9,
+          "type": "fill",
+          "prompt": "She works here, ___?",
+          "correctAnswer": "doesn't she|does not she",
+          "explanation": "Present Simple: doesn't she?"
+        },
+        {
+          "order": 10,
+          "type": "fill",
+          "prompt": "You haven't seen my keys, ___?",
+          "correctAnswer": "have you",
+          "explanation": "Отрицание → положительный хвостик: have you?"
+        }
+      ]
+    }
+  ]
+}

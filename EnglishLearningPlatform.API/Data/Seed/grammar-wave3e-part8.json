@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 97,
+      "title": "had better / would rather",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Лучше бы / предпочёл бы — советы и предпочтения.",
+      "theoryHtml": "<p><strong>had better ('d better)</strong> — настоятельный совет, часто с угрозой последствий: <em>You <strong>'d better hurry</strong>, or you'll miss it</em>. Отрицание: <em>You'd better <strong>not</strong> be late</em>. Это не «прошлое» — had здесь историческая форма, время настоящее.</p><p><strong>would rather ('d rather)</strong> — предпочтение: <em>I <strong>'d rather stay</strong> home</em>. Отрицание: <em>I'd rather <strong>not say</strong></em>. С разными подлежащими: <em>I'd rather <strong>you didn't tell</strong> anyone</em> (Past после would rather!).</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>'d better + инфинитив без to</td><td>We'd better leave now.</td></tr><tr><td>'d better not + инф.</td><td>You'd better not touch it.</td></tr><tr><td>'d rather + инф. без to</td><td>I'd rather walk.</td></tr><tr><td>'d rather + sb + Past</td><td>I'd rather you didn't smoke.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>You'd better to go</em> → <em>better go</em> (без to). <em>I'd better not to be late</em> → <em>not be late</em>. <em>I'd rather to stay</em> → <em>rather stay</em>.</p><p><strong>Мини-диалог:</strong><br>— We <strong>'d better book</strong> a table — it's Friday. — True. And I'd rather sit outside.<br>— I'd rather <strong>you didn't</strong> — it might rain. <strong>You'd better not</strong> risk it.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "You'd better ___ now.", "options": ["to leave", "leave", "leaving", "left"], "correctAnswer": "1", "explanation": "had better + инфинитив без to." },
+        { "order": 2, "type": "mc", "prompt": "I'd rather ___ at home tonight.", "options": ["to stay", "staying", "stay", "stayed"], "correctAnswer": "2", "explanation": "would rather + инфинитив без to." },
+        { "order": 3, "type": "mc", "prompt": "You'd better ___ be late again!", "options": ["not", "don't", "to not", "no"], "correctAnswer": "0", "explanation": "had better not." },
+        { "order": 4, "type": "mc", "prompt": "I'd rather you ___ smoke in here.", "options": ["don't", "didn't", "not", "won't"], "correctAnswer": "1", "explanation": "would rather + sb + Past." },
+        { "order": 5, "type": "mc", "prompt": "We ___ better take an umbrella.", "options": ["would", "had", "have", "are"], "correctAnswer": "1", "explanation": "had better — фиксированная форма." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I'd better to call her.", "I'd better call her.", "I'd better calling her.", "I had better to call her."], "correctAnswer": "1", "explanation": "had better + инфинитив без to." },
+        { "order": 7, "type": "mc", "prompt": "She'd rather not ___ about it.", "options": ["to talk", "talking", "talk", "talked"], "correctAnswer": "2", "explanation": "would rather not + инфинитив без to." },
+        { "order": 8, "type": "mc", "prompt": "«You'd better hurry» означает:", "options": ["Ты уже ушёл", "Лучше поторопись", "Ты хорошо спешишь", "Ты не спешишь"], "correctAnswer": "1", "explanation": "had better — настоятельный совет." },
+        { "order": 9, "type": "fill", "prompt": "I'd ___ ___ (лучше не) argue with him. (2-3 слова)", "options": [], "correctAnswer": "better not", "explanation": "had better not." },
+        { "order": 10, "type": "fill", "prompt": "I'd rather ___ ___ (ты не приходил) tomorrow. (2-3 слова)", "options": [], "correctAnswer": "you didn't come|you did not come", "explanation": "would rather + you + Past." }
+      ]
+    },
+    {
+      "order": 98,
+      "title": "Статьевые глаголы: know, like, believe",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Глаголы состояния, которые не любят Continuous.",
+      "theoryHtml": "<p><strong>Статьевые (state) глаголы</strong> описывают состояния, а не действия — поэтому почти не используются в Continuous:</p><table><tr><th>Группа</th><th>Глаголы</th></tr><tr><td>мысли</td><td>know, believe, understand, remember, forget, mean, realise</td></tr><tr><td>чувства</td><td>like, love, hate, prefer, want, need, wish</td></tr><tr><td>владение</td><td>have, own, belong, possess</td></tr><tr><td>восприятие</td><td>see, hear, smell, taste, seem, look (as), sound</td></tr></table><p><em>I <strong>know</strong> the answer</em> (не am knowing). <em>This <strong>belongs</strong> to me</em>.</p><p><strong>Некоторые могут быть и действиями</strong> — тогда Continuous возможен с другим смыслом: <em>I <strong>think</strong> you're right</em> (мнение) vs <em>I'm <strong>thinking about</strong> it</em> (размышляю). <em>She <strong>has</strong> a car</em> (имеет) vs <em>She's <strong>having</strong> lunch</em> (ест). <em>The soup <strong>tastes</strong> good</em> (вкус) vs <em>The chef is <strong>tasting</strong> the soup</em> (пробует).</p><p><strong>⚠ Частые ошибки:</strong> <em>I'm loving it</em> — рекламный слоган, в учебном английском <em>I love it</em>. <em>I'm wanting</em> → <em>I want</em>. <em>I'm seeing what you mean</em> → <em>I see what you mean</em>.</p><p><strong>Мини-диалог:</strong><br>— Do you <strong>understand</strong> the rules? — I <strong>think</strong> so. But I don't <strong>remember</strong> case 3.<br>— OK, look: I <strong>own</strong> the ball, you <strong>have</strong> the court, and everyone <strong>wants</strong> to play. Simple!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ what you mean.", "options": ["am understanding", "understand", "understanding", "understood"], "correctAnswer": "1", "explanation": "understand — статьевый, Simple." },
+        { "order": 2, "type": "mc", "prompt": "This car ___ to my father.", "options": ["is belonging", "belongs", "belong", "is belong"], "correctAnswer": "1", "explanation": "belong — статьевый, Simple." },
+        { "order": 3, "type": "mc", "prompt": "She ___ a shower right now. (моется)", "options": ["has", "is having", "have", "having"], "correctAnswer": "1", "explanation": "have как действие — Continuous возможен." },
+        { "order": 4, "type": "mc", "prompt": "The soup ___ delicious.", "options": ["is tasting", "tastes", "taste", "tasting"], "correctAnswer": "1", "explanation": "Вкус — статьевый, Simple." },
+        { "order": 5, "type": "mc", "prompt": "I ___ about your offer. (размышляю)", "options": ["think", "am thinking", "thinks", "thought"], "correctAnswer": "1", "explanation": "Процесс размышления — am thinking." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I am wanting a new phone.", "I want a new phone.", "I wanting a new phone.", "I wants a new phone."], "correctAnswer": "1", "explanation": "want — статьевый." },
+        { "order": 7, "type": "mc", "prompt": "He ___ three dogs.", "options": ["is owning", "owns", "own", "owning"], "correctAnswer": "1", "explanation": "own — статьевый." },
+        { "order": 8, "type": "mc", "prompt": "I ___ the answer right now. (считаю, обдумываю)", "options": ["think", "am thinking", "thinks", "thought"], "correctAnswer": "1", "explanation": "Действие размышления — Continuous." },
+        { "order": 9, "type": "fill", "prompt": "I ___ (вижу) the problem — let's fix it.", "options": [], "correctAnswer": "see", "explanation": "see — статьевый." },
+        { "order": 10, "type": "fill", "prompt": "Everyone ___ (знает) it.", "options": [], "correctAnswer": "knows", "explanation": "know — Simple." }
+      ]
+    },
+    {
+      "order": 99,
+      "title": "-ing как подлежащее: Swimming is fun",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Герундий в роли подлежащего и дополнения.",
+      "theoryHtml": "<p><strong>Герундий (-ing)</strong> может быть подлежащим: <em><strong>Swimming</strong> is fun</em>. <em><strong>Smoking</strong> kills</em>. <em><strong>Learning</strong> a language takes time</em>. Глагол при нём — единственное число: <em>Reading books <strong>is</strong> relaxing</em>.</p><p>Герундий после предлогов (обязательно -ing): <em>good <strong>at swimming</strong>, interested <strong>in learning</strong>, afraid <strong>of flying</strong>, before <strong>going</strong> to bed, instead <strong>of complaining</strong></em>.</p><p>И после некоторых глаголов: enjoy, avoid, mind, suggest, finish, keep, practise, can't help, can't stand, it's worth: <em>It's <strong>worth trying</strong></em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>Swim is fun</em> → <em>Swimming is fun</em>. <em>Before to go</em> → <em>before going</em>. <em>I look forward to see you</em> → <em>look forward to <strong>seeing</strong> you</em> (to здесь предлог!).</p><p><strong>Мини-диалог:</strong><br>— What do you do to relax? — <strong>Reading</strong> and <strong>swimming</strong>. <strong>Jogging</strong> is not my thing — I can't stand <strong>running</strong> in the cold.<br>— I'm looking forward to <strong>starting</strong> yoga. — It's worth <strong>trying</strong>!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ is my favourite hobby.", "options": ["Read", "Reading", "To reading", "Reads"], "correctAnswer": "1", "explanation": "Герундий как подлежащее." },
+        { "order": 2, "type": "mc", "prompt": "___ books is better than watching TV.", "options": ["Read", "Reading", "To reading", "Reads"], "correctAnswer": "1", "explanation": "Герундий-подлежащее." },
+        { "order": 3, "type": "mc", "prompt": "Reading books ___ relaxing.", "options": ["are", "is", "were", "have been"], "correctAnswer": "1", "explanation": "Герундий — единственное число." },
+        { "order": 4, "type": "mc", "prompt": "Thank you ___ helping me.", "options": ["for", "to", "of", "with"], "correctAnswer": "0", "explanation": "Предлог + герундий." },
+        { "order": 5, "type": "mc", "prompt": "I'm looking forward to ___ you.", "options": ["see", "seeing", "saw", "be seeing"], "correctAnswer": "1", "explanation": "to здесь предлог → -ing." },
+        { "order": 6, "type": "mc", "prompt": "Instead of ___ about it, do something!", "options": ["complain", "complaining", "to complain", "complained"], "correctAnswer": "1", "explanation": "instead of + -ing." },
+        { "order": 7, "type": "mc", "prompt": "It's worth ___ the old town.", "options": ["visit", "visiting", "to visit", "visited"], "correctAnswer": "1", "explanation": "worth + -ing." },
+        { "order": 8, "type": "mc", "prompt": "She's afraid of ___ alone.", "options": ["fly", "flying", "to fly", "flew"], "correctAnswer": "1", "explanation": "Предлог of + -ing." },
+        { "order": 9, "type": "fill", "prompt": "___ (Курить) is bad for you.", "options": [], "correctAnswer": "Smoking", "explanation": "Герундий-подлежащее." },
+        { "order": 10, "type": "fill", "prompt": "He's good at ___ (решать) problems. (solve)", "options": [], "correctAnswer": "solving", "explanation": "at + -ing." }
+      ]
+    }
+  ]
+}

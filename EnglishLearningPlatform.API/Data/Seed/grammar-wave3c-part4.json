@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 70,
+      "title": "Глагол + предлог: listen to, wait for",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "listen TO, wait FOR, depend ON — заученные пары.",
+      "theoryHtml": "<p>Многие глаголы требуют предлога перед дополнением. Это не логика, а привычка языка:</p><table><tr><th>Пара</th><th>Пример</th></tr><tr><td>listen <strong>to</strong></td><td>Listen to me!</td></tr><tr><td>wait <strong>for</strong></td><td>I'm waiting for the bus.</td></tr><tr><td>depend <strong>on</strong></td><td>It depends on the weather.</td></tr><tr><td>look <strong>at</strong></td><td>Look at this photo.</td></tr><tr><td>belong <strong>to</strong></td><td>This bag belongs to me.</td></tr><tr><td>ask <strong>for</strong></td><td>He asked for help.</td></tr><tr><td>pay <strong>for</strong></td><td>Who paid for the tickets?</td></tr><tr><td>arrive <strong>at/in</strong></td><td>arrive at the hotel / in Paris</td></tr><tr><td>agree <strong>with</strong> (чел.) / <strong>to</strong> (предложение)</td><td>I agree with you. / I agree to the plan.</td></tr><tr><td>believe <strong>in</strong></td><td>I believe in you.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>listen me</em> → <em>listen to me</em>. <em>explain me</em> → <em>explain to me</em>. <em>It depends of</em> → <em>depends on</em>. <em>enter to the room</em> → <em>enter the room</em> (без предлога!).</p><p><strong>Мини-диалог:</strong><br>— What are you listening <strong>to</strong>? — A podcast. I'm waiting <strong>for</strong> my coffee.<br>— Does the price depend <strong>on</strong> the size? — Yes, ask <strong>for</strong> the small one.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Listen ___ the instructions carefully.", "options": ["—", "to", "at", "for"], "correctAnswer": "1", "explanation": "listen to." },
+        { "order": 2, "type": "mc", "prompt": "We're waiting ___ the results.", "options": ["—", "to", "for", "at"], "correctAnswer": "2", "explanation": "wait for." },
+        { "order": 3, "type": "mc", "prompt": "It depends ___ you.", "options": ["of", "from", "on", "to"], "correctAnswer": "2", "explanation": "depend on." },
+        { "order": 4, "type": "mc", "prompt": "This jacket belongs ___ my brother.", "options": ["to", "with", "for", "of"], "correctAnswer": "0", "explanation": "belong to." },
+        { "order": 5, "type": "mc", "prompt": "He asked ___ a glass of water.", "options": ["to", "for", "—", "about"], "correctAnswer": "1", "explanation": "ask for." },
+        { "order": 6, "type": "mc", "prompt": "Who paid ___ the dinner?", "options": ["—", "for", "to", "of"], "correctAnswer": "1", "explanation": "pay for." },
+        { "order": 7, "type": "mc", "prompt": "I agree ___ you completely.", "options": ["to", "with", "on", "for"], "correctAnswer": "1", "explanation": "agree with + человек." },
+        { "order": 8, "type": "mc", "prompt": "Look ___ this mess!", "options": ["—", "to", "at", "for"], "correctAnswer": "2", "explanation": "look at." },
+        { "order": 9, "type": "fill", "prompt": "I believe ___ (в) you.", "options": [], "correctAnswer": "in", "explanation": "believe in." },
+        { "order": 10, "type": "fill", "prompt": "She's looking ___ (ищет) her glasses.", "options": [], "correctAnswer": "for", "explanation": "look for = искать." }
+      ]
+    },
+    {
+      "order": 71,
+      "title": "Фразовые глаголы: get up, put on, give up",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "Глагол + частица = новое значение. Их учат как отдельные слова.",
+      "theoryHtml": "<p>Фразовый глагол = глагол + частица (наречие или предлог), значение часто непредсказуемо. Топ для A2:</p><table><tr><th>Глагол</th><th>Значение</th><th>Пример</th></tr><tr><td>get up</td><td>вставать</td><td>I get up at seven.</td></tr><tr><td>put on / take off</td><td>надевать / снимать</td><td>Put on your coat.</td></tr><tr><td>look for / look after</td><td>искать / заботиться</td><td>She's looking for her keys.</td></tr><tr><td>give up</td><td>сдаваться, бросать</td><td>Don't give up!</td></tr><tr><td>turn on / turn off</td><td>включать / выключать</td><td>Turn off the light.</td></tr><tr><td>come back / go back</td><td>возвращаться</td><td>He came back late.</td></tr><tr><td>find out</td><td>узнавать</td><td>I found out the truth.</td></tr><tr><td>pick up</td><td>подбирать; заехать за кем-то</td><td>I'll pick you up at six.</td></tr><tr><td>carry on</td><td>продолжать</td><td>Carry on, please.</td></tr><tr><td>set off</td><td>отправляться</td><td>We set off early.</td></tr></table><p>С местоимением частица уходит В КОНЕЦ: <em>Turn <strong>it</strong> off</em> (не turn off it), <em>Pick <strong>her</strong> up</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>get up up</em>; <em>put on it</em> → <em>put it on</em>. Не путать <em>look for</em> (искать) и <em>look after</em> (ухаживать).</p><p><strong>Мини-диалог:</strong><br>— <strong>Turn off</strong> the TV and <strong>pick up</strong> your toys! — I'm <strong>looking for</strong> my charger.<br>— Have you seen it? — No. Don't <strong>give up</strong> — check under the sofa.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ your coat — it's cold outside.", "options": ["Put on", "Take off", "Turn on", "Give up"], "correctAnswer": "0", "explanation": "put on — надевать." },
+        { "order": 2, "type": "mc", "prompt": "Don't ___ — you're almost there!", "options": ["give up", "pick up", "look after", "carry off"], "correctAnswer": "0", "explanation": "give up — сдаваться." },
+        { "order": 3, "type": "mc", "prompt": "She ___ the light and went to bed.", "options": ["turned on", "turned off", "put on", "took off"], "correctAnswer": "1", "explanation": "turned off — выключила." },
+        { "order": 4, "type": "mc", "prompt": "Who's looking ___ your cat while you're away?", "options": ["for", "after", "at", "up"], "correctAnswer": "1", "explanation": "look after — заботиться." },
+        { "order": 5, "type": "mc", "prompt": "I'll ___ you ___ at the airport.", "options": ["pick / up", "look / up", "give / up", "turn / up"], "correctAnswer": "0", "explanation": "pick someone up — заехать за кем-то." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Put on it.", "Put it on.", "Put on it quickly.", "It put on."], "correctAnswer": "1", "explanation": "С местоимением частица в конце: put it on." },
+        { "order": 7, "type": "mc", "prompt": "I ___ the truth by accident.", "options": ["found out", "looked after", "carried on", "gave up"], "correctAnswer": "0", "explanation": "find out — узнать." },
+        { "order": 8, "type": "mc", "prompt": "We ___ early to avoid traffic.", "options": ["set off", "put off", "took off", "came across"], "correctAnswer": "0", "explanation": "set off — отправиться." },
+        { "order": 9, "type": "fill", "prompt": "He ___ ___ (встал) as soon as the alarm rang.", "options": [], "correctAnswer": "got up", "explanation": "get up." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (выключи) your phone during the film!", "options": [], "correctAnswer": "Turn off", "explanation": "turn off." }
+      ]
+    },
+    {
+      "order": 72,
+      "title": "Предлоги в вопросах: What are you looking at?",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "Предлог в конце вопроса — норма разговорного английского.",
+      "theoryHtml": "<p>Когда вопросительное слово — дополнение фразового глагола или глагола с предлогом, предлог обычно уходит <strong>в конец вопроса</strong>:</p><table><tr><th>Правильно (разговорно)</th><th>Формально</th></tr><tr><td>What are you looking <strong>at</strong>?</td><td>At what are you looking? (книжно)</td></tr><tr><td>Where do you come <strong>from</strong>?</td><td>From where do you come?</td></tr><tr><td>Who did you give it <strong>to</strong>?</td><td>To whom did you give it?</td></tr><tr><td>What are you waiting <strong>for</strong>?</td><td>For what are you waiting?</td></tr></table><p>В формальном стиле предлог можно ставить в начало с whom: <em>To whom did you speak?</em> — но в живой речи это звучит чопорно.</p><p><strong>⚠ Частые ошибки:</strong> забывать предлог совсем: <em>What are you looking?</em> → <em>looking <strong>at</strong>?</em> И в косвенных вопросах предлог тоже в конце: <em>I don't know what he's talking <strong>about</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— What are you laughing <strong>at</strong>? — This meme. Where did you find <strong>it</strong>?<br>— Who did you send it <strong>to</strong>? — My brother. He's still laughing.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "What are you waiting ___?", "options": ["—", "for", "to", "at"], "correctAnswer": "1", "explanation": "wait for → предлог в конце." },
+        { "order": 2, "type": "mc", "prompt": "Where do you come ___?", "options": ["from", "of", "out", "at"], "correctAnswer": "0", "explanation": "come from." },
+        { "order": 3, "type": "mc", "prompt": "Who did you talk ___?", "options": ["—", "to", "at", "for"], "correctAnswer": "1", "explanation": "talk to." },
+        { "order": 4, "type": "mc", "prompt": "What is this made ___?", "options": ["from", "of", "with", "by"], "correctAnswer": "1", "explanation": "made of." },
+        { "order": 5, "type": "mc", "prompt": "I don't know what he's afraid ___.", "options": ["from", "of", "with", "about"], "correctAnswer": "1", "explanation": "afraid of — и в косвенном вопросе предлог в конце." },
+        { "order": 6, "type": "mc", "prompt": "Which bus did you come ___?", "options": ["with", "on", "by", "in"], "correctAnswer": "1", "explanation": "come on a bus / by bus — здесь on." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct question:", "options": ["What are you looking?", "At what are you looking? (разг.)", "What are you looking at?", "For what are you waiting? (разг.)"], "correctAnswer": "2", "explanation": "Предлог в конце — норма." },
+        { "order": 8, "type": "mc", "prompt": "Who does this bag belong ___?", "options": ["—", "to", "with", "of"], "correctAnswer": "1", "explanation": "belong to." },
+        { "order": 9, "type": "fill", "prompt": "What are you thinking ___ (о)?", "options": [], "correctAnswer": "about", "explanation": "think about." },
+        { "order": 10, "type": "fill", "prompt": "Who did you buy it ___ (для)?", "options": [], "correctAnswer": "for", "explanation": "buy for someone." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 36,
+      "title": "mine/yours/hers — местоимения вместо существительного",
+      "cefrLevel": "a1",
+      "section": "Местоимения и принадлежность",
+      "shortDescription": "This is mine — как не повторять слово дважды.",
+      "theoryHtml": "<p>Когда вещь уже известна, английский не повторяет существительное, а использует притяжательное местоимение: <strong>mine, yours, his, hers, ours, theirs</strong>. <em>This is my book</em> → <em>This book is <strong>mine</strong></em>.</p><table><tr><th>Притяжательный прилагательный (перед существительным)</th><th>Притяжательное местоимение (вместо существительного)</th></tr><tr><td>This is <strong>my</strong> car.</td><td>This car is <strong>mine</strong>.</td></tr><tr><td>Is this <strong>your</strong> coat?</td><td>Is this coat <strong>yours</strong>?</td></tr><tr><td>That's <strong>her</strong> idea.</td><td>That idea is <strong>hers</strong>.</td></tr></table><p><strong>own</strong> усиливает: <em>I want to have <strong>my own</strong> room</em> (собственная, не чужая).</p><p><strong>⚠ Частые ошибки:</strong> местоимения типа mine/yours НИКОГДА не ставятся перед существительным: <em>mine car</em> — ошибка, правильно <em>my car</em> или <em>mine</em>. А his не меняется: <em>his book</em> и <em>the book is his</em> — одна форма.</p><p><strong>Мини-диалог:</strong><br>— Is this pen yours? — No, mine is blue. This one is <strong>hers</strong>.<br>— And whose car is that? — It's ours. We bought it last year.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "This book is ___. (моя книга)", "options": ["my", "mine", "me", "I"], "correctAnswer": "1", "explanation": "После is вместо существительного — mine." },
+        { "order": 2, "type": "mc", "prompt": "Is this cup ___?", "options": ["your", "yours", "you", "yourselves"], "correctAnswer": "1", "explanation": "yours вместо your cup." },
+        { "order": 3, "type": "mc", "prompt": "That decision was ___. (их)", "options": ["their", "theirs", "them", "they"], "correctAnswer": "1", "explanation": "theirs = their decision." },
+        { "order": 4, "type": "mc", "prompt": "We have ___ house now.", "options": ["us", "our own", "ours", "own our"], "correctAnswer": "1", "explanation": "my own + существительное; порядок: our own house." },
+        { "order": 5, "type": "mc", "prompt": "The choice is ___. (его)", "options": ["him", "his", "he", "he's"], "correctAnswer": "1", "explanation": "his работает и как прилагательное, и как местоимение." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["This is mine dog.", "This is my dog.", "This dog is my.", "This is dog mine."], "correctAnswer": "1", "explanation": "Перед существительным только my; mine — вместо существительного." },
+        { "order": 7, "type": "mc", "prompt": "Their house is bigger than ___.", "options": ["our", "ours", "us", "we"], "correctAnswer": "1", "explanation": "than ours = than our house." },
+        { "order": 8, "type": "mc", "prompt": "She finished the work by ___.", "options": ["her", "herself", "hers", "she"], "correctAnswer": "1", "explanation": "by herself = сама (возвратное, не притяжательное hers!)." },
+        { "order": 9, "type": "fill", "prompt": "The fault wasn't ___ (моя).", "options": [], "correctAnswer": "mine", "explanation": "wasn't mine = wasn't my fault." },
+        { "order": 10, "type": "fill", "prompt": "I'd like to have ___ (свою собственную) office.", "options": [], "correctAnswer": "my own", "explanation": "my own + существительное." }
+      ]
+    },
+    {
+      "order": 37,
+      "title": "this/that/these/those",
+      "cefrLevel": "a1",
+      "section": "Артикли и существительные",
+      "shortDescription": "Этот и тот — рядом и далеко, один и много.",
+      "theoryHtml": "<p>Указательные местоимения показывают расстояние и число: <strong>this</strong> (этот, рядом, ед.) — <strong>these</strong> (эти, рядом, мн.) — <strong>that</strong> (тот, далеко, ед.) — <strong>those</strong> (те, далеко, мн.).</p><table><tr><th></th><th>Рядом</th><th>Далеко</th></tr><tr><td>Единственное</td><td>this book</td><td>that mountain</td></tr><tr><td>Множественное</td><td>these books</td><td>those mountains</td></tr></table><p>Время: <strong>this morning/afternoon/evening</strong> (сегодняшнее), <strong>that day</strong> (тот день, в прошлом). По телефону: «Это Никита» — <em><strong>This is</strong> Nikita</em>, никогда <em>I am</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>this books</em>, <em>those book</em> — число должно совпадать. Также русские «это» в начале предложения-описания — <em>It's</em>, а не this: <em>It's a good idea</em>.</p><p><strong>Мини-диалог:</strong><br>— Look at <strong>this</strong> photo! — Wow, and who's that man in the back?<br>— That's my grandfather. And <strong>those</strong> people next to him are my parents.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Look at ___ birds in the sky!", "options": ["this", "these", "that", "those"], "correctAnswer": "3", "explanation": "В небе — далеко, множественное — those." },
+        { "order": 2, "type": "mc", "prompt": "___ is my favourite song. (играет сейчас)", "options": ["This", "These", "That", "Those"], "correctAnswer": "0", "explanation": "Сейчас рядом/сейчас — this." },
+        { "order": 3, "type": "mc", "prompt": "___ shoes are too small for me.", "options": ["This", "That", "These", "Those is"], "correctAnswer": "2", "explanation": "Множественное рядом — these." },
+        { "order": 4, "type": "mc", "prompt": "Hello? — Hi, ___ Maria.", "options": ["I am", "this is", "it is", "that is"], "correctAnswer": "1", "explanation": "Представление по телефону — This is..." },
+        { "order": 5, "type": "mc", "prompt": "Do you remember ___ day we first met?", "options": ["this", "these", "that", "those"], "correctAnswer": "2", "explanation": "Тот день в прошлом — that day." },
+        { "order": 6, "type": "mc", "prompt": "___ apples on this tree are sweet.", "options": ["This", "That", "These", "Those"], "correctAnswer": "2", "explanation": "Множественное, дерево рядом — these." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Those car is expensive.", "That car is expensive.", "This cars are expensive.", "These car is expensive."], "correctAnswer": "1", "explanation": "Ед.ч. + that, мн.ч. + these/those." },
+        { "order": 8, "type": "mc", "prompt": "I don't like ___ weather. (сейчас за окном)", "options": ["this", "that", "these", "those"], "correctAnswer": "0", "explanation": "Текущая погода рядом — this." },
+        { "order": 9, "type": "fill", "prompt": "___ (Эти) children are my students.", "options": [], "correctAnswer": "these", "explanation": "Множественное рядом — These." },
+        { "order": 10, "type": "fill", "prompt": "___ (То) was the best day of my life.", "options": [], "correctAnswer": "that", "explanation": "Тот день (далёкий во времени) — That was..." }
+      ]
+    },
+    {
+      "order": 38,
+      "title": "Артикль the: когда нужен",
+      "cefrLevel": "a2",
+      "section": "Артикли и существительные",
+      "shortDescription": "Когда the обязателен, а когда он мешает.",
+      "theoryHtml": "<p><strong>The</strong> ставится, когда мы говорим о конкретном, известном объекте или о единственном в своём роде.</p><table><tr><th>С the</th><th>Без the</th></tr><tr><td>the sun, the moon (единственные)</td><td>Water is important. (вообще)</td></tr><tr><td>the book I bought yesterday (известно какое)</td><td>I bought a book. (неизвестно какое)</td></tr><tr><td>the richest man (превосходная степень)</td><td>She is a rich woman. (неопределённая)</td></tr><tr><td>the Amazon, the Pacific (реки, океаны, горные хребты)</td><td>Lake Baikal, Mount Everest (озёра и вершины без the)</td></tr><tr><td>the United States, the Netherlands (государства во мн.ч.)</td><td>Russia, France (большинство стран)</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>I love the music</em> (если музыка вообще — без the: <em>I love music</em>; the — если конкретная: <em>I love the music in this film</em>). Страны с the: the USA, the UK, the Netherlands; но Russia без. Планеты и континенты без the, кроме the Arctic.</p><p><strong>Мини-диалог:</strong><br>— Where's the nearest pharmacy? — On the corner, next to the bank.<br>— The bank on Main Street? — No, the other one, near the park.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ sun rises in the east.", "options": ["A", "The", "—", "An"], "correctAnswer": "1", "explanation": "Единственное в своём роде — the sun." },
+        { "order": 2, "type": "mc", "prompt": "I love ___ music. (вообще)", "options": ["the", "a", "—", "an"], "correctAnswer": "2", "explanation": "Обобщение — без артикля." },
+        { "order": 3, "type": "mc", "prompt": "She is ___ best student in the class.", "options": ["a", "the", "—", "an"], "correctAnswer": "1", "explanation": "Превосходная степень требует the." },
+        { "order": 4, "type": "mc", "prompt": "We sailed across ___ Pacific Ocean.", "options": ["—", "a", "the", "an"], "correctAnswer": "2", "explanation": "Океаны — с the." },
+        { "order": 5, "type": "mc", "prompt": "___ Netherlands is a beautiful country.", "options": ["—", "A", "The", "An"], "correctAnswer": "2", "explanation": "Государства во мн.ч. — the Netherlands." },
+        { "order": 6, "type": "mc", "prompt": "Mount Everest is ___ highest mountain.", "options": ["the", "a", "—", "an"], "correctAnswer": "0", "explanation": "Превосходная — the highest." },
+        { "order": 7, "type": "mc", "prompt": "He bought ___ umbrella because of ___ rain.", "options": ["an / the", "a / the", "an / —", "the / the"], "correctAnswer": "0", "explanation": "umbrella первый раз — an; дождь конкретный — the rain." },
+        { "order": 8, "type": "mc", "prompt": "___ Lake Baikal is the deepest lake in the world.", "options": ["The", "A", "—", "An"], "correctAnswer": "2", "explanation": "Озёра и вершины без the." },
+        { "order": 9, "type": "fill", "prompt": "Pass me ___ (тот) salt, please.", "options": [], "correctAnswer": "the", "explanation": "Конкретная соль на столе — the." },
+        { "order": 10, "type": "fill", "prompt": "He plays ___ (на) guitar very well.", "options": [], "correctAnswer": "the", "explanation": "Музыкальные инструменты — с the: play the guitar." }
+      ]
+    }
+  ]
+}

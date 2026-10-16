@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 67,
+      "title": "from/of/about + on/by/with",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "Made of, hear about, by car, with a knife — предлоги материала и способа.",
+      "theoryHtml": "<p><strong>from</strong> — происхождение: <em>I'm from Russia. He's from Italy. a letter from my aunt</em>.</p><p><strong>of</strong> — принадлежность и материал: <em>the door of the house, a cup of tea, made of wood</em>.</p><p><strong>about</strong> — «о» и «приблизительно»: <em>a film about war, hear about the accident, about ten people</em>.</p><p><strong>by</strong> — способ/исполнитель: <em>by car, by email, written by Tolstoy</em>. <strong>with</strong> — инструмент: <em>cut it with a knife, write with a pen</em>. <strong>on</strong> — канал связи: <em>on TV, on the phone, on the internet</em>.</p><table><tr><th>Сочетание</th><th>Пример</th></tr><tr><td>made of/from</td><td>a table made of oak</td></tr><tr><td>hear about / hear from</td><td>I heard about it / I heard from him yesterday.</td></tr><tr><td>by + транспорт</td><td>by train, by plane</td></tr><tr><td>on +媒介</td><td>on TV, on the radio, on my phone</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>made from</em> vs <em>made of</em>: of — если материал виден (a table made of wood); from — если видоизменился (bread made from flour, wine made from grapes). <em>in TV</em> → <em>on TV</em>. <em>with car</em> → <em>by car</em>.</p><p><strong>Мини-диалог:</strong><br>— What's this table made <strong>of</strong>? — Oak. My grandfather made it <strong>with</strong> his own hands.<br>— Really? I read <strong>about</strong> him in the local newspaper. — <strong>On</strong> the internet more likely!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "This ring is made ___ gold.", "options": ["from", "of", "with", "by"], "correctAnswer": "1", "explanation": "Материал виден — made of." },
+        { "order": 2, "type": "mc", "prompt": "Wine is made ___ grapes.", "options": ["of", "with", "from", "by"], "correctAnswer": "2", "explanation": "Материал изменился — made from." },
+        { "order": 3, "type": "mc", "prompt": "I heard ___ your promotion — congratulations!", "options": ["of", "about", "from about", "with"], "correctAnswer": "1", "explanation": "hear about = узнать о." },
+        { "order": 4, "type": "mc", "prompt": "She cut the bread ___ a sharp knife.", "options": ["by", "with", "from", "of"], "correctAnswer": "1", "explanation": "Инструмент — with." },
+        { "order": 5, "type": "mc", "prompt": "The novel was written ___ Tolstoy.", "options": ["with", "from", "by", "of"], "correctAnswer": "2", "explanation": "Автор — by." },
+        { "order": 6, "type": "mc", "prompt": "I saw the news ___ TV.", "options": ["in", "at", "on", "by"], "correctAnswer": "2", "explanation": "on TV." },
+        { "order": 7, "type": "mc", "prompt": "He sent the documents ___ email.", "options": ["with", "on", "in", "by"], "correctAnswer": "3", "explanation": "by email." },
+        { "order": 8, "type": "mc", "prompt": "Where are you ___? — Brazil.", "options": ["of", "from", "about", "out"], "correctAnswer": "1", "explanation": "Происхождение — from." },
+        { "order": 9, "type": "fill", "prompt": "The film is ___ (о) a young musician.", "options": [], "correctAnswer": "about", "explanation": "a film about..." },
+        { "order": 10, "type": "fill", "prompt": "I haven't heard ___ (от) her for months.", "options": [], "correctAnswer": "from", "explanation": "hear from someone." }
+      ]
+    },
+    {
+      "order": 68,
+      "title": "Прилагательное + предлог: afraid of, good at",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "Зафиксированные пары: afraid OF, good AT, married TO.",
+      "theoryHtml": "<p>Многие прилагательные требуют конкретного предлога — их учат парами:</p><table><tr><th>Пара</th><th>Пример</th></tr><tr><td>afraid <strong>of</strong></td><td>She's afraid of spiders.</td></tr><tr><td>good/bad <strong>at</strong></td><td>He's good at maths.</td></tr><tr><td>interested <strong>in</strong></td><td>I'm interested in history.</td></tr><tr><td>married/engaged <strong>to</strong></td><td>She's married to a doctor.</td></tr><tr><td>angry <strong>with</strong> (чел.) / <strong>about</strong> (факт)</td><td>Don't be angry with me.</td></tr><tr><td>different <strong>from/to</strong></td><td>It's different from the others.</td></tr><tr><td>tired <strong>of</strong></td><td>I'm tired of waiting.</td></tr><tr><td>proud <strong>of</strong></td><td>We're proud of you.</td></tr><tr><td>worried <strong>about</strong></td><td>She's worried about the exam.</td></tr><tr><td>fond <strong>of</strong></td><td>He's fond of fishing.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>good in English</em> → <em>good at English</em>. <em>married with</em> → <em>married to</em>. <em>afraid from</em> → <em>afraid of</em>. После этих предлогов глагол — в -ing: <em>interested in learning</em>.</p><p><strong>Мини-диалог:</strong><br>— Are you good <strong>at</strong> languages? — I used to be. Now I'm tired <strong>of</strong> grammar and worried <strong>about</strong> speaking.<br>— Then practise with me! You'll be proud <strong>of</strong> yourself.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "My son is very good ___ chess.", "options": ["in", "at", "on", "with"], "correctAnswer": "1", "explanation": "good at." },
+        { "order": 2, "type": "mc", "prompt": "She's afraid ___ flying.", "options": ["from", "with", "of", "about"], "correctAnswer": "2", "explanation": "afraid of." },
+        { "order": 3, "type": "mc", "prompt": "I'm interested ___ learning Spanish.", "options": ["on", "about", "in", "at"], "correctAnswer": "2", "explanation": "interested in + -ing." },
+        { "order": 4, "type": "mc", "prompt": "He's married ___ a famous singer.", "options": ["with", "to", "of", "by"], "correctAnswer": "1", "explanation": "married to." },
+        { "order": 5, "type": "mc", "prompt": "We're proud ___ our team.", "options": ["about", "with", "of", "for"], "correctAnswer": "2", "explanation": "proud of." },
+        { "order": 6, "type": "mc", "prompt": "Don't be angry ___ me, please.", "options": ["of", "at with", "with", "about"], "correctAnswer": "2", "explanation": "angry with + человек." },
+        { "order": 7, "type": "mc", "prompt": "I'm tired ___ the same routine every day.", "options": ["from", "of", "with", "in"], "correctAnswer": "1", "explanation": "tired of." },
+        { "order": 8, "type": "mc", "prompt": "She's worried ___ her results.", "options": ["of", "with", "in", "about"], "correctAnswer": "3", "explanation": "worried about." },
+        { "order": 9, "type": "fill", "prompt": "He's keen ___ (увлекается) photography.", "options": [], "correctAnswer": "on", "explanation": "keen on." },
+        { "order": 10, "type": "fill", "prompt": "This model is different ___ (от) the previous one.", "options": [], "correctAnswer": "from|to", "explanation": "different from/to." }
+      ]
+    },
+    {
+      "order": 69,
+      "title": "up/over/through/along — движение",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "Вверх, через, сквозь, вдоль — предлоги движения и направления.",
+      "theoryHtml": "<table><tr><th>Предлог</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>up</strong></td><td>вверх</td><td>climb up the stairs</td></tr><tr><td><strong>down</strong></td><td>вниз</td><td>run down the hill</td></tr><tr><td><strong>over</strong></td><td>через (сверху, перелетая)</td><td>jump over the fence, fly over the city</td></tr><tr><td><strong>through</strong></td><td>сквозь (внутри)</td><td>walk through the forest, look through the window</td></tr><tr><td><strong>along</strong></td><td>вдоль</td><td>walk along the river</td></tr><tr><td><strong>across</strong></td><td>через (поперёк: на другую сторону)</td><td>swim across the river, walk across the street</td></tr><tr><td><strong>into</strong></td><td>внутрь (движение)</td><td>walk into the room</td></tr><tr><td><strong>out of</strong></td><td>наружу</td><td>get out of the car</td></tr><tr><td><strong>past</strong></td><td>мимо</td><td>walk past the shop</td></tr></table><p><strong>over vs across:</strong> over — перелететь/перепрыгнуть НАД; across — пересечь по поверхности на другую сторону.</p><p><strong>⚠ Частые ошибки:</strong> <em>go throw the tunnel</em> → <em>through</em> (throw — бросать!). <em>cross across the street</em> — тавтология: <em>cross the street</em> уже содержит «через».</p><p><strong>Мини-диалог:</strong><br>— How do I get to the old town? — Go <strong>along</strong> this street, walk <strong>past</strong> the church, then cross <strong>over</strong> the bridge.<br>— <strong>Through</strong> the park too? — Yes, it's faster <strong>through</strong> the park.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The cat jumped ___ the wall.", "options": ["through", "over", "across", "along"], "correctAnswer": "1", "explanation": "Перепрыгнуть НАД — over." },
+        { "order": 2, "type": "mc", "prompt": "We walked ___ the tunnel.", "options": ["over", "across", "through", "along"], "correctAnswer": "2", "explanation": "Сквозь — through." },
+        { "order": 3, "type": "mc", "prompt": "She swam ___ the river to the other side.", "options": ["over", "through", "across", "up"], "correctAnswer": "2", "explanation": "Пересечь по поверхности — across." },
+        { "order": 4, "type": "mc", "prompt": "We cycled ___ the canal for two hours.", "options": ["across", "along", "through", "into"], "correctAnswer": "1", "explanation": "Вдоль — along." },
+        { "order": 5, "type": "mc", "prompt": "He walked ___ the shop without looking.", "options": ["past", "through", "over", "into"], "correctAnswer": "0", "explanation": "Мимо — past." },
+        { "order": 6, "type": "mc", "prompt": "She came ___ the room and sat down.", "options": ["across", "over", "into", "along"], "correctAnswer": "2", "explanation": "Внутрь — into." },
+        { "order": 7, "type": "mc", "prompt": "The plane flew ___ the clouds.", "options": ["across", "through", "along", "over"], "correctAnswer": "3", "explanation": "НАД облаками — over." },
+        { "order": 8, "type": "mc", "prompt": "Be careful when you go ___ the road!", "options": ["over", "across", "along", "past"], "correctAnswer": "1", "explanation": "Через дорогу — across." },
+        { "order": 9, "type": "fill", "prompt": "We drove ___ (сквозь) the night without stopping.", "options": [], "correctAnswer": "through", "explanation": "through the night." },
+        { "order": 10, "type": "fill", "prompt": "The dog ran ___ (вверх) the hill.", "options": [], "correctAnswer": "up", "explanation": "up the hill." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 85,
+      "title": "Present Simple vs Continuous — ревизия",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "I work here vs I'm working here — окончательный разбор.",
+      "theoryHtml": "<p><strong>Present Simple</strong> — факты, привычки, расписания, вечные истины: <em>I <strong>live</strong> in Moscow</em> (постоянно). <em>The train <strong>leaves</strong> at six</em> (расписание). <em>Water <strong>boils</strong> at 100°C</em>.</p><p><strong>Present Continuous</strong> — сейчас/в этот период, временные ситуации, тренды: <em>I'm <strong>living</strong> with my parents at the moment</em> (временно). <em>Prices <strong>are rising</strong></em> (тренд).</p><table><tr><th>Слово-подсказка</th><th>Время</th></tr><tr><td>usually, always, often, every day, never</td><td>Simple</td></tr><tr><td>now, at the moment, currently, these days, today</td><td>Continuous</td></tr></table><p><strong>Статьевые глаголы</strong> (know, like, believe, want, understand) — только Simple: <em>I know him</em> (не I'm knowing).</p><p><strong>⚠ Частые ошибки русскоговорящих:</strong> русского Continuous нет, поэтому говорят <em>I work now</em> → <em>I'm working now</em>. И наоборот, привычку: <em>I'm living in Moscow for 10 years</em> → если постоянно и долго — <em>I've lived / I have been living</em> (см. юнит 86).</p><p><strong>Мини-диалог:</strong><br>— What do you <strong>do</strong>? — I'm a teacher, but these days I'm <strong>working</strong> on a book.<br>— And where do you <strong>live</strong>? — In Madrid. — I <strong>love</strong> Madrid!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She ___ in a bank, but this week she's on holiday.", "options": ["is working", "works", "work", "working"], "correctAnswer": "1", "explanation": "Постоянная работа — works." },
+        { "order": 2, "type": "mc", "prompt": "I ___ with my aunt at the moment.", "options": ["stay", "stays", "am staying", "stayed"], "correctAnswer": "2", "explanation": "Временно — am staying." },
+        { "order": 3, "type": "mc", "prompt": "He ___ coffee, but he's drinking tea today.", "options": ["is usually drinking", "usually drinks", "usually is drinking", "drink usually"], "correctAnswer": "1", "explanation": "Привычка — usually drinks." },
+        { "order": 4, "type": "mc", "prompt": "The shops ___ at 9 on Sundays.", "options": ["are opening", "open", "opens", "is opening"], "correctAnswer": "1", "explanation": "Расписание — open." },
+        { "order": 5, "type": "mc", "prompt": "I ___ what you mean.", "options": ["am understanding", "understand", "understands", "am understand"], "correctAnswer": "1", "explanation": "Статьевый глагол — Simple." },
+        { "order": 6, "type": "mc", "prompt": "Look! It ___ again.", "options": ["rains", "is raining", "rain", "does rain"], "correctAnswer": "1", "explanation": "Сейчас — is raining." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I am knowing the answer.", "I know the answer.", "I am know the answer.", "I knowing the answer."], "correctAnswer": "1", "explanation": "know — статьевый." },
+        { "order": 8, "type": "mc", "prompt": "More and more people ___ from home these days.", "options": ["works", "work", "are working", "is working"], "correctAnswer": "2", "explanation": "Тренд — are working." },
+        { "order": 9, "type": "fill", "prompt": "Why ___ ___ (ты носишь) a suit today? (wear)", "options": [], "correctAnswer": "are you wearing", "explanation": "Сейчас — are you wearing." },
+        { "order": 10, "type": "fill", "prompt": "He never ___ (слушает) me. (listen)", "options": [], "correctAnswer": "listens", "explanation": "never — Simple." }
+      ]
+    },
+    {
+      "order": 86,
+      "title": "Past Simple vs Present Perfect — ревизия",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "I saw it vs I've seen it — момент во времени против связи с сейчас.",
+      "theoryHtml": "<p><strong>Past Simple</strong> — завершённое действие в завершённом времени: <em>I <strong>saw</strong> him yesterday</em>. <em>She <strong>lived</strong> in Rome in 2010</em>. Есть указание на момент: yesterday, last week, in 2010, two days ago.</p><p><strong>Present Perfect</strong> — результат важен сейчас, время не указано или не закончено: <em>I <strong>have seen</strong> this film</em> (когда-то, неважно когда). <em>She <strong>has lived</strong> here <strong>for</strong> five years</em> (и живёт до сих пор).</p><table><tr><th>Маркеры</th><th>Время</th></tr><tr><td>yesterday, last year, in 2010, ago, when I was young</td><td>Past Simple</td></tr><tr><td>just, already, yet, ever, never, so far, recently, this week (не закончилась)</td><td>Present Perfect</td></tr><tr><td>for + период (до сих пор), since + точка</td><td>Present Perfect</td></tr></table><p><strong>for vs since:</strong> <em>for five years</em> (период), <em>since 2019</em> (начало).</p><p><strong>⚠ Частые ошибки:</strong> <em>I have seen him yesterday</em> → <em>I saw him yesterday</em>. <em>I live here since 2019</em> → <em>I have lived here since 2019</em>. <em>Did you ever see Rome?</em> (о опыте) → <em>Have you ever seen Rome?</em></p><p><strong>Мини-диалог:</strong><br>— <strong>Have you ever been</strong> to London? — Yes, I <strong>went</strong> there <strong>last year</strong>.<br>— How long <strong>have you worked</strong> here? — <strong>For</strong> three years. <strong>Since</strong> 2023.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ him yesterday at the mall.", "options": ["have seen", "saw", "have saw", "seen"], "correctAnswer": "1", "explanation": "yesterday — Past Simple." },
+        { "order": 2, "type": "mc", "prompt": "___ you ever ___ sushi?", "options": ["Did / eat", "Have / eaten", "Have / ate", "Do / eat"], "correctAnswer": "1", "explanation": "Опыт — Have you ever eaten." },
+        { "order": 3, "type": "mc", "prompt": "She ___ here since 2020.", "options": ["works", "worked", "has worked", "is working"], "correctAnswer": "2", "explanation": "since + до сих пор — has worked." },
+        { "order": 4, "type": "mc", "prompt": "I ___ my keys — I can't find them!", "options": ["lost", "have lost", "was losing", "have lose"], "correctAnswer": "1", "explanation": "Результат сейчас — have lost." },
+        { "order": 5, "type": "mc", "prompt": "Shakespeare ___ 37 plays.", "options": ["has written", "wrote", "has wrote", "writes"], "correctAnswer": "1", "explanation": "Он умер — Past Simple." },
+        { "order": 6, "type": "mc", "prompt": "We've known each other ___ ten years.", "options": ["since", "during", "for", "from"], "correctAnswer": "2", "explanation": "Период — for." },
+        { "order": 7, "type": "mc", "prompt": "I haven't seen her ___ last summer.", "options": ["for", "during", "since", "while"], "correctAnswer": "2", "explanation": "Точка начала — since." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I have been to London last year.", "I was to London last year.", "I went to London last year.", "I have gone to London last year."], "correctAnswer": "2", "explanation": "last year — Past Simple." },
+        { "order": 9, "type": "fill", "prompt": "I ___ ___ (только что закончил) my homework. (just / finish)", "options": [], "correctAnswer": "have just finished|'ve just finished", "explanation": "just — Present Perfect." },
+        { "order": 10, "type": "fill", "prompt": "They ___ (переехали) to Berlin in 2015. (move)", "options": [], "correctAnswer": "moved", "explanation": "in 2015 — Past Simple." }
+      ]
+    },
+    {
+      "order": 87,
+      "title": "Порядок прилагательных + the rich",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "A nice big old red Italian car — почему именно в таком порядке.",
+      "theoryHtml": "<p>Прилагательные в английском идут в жёстком порядке: <strong>мнение → размер → возраст → форма → цвет → происхождение → материал → назначение</strong>.</p><p><em>a <strong>beautiful big old round red Italian wooden dining</strong> table</em> — красивый, большой, старый, круглый, красный, итальянский, деревянный, обеденный.</p><p><strong>Прилагательное как существительное:</strong> the rich (богатые), the poor, the young, the elderly, the unemployed — всегда со the, смысл множественный: <em>The rich <strong>get</strong> richer</em>.</p><p><strong>Пара прилагательных</strong> соединяется and, если обе — про мнение/цвет: <em>a nice and warm room</em>; но обычно просто перечисление без and: <em>a big old house</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>a red big car</em> → <em>a big red car</em> (размер перед цветом). <em>the poors</em> → <em>the poor</em>. Артикль относится к первому прилагательному: <em>a nice old car</em> — один a.</p><p><strong>Мини-диалог:</strong><br>— Describe your dream house. — A <strong>small modern wooden</strong> cabin in the mountains.<br>— Mine is a <strong>huge old stone</strong> villa by the sea. — The rich have nice dreams... — <strong>The rich</strong> have real villas!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Choose the correct order:", "options": ["a red big bag", "a big red bag", "a bag red big", "a bag big red"], "correctAnswer": "1", "explanation": "размер → цвет." },
+        { "order": 2, "type": "mc", "prompt": "She bought a ___ table.", "options": ["wooden beautiful", "beautiful wooden", "beautifully wooden", "wood beauty"], "correctAnswer": "1", "explanation": "мнение → материал." },
+        { "order": 3, "type": "mc", "prompt": "It's a ___ car.", "options": ["Japanese new fast", "new fast Japanese", "fast new Japanese", "Japanese fast new"], "correctAnswer": "1", "explanation": "возраст → скорость/оценка → происхождение." },
+        { "order": 4, "type": "mc", "prompt": "___ should pay more taxes.", "options": ["The rich", "Rich", "A rich", "Richs"], "correctAnswer": "0", "explanation": "the + прилагательное = группа людей." },
+        { "order": 5, "type": "mc", "prompt": "He gave me a ___ box.", "options": ["small black leather", "leather small black", "black leather small", "leather black small"], "correctAnswer": "0", "explanation": "размер → цвет → материал." },
+        { "order": 6, "type": "mc", "prompt": "___ need more opportunities.", "options": ["The youngs", "Young", "The young", "A young"], "correctAnswer": "2", "explanation": "the young — молодёжь." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["It was a lovely little old town.", "It was a little old lovely town.", "It was an old little lovely town.", "It was lovely old a little town."], "correctAnswer": "0", "explanation": "мнение → размер → возраст." },
+        { "order": 8, "type": "mc", "prompt": "How many articles in: «a charming little French café»?", "options": ["два", "один", "три", "ни одного"], "correctAnswer": "1", "explanation": "Артикль один — на всю группу." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (Богатые) don't understand the poor.", "options": [], "correctAnswer": "The rich", "explanation": "the rich." },
+        { "order": 10, "type": "fill", "prompt": "She has ___ ___ (длинные тёмные) hair. (два слова)", "options": [], "correctAnswer": "long dark|long black", "explanation": "размер → цвет." }
+      ]
+    }
+  ]
+}

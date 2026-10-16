@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 76,
+      "title": "Относительные придаточные: who/which/that",
+      "cefrLevel": "b1",
+      "section": "Относительные придаточные",
+      "shortDescription": "The man who lives next door — как соединять предложения красиво.",
+      "theoryHtml": "<p>Относительные местоимения <strong>who</strong> (люди), <strong>which</strong> (предметы), <strong>that</strong> (и то и другое) соединяют два предложения в одно, заменяя повтор: <em>I met a man. He lives next door. → I met a man <strong>who</strong> lives next door.</em></p><table><tr><th>О ком/чём</th><th>Местоимение</th><th>Пример</th></tr><tr><td>человек</td><td>who / that</td><td>The woman who called you is my boss.</td></tr><tr><td>предмет</td><td>which / that</td><td>The book which I bought is great.</td></tr><tr><td>животное</td><td>which / that</td><td>The dog that barks is ours.</td></tr><tr><td>место</td><td>where</td><td>The café where we met closed.</td></tr></table><p>Местоимение стоит сразу после определяемого слова: <em>The film <strong>that</strong> we watched was long</em> (не <em>The film was long that we watched</em>).</p><p><strong>⚠ Частые ошибки:</strong> <em>the man which lives...</em> → <em>who/that</em>. Двойное подлежащее: <em>The film that it was long</em> → <em>The film that was long</em>. Пропуск who при подлежащем: <em>The man lives next door is my boss</em> → нужен <em>who</em>.</p><p><strong>Мини-диалог:</strong><br>— Who's that woman? — Which one? The one <strong>who</strong> is wearing red?<br>— No, the one <strong>that</strong> is talking to John. — That's Ann, the girl <strong>who</strong> organised the party.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The man ___ lives next door is a pilot.", "options": ["which", "who", "whose", "what"], "correctAnswer": "1", "explanation": "Человек — who/that." },
+        { "order": 2, "type": "mc", "prompt": "The book ___ I read was fascinating.", "options": ["who", "whose", "which", "where"], "correctAnswer": "2", "explanation": "Предмет — which/that." },
+        { "order": 3, "type": "mc", "prompt": "The girl ___ won the prize is my cousin.", "options": ["which", "whose", "who", "whom"], "correctAnswer": "2", "explanation": "Человек-подлежащее — who." },
+        { "order": 4, "type": "mc", "prompt": "The car ___ he bought is red.", "options": ["who", "whose", "which", "where"], "correctAnswer": "2", "explanation": "Предмет-дополнение — which/that." },
+        { "order": 5, "type": "mc", "prompt": "People ___ complain all the time annoy me.", "options": ["which", "who", "whose", "what"], "correctAnswer": "1", "explanation": "Люди — who." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The film that it won the prize is long.", "The film that won the prize is long.", "The film who won the prize is long.", "The film won the prize is long."], "correctAnswer": "1", "explanation": "that + подлежащее, без лишнего it." },
+        { "order": 7, "type": "mc", "prompt": "I like people ___ are honest.", "options": ["which", "whose", "who", "whom"], "correctAnswer": "2", "explanation": "Люди — who." },
+        { "order": 8, "type": "mc", "prompt": "The company ___ produces these phones is Korean.", "options": ["who", "which", "whose", "where"], "correctAnswer": "1", "explanation": "Компания = предмет — which/that." },
+        { "order": 9, "type": "fill", "prompt": "The café ___ (где) we met has closed.", "options": [], "correctAnswer": "where", "explanation": "Место — where." },
+        { "order": 10, "type": "fill", "prompt": "The man ___ (которого) I saw was tall.", "options": [], "correctAnswer": "who|whom|that|—", "explanation": "Человек-дополнение — who/whom/that или опустить." }
+      ]
+    },
+    {
+      "order": 77,
+      "title": "whose/where/why в придаточных",
+      "cefrLevel": "b1",
+      "section": "Относительные придаточные",
+      "shortDescription": "Чей? Где? Почему? — три «нестандартных» слова.",
+      "theoryHtml": "<p><strong>whose</strong> — «чей» (принадлежность): <em>That's the man <strong>whose</strong> dog bit me</em> (его собака). Не путать с who's = who is!</p><p><strong>where</strong> — «где» (место): <em>This is the hotel <strong>where</strong> we stayed</em>. Заменяет <em>in which</em>: <em>the hotel in which we stayed</em> — формально то же.</p><p><strong>why</strong> — «почему» (причина): <em>That's the reason <strong>why</strong> I called</em> (why часто опускают).</p><table><tr><th>Вопрос → придаточное</th><th>Пример</th></tr><tr><td>Whose car is it? → the man whose car...</td><td>the woman whose bag was stolen</td></tr><tr><td>Where did you stay? → the hotel where...</td><td>the city where I was born</td></tr><tr><td>Why did he leave? → the reason why...</td><td>the reason why he left</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>the man who's car...</em> → <em>whose</em> (who's = who is!). <em>the hotel where we stayed in</em> → либо <em>where we stayed</em>, либо <em>which we stayed in</em> — не вместе.</p><p><strong>Мини-диалог:</strong><br>— Is this the house <strong>where</strong> Sherlock lived? — The very one. And <strong>whose</strong> statue is that outside? — Holmes's, of course. That's the reason <strong>why</strong> tourists come here.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "That's the woman ___ husband works with me.", "options": ["who", "which", "whose", "who's"], "correctAnswer": "2", "explanation": "Чей муж — whose." },
+        { "order": 2, "type": "mc", "prompt": "This is the town ___ I was born.", "options": ["which", "whose", "where", "who"], "correctAnswer": "2", "explanation": "Место — where." },
+        { "order": 3, "type": "mc", "prompt": "The reason ___ he resigned is still unknown.", "options": ["where", "whose", "which", "why"], "correctAnswer": "3", "explanation": "Причина — why." },
+        { "order": 4, "type": "mc", "prompt": "A dictionary is a book ___ gives you definitions.", "options": ["who", "which", "whose", "where"], "correctAnswer": "1", "explanation": "Книга — which." },
+        { "order": 5, "type": "mc", "prompt": "The boy ___ bicycle was stolen is crying.", "options": ["who's", "whose", "who", "which"], "correctAnswer": "1", "explanation": "Чей велосипед — whose (не who's!)." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The café where we met in has closed.", "The café which we met has closed.", "The café where we met has closed.", "The café whose we met has closed."], "correctAnswer": "2", "explanation": "where мы встретились — без лишнего in." },
+        { "order": 7, "type": "mc", "prompt": "Do you know a shop ___ sells vintage records?", "options": ["which", "where", "whose", "why"], "correctAnswer": "0", "explanation": "Магазин как предмет-подлежащее — which/that." },
+        { "order": 8, "type": "mc", "prompt": "The actor ___ films I love retired.", "options": ["who's", "whose", "who", "which"], "correctAnswer": "1", "explanation": "whose films — его фильмы." },
+        { "order": 9, "type": "fill", "prompt": "The restaurant ___ ___ (в котором) we ate was expensive. (2 слова)", "options": [], "correctAnswer": "in which", "explanation": "Формальный вариант: in which." },
+        { "order": 10, "type": "fill", "prompt": "That's the author ___ (чей) book changed my life.", "options": [], "correctAnswer": "whose", "explanation": "whose book." }
+      ]
+    },
+    {
+      "order": 78,
+      "title": "Опущение that/who/which",
+      "cefrLevel": "b1",
+      "section": "Относительные придаточные",
+      "shortDescription": "The people we met — когда слово можно не писать.",
+      "theoryHtml": "<p>Относительное местоимение можно <strong>опустить, когда оно — дополнение</strong> придаточного: <em>The book (that) I read was great</em> — «я прочитал книгу», that не подлежащее. Когда оно — <strong>подлежащее</strong>, опускать нельзя: <em>The man <strong>who</strong> lives next door</em> (who = подлежащее, живёт).</p><table><tr><th>Тип</th><th>Опускать?</th><th>Пример</th></tr><tr><td>who/that — подлежащее</td><td>НЕТ</td><td>The man who called is my boss.</td></tr><tr><td>who/that — дополнение</td><td>ДА</td><td>The man (who) I called is my boss.</td></tr><tr><td>which/that — подлежащее</td><td>НЕТ</td><td>The bus which goes downtown is late.</td></tr><tr><td>which/that — дополнение</td><td>ДА</td><td>The bus (which) I take is late.</td></tr><tr><td>whose</td><td>НЕТ</td><td>The girl whose bag was stolen.</td></tr></table><p>Тест: что идёт сразу после местоимения? Если <strong>глагол</strong> — это подлежащее, не опускай. Если <strong>подлежащее</strong> (he, she, the bus) — можно опустить.</p><p><strong>⚠ Частые ошибки:</strong> <em>The man lives next door is my boss</em> → нужен <em>who</em>. <em>The people who I met</em> — верно, но разговорно лучше <em>the people I met</em>.</p><p><strong>Мини-диалог:</strong><br>— Who's that? — The man <strong>who</strong> helped me yesterday. — The one you told me about? — Exactly. The story <strong>I told you</strong> is about him.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The film ___ we watched was boring. Можно ли опустить that?", "options": ["да", "нет", "только в письме", "никогда"], "correctAnswer": "0", "explanation": "that — дополнение (we watched it) — можно." },
+        { "order": 2, "type": "mc", "prompt": "The film ___ won an award is fantastic. Можно ли опустить?", "options": ["да", "нет", "иногда", "только в разговоре"], "correctAnswer": "1", "explanation": "that — подлежащее (won) — нельзя." },
+        { "order": 3, "type": "mc", "prompt": "The people ___ live here are friendly. Вставь слово:", "options": ["—", "who", "which", "whom"], "correctAnswer": "1", "explanation": "Подлежащее — who обязателен." },
+        { "order": 4, "type": "mc", "prompt": "The letter ___ arrived yesterday made me happy.", "options": ["—", "which", "who", "whose"], "correctAnswer": "1", "explanation": "Подлежащее — which обязателен." },
+        { "order": 5, "type": "mc", "prompt": "The song ___ you recommended is great. Вставь при желании:", "options": ["обязательно that", "— (можно опустить)", "обязательно who", "whose"], "correctAnswer": "1", "explanation": "Дополнение — опускается." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The woman works here is my aunt.", "The woman who works here is my aunt.", "The woman works here who is my aunt.", "The woman which works here is my aunt."], "correctAnswer": "1", "explanation": "Подлежащее — who нельзя опустить." },
+        { "order": 7, "type": "mc", "prompt": "The man ___ I told you about is here. Опущение:", "options": ["нельзя", "можно (кто)", "можно (дополнение)", "нужно whose"], "correctAnswer": "2", "explanation": "I told you about him — man дополнение." },
+        { "order": 8, "type": "mc", "prompt": "Where's the book ___ I gave you? Опущение:", "options": ["нельзя", "можно", "нужен who", "нужен whose"], "correctAnswer": "1", "explanation": "gave you the book — дополнение." },
+        { "order": 9, "type": "fill", "prompt": "Everything ___ he says is true.", "options": [], "correctAnswer": "that|—", "explanation": "Дополнение — that или опустить." },
+        { "order": 10, "type": "fill", "prompt": "The train ___ goes to Berlin leaves at six.", "options": [], "correctAnswer": "that|which", "explanation": "Подлежащее — нельзя опустить." }
+      ]
+    }
+  ]
+}

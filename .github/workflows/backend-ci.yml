@@ -1,0 +1,59 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'EnglishLearningPlatform.API/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'EnglishLearningPlatform.API/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: appuser
+          POSTGRES_PASSWORD: apppass123
+          POSTGRES_DB: english_learning_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore EnglishLearningPlatform.API/EnglishLearningPlatform.API.csproj
+
+      - name: Build
+        run: dotnet build EnglishLearningPlatform.API/EnglishLearningPlatform.API.csproj --no-restore --configuration Release
+
+      - name: Test
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=english_learning_test;Username=appuser;Password=apppass123"
+          Jwt__Key: "test-secret-key-for-ci-min-32-chars!!"
+          Jwt__Issuer: "TestIssuer"
+          Jwt__Audience: "TestAudience"
+        run: |
+          if [ -d "EnglishLearningPlatform.API.Tests" ]; then
+            dotnet test EnglishLearningPlatform.API.Tests/EnglishLearningPlatform.API.Tests.csproj --no-build --verbosity normal
+          else
+            echo "No test project found, skipping tests"
+          fi

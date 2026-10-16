@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 39,
+      "title": "Фразы без артикля: go home, at school, by car",
+      "cefrLevel": "a1",
+      "section": "Артикли и существительные",
+      "shortDescription": "Устойчивые выражения, где the не ставят — их нужно просто запомнить.",
+      "theoryHtml": "<p>Есть группа устойчивых выражений, где артикль опускается. Их не объяснить логикой — только выучить:</p><ul><li><strong>home</strong>: go home, come home, be home, get home (но: go to <em>the</em> cinema)</li><li><strong>school/university/prison/hospital/church/bed</strong> — когда по назначению: go to school (учиться), be in bed (лежать), go to church (молиться), be in prison (заключённый), go to hospital (лечиться)</li><li>но с <strong>the</strong> — когда речь о здании: go to <em>the</em> school (прийти к зданию, напр. на собрание), <em>the</em> hospital where I was born</li><li><strong>транспорт</strong>: by car, by bus, by train, by plane, by bike; НО on foot</li><li><strong>время суток</strong>: at night, at noon, at midnight (но: in <em>the</em> morning)</li><li><strong>еда и праздники</strong>: have breakfast/lunch/dinner, at Christmas, on my birthday</li></ul><p><strong>⚠ Частые ошибки:</strong> <em>go to home</em> → <em>go home</em> (без to и без the!). <em>by the car</em> → <em>by car</em>. А вот <em>in the morning</em> — обязательно с the.</p><p><strong>Мини-диалог:</strong><br>— How do you get to work? — <strong>By bus</strong>. And I walk home <strong>on foot</strong> if the weather is nice.<br>— Is your son at school? — Yes, and after classes he goes straight home.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I usually go ___ by bus.", "options": ["to home", "home", "to the home", "the home"], "correctAnswer": "1", "explanation": "go home — без to и без the." },
+        { "order": 2, "type": "mc", "prompt": "She goes to ___ every Sunday. (молиться)", "options": ["the church", "church", "a church", "churches"], "correctAnswer": "1", "explanation": "По назначению — без артикля: go to church." },
+        { "order": 3, "type": "mc", "prompt": "We travelled ___ around Europe.", "options": ["by the car", "by car", "by a car", "on car"], "correctAnswer": "1", "explanation": "Транспорт — by car без артикля." },
+        { "order": 4, "type": "mc", "prompt": "I go to ___ to pick up my daughter. (к зданию школы, не учиться)", "options": ["school", "the school", "a school", "schools"], "correctAnswer": "1", "explanation": "Как здание/место — the school; без the было бы «на занятия»." },
+        { "order": 5, "type": "mc", "prompt": "He is in ___ now. (заключён, как заключённый)", "options": ["the prison", "a prison", "prison", "prisons"], "correctAnswer": "2", "explanation": "По назначению (заключён) — in prison без the." },
+        { "order": 6, "type": "mc", "prompt": "___ I can't sleep well.", "options": ["In the night", "At night", "On night", "At the night"], "correctAnswer": "1", "explanation": "at night — без the; in the morning — с the (исключение запомнить)." },
+        { "order": 7, "type": "mc", "prompt": "We had ___ at noon.", "options": ["the lunch", "a lunch", "lunch", "lunches"], "correctAnswer": "2", "explanation": "Приёмы пищи без артикля: have lunch." },
+        { "order": 8, "type": "mc", "prompt": "I walk to work ___.", "options": ["by foot", "on foot", "with foot", "by the foot"], "correctAnswer": "1", "explanation": "on foot — пешком; by + транспорт без foot." },
+        { "order": 9, "type": "fill", "prompt": "He came ___ (домой) very late.", "options": [], "correctAnswer": "home", "explanation": "come home — без to." },
+        { "order": 10, "type": "fill", "prompt": "My grandmother is in ___ (больница, лечится).", "options": [], "correctAnswer": "hospital", "explanation": "Лечится — in hospital без the (брит. англ.)." }
+      ]
+    },
+    {
+      "order": 40,
+      "title": "Исчисляемые и неисчисляемые + a bottle of",
+      "cefrLevel": "a2",
+      "section": "Артикли и существительные",
+      "shortDescription": "Water или a water? Как «посчитать» неисчисляемое.",
+      "theoryHtml": "<p><strong>Исчисляемые</strong> (book, apple, chair) — можно посчитать: a book, two books. <strong>Неисчисляемые</strong> (water, money, information, advice, news, bread) — нельзя посчитать напрямую: <em>some water</em>, но не <em>a water</em> / <em>two waters</em>.</p><p>Чтобы измерить неисчисляемое, используют «ёмкости» и частицы: <strong>a bottle of water, a cup of coffee, a piece of advice, a slice of bread, a bit of news, a loaf of bread, a bar of chocolate</strong>.</p><table><tr><th>Неисчисляемые (частые)</th></tr><tr><td>water, milk, bread, money, time, information, advice, news, homework, work, weather, furniture, luggage, traffic, progress, knowledge, music</td></tr></table><p><strong>⚠ Частые ошибки русскоговорящих:</strong> русские «информация», «новости», «совет» — исчисляемые, в английском — нет: <em>an information</em> → <em>a piece of information</em>, <em>advices</em> → <em>some advice</em>. <em>News</em> выглядит как множественное, но глагол с ним в ед.ч.: <em>The news <strong>is</strong> good</em>.</p><p><strong>Мини-диалог:</strong><br>— Can I have some water? — Sure. A glass or a bottle?<br>— Let me give you a piece of advice: buy two bottles. The weather is hot!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Can I have ___ water, please?", "options": ["a", "an", "some", "many"], "correctAnswer": "2", "explanation": "water неисчисляемое — some water." },
+        { "order": 2, "type": "mc", "prompt": "She gave me ___ good advice.", "options": ["a", "an", "a piece of", "many"], "correctAnswer": "2", "explanation": "advice неисчисляемое — a piece of advice." },
+        { "order": 3, "type": "mc", "prompt": "I need ___ of bread for the soup.", "options": ["a loaf", "a bar", "a bottle", "a slice"], "correctAnswer": "3", "explanation": "a slice of bread — ломтик хлеба; a loaf — буханка целиком." },
+        { "order": 4, "type": "mc", "prompt": "The news ___ really shocking.", "options": ["are", "is", "were", "be"], "correctAnswer": "1", "explanation": "news грамматически единственное число." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I have an information for you.", "I have some information for you.", "I have informations for you.", "I have a informations for you."], "correctAnswer": "1", "explanation": "information неисчисляемое: some information." },
+        { "order": 6, "type": "mc", "prompt": "How ___ money do you need?", "options": ["many", "much", "a lot", "few"], "correctAnswer": "1", "explanation": "money неисчисляемое — much." },
+        { "order": 7, "type": "mc", "prompt": "We bought three ___ of juice.", "options": ["bottles", "pieces", "slices", "cups"], "correctAnswer": "0", "explanation": "bottles of juice — ёмкость для жидкости." },
+        { "order": 8, "type": "mc", "prompt": "There isn't ___ furniture in the room.", "options": ["many", "a", "much", "few"], "correctAnswer": "2", "explanation": "furniture неисчисляемое — much." },
+        { "order": 9, "type": "fill", "prompt": "Two ___ (чашки) of tea, please.", "options": [], "correctAnswer": "cups", "explanation": "cups of tea — ёмкость + of." },
+        { "order": 10, "type": "fill", "prompt": "Could you give me some ___ (совет)?", "options": [], "correctAnswer": "advice", "explanation": "advice без окончания -s: some advice." }
+      ]
+    },
+    {
+      "order": 41,
+      "title": "much/many/(a) little/(a) few",
+      "cefrLevel": "a2",
+      "section": "Артикли и существительные",
+      "shortDescription": "Сколько? мало? почти нет? — четыре слова, которые все путают.",
+      "theoryHtml": "<p>Две оси: исчисляемость и смысл «количества».</p><table><tr><th></th><th>Исчисляемые (books, friends)</th><th>Неисчисляемые (water, time)</th></tr><tr><td><strong>много</strong> (вопросы/отрицания)</td><td>many</td><td>much</td></tr><tr><td><strong>мало, но достаточно</strong> (+)</td><td>(a) few friends</td><td>(a) little time</td></tr><tr><td><strong>почти нет</strong> (−)</td><td>few friends</td><td>little time</td></tr></table><p><strong>Ключевая разница:</strong> <em>a few / a little</em> = «немного, но хватает» (позитив); <em>few / little</em> = «почти нет» (негатив): <em>I have a few friends</em> (несколько есть) vs <em>I have few friends</em> (почти ни одного — грустно).</p><p>В утверждениях «много» обычно = <strong>a lot of / lots of</strong>: <em>I have a lot of books</em>. much/many в утверждениях звучат книжно.</p><p><strong>⚠ Частые ошибки:</strong> <em>much people</em> → <em>many people</em>. <em>I have a little friends</em> → <em>a few friends</em>. И «very little water» ≠ «a very little water».</p><p><strong>Мини-диалог:</strong><br>— Do you have much work today? — Luckily, only a little. I have a few free hours.<br>— Lucky you! I have little time and many problems.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "How ___ people came to the party?", "options": ["much", "many", "a little", "little"], "correctAnswer": "1", "explanation": "people исчисляемое — many." },
+        { "order": 2, "type": "mc", "prompt": "There's ___ milk left — only a drop.", "options": ["a little", "little", "a few", "few"], "correctAnswer": "1", "explanation": "«Почти нет» молока — little (без a), неисчисляемое." },
+        { "order": 3, "type": "mc", "prompt": "Don't worry, we have ___ time before the train.", "options": ["few", "a few", "a little", "little"], "correctAnswer": "2", "explanation": "«Немного, но хватает» времени — a little time." },
+        { "order": 4, "type": "mc", "prompt": "He has ___ friends, so he often feels lonely.", "options": ["a few", "few", "a little", "many"], "correctAnswer": "1", "explanation": "«Почти нет друзей» — few friends (негативный оттенок)." },
+        { "order": 5, "type": "mc", "prompt": "Do you drink ___ coffee?", "options": ["many", "much", "a few", "few"], "correctAnswer": "1", "explanation": "Вопрос с неисчисляемым — much." },
+        { "order": 6, "type": "mc", "prompt": "I read ___ books last year. (много, утверждение)", "options": ["much", "many", "a lot of", "little"], "correctAnswer": "2", "explanation": "В утверждении «много» = a lot of." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She knows a little English words.", "She knows a few English words.", "She knows few English word.", "She knows little English words."], "correctAnswer": "1", "explanation": "Слова исчисляемые — a few words." },
+        { "order": 8, "type": "mc", "prompt": "There is ___ traffic in the city centre.", "options": ["many", "a few", "a lot of", "few"], "correctAnswer": "2", "explanation": "traffic неисчисляемое; в утверждении — a lot of." },
+        { "order": 9, "type": "fill", "prompt": "I have ___ (немного) money — enough for a coffee.", "options": [], "correctAnswer": "a little", "explanation": "Немного, но хватает — a little money." },
+        { "order": 10, "type": "fill", "prompt": "Few people know this, but he has ___ (мало) patience.", "options": [], "correctAnswer": "little", "explanation": "«Почти нет терпения» — little patience." }
+      ]
+    }
+  ]
+}

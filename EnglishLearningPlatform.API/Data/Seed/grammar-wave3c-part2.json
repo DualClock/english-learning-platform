@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 64,
+      "title": "at/in/on — время",
+      "cefrLevel": "a1",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "At 5 o'clock, in May, on Monday — три предлога времени.",
+      "theoryHtml": "<p>Три предлога времени — по «размеру» от точного к широкому:</p><table><tr><th>Предлог</th><th>Когда</th><th>Примеры</th></tr><tr><td><strong>at</strong></td><td>точный момент</td><td>at 5 o'clock, at noon, at midnight, at night, at the weekend, at Christmas, at the moment</td></tr><tr><td><strong>on</strong></td><td>дни и даты</td><td>on Monday, on the 5th of June, on my birthday, on Friday morning</td></tr><tr><td><strong>in</strong></td><td>месяцы, годы, века, части суток</td><td>in May, in 2024, in the 21st century, in the morning/afternoon/evening</td></tr></table><p>Ключевое исключение: <strong>at night</strong>, но <strong>in the morning</strong>. И: <em>on Friday morning</em>, но <em>in the morning</em> — когда есть день, берём on.</p><p><strong>⚠ Частые ошибки:</strong> <em>in Monday</em> → <em>on Monday</em>. <em>at the morning</em> → <em>in the morning</em>. <em>in night</em> → <em>at night</em>. В выражениях next/last/this/every предлог не нужен: <em>See you <strong>next Monday</strong></em>, <em>I saw her <strong>last week</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— When's the meeting? — <strong>On</strong> Tuesday <strong>at</strong> three <strong>in</strong> the afternoon.<br>— And the party? — <strong>At</strong> the weekend. Come <strong>at</strong> seven!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The train leaves ___ 6:45.", "options": ["in", "on", "at", "by"], "correctAnswer": "2", "explanation": "Точное время — at." },
+        { "order": 2, "type": "mc", "prompt": "My birthday is ___ the 12th of August.", "options": ["at", "in", "on", "by"], "correctAnswer": "2", "explanation": "Даты — on." },
+        { "order": 3, "type": "mc", "prompt": "We moved here ___ 2019.", "options": ["at", "on", "in", "since"], "correctAnswer": "2", "explanation": "Годы — in." },
+        { "order": 4, "type": "mc", "prompt": "I study best ___ the morning.", "options": ["at", "on", "in", "by"], "correctAnswer": "2", "explanation": "Части суток — in the morning." },
+        { "order": 5, "type": "mc", "prompt": "He works ___ night.", "options": ["in", "on", "at", "by"], "correctAnswer": "2", "explanation": "Исключение: at night." },
+        { "order": 6, "type": "mc", "prompt": "The party is ___ Saturday evening.", "options": ["in", "at", "on", "by"], "correctAnswer": "2", "explanation": "День + часть суток — on Saturday morning/evening." },
+        { "order": 7, "type": "mc", "prompt": "See you ___ Monday!", "options": ["in", "at", "on", "the"], "correctAnswer": "2", "explanation": "Дни недели — on." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I'll call you in next week.", "I'll call you at next week.", "I'll call you next week.", "I'll call you on next week."], "correctAnswer": "2", "explanation": "next/last/this/every — без предлога." },
+        { "order": 9, "type": "fill", "prompt": "The shops close ___ midnight.", "options": [], "correctAnswer": "at", "explanation": "at midnight." },
+        { "order": 10, "type": "fill", "prompt": "We always visit my grandparents ___ Christmas.", "options": [], "correctAnswer": "at", "explanation": "at Christmas." }
+      ]
+    },
+    {
+      "order": 65,
+      "title": "at/in/on — место",
+      "cefrLevel": "a1",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "At the bus stop, in the room, on the wall.",
+      "theoryHtml": "<p>Место подчиняется той же логике «размера»:</p><table><tr><th>Предлог</th><th>Когда</th><th>Примеры</th></tr><tr><td><strong>at</strong></td><td>точка: конкретное место/событие</td><td>at the bus stop, at the door, at work, at a party, at school (учусь)</td></tr><tr><td><strong>in</strong></td><td>внутри замкнутого пространства</td><td>in the room, in a box, in London, in the car, in bed, in the water</td></tr><tr><td><strong>on</strong></td><td>поверхность</td><td>on the wall, on the table, on the floor, on a shelf, on the ceiling</td></tr></table><p>Тонкости: <em>in a car / in a taxi</em>, но <em>on a bus / on a train / on a plane</em> (можно ходить внутри); <em>on horseback</em>. <em>at the corner</em> (перекрёсток) vs <em>in the corner of the room</em> (внутри угла).</p><p><strong>⚠ Частые ошибки:</strong> <em>I'm at home in my room</em> — оба верны, но смысл разный: at home — точка «дома», in my room — внутри комнаты. <em>on the picture</em> → <em>in the picture</em> (изображено внутри).</p><p><strong>Мини-диалог:</strong><br>— Where are you? — I'm <strong>at</strong> the station, waiting <strong>in</strong> the coffee shop.<br>— I see your ticket — it's <strong>on</strong> the table next to your laptop!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The keys are ___ the table.", "options": ["in", "at", "on", "to"], "correctAnswer": "2", "explanation": "Поверхность — on the table." },
+        { "order": 2, "type": "mc", "prompt": "She's waiting ___ the bus stop.", "options": ["in", "on", "at", "to"], "correctAnswer": "2", "explanation": "Точка — at the bus stop." },
+        { "order": 3, "type": "mc", "prompt": "There's a spider ___ the ceiling!", "options": ["in", "at", "on", "to"], "correctAnswer": "2", "explanation": "Поверхность — on." },
+        { "order": 4, "type": "mc", "prompt": "My phone is ___ my bag.", "options": ["on", "at", "in", "by"], "correctAnswer": "2", "explanation": "Внутри — in." },
+        { "order": 5, "type": "mc", "prompt": "We met ___ a conference in Berlin.", "options": ["in", "on", "at", "to"], "correctAnswer": "2", "explanation": "Событие — at a conference." },
+        { "order": 6, "type": "mc", "prompt": "The children are ___ school now. (учатся)", "options": ["in", "at", "on", "to"], "correctAnswer": "1", "explanation": "По назначению — at school." },
+        { "order": 7, "type": "mc", "prompt": "I left my umbrella ___ the taxi.", "options": ["on", "in", "at", "by"], "correctAnswer": "1", "explanation": "in a taxi, но on a bus/train." },
+        { "order": 8, "type": "mc", "prompt": "There's a beautiful painting ___ the wall.", "options": ["in", "at", "on", "over"], "correctAnswer": "2", "explanation": "Поверхность — on the wall." },
+        { "order": 9, "type": "fill", "prompt": "I'm ___ (дома) all evening.", "options": [], "correctAnswer": "at home", "explanation": "at home." },
+        { "order": 10, "type": "fill", "prompt": "He lives ___ (в) a small flat in the old town.", "options": [], "correctAnswer": "in", "explanation": "in a flat." }
+      ]
+    },
+    {
+      "order": 66,
+      "title": "to/in/at — направления и заведения",
+      "cefrLevel": "a2",
+      "section": "Предлоги и фразовые глаголы",
+      "shortDescription": "go to work, in bed, at university — и когда предлог не нужен.",
+      "theoryHtml": "<p>С глаголами движения (<strong>go, come, walk, drive, fly, return</strong>) используем <strong>to</strong>: <em>go to work, go to school, go to the cinema</em>. Но ряд слов устойчиво БЕЗ to:</p><ul><li><strong>go home, come home, get home</strong> (home — наречие)</li><li><strong>go to bed</strong> — есть to, но bed без артикля</li></ul><p>После прибытия (<strong>be/stay/work/live</strong>) — <strong>at/in</strong>: <em>be at work, stay at home, be in bed, study at university, be in hospital</em>.</p><table><tr><th>Движение (to)</th><th>Место (at/in)</th></tr><tr><td>go to school</td><td>be at school</td></tr><tr><td>go to work</td><td>be at work</td></tr><tr><td>go to bed</td><td>be in bed</td></tr></table><p><strong>arrive</strong>: arrive <strong>in</strong> (города, страны) / arrive <strong>at</strong> (места) — но НЕ arrive to: <em>arrive in Paris, arrive at the hotel</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>go to home</em> → <em>go home</em>. <em>arrive to London</em> → <em>arrive in London</em>. <em>I'm in work now</em> → <em>I'm at work now</em>.</p><p><strong>Мини-диалог:</strong><br>— Where are you? — I'm <strong>at work</strong>. I <strong>got to</strong> the office an hour ago.<br>— Perfect. And is Tom there? — No, he <strong>went home</strong> — he wasn't feeling well.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I go ___ work by metro.", "options": ["at", "in", "to", "—"], "correctAnswer": "2", "explanation": "Движение — go to work." },
+        { "order": 2, "type": "mc", "prompt": "She's ___ bed with a cold.", "options": ["at", "in", "to", "on"], "correctAnswer": "1", "explanation": "be in bed." },
+        { "order": 3, "type": "mc", "prompt": "We arrived ___ Rome at midnight.", "options": ["at", "to", "in", "on"], "correctAnswer": "2", "explanation": "arrive in + город." },
+        { "order": 4, "type": "mc", "prompt": "He arrived ___ the hotel an hour later.", "options": ["in", "to", "at", "on"], "correctAnswer": "2", "explanation": "arrive at + место." },
+        { "order": 5, "type": "mc", "prompt": "Let's go ___!", "options": ["to home", "home", "at home", "in home"], "correctAnswer": "1", "explanation": "go home без to." },
+        { "order": 6, "type": "mc", "prompt": "My son studies ___ university.", "options": ["in", "at", "to", "on"], "correctAnswer": "1", "explanation": "at university." },
+        { "order": 7, "type": "mc", "prompt": "Are you still ___ work?", "options": ["in", "at", "to", "on"], "correctAnswer": "1", "explanation": "at work." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I arrived to the airport early.", "I arrived at the airport early.", "I arrived the airport early.", "I arrive to airport early."], "correctAnswer": "1", "explanation": "arrive at + место." },
+        { "order": 9, "type": "fill", "prompt": "She went ___ (в) the doctor's yesterday.", "options": [], "correctAnswer": "to", "explanation": "go to the doctor's." },
+        { "order": 10, "type": "fill", "prompt": "They stayed ___ (дома) during the storm.", "options": [], "correctAnswer": "at home", "explanation": "stay at home." }
+      ]
+    }
+  ]
+}

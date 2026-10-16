@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 100,
+      "title": "Present Perfect Continuous: I've been working",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Длительный процесс, который ещё идёт (или только что кончился).",
+      "theoryHtml": "<p>Формула: <strong>have/has been + -ing</strong>. Два главных употребления:</p><table><tr><th>Случай</th><th>Пример</th></tr><tr><td>действие длится до сих пор</td><td>I <strong>have been living</strong> here for ten years. (и живу)</td></tr><tr><td>действие длилось, и виден результат/усталость</td><td>I'm tired — I <strong>have been digging</strong> all morning.</td></tr></table><p><strong>vs Present Perfect:</strong> <em>I've <strong>painted</strong> the kitchen</em> (готово — результат). <em>I've <strong>been painting</strong> the kitchen</em> (процесс, может, ещё не закончен — одежда в краске!).</p><p><strong>How long...?</strong> — классический вопрос к PPContinuous: <em><strong>How long have you been waiting?</strong></em></p><p><strong>⚠ Частые ошибки:</strong> <em>I am living here since 2019</em> → <em>I have been living here since 2019</em>. <em>I've been knowing him</em> → <em>I've known him</em> (know — статьевый). <em>How long are you waiting?</em> → <em>have you been waiting</em>.</p><p><strong>Мини-диалог:</strong><br>— You look exhausted! — I <strong>have been working</strong> in the garden since dawn.<br>— How long <strong>have you been growing</strong> tomatoes? — Three years. And I <strong>have grown</strong> about a hundred!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ English for five years.", "options": ["study", "am studying", "have been studying", "studied"], "correctAnswer": "2", "explanation": "Длится до сих пор — have been studying." },
+        { "order": 2, "type": "mc", "prompt": "She's tired because she ___ all day.", "options": ["has shopped", "has been shopping", "shops", "shopped"], "correctAnswer": "1", "explanation": "Процесс с результатом-усталостью." },
+        { "order": 3, "type": "mc", "prompt": "How long ___ you ___ for me?", "options": ["have / been waiting", "are / waiting", "did / wait", "have / waited"], "correctAnswer": "0", "explanation": "How long + have been + -ing." },
+        { "order": 4, "type": "mc", "prompt": "The kitchen smells great! — Yes, I ___ a cake.", "options": ["have been baking", "have baked been", "am baking since", "bake"], "correctAnswer": "0", "explanation": "Процесс — следствие — запах." },
+        { "order": 5, "type": "mc", "prompt": "I ___ this book since Monday, but I haven't finished it.", "options": ["have read", "have been reading", "read", "am reading"], "correctAnswer": "1", "explanation": "Процесс продолжается — have been reading." },
+        { "order": 6, "type": "mc", "prompt": "It ___ since morning. (дождь идёт)", "options": ["rains", "has been raining", "is raining", "rained"], "correctAnswer": "1", "explanation": "Длится до сих пор." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I've been knowing him for years.", "I've known him for years.", "I've been knowing him since years.", "I am knowing him for years."], "correctAnswer": "1", "explanation": "know — статьевый, Present Perfect." },
+        { "order": 8, "type": "mc", "prompt": "We ___ for two hours — let's have a break.", "options": ["have driven", "have been driving", "drive", "drove"], "correctAnswer": "1", "explanation": "Длительный процесс — have been driving." },
+        { "order": 9, "type": "fill", "prompt": "He ___ ___ ___ (работает) here since 2020. (has been working)", "options": [], "correctAnswer": "has been working|'s been working", "explanation": "has been working since." },
+        { "order": 10, "type": "fill", "prompt": "Why are your hands dirty? — I ___ ___ ___ (чинил) the bike. (fix)", "options": [], "correctAnswer": "have been fixing|'ve been fixing", "explanation": "Процесс с результатом." }
+      ]
+    },
+    {
+      "order": 101,
+      "title": "Past Perfect Continuous: I had been waiting",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Длинное действие ДО другого события в прошлом.",
+      "theoryHtml": "<p>Формула: <strong>had been + -ing</strong>. Показывает длительное действие, которое шло ДО другого момента в прошлом: <em>I <strong>had been waiting</strong> for an hour when the bus finally arrived</em> (ждал час — потом пришёл автобус).</p><table><tr><th>Ситуация</th><th>Пример</th></tr><tr><td>причина прошлого результата</td><td>He was tired because he <strong>had been working</strong> all night.</td></tr><tr><td>фон для прошлого события</td><td>They <strong>had been playing</strong> for an hour when it started to rain.</td></tr><tr><td>с for/since</td><td>She <strong>had been teaching</strong> for 20 years before she retired.</td></tr></table><p><strong>vs Past Perfect:</strong> <em>I had <strong>finished</strong> the report</em> (результат/факт) vs <em>I had been <strong>finishing</strong> the report for hours</em> (процесс — редкий случай; обычно had been + действие процесса: working, waiting, living).</p><p><strong>⚠ Частые ошибки:</strong> <em>I had waiting</em> → <em>had been waiting</em>. Статьевые глаголы: <em>I had been knowing</em> → <em>I had known</em>.</p><p><strong>Мини-диалог:</strong><br>— Why were you so wet? — It <strong>had been raining</strong> for hours before the sun came out. I <strong>had been walking</strong> in it.<br>— How long <strong>had you been standing</strong> there? — Twenty minutes at least!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "He was tired because he ___ all night.", "options": ["worked", "had been working", "has been working", "was working"], "correctAnswer": "1", "explanation": "Долго ДО прошлого события — had been working." },
+        { "order": 2, "type": "mc", "prompt": "We ___ for an hour when the train came.", "options": ["waited", "had been waiting", "have been waiting", "were waited"], "correctAnswer": "1", "explanation": "До пришёл автобус — had been waiting." },
+        { "order": 3, "type": "mc", "prompt": "She ___ there for ten years before she moved.", "options": ["had been living", "has been living", "was living", "lived been"], "correctAnswer": "0", "explanation": "До переезда — had been living." },
+        { "order": 4, "type": "mc", "prompt": "The ground was wet. It ___.", "options": ["rained", "had been raining", "has been raining", "was raining"], "correctAnswer": "1", "explanation": "Причина в прошлом — had been raining." },
+        { "order": 5, "type": "mc", "prompt": "How long ___ you ___ before you passed?", "options": ["had / been trying", "have / been trying", "did / try", "were / trying"], "correctAnswer": "0", "explanation": "До прошедшего результата — had been trying." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I had been knowing her for years.", "I had known her for years before we married.", "I had knowing her for years.", "I have been knowing her before."], "correctAnswer": "1", "explanation": "know — статьевый → had known." },
+        { "order": 7, "type": "mc", "prompt": "The players were exhausted — they ___ for two hours.", "options": ["played", "had been playing", "have been playing", "were playing"], "correctAnswer": "1", "explanation": "Причина усталости в прошлом." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She had waiting for an hour.", "She had been waiting for an hour.", "She have been waiting for an hour.", "She was had waiting."], "correctAnswer": "1", "explanation": "had been + -ing." },
+        { "order": 9, "type": "fill", "prompt": "I ___ ___ ___ (жил) abroad for years before I returned. (had been living)", "options": [], "correctAnswer": "had been living", "explanation": "had been living." },
+        { "order": 10, "type": "fill", "prompt": "They ___ ___ ___ (спорили) for hours when I arrived. (argue)", "options": [], "correctAnswer": "had been arguing", "explanation": "had been arguing." }
+      ]
+    },
+    {
+      "order": 102,
+      "title": "Порядок наречий: manner-place-time",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "I went there quickly yesterday — как расставить обстоятельства.",
+      "theoryHtml": "<p>Обстоятельства идут в порядке <strong>MPT: manner (как) → place (где) → time (когда)</strong>: <em>She sang <strong>beautifully at the concert last night</strong></em>.</p><table><tr><th>Элемент</th><th>Пример</th></tr><tr><td>Как (manner)</td><td>quickly, carefully, well</td></tr><tr><td>Где (place)</td><td>at home, to the office, there</td></tr><tr><td>Когда (time)</td><td>yesterday, at 5 pm, last week</td></tr></table><p>Время можно вынести в начало для акцента: <em><strong>Yesterday</strong>, I went to the dentist</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>I went yesterday to the cinema</em> → <em>I went to the cinema yesterday</em>. <em>She speaks very well English</em> → <em>She speaks English very well</em> (well — в конец!).</p><p><strong>Мини-диалог:</strong><br>— When did you move? — I moved <strong>here quietly last spring</strong>.<br>— And you're <strong>happily</strong> living <strong>there now</strong>? — Very!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Choose the correct order:", "options": ["I saw him yesterday in the park quickly.", "I saw him quickly in the park yesterday.", "I quickly saw yesterday him in the park.", "I saw quickly him yesterday in the park."], "correctAnswer": "1", "explanation": "manner → place → time." },
+        { "order": 2, "type": "mc", "prompt": "She speaks English ___.", "options": ["very well", "well very", "very good", "good very"], "correctAnswer": "0", "explanation": "well в конце предложения." },
+        { "order": 3, "type": "mc", "prompt": "___, I met my future wife.", "options": ["In 2015 quietly at a party", "Quietly at a party in 2015", "At a party in 2015", "2015 at a party"], "correctAnswer": "1", "explanation": "manner (quietly) → place → time; акцент: время можно в начало." },
+        { "order": 4, "type": "mc", "prompt": "He drives ___.", "options": ["carefully to work every day", "to work carefully every day", "every day carefully to work", "to work every day carefully"], "correctAnswer": "0", "explanation": "manner → place → time." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["They arrived at 6 pm at the airport quietly.", "They arrived quietly at the airport at 6 pm.", "They quietly arrived 6 pm airport at.", "They at 6 pm arrived at the airport quietly."], "correctAnswer": "1", "explanation": "manner → place → time." },
+        { "order": 6, "type": "mc", "prompt": "Where does the time expression go for emphasis in: «I'll call you tomorrow»?", "options": ["I'll tomorrow call you.", "Tomorrow, I'll call you.", "I tomorrow will call you.", "Call I you tomorrow."], "correctAnswer": "1", "explanation": "Время в начало + запятая — акцент." },
+        { "order": 7, "type": "mc", "prompt": "She studied ___ for the exam.", "options": ["hard all night at the library", "at the library all night hard", "hard at the library all night", "all night hard at the library"], "correctAnswer": "2", "explanation": "manner (hard) → place (library) → time (all night)." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["He runs fast every morning in the park.", "He runs in the park fast every morning.", "He fast runs every morning in the park.", "He runs every morning in the park fast."], "correctAnswer": "0", "explanation": "manner (fast) → place → time." },
+        { "order": 9, "type": "fill", "prompt": "I'll meet you ___ ___ ___ (там завтра утром). (3 слова)", "options": [], "correctAnswer": "there tomorrow morning", "explanation": "place → time." },
+        { "order": 10, "type": "fill", "prompt": "She played ___ ___ ___ (прекрасно в концерте вчера). (3 слова)", "options": [], "correctAnswer": "beautifully at the concert yesterday", "explanation": "manner → place → time." }
+      ]
+    }
+  ]
+}

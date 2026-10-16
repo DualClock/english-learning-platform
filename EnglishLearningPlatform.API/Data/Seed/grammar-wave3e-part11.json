@@ -1,0 +1,44 @@
+{
+  "units": [
+    {
+      "order": 106,
+      "title": "Спеллинг: -ing/-ed и удвоение согласных",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "run→running, hope→hoping — правила на конце слова.",
+      "theoryHtml": "<table><tr><th>Правило</th><th>Пример</th></tr><tr><td>-e → убираем</td><td>make → making/made; hope → hoping/hoped</td></tr><tr><td>согласная после краткой ударной гласной — удваиваем</td><td>run → running/run; sit → sitting/sat; stop → stopped</td></tr><tr><td>ударение не на последнем слоге — НЕ удваиваем</td><td>visit → visiting/visited; open → opening</td></tr><tr><td>-y после согласной → -ied</td><td>study → studied; carry → carried (но: play → played, stay → stayed)</td></tr><tr><td>-ie → -ying</td><td>lie → lying; die → dying</td></tr><tr><td>-l брит. удваиваем</td><td>travel → travelling/travelled (амер. traveling)</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>runing</em> → <em>running</em>. <em>hoping for the best but hoped out</em> — проверяй ударение: <em>listening</em> (не listenning), <em>offering</em> (не offerreing).</p><p><strong>Мини-диалог:</strong><br>— How do you spell «running»? — R-U-double N-I-N-G. Two n's, it's a short vowel.<br>— And «hoping»? — One p! H-O-P-I-N-G. «Hopping» — это прыгать.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Correct spelling: he is ___ (run) now.", "options": ["runing", "running", "runnning", "runnig"], "correctAnswer": "1", "explanation": "Краткая гласная — удвоение nn." },
+        { "order": 2, "type": "mc", "prompt": "Correct spelling: we are ___ (make) plans.", "options": ["makeing", "makking", "making", "makcing"], "correctAnswer": "2", "explanation": "-e исчезает: making." },
+        { "order": 3, "type": "mc", "prompt": "Correct spelling: they ___ (visit) us last week.", "options": ["visitted", "visited", "visitid", "visitting"], "correctAnswer": "1", "explanation": "Ударение на первый слог — без удвоения." },
+        { "order": 4, "type": "mc", "prompt": "Correct spelling: she ___ (study) hard.", "options": ["studyed", "studied", "studying", "studdy"], "correctAnswer": "1", "explanation": "y → ied." },
+        { "order": 5, "type": "mc", "prompt": "Correct spelling: he is ___ (lie) on the beach.", "options": ["lieing", "lying", "laying", "lieng"], "correctAnswer": "1", "explanation": "lie → lying." },
+        { "order": 6, "type": "mc", "prompt": "Correct spelling: they ___ (play) football.", "options": ["plaied", "played", "playying", "playd"], "correctAnswer": "1", "explanation": "play → played (y после гласной)." },
+        { "order": 7, "type": "mc", "prompt": "British spelling of «traveling»:", "options": ["traveling", "travelling", "travelingg", "traveling is the only one"], "correctAnswer": "1", "explanation": "Британский — travelling с двумя l." },
+        { "order": 8, "type": "mc", "prompt": "Correct spelling: I'm ___ (die) to know the secret!", "options": ["dieing", "dying", "dyeng", "diing"], "correctAnswer": "1", "explanation": "die → dying." },
+        { "order": 9, "type": "fill", "prompt": "He's ___ (sit) in the corner.", "options": [], "correctAnswer": "sitting", "explanation": "sit → sitting." },
+        { "order": 10, "type": "fill", "prompt": "She ___ (hope) for the best.", "options": [], "correctAnswer": "hopes|hoped|hoping", "explanation": "hope → hoping/hoped." }
+      ]
+    },
+    {
+      "order": 107,
+      "title": "Формальный vs разговорный стиль",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "gonna, wanna, cause — что где уместно.",
+      "theoryHtml": "<p>В разговорной речи англоговорящие «съедают» слова. Услышать — нужно уметь всё, писать в формальном тексте — только полные формы:</p><table><tr><th>Разговорное</th><th>Полное</th><th>Пример</th></tr><tr><td>gonna</td><td>going to</td><td>I'm gonna call you. (I'm going to call you.)</td></tr><tr><td>wanna</td><td>want to</td><td>I wanna see it. (I want to see it.)</td></tr><tr><td>gotta</td><td>got to / have got to</td><td>I gotta go. (I've got to go.)</td></tr><tr><td>cause / 'cos / cuz</td><td>because</td><td>I stayed 'cause it rained.</td></tr><tr><td>kinda / sorta</td><td>kind of / sort of</td><td>It's kinda cold.</td></tr><tr><td>gimme, lemme</td><td>give me, let me</td><td>Gimme a second.</td></tr></table><p><strong>Правила:</strong> в письмах, на экзаменах, в деловой переписке — только полные формы. В чатах и фильмах — сленг норма. И даже в разговоре их НЕ пишут в формальном тексте.</p><p><strong>⚠ Частые ошибки:</strong> писать gonna в резюме или письме преподавателю. Использовать wanna как самостоятельное слово в тесте.</p><p><strong>Мини-диалог (разговор):</strong><br>— We're <strong>gonna</strong> be late, <strong>gotta</strong> run! — <strong>Kinda</strong> figured that. Go, I'll cover for you.<br>— Формальный вариант: We're going to be late. I have to leave now.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "«gonna» = ", "options": ["got to", "going to", "gone to", "want to"], "correctAnswer": "1", "explanation": "gonna = going to." },
+        { "order": 2, "type": "mc", "prompt": "«wanna» = ", "options": ["would not", "want to", "went to", "won to"], "correctAnswer": "1", "explanation": "wanna = want to." },
+        { "order": 3, "type": "mc", "prompt": "«gotta» = ", "options": ["got a", "got to", "gotten to", "got ya"], "correctAnswer": "1", "explanation": "gotta = got to (должен)." },
+        { "order": 4, "type": "mc", "prompt": "Формальный вариант: «I wanna ask a question»:", "options": ["I want to ask a question.", "I gonna ask a question.", "I wanna to ask.", "I'd wanna ask."], "correctAnswer": "0", "explanation": "want to ask." },
+        { "order": 5, "type": "mc", "prompt": "Что уместно в деловом письме?", "options": ["I'm gonna send it.", "I will send it.", "I'm gonna send ya.", "Gonna send it I will."], "correctAnswer": "1", "explanation": "В письме — полные формы." },
+        { "order": 6, "type": "mc", "prompt": "«It's kinda cold» = ", "options": ["It's kind of cold.", "It's cold kind.", "It's a cold kind.", "It's kinds cold."], "correctAnswer": "0", "explanation": "kinda = kind of." },
+        { "order": 7, "type": "mc", "prompt": "«Lemme see» = ", "options": ["Let me see.", "Let them see.", "Leave me see.", "Legend see."], "correctAnswer": "0", "explanation": "lemme = let me." },
+        { "order": 8, "type": "mc", "prompt": "«cause» в «I stayed cause it rained» = ", "options": ["причина-сущ.", "because", "course", "cousin"], "correctAnswer": "1", "explanation": "'cause = because." },
+        { "order": 9, "type": "fill", "prompt": "Полная форма: «I'm gonna help you» → I'm ___ ___ help you.", "options": [], "correctAnswer": "going to", "explanation": "gonna = going to." },
+        { "order": 10, "type": "fill", "prompt": "Полная форма: «I gotta go» → I've ___ ___ go.", "options": [], "correctAnswer": "got to", "explanation": "gotta = got to." }
+      ]
+    }
+  ]
+}

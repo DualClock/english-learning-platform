@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 46,
+      "title": "Наречия: quick→quickly, good→well",
+      "cefrLevel": "a2",
+      "section": "Прилагательные и наречия",
+      "shortDescription": "Как сделать наречие и почему well — это не про здоровье.",
+      "theoryHtml": "<p><strong>Прилагательное</strong> описывает существительное: <em>a quick runner</em>. <strong>Наречие</strong> описывает действие (глагол): <em>he runs quickly</em>. Большинство наречий = прилагательное + <strong>-ly</strong>: quick → quickly, slow → slowly, careful → carefully.</p><table><tr><th>Прилагательное</th><th>Наречие</th></tr><tr><td>good</td><td><strong>well</strong> (особая форма!)</td></tr><tr><td>fast</td><td>fast (не fastly!)</td></tr><tr><td>hard</td><td>hard (hardly = «едва ли»!)</td></tr><tr><td>late</td><td>late (lately = «недавно»)</td></tr><tr><td>-y → -ily</td><td>happy → happily, easy → easily</td></tr><tr><td>-le → -ly</td><td>terrible → terribly</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>He runs good</em> → <em>He runs <strong>well</strong></em>. <em>She sings beautiful</em> → <em>beautifully</em>. И путаница: <em>He works hardly</em> = «едва работает», а не «усердно» — нужно <em>He works <strong>hard</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— How's your new job? — I work <strong>hard</strong>, but the team treats me <strong>well</strong>.<br>— And you speak English so <strong>fluently</strong> now!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She sings ___.", "options": ["beautiful", "beautifully", "beauty", "more beautiful"], "correctAnswer": "1", "explanation": "Описывает действие (sings) — наречие beautifully." },
+        { "order": 2, "type": "mc", "prompt": "He is a ___ driver.", "options": ["carefully", "careful", "care", "carefuly"], "correctAnswer": "1", "explanation": "Описывает существительное (driver) — прилагательное careful." },
+        { "order": 3, "type": "mc", "prompt": "She speaks English very ___.", "options": ["good", "well", "goodly", "better"], "correctAnswer": "1", "explanation": "Особая форма: good → well." },
+        { "order": 4, "type": "mc", "prompt": "The train arrived ___. (с опозданием)", "options": ["lately", "late", "lateness", "later"], "correctAnswer": "1", "explanation": "late = поздно; lately = недавно." },
+        { "order": 5, "type": "mc", "prompt": "He hardly ___ at all. (едва работает)", "options": ["works hard", "work hard", "hardly works", "working hard"], "correctAnswer": "2", "explanation": "hardly = едва ли." },
+        { "order": 6, "type": "mc", "prompt": "Be ___ when you cross the street.", "options": ["carefully", "careful", "care", "cared"], "correctAnswer": "1", "explanation": "После be — прилагательное careful." },
+        { "order": 7, "type": "mc", "prompt": "The exam was ___. (лёгкий)", "options": ["easily", "easy", "ease", "easiness"], "correctAnswer": "1", "explanation": "После was — прилагательное." },
+        { "order": 8, "type": "mc", "prompt": "He opened the door ___. (тихо)", "options": ["quiet", "quietly", "quietness", "more quiet"], "correctAnswer": "1", "explanation": "Описывает действие — наречие quietly." },
+        { "order": 9, "type": "fill", "prompt": "She smiled ___ (счастливо).", "options": [], "correctAnswer": "happily", "explanation": "happy → happily (y → ily)." },
+        { "order": 10, "type": "fill", "prompt": "He did the job ___ (плохо).", "options": [], "correctAnswer": "badly", "explanation": "bad → badly." }
+      ]
+    },
+    {
+      "order": 47,
+      "title": "Сравнения: as...as, much better",
+      "cefrLevel": "a2",
+      "section": "Прилагательные и наречия",
+      "shortDescription": "Равенство и усиление сравнений: такой же, в два раза лучше.",
+      "theoryHtml": "<p>Сравнение равенства: <strong>as + прилагательное + as</strong> — «такой же, как»: <em>She is <strong>as tall as</strong> her brother</em>. Отрицание: <em>not as/so ... as</em> — <em>It's not as cold as yesterday</em>.</p><p><strong>Усиление сравнительной степени:</strong> перед comparative ставим much, a lot, far, a bit, slightly — НО не very! <em>This book is <strong>much better</strong> than the film</em>. <em>a bit easier</em>. Very + comparative — грубая ошибка: <em>very better</em> ✗.</p><table><tr><th>Формула</th><th>Пример</th></tr><tr><td>as + adj + as</td><td>as fast as lightning</td></tr><tr><td>not as + adj + as</td><td>not as expensive as</td></tr><tr><td>much/far/a bit + comparative</td><td>far more interesting</td></tr><tr><td>the more..., the more...</td><td>The more you read, the more you know.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>as better as</em> → <em>as good as</em> (в конструкции as...as — только положительная степень). <em>more better</em> → <em>better</em>. <em>very cheaper</em> → <em>much cheaper</em>.</p><p><strong>Мини-диалог:</strong><br>— Is the new office bigger? — It's <strong>much bigger</strong>, and the commute is <strong>not as bad as</strong> before.<br>— Great! The better the office, the happier the team.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "This film is ___ than the book.", "options": ["very worse", "much worse", "more worse", "as worse"], "correctAnswer": "1", "explanation": "Усилитель much + comparative." },
+        { "order": 2, "type": "mc", "prompt": "He is not ___ strong as his father.", "options": ["so", "as", "much", "than"], "correctAnswer": "1", "explanation": "not as...as." },
+        { "order": 3, "type": "mc", "prompt": "My new phone is ___ as the old one.", "options": ["as good", "as better", "much good", "so good as"], "correctAnswer": "0", "explanation": "as + положительная степень + as." },
+        { "order": 4, "type": "mc", "prompt": "The ___ you practise, the ___ you get.", "options": ["more / better", "most / best", "much / good", "more / good"], "correctAnswer": "0", "explanation": "Конструкция the more..., the better..." },
+        { "order": 5, "type": "mc", "prompt": "This exam is ___ more difficult than the last one.", "options": ["very", "much", "as", "so"], "correctAnswer": "1", "explanation": "much + comparative, не very." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She is as taller as me.", "She is taller as me.", "She is as tall as me.", "She is so tall as me."], "correctAnswer": "2", "explanation": "as...as с положительной степенью." },
+        { "order": 7, "type": "mc", "prompt": "The tickets are far ___ this year.", "options": ["expensive", "more expensive", "most expensive", "expensiver"], "correctAnswer": "1", "explanation": "far + comparative." },
+        { "order": 8, "type": "mc", "prompt": "It's not ___ cold as it was last week.", "options": ["so", "much", "more", "than"], "correctAnswer": "0", "explanation": "not so...as — вариант not as...as." },
+        { "order": 9, "type": "fill", "prompt": "Today is ___ (гораздо) hotter than yesterday.", "options": [], "correctAnswer": "much|a lot|far", "explanation": "Усилители сравнительной степени: much/a lot/far." },
+        { "order": 10, "type": "fill", "prompt": "He is twice ___ (старше) than his sister. (as old as ×2)", "options": [], "correctAnswer": "as old", "explanation": "twice as old as — в два раза старше." }
+      ]
+    },
+    {
+      "order": 48,
+      "title": "too и enough",
+      "cefrLevel": "a2",
+      "section": "Прилагательные и наречия",
+      "shortDescription": "Слишком горячо / достаточно горячего — порядок слов у них противоположный.",
+      "theoryHtml": "<p><strong>too</strong> = «слишком» (избыток, негатив): стоит ПЕРЕД прилагательным. <strong>enough</strong> = «достаточно»: ПОСЛЕ прилагательного, НО ПЕРЕД существительным.</p><table><tr><th>Конструкция</th><th>Пример</th></tr><tr><td>too + adj (+ to do)</td><td>The soup is <strong>too hot</strong> to eat.</td></tr><tr><td>adj + enough (+ to do)</td><td>The soup is hot <strong>enough</strong> to eat.</td></tr><tr><td>enough + сущ.</td><td>We don't have <strong>enough money</strong>.</td></tr><tr><td>too much/many + сущ.</td><td><strong>too much</strong> sugar, <strong>too many</strong> cars</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>enough hot</em> → <em>hot enough</em>. <em>too much hot</em> → <em>too hot</em>. И смысловая ловушка: <em>too tired</em> = «слишком устал (чтобы...)», а не просто «очень устал».</p><p><strong>Мини-диалог:</strong><br>— How's the coffee? — It's <strong>too bitter</strong> to drink without sugar. And there isn't <strong>enough</strong> milk.<br>— Add two spoons. It'll be sweet <strong>enough</strong>.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The box is ___ heavy to lift.", "options": ["enough", "too", "very", "much"], "correctAnswer": "1", "explanation": "Избыток перед прилагательным: too heavy." },
+        { "order": 2, "type": "mc", "prompt": "He isn't old ___ to drive.", "options": ["too", "enough", "very", "much"], "correctAnswer": "1", "explanation": "enough ПОСЛЕ прилагательного." },
+        { "order": 3, "type": "mc", "prompt": "We don't have ___ time.", "options": ["too", "enough", "very", "much of"], "correctAnswer": "1", "explanation": "enough ПЕРЕД существительным." },
+        { "order": 4, "type": "mc", "prompt": "There are ___ cars in the city centre.", "options": ["too much", "too many", "enough", "much too"], "correctAnswer": "1", "explanation": "cars исчисляемое — too many." },
+        { "order": 5, "type": "mc", "prompt": "She's ___ young ___ understand this film.", "options": ["too / to", "enough / to", "too / for", "very / to"], "correctAnswer": "0", "explanation": "too + adj + to do." },
+        { "order": 6, "type": "mc", "prompt": "Is the water warm ___ to swim?", "options": ["too", "enough", "very", "much"], "correctAnswer": "1", "explanation": "warm enough — достаточно тёплая." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["This tea is enough hot.", "This tea is hot enough.", "This tea is too much hot.", "This tea is hot too."], "correctAnswer": "1", "explanation": "enough после прилагательного." },
+        { "order": 8, "type": "mc", "prompt": "I have too ___ work and too ___ free time.", "options": ["many / few", "much / little", "much / few", "many / little"], "correctAnswer": "1", "explanation": "work неисчисляемое (much), time неисчисляемое (little)." },
+        { "order": 9, "type": "fill", "prompt": "The jacket is ___ (слишком) small for me.", "options": [], "correctAnswer": "too", "explanation": "too small — слишком маленькая." },
+        { "order": 10, "type": "fill", "prompt": "He's not tall ___ (достаточно) for basketball.", "options": [], "correctAnswer": "enough", "explanation": "tall enough." }
+      ]
+    }
+  ]
+}

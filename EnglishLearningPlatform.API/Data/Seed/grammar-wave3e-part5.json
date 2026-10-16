@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 88,
+      "title": "news/advice/information + scissors/trousers",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "Существительные-обманки: единственные на вид, множественные на деле.",
+      "theoryHtml": "<p>Три группы существительных-ловушек:</p><table><tr><th>Группа</th><th>Слова</th><th>Глагол</th></tr><tr><td>Неисчисляемые, похожи на мн.ч.</td><td>news, physics, economics, mathematics</td><td>ед.ч.: The news <strong>is</strong> good.</td></tr><tr><td>Неисчисляемые всегда</td><td>advice, information, furniture, luggage, equipment, progress, homework</td><td>ед.ч., без a/an: some advice</td></tr><tr><td>Всегда множественные</td><td>scissors, trousers, jeans, glasses, stairs, clothes, thanks, police, people</td><td>мн.ч.: The scissors <strong>are</strong> sharp.</td></tr></table><p>Как посчитать: <strong>a piece of advice/news</strong>, <strong>an item of furniture</strong>, <strong>a pair of scissors/trousers</strong>, <strong>two pairs of jeans</strong>. police и people всегда мн.ч.: <em>The police <strong>are</strong> coming</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>an advice</em> → <em>a piece of advice</em>. <em>informations</em> → <em>information</em>. <em>The police is coming</em> → <em>are coming</em>. <em>a people</em> → <em>people</em> (или a nation).</p><p><strong>Мини-диалог:</strong><br>— Did you bring the scissors? — Yes, and a pair of <strong>trousers</strong> for the climb.<br>— Any news from the guide? — The news <strong>is</strong> good — we leave at dawn. He gave me one more piece of <strong>advice</strong>: sleep now.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The news ___ better than expected.", "options": ["are", "is", "were", "have been"], "correctAnswer": "1", "explanation": "news — единственное число." },
+        { "order": 2, "type": "mc", "prompt": "These ___ don't fit me.", "options": ["trouser", "trousers", "trousers is", "a trousers"], "correctAnswer": "1", "explanation": "trousers всегда мн.ч." },
+        { "order": 3, "type": "mc", "prompt": "Can you give me ___?", "options": ["an advice", "advices", "a piece of advice", "advices"], "correctAnswer": "2", "explanation": "advice неисчисляемое." },
+        { "order": 4, "type": "mc", "prompt": "The police ___ investigating the case.", "options": ["is", "are", "was", "has"], "correctAnswer": "1", "explanation": "police — мн.ч." },
+        { "order": 5, "type": "mc", "prompt": "How much ___ is there in the flat?", "options": ["furnitures", "furniture", "furnitures are", "a furniture"], "correctAnswer": "1", "explanation": "furniture неисчисляемое." },
+        { "order": 6, "type": "mc", "prompt": "I need two ___ of jeans.", "options": ["pieces", "pairs", "items", "loaves"], "correctAnswer": "1", "explanation": "a pair of jeans → two pairs." },
+        { "order": 7, "type": "mc", "prompt": "Mathematics ___ my favourite subject.", "options": ["are", "were", "is", "have been"], "correctAnswer": "2", "explanation": "Науки — ед.ч." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She gave me many informations.", "She gave me some information.", "She gave me an information.", "She gave me informations."], "correctAnswer": "1", "explanation": "information неисчисляемое." },
+        { "order": 9, "type": "fill", "prompt": "___ (спасибо) for your help!", "options": [], "correctAnswer": "Thanks|Thank you", "explanation": "thanks — мн.ч." },
+        { "order": 10, "type": "fill", "prompt": "The stairs ___ (находятся) on the left.", "options": [], "correctAnswer": "are", "explanation": "stairs — мн.ч." }
+      ]
+    },
+    {
+      "order": 89,
+      "title": "Would you mind...? — вежливые формы",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "Would you mind + -ing — самая вежливая просьба.",
+      "theoryHtml": "<p>Лестница вежливости от приказа к деликатной просьбе:</p><table><tr><th>Форма</th><th>Сила</th><th>Пример</th></tr><tr><td>Open the window.</td><td>приказ/инструкция</td><td>Open the window, please.</td></tr><tr><td>Can you...?</td><td>нейтрально</td><td>Can you open the window?</td></tr><tr><td>Could you...?</td><td>вежливо</td><td>Could you open the window?</td></tr><tr><td>Would you mind + <strong>-ing</strong>?</td><td>очень вежливо</td><td>Would you mind opening the window?</td></tr><tr><td>I was wondering if you could...</td><td>максимально деликатно</td><td>I was wondering if you could help me.</td></tr></table><p><strong>Ответ на Would you mind...?</strong> ловушка: <em>No, not at all</em> = «конечно, помогу» (не против!), а <em>Yes</em> = «против».</p><p>Ещё вежливые конструкции: <em>Could I possibly...?</em>, <em>Would it be possible to...?</em>, <em>I'd appreciate it if you could...</em></p><p><strong>⚠ Частые ошибки:</strong> <em>Would you mind to open</em> → <em>mind <strong>opening</strong></em>. <em>Yes, of course</em> в ответ на mind — путает собеседника (выходит «да, я против»).</p><p><strong>Мини-диалог:</strong><br>— <strong>Would you mind</strong> closing the window? — <strong>Not at all.</strong><br>— And <strong>would it be possible</strong> to move my seat? — I'll see what I can do.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Would you mind ___ the door?", "options": ["to close", "closing", "close", "closed"], "correctAnswer": "1", "explanation": "mind + -ing." },
+        { "order": 2, "type": "mc", "prompt": "Would you mind if I ___ the TV?", "options": ["turn on", "turned on", "turning on", "turned"], "correctAnswer": "1", "explanation": "Would you mind if I + Past (вежливо)." },
+        { "order": 3, "type": "mc", "prompt": "«Would you mind waiting?» Означает:", "options": ["Ты против ожидания?", "Подожди немедленно!", "Ты умеешь ждать?", "Ты ждал?"], "correctAnswer": "0", "explanation": "mind = быть против." },
+        { "order": 4, "type": "mc", "prompt": "Вежливый ответ на «Would you mind helping me?»:", "options": ["Yes, I mind.", "No, not at all.", "Yes, I would.", "Sure, I mind."], "correctAnswer": "1", "explanation": "Not at all = с радостью." },
+        { "order": 5, "type": "mc", "prompt": "I was wondering if you ___ give me a lift.", "options": ["can", "will", "could", "may"], "correctAnswer": "2", "explanation": "I was wondering if you could..." },
+        { "order": 6, "type": "mc", "prompt": "Расставь по вежливости (самая вежливая последней): 1. Can you...? 2. Open it. 3. Would you mind...?", "options": ["1-2-3", "2-1-3", "3-2-1", "1-3-2"], "correctAnswer": "1", "explanation": "Open it → Can you → Would you mind." },
+        { "order": 7, "type": "mc", "prompt": "Would it be possible ___ a late checkout?", "options": ["get", "to get", "getting", "got"], "correctAnswer": "1", "explanation": "possible + to do." },
+        { "order": 8, "type": "mc", "prompt": "Could I ___ leave early today?", "options": ["possibly", "possible", "possibility", "possibly to"], "correctAnswer": "0", "explanation": "Could I possibly..." },
+        { "order": 9, "type": "fill", "prompt": "Would you mind ___ ___ (подождать) outside? (wait)", "options": [], "correctAnswer": "waiting", "explanation": "mind waiting." },
+        { "order": 10, "type": "fill", "prompt": "I'd ___ ___ (был бы признателен), if you could reply today. (appreciate)", "options": [], "correctAnswer": "appreciate it", "explanation": "I'd appreciate it if..." }
+      ]
+    },
+    {
+      "order": 90,
+      "title": "hard/hardly, late/lately, near/nearly",
+      "cefrLevel": "b1",
+      "section": "Тонкости и ревизия",
+      "shortDescription": "Наречия-обманки: добавь -ly и смысл изменится полностью.",
+      "theoryHtml": "<p>Пары, где форма с -ly означает ДРУГОЕ:</p><table><tr><th>Пара</th><th>Без -ly</th><th>С -ly</th></tr><tr><td>hard / hardly</td><td>hard = усердно: work hard</td><td>hardly = едва ли: I hardly know him.</td></tr><tr><td>late / lately</td><td>late = поздно: arrive late</td><td>lately = недавно: Have you seen him lately?</td></tr><tr><td>near / nearly</td><td>near = близко: live near</td><td>nearly = почти: nearly finished</td></tr><tr><td>high / highly</td><td>high = высоко: fly high</td><td>highly = очень (оценка): highly recommend</td></tr><tr><td>free / freely</td><td>free = бесплатно</td><td>freely = свободно</td></tr><tr><td>most / mostly</td><td>most = больше всего</td><td>mostly = в основном</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>I hardly work</em> в значении «работаю усердно» — на самом деле «почти не работаю»! <em>It's late recently</em> → <em>lately</em>. <em>I nearly agree</em> → <em>I <strong>almost</strong> agree</em> или <em>I <strong>fully</strong> agree</em> (nearly agree звучит странно).</p><p><strong>Мини-диалог:</strong><br>— Do you see Mark <strong>lately</strong>? — Hmm, we <strong>hardly</strong> ever meet. He works <strong>hard</strong> and travels <strong>most</strong> of the time.<br>— <strong>Nearly</strong> everyone says that about him.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She works ___ and earns well.", "options": ["hardly", "hard", "harder", "hardness"], "correctAnswer": "1", "explanation": "Усердно — hard." },
+        { "order": 2, "type": "mc", "prompt": "I ___ know anyone at this party.", "options": ["hard", "hardly", "harder", "hardness"], "correctAnswer": "1", "explanation": "Едва ли — hardly." },
+        { "order": 3, "type": "mc", "prompt": "Have you seen any good films ___?", "options": ["late", "lately", "later", "latest"], "correctAnswer": "1", "explanation": "Недавно — lately." },
+        { "order": 4, "type": "mc", "prompt": "Sorry, I'm ___ — traffic was terrible.", "options": ["lately", "late", "nearly", "highly"], "correctAnswer": "1", "explanation": "Поздно — late." },
+        { "order": 5, "type": "mc", "prompt": "The exam is ___ finished. (почти)", "options": ["near", "nearly", "nearlier", "nearly more"], "correctAnswer": "1", "explanation": "Почти — nearly." },
+        { "order": 6, "type": "mc", "prompt": "I ___ recommend this book.", "options": ["high", "highly", "higher", "height"], "correctAnswer": "1", "explanation": "Оценка — highly." },
+        { "order": 7, "type": "mc", "prompt": "We live ___ the station. (рядом)", "options": ["nearly", "near", "nearly by", "nearness"], "correctAnswer": "1", "explanation": "Близко — near." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["He hardly ever works.", "He works hardly ever.", "He hardly works never.", "He works hard hardly."], "correctAnswer": "0", "explanation": "hardly ever = почти никогда." },
+        { "order": 9, "type": "fill", "prompt": "The tickets are ___ (почти) sold out.", "options": [], "correctAnswer": "nearly|almost", "explanation": "nearly sold out." },
+        { "order": 10, "type": "fill", "prompt": "Try ___ (изо всех сил)! (do your best → work ___)", "options": [], "correctAnswer": "hard", "explanation": "work hard." }
+      ]
+    }
+  ]
+}

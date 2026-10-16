@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 103,
+      "title": "probably/likely/maybe/perhaps",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Вероятно, возможно, наверное — четыре степени уверенности.",
+      "theoryHtml": "<table><tr><th>Слово</th><th>Вероятность</th><th>Место</th></tr><tr><td><strong>probably</strong></td><td>~80% «вероятно»</td><td>перед глаголом / после be: It will <strong>probably</strong> rain. He's <strong>probably</strong> asleep.</td></tr><tr><td><strong>likely</strong></td><td>~70% «вероятно»</td><td>be likely to: It's <strong>likely to</strong> rain. He's <strong>likely</strong> to be late.</td></tr><tr><td><strong>maybe/perhaps</strong></td><td>~50% «может быть»</td><td>в начале: <strong>Maybe</strong> he forgot. <strong>Perhaps</strong> she's right.</td></tr></table><p><strong>probably</strong> — не в начале предложения: <em>Probably it will rain</em> → <em>It will <strong>probably</strong> rain</em>. <strong>likely</strong> — конструкция с be: <em>He is likely to win</em>.</p><p><strong>maybe</strong> — одно слово (наречие), <strong>may be</strong> — два слова (глагол): <em><strong>Maybe</strong> he's at home</em> = <em>He <strong>may be</strong> at home</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>It's probably to rain</em> → <em>It will probably rain / It's likely to rain</em>. <em>Maybe he will comes</em> → <em>comes</em> без -s.</p><p><strong>Мини-диалог:</strong><br>— Will it snow tomorrow? — It'll <strong>probably</strong> snow. — And the concert? — It's <strong>likely to</strong> be cancelled. <strong>Maybe</strong> they'll move it inside.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "He'll ___ be late — he always is.", "options": ["maybe", "perhaps", "probably", "may be"], "correctAnswer": "2", "explanation": "probably + will." },
+        { "order": 2, "type": "mc", "prompt": "She's ___ to win the race.", "options": ["maybe", "probably", "likely", "perhaps"], "correctAnswer": "2", "explanation": "be likely to." },
+        { "order": 3, "type": "mc", "prompt": "___ he's stuck in traffic.", "options": ["Probably", "Likely", "Maybe", "Probable"], "correctAnswer": "2", "explanation": "maybe в начале." },
+        { "order": 4, "type": "mc", "prompt": "He ___ at home now.", "options": ["may be", "maybe", "maybe is", "probable be"], "correctAnswer": "0", "explanation": "may be = глагол." },
+        { "order": 5, "type": "mc", "prompt": "It's ___ to be a hot summer.", "options": ["probable", "likely", "maybe", "perhaps"], "correctAnswer": "1", "explanation": "be likely to." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Probably it will rain.", "It will rain probably.", "It will probably rain.", "It probably will rains."], "correctAnswer": "2", "explanation": "probably перед will... точнее между will и rain." },
+        { "order": 7, "type": "mc", "prompt": "___, the train was cancelled.", "options": ["Likely", "Probably", "Perhaps", "May be"], "correctAnswer": "2", "explanation": "perhaps в начале." },
+        { "order": 8, "type": "mc", "prompt": "They're ___ to arrive tonight.", "options": ["maybe", "perhaps", "likely", "may"], "correctAnswer": "2", "explanation": "be likely to." },
+        { "order": 9, "type": "fill", "prompt": "___ (возможно) I'll join you later.", "options": [], "correctAnswer": "Maybe|Perhaps", "explanation": "maybe/perhaps в начале." },
+        { "order": 10, "type": "fill", "prompt": "He's ___ ___ (вероятно будет) angry. (2-3 слова: likely to be)", "options": [], "correctAnswer": "likely to be", "explanation": "be likely to be." }
+      ]
+    },
+    {
+      "order": 104,
+      "title": "both...and / not only...but also",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "И то и другое; не только... но и — парные союзы.",
+      "theoryHtml": "<p>Парные союзы соединяют ОДИНАКОВЫЕ части речи:</p><table><tr><th>Пара</th><th>Пример</th></tr><tr><td>both ... and</td><td>She speaks <strong>both</strong> English <strong>and</strong> French.</td></tr><tr><td>not only ... but also</td><td>He's <strong>not only</strong> smart <strong>but also</strong> kind.</td></tr><tr><td>either ... or</td><td>Take <strong>either</strong> the bus <strong>or</strong> the metro.</td></tr><tr><td>neither ... nor</td><td><strong>Neither</strong> the bus <strong>nor</strong> the metro runs at night.</td></tr></table><p>Правило параллельности: то, что после первой части, должно совпадать по типу со второй: <em>not only <strong>to read</strong> but also <strong>to write</strong></em> (не <em>...but also writing</em>!).</p><p><strong>Инверсия</strong> (для эмфазы, формально): <em><strong>Not only does</strong> he sing, <strong>but he also</strong> plays the guitar</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>both A as well as B</em> → <em>both A and B</em>. <em>not only...but</em> (без also — допустимо разговорно, учебно — but also). После both...and глагол мн.ч.: <em>Both he and she <strong>are</strong> doctors</em>.</p><p><strong>Мини-диалог:</strong><br>— I hear you speak <strong>both</strong> German <strong>and</strong> Italian? — Yes, and I'm learning Spanish too.<br— Wow! <strong>Not only do</strong> you learn fast, <strong>but you also</strong> collect languages like stamps!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She speaks ___ English ___ Spanish.", "options": ["both / and", "not only / or", "neither / nor", "either / and"], "correctAnswer": "0", "explanation": "Оба языка — both...and." },
+        { "order": 2, "type": "mc", "prompt": "He's ___ talented ___ hardworking.", "options": ["not only / but also", "both / or", "neither / and", "either / nor"], "correctAnswer": "0", "explanation": "not only...but also." },
+        { "order": 3, "type": "mc", "prompt": "___ the manager ___ the director signed it.", "options": ["Both / and", "Either / and", "Not only / or", "Neither / and"], "correctAnswer": "0", "explanation": "Оба подписали — both...and." },
+        { "order": 4, "type": "mc", "prompt": "___ the bus ___ the metro runs after midnight.", "options": ["Both / and", "Either / or", "Neither / nor", "Not only / and"], "correctAnswer": "2", "explanation": "Ни один не ходит — neither...nor." },
+        { "order": 5, "type": "mc", "prompt": "You can ___ walk ___ cycle — it's close.", "options": ["neither / nor", "both / or", "either / or", "not only / and"], "correctAnswer": "2", "explanation": "Выбор — either...or." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She likes not only swimming but also to run.", "She likes not only swimming but also running.", "She likes not only to swimming but also run.", "She likes both swim and also running."], "correctAnswer": "1", "explanation": "Параллельность: swimming / running." },
+        { "order": 7, "type": "mc", "prompt": "Not only ___ he late, but he also forgot the documents.", "options": ["was", "is being", "did", "has"], "correctAnswer": "0", "explanation": "Инверсия: Not only was he late." },
+        { "order": 8, "type": "mc", "prompt": "Both Tom and his sister ___ musicians.", "options": ["is", "are", "was", "has been"], "correctAnswer": "1", "explanation": "both...and — мн.ч." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (не только) the price, ___ ___ (но и) the quality matters. (2 фразы)", "options": [], "correctAnswer": "Not only / but also", "explanation": "not only...but also." },
+        { "order": 10, "type": "fill", "prompt": "___ Tom ___ (ни Том, ни) Anna knew about it. (2 слова)", "options": [], "correctAnswer": "Neither / nor", "explanation": "Neither Tom nor Anna." }
+      ]
+    },
+    {
+      "order": 105,
+      "title": "would для привычек в прошлом",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Every summer we would go to the sea — альтернатива used to.",
+      "theoryHtml": "<p><strong>would + инфинитив</strong> описывает повторяющиеся действия в прошлом — как used to: <em>Every summer we <strong>would go</strong> to the sea</em>. <em>My grandfather <strong>would tell</strong> us stories every night</em>.</p><p><strong>Ключевое ограничение:</strong> would — только ДЕЙСТВИЯ, не состояния! <em>We <strong>used to have</strong> a dog</em> ✓, но <em>We would have a dog</em> ✗ (состояние). <em>I used to live in Rome</em> ✓ (состояние), <em>I would live</em> ✗.</p><table><tr><th>Ситуация</th><th>Что использовать</th></tr><tr><td>привычка-действие</td><td>used to / would</td></tr><tr><td>состояние в прошлом</td><td>только used to</td></tr><tr><td>разовое событие</td><td>Past Simple</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>I would be shy</em> → <em>I used to be shy</em>. <em>He would own a boat</em> → <em>He used to own a boat</em>.</p><p><strong>Мини-диалог:</strong><br>— Tell me about your childhood. — Every winter we <strong>would skate</strong> on the lake. My father <strong>would build</strong> a fire on the shore.<br>— And did you live there? — We <strong>used to have</strong> a small house nearby.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Every summer we ___ to the sea.", "options": ["would go", "would went", "will go", "would going"], "correctAnswer": "0", "explanation": "Повторяющееся действие — would go." },
+        { "order": 2, "type": "mc", "prompt": "My grandma ___ us stories every evening.", "options": ["would tell", "will tell", "would telling", "use to tell"], "correctAnswer": "0", "explanation": "Повторяющееся действие — would tell." },
+        { "order": 3, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I would be shy at school.", "I used to be shy at school.", "I would shy at school.", "I would been shy at school."], "correctAnswer": "1", "explanation": "Состояние — только used to." },
+        { "order": 4, "type": "mc", "prompt": "He ___ long walks in the morning.", "options": ["would take", "used take", "would took", "will take"], "correctAnswer": "0", "explanation": "Повторяющееся действие — would take." },
+        { "order": 5, "type": "mc", "prompt": "We ___ a big garden back then. (имели — состояние)", "options": ["would have", "used to have", "would had", "have"], "correctAnswer": "1", "explanation": "Состояние — used to have." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She would own a bakery.", "She used to own a bakery.", "She would owning a bakery.", "She use to own a bakery."], "correctAnswer": "1", "explanation": "own — состояние → used to." },
+        { "order": 7, "type": "mc", "prompt": "On Sundays, dad ___ pancakes for everyone.", "options": ["would make", "will make", "would made", "makes"], "correctAnswer": "0", "explanation": "Привычка в прошлом — would make." },
+        { "order": 8, "type": "mc", "prompt": "Разовое событие в прошлом:", "options": ["We would visit Rome in 2010.", "We visited Rome in 2010.", "We used to visit Rome in 2010.", "We would visiting Rome in 2010."], "correctAnswer": "1", "explanation": "Разовое — Past Simple." },
+        { "order": 9, "type": "fill", "prompt": "Every winter it ___ ___ (снег шел) for weeks. (would + snow)", "options": [], "correctAnswer": "would snow", "explanation": "would + инфинитив." },
+        { "order": 10, "type": "fill", "prompt": "We ___ ___ (жили) in a tiny flat then. (состояние, 2-3 слова)", "options": [], "correctAnswer": "used to live", "explanation": "used to live." }
+      ]
+    }
+  ]
+}

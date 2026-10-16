@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 55,
+      "title": "Косвенные вопросы: Do you know where he lives?",
+      "cefrLevel": "a2",
+      "section": "Вопросы и реакции",
+      "shortDescription": "Вежливый вопрос внутри вопроса — прямой порядок слов обязателен.",
+      "theoryHtml": "<p>Косвенный вопрос — это обычный вопрос, спрятанный внутри вежливой фразы: <em>Do you know <strong>where the station is</strong>?</em> Главное правило: <strong>после вопросительного слова — прямой порядок слов</strong> (подлежащее + глагол), БЕЗ вспомогательных do/does/did.</p><table><tr><th>Прямой вопрос</th><th>Косвенный вопрос</th></tr><tr><td>Where <strong>is</strong> the station?</td><td>Do you know where the station <strong>is</strong>?</td></tr><tr><td>Where <strong>does he live</strong>?</td><td>I wonder where he <strong>lives</strong>.</td></tr><tr><td><strong>Did</strong> she call?</td><td>Do you know <strong>if/whether she called</strong>?</td></tr></table><p>Вопросы «да/нет» вводятся словом <strong>if</strong> или <strong>whether</strong>: <em>I asked him <strong>if</strong> he was busy</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>Do you know where is the station?</em> → прямой порядок: <em>where the station is</em>. <em>Do you know where does he work?</em> → <em>where he works</em>. <em>Tell me what did he say</em> → <em>what he said</em>. С if/whether после косвенного вопроса НЕ ставят did.</p><p><strong>Мини-диалог:</strong><br>— Excuse me, do you know where <strong>the museum is</strong>? — Sure. But I'm not sure <strong>if it's open</strong> today.<br>— Could you tell me <strong>when it opens</strong>? — I think at ten. Let me check... Yes, it opens at ten.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Do you know where ___?", "options": ["is the bank", "the bank is", "does the bank is", "the bank does"], "correctAnswer": "1", "explanation": "Прямой порядок: the bank is." },
+        { "order": 2, "type": "mc", "prompt": "I wonder why ___ so quiet today.", "options": ["is he", "he is", "does he is", "he does"], "correctAnswer": "1", "explanation": "Косвенный вопрос — he is." },
+        { "order": 3, "type": "mc", "prompt": "Could you tell me when ___?", "options": ["does the train leave", "the train leaves", "leaves the train", "does the train leaves"], "correctAnswer": "1", "explanation": "the train leaves — прямой порядок." },
+        { "order": 4, "type": "mc", "prompt": "I asked her if she ___ busy.", "options": ["is", "was", "does", "did"], "correctAnswer": "1", "explanation": "Косвенное согласование времени: asked → was." },
+        { "order": 5, "type": "mc", "prompt": "Do you know if ___ open on Sunday?", "options": ["the shops are", "are the shops", "the shops do", "do the shops"], "correctAnswer": "0", "explanation": "if + прямой порядок." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Tell me what did he say.", "Tell me what he said.", "Tell me what he did say.", "Tell me what said he."], "correctAnswer": "1", "explanation": "what he said — прямой порядок." },
+        { "order": 7, "type": "mc", "prompt": "I don't know how much ___ cost.", "options": ["does it", "it does", "it", "it to"], "correctAnswer": "2", "explanation": "how much it cost(s) — прямой порядок, без does." },
+        { "order": 8, "type": "mc", "prompt": "She wants to know whether ___ coming to the wedding.", "options": ["are we", "we are", "do we", "we do"], "correctAnswer": "1", "explanation": "whether + we are." },
+        { "order": 9, "type": "fill", "prompt": "Do you know where ___ ___ (он работает)?", "options": [], "correctAnswer": "he works", "explanation": "he works — прямой порядок." },
+        { "order": 10, "type": "fill", "prompt": "Could you tell me if ___ ___ (магазин открыт) now?", "options": [], "correctAnswer": "the shop is|the shop's", "explanation": "if the shop is open." }
+      ]
+    },
+    {
+      "order": 56,
+      "title": "have got vs have",
+      "cefrLevel": "a2",
+      "section": "Глаголы в деле",
+      "shortDescription": "I have got и I have — одно и то же? Почти.",
+      "theoryHtml": "<p><strong>have got</strong> и <strong>have</strong> в значении владения означают одно и то же. <em>I <strong>have got</strong> a car</em> (брит., разговорно) = <em>I <strong>have</strong> a car</em>. Вопрос и отрицание у have got строятся с have: <em>Have you got a pen? I haven't got a pen</em>. У have — с do: <em>Do you have a pen? I don't have a pen</em>.</p><table><tr><th>Форма</th><th>Вопрос</th><th>Отрицание</th></tr><tr><td>have got (брит.)</td><td>Have you got...?</td><td>I haven't got...</td></tr><tr><td>have (амер./нейтр.)</td><td>Do you have...?</td><td>I don't have...</td></tr></table><p><strong>Важно:</strong> когда have — это ДЕЙСТВИЕ (have breakfast, have a shower, have fun), have got невозможен: <em>I'm having breakfast</em> ✓, <em>I've got breakfast</em> ✗. И в прошедшем: <em>I had a car</em> (не had got в прошедшем для владения — так говорят редко).</p><p><strong>⚠ Частые ошибки:</strong> <em>I have got a car yesterday</em> ✗. <em>Do you have got...?</em> — смешение двух систем. Выбирай одну: либо got, либо do.</p><p><strong>Мини-диалог:</strong><br>— Have you got a spare charger? — No, I haven't. But I've got a power bank.<br>— Does your phone have a fast charge? — It does. Twenty minutes and it's full.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ you got a minute?", "options": ["Do", "Have", "Does", "Are"], "correctAnswer": "1", "explanation": "have got — вопрос с Have." },
+        { "order": 2, "type": "mc", "prompt": "I ___ got any brothers.", "options": ["don't have", "haven't", "am not", "don't"], "correctAnswer": "1", "explanation": "have got — отрицание haven't got." },
+        { "order": 3, "type": "mc", "prompt": "___ you have a car? (нейтральный вариант)", "options": ["Have", "Are", "Do", "Does"], "correctAnswer": "2", "explanation": "have без got — вопрос с Do." },
+        { "order": 4, "type": "mc", "prompt": "We're ___ breakfast right now.", "options": ["got", "having", "have got", "had got"], "correctAnswer": "1", "explanation": "have breakfast — действие, Continuous: having." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I've got a headache since morning.", "I have a headache.", "I've got headaches often.", "I am having a headache."], "correctAnswer": "1", "explanation": "Состояние — have (без got в этом значении у носителей чаще)." },
+        { "order": 6, "type": "mc", "prompt": "She ___ two cats and a dog.", "options": ["have got", "has got", "is got", "haves"], "correctAnswer": "1", "explanation": "she + has got." },
+        { "order": 7, "type": "mc", "prompt": "___ they got Wi-Fi here?", "options": ["Do", "Have", "Are", "Does"], "correctAnswer": "1", "explanation": "have got — Have they got." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Do you have got a pen?", "Have you a pen got?", "Have you got a pen?", "You have got a pen have?"], "correctAnswer": "2", "explanation": "Система got: Have + подлежащее + got." },
+        { "order": 9, "type": "fill", "prompt": "I ___ ___ (не имею) any cash on me. (have got)", "options": [], "correctAnswer": "haven't got|have not got", "explanation": "haven't got any cash." },
+        { "order": 10, "type": "fill", "prompt": "We're ___ (устраиваем) a party on Friday.", "options": [], "correctAnswer": "having", "explanation": "have a party — действие, having." }
+      ]
+    },
+    {
+      "order": 57,
+      "title": "Вспомогательные глаголы в кратких ответах",
+      "cefrLevel": "a2",
+      "section": "Глаголы в деле",
+      "shortDescription": "Yes, I do / No, I didn't — какой глагол выбрать.",
+      "theoryHtml": "<p>Краткий ответ копирует <strong>вспомогательный глагол вопроса</strong>: <em>Do you like it? — Yes, I <strong>do</strong></em>. <em>Is he here? — No, he <strong>isn't</strong></em>. <em>Did they call? — Yes, they <strong>did</strong></em>. <em>Can you swim? — Yes, I <strong>can</strong></em>. <em>Have you finished? — Yes, I <strong>have</strong></em>.</p><table><tr><th>Вопрос</th><th>Ответ</th></tr><tr><td>Do/Does/Did...?</td><td>Yes, I do. / No, he doesn't. / No, they didn't.</td></tr><tr><td>Is/Are/Was/Were...?</td><td>Yes, it is. / No, they weren't.</td></tr><tr><td>Have/Has...? (perfect)</td><td>Yes, I have. / No, she hasn't.</td></tr><tr><td>Can/Will/Would/Must...?</td><td>Yes, I can. / No, I won't. / Yes, you must.</td></tr></table><p>При отрицании с never/be — глагол из предложения: <em>You've never tried it. — Yes, I <strong>have</strong>!</em> (не Yes, I do!).</p><p><strong>⚠ Частые ошибки:</strong> <em>Yes, I like</em> (как ответ на Do you like) — лучше <em>Yes, I do</em>. Смешение: <em>Are you go?</em> вместо <em>Do you go</em>. В разделительных вопросах та же логика: <em>You're coming, <strong>aren't you</strong>?</em></p><p><strong>Мини-диалог:</strong><br>— Did you send the report? — Yes, I <strong>did</strong>. — And did they answer? — No, they <strong>didn't</strong>.<br>— Are you sure you attached the file? — Yes, I <strong>am</strong>. It was there <strong>wasn't it</strong>?</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Do you speak Spanish? — No, I ___.", "options": ["don't", "am not", "doesn't", "didn't"], "correctAnswer": "0", "explanation": "Present Simple — don't." },
+        { "order": 2, "type": "mc", "prompt": "Is she at work? — Yes, she ___.", "options": ["does", "is", "has", "was"], "correctAnswer": "1", "explanation": "Is — ответ is." },
+        { "order": 3, "type": "mc", "prompt": "Did they arrive on time? — Yes, they ___.", "options": ["do", "are", "did", "have"], "correctAnswer": "2", "explanation": "Did — did." },
+        { "order": 4, "type": "mc", "prompt": "Have you got a pen? — No, I ___.", "options": ["don't", "haven't", "hasn't", "am not"], "correctAnswer": "1", "explanation": "Have got — haven't." },
+        { "order": 5, "type": "mc", "prompt": "You've met him before, ___?", "options": ["did you", "haven't you", "don't you", "have you"], "correctAnswer": "1", "explanation": "Разделительный вопрос: утверждение + haven't you." },
+        { "order": 6, "type": "mc", "prompt": "Will you help me? — Of course I ___.", "options": ["do", "am", "will", "would"], "correctAnswer": "2", "explanation": "Will — will." },
+        { "order": 7, "type": "mc", "prompt": "You never listen to me, ___?", "options": ["do you", "don't you", "are you", "you do"], "correctAnswer": "0", "explanation": "Предложение с never — отрицательное по смыслу → do you." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct answer to «Does it rain a lot here?»:", "options": ["Yes, it rains.", "Yes, it does.", "Yes, it is.", "Yes, it has."], "correctAnswer": "1", "explanation": "Does — it does." },
+        { "order": 9, "type": "fill", "prompt": "Are you coming? — Yes, I ___.", "options": [], "correctAnswer": "am", "explanation": "Are coming — I am." },
+        { "order": 10, "type": "fill", "prompt": "She wasn't at home, ___ ___? (разделительный вопрос)", "options": [], "correctAnswer": "was she", "explanation": "wasn't → was she." }
+      ]
+    }
+  ]
+}

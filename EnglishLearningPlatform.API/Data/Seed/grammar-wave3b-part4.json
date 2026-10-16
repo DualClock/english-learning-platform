@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 58,
+      "title": "do/make/have — три «делательных» глагола",
+      "cefrLevel": "a2",
+      "section": "Глаголы в деле",
+      "shortDescription": "do homework, make mistakes, have fun — устойчивые сочетания.",
+      "theoryHtml": "<p><strong>do</strong> — выполнять деятельность/работу: <em>do homework, do the dishes, do exercise, do business, do someone a favour, do your best</em>. <strong>make</strong> — создавать/производить результат: <em>make mistakes, make a decision, make a phone call, make money, make friends, make noise, make the bed</em>. <strong>have</strong> — получать опыт/действовать: <em>have breakfast, have fun, have a shower, have a rest, have an accident, have a look</em>.</p><table><tr><th>do</th><th>make</th><th>have</th></tr><tr><td>do the shopping</td><td>make a cake</td><td>have dinner</td></tr><tr><td>do a test</td><td>make plans</td><td>have a talk</td></tr><tr><td>do sports</td><td>make progress</td><td>have a good time</td></tr></table><p><strong>⚠ Частые ошибки русскоговорящих:</strong> <em>make a photo</em> → <em>take a photo / take a picture</em>. <em>make a party</em> → <em>have/throw a party</em>. <em>do a mistake</em> → <em>make a mistake</em>. <em>make homework</em> → <em>do homework</em>.</p><p><strong>Мини-диалог:</strong><br>— What did you <strong>do</strong> today? — I <strong>did</strong> some shopping and <strong>made</strong> dinner.<br>— Did you <strong>have</strong> time to <strong>make</strong> that call? — Yes, and I didn't <strong>make</strong> a single mistake in the contract!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I need to ___ my homework before dinner.", "options": ["make", "do", "have", "take"], "correctAnswer": "1", "explanation": "do homework." },
+        { "order": 2, "type": "mc", "prompt": "Try not to ___ the same mistake twice.", "options": ["do", "have", "make", "take"], "correctAnswer": "2", "explanation": "make a mistake." },
+        { "order": 3, "type": "mc", "prompt": "Let's ___ a break.", "options": ["do", "make", "have", "take a"], "correctAnswer": "2", "explanation": "have a break." },
+        { "order": 4, "type": "mc", "prompt": "She ___ a lot of money in real estate.", "options": ["does", "makes", "has", "takes"], "correctAnswer": "1", "explanation": "make money." },
+        { "order": 5, "type": "mc", "prompt": "Can you ___ me a favour?", "options": ["make", "have", "do", "give"], "correctAnswer": "2", "explanation": "do someone a favour." },
+        { "order": 6, "type": "mc", "prompt": "We need to ___ a decision today.", "options": ["do", "have", "make", "take a"], "correctAnswer": "2", "explanation": "make a decision." },
+        { "order": 7, "type": "mc", "prompt": "I ___ a shower every morning.", "options": ["do", "make", "take", "have"], "correctAnswer": "3", "explanation": "have a shower (или take a shower в амер.)." },
+        { "order": 8, "type": "mc", "prompt": "They ___ a lot of noise last night.", "options": ["did", "made", "had", "took"], "correctAnswer": "1", "explanation": "make noise." },
+        { "order": 9, "type": "fill", "prompt": "Don't forget to ___ ___ (сделай фото) of the documents.", "options": [], "correctAnswer": "take a photo|take a picture", "explanation": "take a photo/picture." },
+        { "order": 10, "type": "fill", "prompt": "We're ___ ___ (устраиваем вечеринку) on Saturday.", "options": [], "correctAnswer": "having a party|throwing a party", "explanation": "have/throw a party." }
+      ]
+    },
+    {
+      "order": 59,
+      "title": "Глагол get: get up, get tired, get home",
+      "cefrLevel": "a2",
+      "section": "Глаголы в деле",
+      "shortDescription": "Самый многозначный глагол английского — пять главных значений.",
+      "theoryHtml": "<p><strong>get</strong> — универсальный глагол. Пять главных значений:</p><table><tr><th>Значение</th><th>Пример</th></tr><tr><td>получать</td><td>get a letter, get a job, get paid</td></tr><tr><td>становиться (+ прил.)</td><td>get tired, get old, get better, get dark</td></tr><tr><td>добираться</td><td>get home, get to work, get here</td></tr><tr><td>фразовые: движение</td><td>get up (вставать), get in (в машину), get off (выйти из транспорта)</td></tr><tr><td>получить результат</td><td>get a present, get wet, get lost</td></tr></table><p><strong>get + прил.</strong> — аналог become: <em>It's getting cold</em>. <strong>get to + место</strong>: <em>How do you get to the station?</em> НО: <em>get home/get here</em> (без to!).</p><p><strong>⚠ Частые ошибки:</strong> <em>get to home</em> → <em>get home</em>. <em>get up early</em> vs <em>get on well</em> (ладить) — разные фразовые глаголы. И <em>have got</em> ≠ <em>get</em>.</p><p><strong>Мини-диалог:</strong><br>— How do you <strong>get</strong> to work? — By metro. I <strong>get up</strong> at six and <strong>get</strong> there by eight.<br>— Aren't you <strong>getting</strong> tired? — I <strong>got</strong> used to it long ago.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ up at 7 a.m. every day.", "options": ["get", "take", "have", "make"], "correctAnswer": "0", "explanation": "get up — вставать." },
+        { "order": 2, "type": "mc", "prompt": "It's ___ dark outside.", "options": ["getting", "getting to", "got to", "get"], "correctAnswer": "0", "explanation": "get + прилагательное = становиться." },
+        { "order": 3, "type": "mc", "prompt": "How do you ___ to the airport?", "options": ["arrive", "get", "reach to", "come"], "correctAnswer": "1", "explanation": "get to + место = добираться." },
+        { "order": 4, "type": "mc", "prompt": "We ___ home very late last night.", "options": ["got to", "got", "arrived to", "get"], "correctAnswer": "1", "explanation": "get home без to." },
+        { "order": 5, "type": "mc", "prompt": "She ___ a letter from her aunt.", "options": ["got", "took", "made", "had"], "correctAnswer": "0", "explanation": "get a letter = получить." },
+        { "order": 6, "type": "mc", "prompt": "We ___ lost in the old town.", "options": ["made", "got", "had", "took"], "correctAnswer": "1", "explanation": "get lost — заблудиться." },
+        { "order": 7, "type": "mc", "prompt": "___ the bus at the next stop.", "options": ["Get off", "Get up", "Get in", "Get on"], "correctAnswer": "0", "explanation": "get off — выйти из транспорта." },
+        { "order": 8, "type": "mc", "prompt": "The soup is ___ cold. (становится)", "options": ["get", "gets", "getting", "got to"], "correctAnswer": "2", "explanation": "is getting — процесс." },
+        { "order": 9, "type": "fill", "prompt": "I need to ___ ___ (встать) earlier.", "options": [], "correctAnswer": "get up", "explanation": "get up early." },
+        { "order": 10, "type": "fill", "prompt": "They ___ (ладят) on well with their neighbours.", "options": [], "correctAnswer": "get", "explanation": "get on well with — ладить." }
+      ]
+    },
+    {
+      "order": 60,
+      "title": "Неправильные глаголы: топ-40 и как их учить",
+      "cefrLevel": "a2",
+      "section": "Глаголы в деле",
+      "shortDescription": "go-went-gone: самые нужные формы и самые путаемые пары.",
+      "theoryHtml": "<p>Неправильные глаголы меняют форму прошедшего времени и причастия: <strong>go — went — gone</strong>. Их нужно выучить. Топ-список:</p><table><tr><th>base</th><th>past</th><th>past participle</th></tr><tr><td>be</td><td>was/were</td><td>been</td></tr><tr><td>have</td><td>had</td><td>had</td></tr><tr><td>do</td><td>did</td><td>done</td></tr><tr><td>go</td><td>went</td><td>gone</td></tr><tr><td>say</td><td>said</td><td>said</td></tr><tr><td>get</td><td>got</td><td>got/gotten</td></tr><tr><td>make</td><td>made</td><td>made</td></tr><tr><td>know</td><td>knew</td><td>known</td></tr><tr><td>take</td><td>took</td><td>taken</td></tr><tr><td>see</td><td>saw</td><td>seen</td></tr><tr><td>come</td><td>came</td><td>come</td></tr><tr><td>think</td><td>thought</td><td>thought</td></tr><tr><td>find</td><td>found</td><td>found</td></tr><tr><td>give</td><td>gave</td><td>given</td></tr><tr><td>tell</td><td>told</td><td>told</td></tr><tr><td>become</td><td>became</td><td>become</td></tr><tr><td>leave</td><td>left</td><td>left</td></tr><tr><td>feel</td><td>felt</td><td>felt</td></tr><tr><td>put</td><td>put</td><td>put</td></tr><tr><td>bring</td><td>brought</td><td>brought</td></tr></table><p><strong>⚠ Путаемые пары:</strong> <em>lie (лежать) — lay — lain</em> vs <em>lie (врать) — lied — lied</em>; <em>bring (приносить)</em> vs <em>take (уносить)</em>; <em>learn — learnt/learned</em> (оба верны). И <em>drink — drank — drunk</em> (порядок похожих гласных).</p><p><strong>Мини-диалог:</strong><br>— Where did you <strong>go</strong>? — I <strong>went</strong> to the bank, but it was closed. I've <strong>never seen</strong> it closed before!<br>— Have you <strong>taken</strong> your keys? — Yes, I <strong>brought</strong> them.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Yesterday I ___ to the gym.", "options": ["goed", "went", "gone", "go"], "correctAnswer": "1", "explanation": "go → went." },
+        { "order": 2, "type": "mc", "prompt": "She has never ___ sushi before.", "options": ["ate", "eaten", "eat", "eated"], "correctAnswer": "1", "explanation": "eat — ate — eaten." },
+        { "order": 3, "type": "mc", "prompt": "He ___ me about the party.", "options": ["telled", "told", "told to", "said"], "correctAnswer": "1", "explanation": "tell → told." },
+        { "order": 4, "type": "mc", "prompt": "I've ___ my keys somewhere.", "options": ["lost", "losed", "loosed", "lose"], "correctAnswer": "0", "explanation": "lose — lost — lost." },
+        { "order": 5, "type": "mc", "prompt": "They ___ the film last night.", "options": ["seed", "saw", "seen", "have saw"], "correctAnswer": "1", "explanation": "Past Simple — saw." },
+        { "order": 6, "type": "mc", "prompt": "The book was ___ by my aunt. (написана)", "options": ["writed", "wrote", "written", "wrote"], "correctAnswer": "2", "explanation": "write — wrote — written." },
+        { "order": 7, "type": "mc", "prompt": "He ___ his wallet on the table.", "options": ["leave", "left", "leaved", "lift"], "correctAnswer": "1", "explanation": "leave — left — left." },
+        { "order": 8, "type": "mc", "prompt": "I ___ your message an hour ago.", "options": ["received", "receive", "receiving", "receives"], "correctAnswer": "0", "explanation": "receive — правильный глагол: received." },
+        { "order": 9, "type": "fill", "prompt": "Have you ___ (взял) my umbrella? (take)", "options": [], "correctAnswer": "taken", "explanation": "take — took — taken." },
+        { "order": 10, "type": "fill", "prompt": "She ___ (купила) a new dress yesterday. (buy)", "options": [], "correctAnswer": "bought", "explanation": "buy — bought — bought." }
+      ]
+    }
+  ]
+}

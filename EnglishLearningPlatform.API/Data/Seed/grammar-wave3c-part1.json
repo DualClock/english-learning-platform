@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 61,
+      "title": "It: погода, время, It takes...",
+      "cefrLevel": "a1",
+      "section": "It и порядок слов",
+      "shortDescription": "It rains, It's 5 o'clock, It takes ten minutes — безличное it.",
+      "theoryHtml": "<p>Английский требует подлежащее всегда. Когда действия нет, ставится пустое <strong>it</strong>:</p><ul><li><strong>погода</strong>: It's raining. It's cold. It was sunny yesterday.</li><li><strong>время</strong>: It's five o'clock. It's Monday. It was late.</li><li><strong>дата</strong>: It's the 3rd of June.</li><li><strong>расстояние</strong>: It's two kilometres from here.</li><li><strong>It takes + время</strong>: It takes ten minutes to get there. — «занимает десять минут»</li><li><strong>оценки</strong>: It's nice to see you. It's important to be on time.</li></ul><p><strong>⚠ Частые ошибки:</strong> <em>Is raining</em> → <em>It's raining</em>. <em>Is hot today</em> → <em>It's hot today</em>. <em>It makes ten minutes</em> → <em>It takes ten minutes</em> (takes, не makes!).</p><p><strong>Мини-диалог:</strong><br>— What time is it? — <strong>It's</strong> almost eight. — <strong>It takes</strong> me twenty minutes to get to work. I should leave now.<br>— Hurry up! <strong>It's</strong> already raining outside.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ cold outside today.", "options": ["Is", "It's", "There's", "That's"], "correctAnswer": "1", "explanation": "О погоде — It's cold." },
+        { "order": 2, "type": "mc", "prompt": "___ me an hour to write this email.", "options": ["It takes", "It makes", "It does", "It has"], "correctAnswer": "0", "explanation": "It takes + время." },
+        { "order": 3, "type": "mc", "prompt": "What time is it? — ___ half past six.", "options": ["It's", "This is", "There's", "That's"], "correctAnswer": "0", "explanation": "Время — It's." },
+        { "order": 4, "type": "mc", "prompt": "___ two kilometres to the beach.", "options": ["There's", "It's", "That's", "This is"], "correctAnswer": "1", "explanation": "Расстояние — It's." },
+        { "order": 5, "type": "mc", "prompt": "___ nice to meet you.", "options": ["There's", "It's", "That", "This"], "correctAnswer": "1", "explanation": "Оценка — It's nice to..." },
+        { "order": 6, "type": "mc", "prompt": "Yesterday ___ sunny all day.", "options": ["it was", "it did", "there was", "that was"], "correctAnswer": "0", "explanation": "Погода в прошлом — It was." },
+        { "order": 7, "type": "mc", "prompt": "How long does ___ take to cook rice?", "options": ["he", "it", "there", "this thing"], "correctAnswer": "1", "explanation": "How long does it take...?" },
+        { "order": 8, "type": "mc", "prompt": "___ was Monday when everything started.", "options": ["There", "It", "This", "That"], "correctAnswer": "1", "explanation": "Дата/время в прошлом — It was Monday." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (идёт) snowing!", "options": [], "correctAnswer": "It's|It is", "explanation": "It's snowing." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (занимает) five minutes by car.", "options": [], "correctAnswer": "It takes", "explanation": "It takes five minutes." }
+      ]
+    },
+    {
+      "order": 62,
+      "title": "Порядок дополнений: Give it to me / Give me it",
+      "cefrLevel": "a1",
+      "section": "It и порядок слов",
+      "shortDescription": "Give me the book vs Give it to me — место it.",
+      "theoryHtml": "<p>Глаголы передачи (give, send, show, bring, offer, tell) могут иметь два дополнения: <strong>Give me the book</strong> (кому — me, что — the book) или <strong>Give the book to me</strong>.</p><p><strong>Правило местоимения:</strong> если дополнение — местоимение (it, them, him), «короткий» вариант невозможен: <em>Give <strong>it to me</strong></em> ✓, но <em>Give me it</em> ✗ (в британском употреблении). То же: <em>Send <strong>it to him</strong></em>, <em>Show <strong>them to her</strong></em>.</p><table><tr><th>Существительное</th><th>Местоимение</th></tr><tr><td>Give <strong>me the book</strong>.</td><td>Give <strong>it to me</strong>.</td></tr><tr><td>Send <strong>him the letter</strong>.</td><td>Send <strong>it to him</strong>.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>Give it me</em> (встречается в британской речи, но не учебный стандарт) — лучше <em>Give it to me</em>. <em>Explain me this</em> → <em>Explain <strong>this to me</strong></em> (explain не берёт два дополнения напрямую!).</p><p><strong>Мини-диалог:</strong><br>— Can you pass me the salt? — Here you are.<br>— Thanks. Oh, and please don't forget the invoice — send <strong>it to me</strong> by email, not <strong>to me by post</strong>.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Give ___ the report, please.", "options": ["to me", "me", "for me", "I"], "correctAnswer": "1", "explanation": "Give me the report — короткий вариант с существительным." },
+        { "order": 2, "type": "mc", "prompt": "Give ___ back!", "options": ["me it", "it to me", "to me it", "it me"], "correctAnswer": "1", "explanation": "С it — только it to me." },
+        { "order": 3, "type": "mc", "prompt": "Send ___ the contract when it's ready.", "options": ["to me", "me", "for me", "I"], "correctAnswer": "1", "explanation": "Send me the contract." },
+        { "order": 4, "type": "mc", "prompt": "Can you show ___ the photos?", "options": ["to us", "us", "for us", "we"], "correctAnswer": "1", "explanation": "Show us the photos." },
+        { "order": 5, "type": "mc", "prompt": "Show ___ to everyone!", "options": ["them me", "me them", "to me them", "them for me"], "correctAnswer": "1", "explanation": "С them — them to me." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Explain me the rule.", "Explain the rule to me.", "Explain to me it.", "Explain it me."], "correctAnswer": "1", "explanation": "explain требует to: explain the rule to me." },
+        { "order": 7, "type": "mc", "prompt": "She ___ a birthday present.", "options": ["gave me", "gave to me", "me gave", "gave for me"], "correctAnswer": "0", "explanation": "gave me a present." },
+        { "order": 8, "type": "mc", "prompt": "I'll bring ___ tomorrow.", "options": ["to you it", "you it", "it to you", "it you"], "correctAnswer": "2", "explanation": "it to you." },
+        { "order": 9, "type": "fill", "prompt": "Tell ___ (мне) the truth!", "options": [], "correctAnswer": "me", "explanation": "tell me the truth." },
+        { "order": 10, "type": "fill", "prompt": "Don't forget to send ___ ___ (его мне).", "options": [], "correctAnswer": "it to me", "explanation": "it to me — местоимение требует to." }
+      ]
+    },
+    {
+      "order": 63,
+      "title": "Побудительные предложения: Do this! Let's go!",
+      "cefrLevel": "a1",
+      "section": "It и порядок слов",
+      "shortDescription": "Приказ, просьба, предложение — без подлежащего.",
+      "theoryHtml": "<p>Побудительное предложение начинается с глагола без подлежащего: <strong>Open the door.</strong> Отрицание — <strong>Don't</strong> + глагол: <strong>Don't touch it.</strong> Вежливость добавляет please (в начале или конце).</p><p><strong>Let's</strong> = предложение сделать вместе: <em><strong>Let's go!</strong></em> Отрицание: <em><strong>Let's not</strong> argue</em>. Ответ: <em>Good idea! / Let's!</em></p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>Приказ</td><td>Stop! Listen to me.</td></tr><tr><td>Просьба</td><td>Please, sit down. / Sit down, please.</td></tr><tr><td>Совет</td><td>Take your umbrella.</td></tr><tr><td>Предложение</td><td>Let's watch a film. Let's not be late.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>Let's to go</em> → <em>Let's go</em> (без to). <em>Don't you touch it!</em> (эмфатично, но для новичка — просто <em>Don't touch it</em>). Вежливая просьба: <em>Could you...?</em>, а не грубый приказ.</p><p><strong>Мини-диалог:</strong><br>— <strong>Let's take</strong> a taxi. — No, <strong>let's walk</strong>, it's two streets away.<br>— Fine, but <strong>don't forget</strong> your umbrella. — I won't!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ your homework before dinner!", "options": ["Do", "To do", "Doing", "Does"], "correctAnswer": "0", "explanation": "Побудительное — глагол без подлежащего." },
+        { "order": 2, "type": "mc", "prompt": "___ touch the paintings!", "options": ["Don't", "Not", "No", "Doesn't"], "correctAnswer": "0", "explanation": "Отрицание — Don't + глагол." },
+        { "order": 3, "type": "mc", "prompt": "___ go to the cinema tonight!", "options": ["Let's to", "Let's", "Lets", "Let us to"], "correctAnswer": "1", "explanation": "Let's + глагол без to." },
+        { "order": 4, "type": "mc", "prompt": "___ argue about it. (не будем)", "options": ["Let's not", "Let's don't", "Not let's", "Don't let's to"], "correctAnswer": "0", "explanation": "Отрицание Let's — Let's not." },
+        { "order": 5, "type": "mc", "prompt": "___ the door, please. (закрой)", "options": ["Closing", "Close", "To close", "Closed"], "correctAnswer": "1", "explanation": "Побудительное — Close." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Let's to start!", "Lets start!", "Let's start!", "Let us to start!"], "correctAnswer": "2", "explanation": "Let's + инфинитив без to." },
+        { "order": 7, "type": "mc", "prompt": "___ careful with that knife!", "options": ["Be", "Don't be", "Being", "To be"], "correctAnswer": "0", "explanation": "Be careful — побудительное с be." },
+        { "order": 8, "type": "mc", "prompt": "___ be late again, please!", "options": ["Not", "No", "Don't", "Let's"], "correctAnswer": "2", "explanation": "Don't be late." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (давай не будем) panic.", "options": [], "correctAnswer": "Let's not", "explanation": "Let's not panic." },
+        { "order": 10, "type": "fill", "prompt": "___ (возьми) your time — no rush.", "options": [], "correctAnswer": "Take", "explanation": "Take your time." }
+      ]
+    }
+  ]
+}

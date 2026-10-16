@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 94,
+      "title": "unless / as long as / provided that",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Если не / при условии что — союзы условий.",
+      "theoryHtml": "<p><strong>unless</strong> = «если не» (if... not): <em>I won't go <strong>unless</strong> you come</em> = <em>I won't go <strong>if you don't</strong> come</em>. После unless — утвердительный глагол (двойное «не» запрещено!).</p><p><strong>as long as / provided (that) / providing</strong> = «при условии, что»: <em>You can borrow my car <strong>as long as</strong> you drive carefully</em>. <em><strong>Provided that</strong> it doesn't rain, we'll play.</em></p><p>После всех этих союзов о будущем — <strong>Present, не will</strong>: <em>unless it rains</em> (не unless it will rain).</p><p><strong>⚠ Частые ошибки:</strong> <em>unless you don't come</em> — двойное отрицание, ошибка. <em>as long as you will drive</em> → <em>you drive</em>. Разница с if: if нейтрально, unless — «единственное условие, при котором НЕ».</p><p><strong>Мини-диалог:</strong><br>— Will you join us? — <strong>Unless</strong> I have to work, yes.<br>— You can stay <strong>as long as</strong> you help with the dishes. — <strong>Provided</strong> the dishwater works!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I won't forgive you ___ you apologise.", "options": ["unless", "if", "provided", "as long"], "correctAnswer": "0", "explanation": "unless = если не." },
+        { "order": 2, "type": "mc", "prompt": "___ it rains, we'll have the party indoors.", "options": ["Unless", "If", "As long as", "Providing"], "correctAnswer": "1", "explanation": "Здесь обычное условие if." },
+        { "order": 3, "type": "mc", "prompt": "You can stay ___ you keep quiet.", "options": ["unless", "as long as", "if not", "without"], "correctAnswer": "1", "explanation": "При условии — as long as." },
+        { "order": 4, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Unless you don't help, I can't finish.", "Unless you help, I can't finish.", "Unless you will help, I can't finish.", "Unless you not help, I can't finish."], "correctAnswer": "1", "explanation": "unless + утверждение, Present." },
+        { "order": 5, "type": "mc", "prompt": "Provided that the flight ___ delayed, we'll be there by noon.", "options": ["will be", "isn't", "is", "be"], "correctAnswer": "2", "explanation": "provided that + Present (утвердительный)." },
+        { "order": 6, "type": "mc", "prompt": "___ you hurry, you'll miss it. (= Если не поспешишь)", "options": ["If", "Unless", "Provided", "As long as"], "correctAnswer": "1", "explanation": "unless = если не." },
+        { "order": 7, "type": "mc", "prompt": "You may keep the book ___ you return it on time.", "options": ["unless", "as long as", "if not", "without"], "correctAnswer": "1", "explanation": "as long as — условие-разрешение." },
+        { "order": 8, "type": "mc", "prompt": "I'll come ___ I'm invited. (только если)", "options": ["unless", "provided", "if not", "until"], "correctAnswer": "1", "explanation": "provided — при условии." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (если не) it snows, the flight will be on time. (2 слова)", "options": [], "correctAnswer": "Unless", "explanation": "Unless it snows." },
+        { "order": 10, "type": "fill", "prompt": "We'll sign the contract ___ ___ (при условии, что) the price stays the same. (2-3 слова)", "options": [], "correctAnswer": "as long as|provided that|providing that", "explanation": "as long as / provided that." }
+      ]
+    },
+    {
+      "order": 95,
+      "title": "so that / in order to — цель",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Я пришёл, чтобы поговорить — три способа выразить цель.",
+      "theoryHtml": "<p>Цель выражается тремя способами:</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td><strong>to</strong> + инфинитив</td><td>I came <strong>to talk</strong>.</td></tr><tr><td><strong>in order to</strong> / <strong>so as to</strong> + инфинитив</td><td>I left early <strong>in order to avoid</strong> traffic.</td></tr><tr><td><strong>so that</strong> + предложение</td><td>I left early <strong>so that</strong> I could avoid traffic.</td></tr></table><p><strong>so that</strong> нужен, когда у цели своё подлежащее или модальный глагол: <em>I'm saving money <strong>so that</strong> my kids <strong>can</strong> study</em>. <strong>in order to</strong> звучит формально; в отрицательной цели — <strong>in order not to / so as not to</strong>: <em>Speak slowly <strong>in order not to</strong> confuse her</em>.</p><p><strong>for + -ing</strong> — назначение предмета: <em>A knife is <strong>for cutting</strong></em> (не цель человека!).</p><p><strong>⚠ Частые ошибки:</strong> <em>for to talk</em> → <em>to talk</em>. <em>in order to you understand</em> → нужен so that: <em>so that you understand</em>. <em>I go to gym for get fit</em> → <em>to get fit</em>.</p><p><strong>Мини-диалог:</strong><br>— Why did you take a second job? — <strong>To save</strong> money for a house. I <strong>so that</strong>... sorry — I want a mortgage <strong>so that</strong> the bank says yes.<br>— I set two alarms <strong>in order not to</strong> oversleep. Dedication!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I went to the shop ___ some bread.", "options": ["for buy", "to buy", "for buying", "buy"], "correctAnswer": "1", "explanation": "Цель — to + инфинитив." },
+        { "order": 2, "type": "mc", "prompt": "She saved money ___ she could travel.", "options": ["for", "to", "so that", "in order"], "correctAnswer": "2", "explanation": "Своё подлежащее — so that." },
+        { "order": 3, "type": "mc", "prompt": "He spoke slowly ___ ___ be understood. (2 слова)", "options": [], "correctAnswer": "in order to|so as to", "explanation": "in order to." },
+        { "order": 4, "type": "mc", "prompt": "This knife is ___ bread.", "options": ["to cut", "for cutting", "for cut", "to cutting"], "correctAnswer": "1", "explanation": "Назначение предмета — for + -ing." },
+        { "order": 5, "type": "mc", "prompt": "We whispered ___ ___ wake the baby. (не разбудить, 3 слова)", "options": [], "correctAnswer": "in order not to", "explanation": "in order not to + инфинитив." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I called for to ask.", "I called to ask.", "I called for asking.", "I called in order to asking."], "correctAnswer": "1", "explanation": "to + инфинитив." },
+        { "order": 7, "type": "mc", "prompt": "He studies hard ___ pass the exam.", "options": ["for", "so that to", "to", "in order"], "correctAnswer": "2", "explanation": "Цель — to pass." },
+        { "order": 8, "type": "mc", "prompt": "I left early so that I ___ miss the traffic.", "options": ["don't", "won't", "wouldn't", "not"], "correctAnswer": "2", "explanation": "so that + wouldn't/couldn't (сдвиг времени)." },
+        { "order": 9, "type": "fill", "prompt": "I got up early ___ ___ ___ (чтобы не) be late. (3 слова)", "options": [], "correctAnswer": "in order not to|so as not to", "explanation": "in order not to be late." },
+        { "order": 10, "type": "fill", "prompt": "Speak louder ___ ___ (чтобы) everyone hears you. (2 слова)", "options": [], "correctAnswer": "so that", "explanation": "so that everyone hears." }
+      ]
+    },
+    {
+      "order": 96,
+      "title": "although / despite / in spite of",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Хотя / несмотря на — союзы противоречия и их грамматика.",
+      "theoryHtml": "<p>Слова противопоставления различаются тем, что за ними стоит:</p><table><tr><th>Слово</th><th>За ним</th><th>Пример</th></tr><tr><td><strong>although / though / even though</strong></td><td>предложение (подлежащее + глагол)</td><td><strong>Although</strong> it was late, we went out.</td></tr><tr><td><strong>despite / in spite of</strong></td><td>существительное или -ing</td><td><strong>Despite</strong> the late hour, we went out. <strong>Despite being</strong> tired, we went out.</td></tr></table><p>Их можно «конвертировать»: <em>Although he was tired</em> = <em>Despite <strong>being</strong> tired</em> = <em>Despite <strong>his</strong> tiredness</em>.</p><p><strong>though</strong> может стоять в конце предложения (= however): <em>It was expensive. I liked it, <strong>though</strong>.</em></p><p><strong>⚠ Частые ошибки:</strong> <em>despite of</em> → <em>despite</em> (БЕЗ of; of есть в in spite of). <em>despite it was late</em> → <em>although it was late</em> или <em>despite the late hour</em>. <em>even although</em> → <em>even though</em>.</p><p><strong>Мини-диалог:</strong><br>— Why are you smiling? <strong>Despite</strong> the failure, you look happy. — <strong>Although</strong> we lost, we played beautifully.<br>— And you finished the marathon, <strong>even though</strong> you injured your knee? — Yes. <strong>In spite of</strong> everything.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ it was raining, we went hiking.", "options": ["Despite", "In spite of", "Although", "Despite of"], "correctAnswer": "2", "explanation": "Хотя + предложение — Although." },
+        { "order": 2, "type": "mc", "prompt": "___ the rain, we went hiking.", "options": ["Although", "Despite", "Even though", "Though"], "correctAnswer": "1", "explanation": "Несмотря на + существительное — Despite." },
+        { "order": 3, "type": "mc", "prompt": "___ being rich, he lives simply.", "options": ["Although", "Despite", "However", "Because of"], "correctAnswer": "1", "explanation": "despite + -ing." },
+        { "order": 4, "type": "mc", "prompt": "The film was long. I enjoyed it, ___.", "options": ["although", "despite", "though", "in spite"], "correctAnswer": "2", "explanation": "though в конце предложения." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Despite of the cold, we swam.", "Despite the cold, we swam.", "Although the cold, we swam.", "In spite the cold, we swam."], "correctAnswer": "1", "explanation": "despite БЕЗ of." },
+        { "order": 6, "type": "mc", "prompt": "___ she was tired, she kept dancing.", "options": ["Despite", "In spite of", "Even though", "Despite of"], "correctAnswer": "2", "explanation": "even though + предложение." },
+        { "order": 7, "type": "mc", "prompt": "___ his age, he runs marathons.", "options": ["Although", "Despite", "Even though", "Though"], "correctAnswer": "1", "explanation": "despite + существительное." },
+        { "order": 8, "type": "mc", "prompt": "___ being late, he missed the meeting. (двойная ошибка была неизбежна)", "options": ["Despite", "Although", "Even though", "Though"], "correctAnswer": "0", "explanation": "despite being late." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (несмотря на) the traffic, we arrived on time. (2 слова)", "options": [], "correctAnswer": "In spite of|Despite", "explanation": "in spite of the traffic." },
+        { "order": 10, "type": "fill", "prompt": "___ (Хотя) he's 80, he still surfs.", "options": [], "correctAnswer": "Although|Though|Even though", "explanation": "Although + предложение." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 91,
+      "title": "even — усиление",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Even my mother knows it — «даже» и его место в предложении.",
+      "theoryHtml": "<p><strong>even</strong> = «даже». Ставится ПЕРЕД словом, которое хотим выделить — часто неожиданным:</p><ul><li><strong>even + подлежащее</strong>: <em><strong>Even</strong> my grandmother uses TikTok.</em></li><li><strong>even + глагол</strong>: <em>He didn't <strong>even</strong> say sorry.</em></li><li><strong>even + сравнительная степень</strong>: <em>It's <strong>even</strong> colder today.</em></li><li><strong>even if / even though</strong> = даже если / хотя: <em><strong>Even if</strong> it rains, we'll go.</em></li><li><strong>even so</strong> = и всё же: <em>It was risky. <strong>Even so</strong>, he tried.</em></li></ul><p><strong>⚠ Частые ошибки:</strong> <em>even I don't know</em> вместо <em>Even I don't know</em> — регистр не важен, важно место: even перед выделяемым элементом, а не где попало. И <em>even</em> в начале утвердительного «я тоже» — не нужно: <em>Me too</em>, не <em>Even me</em>.</p><p><strong>Мини-диалог:</strong><br>— He failed the driving test again. — <strong>Even</strong> his instructor was surprised! He didn't <strong>even</strong> check the mirrors.<br>— <strong>Even so</strong>, he wants to try next month. <strong>Even if</strong> it costs another fortune.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ my cat ignores me now.", "options": ["Even", "Even so", "Even if", "Evenly"], "correctAnswer": "0", "explanation": "even + подлежащее." },
+        { "order": 2, "type": "mc", "prompt": "He didn't ___ apologise.", "options": ["even", "even so", "even if", "evenly"], "correctAnswer": "0", "explanation": "even + глагол — перед didn't even... точнее после didn't: didn't even." },
+        { "order": 3, "type": "mc", "prompt": "Today it's ___ colder than yesterday.", "options": ["even so", "even", "even if", "evenly"], "correctAnswer": "1", "explanation": "even + comparative." },
+        { "order": 4, "type": "mc", "prompt": "___ it rains, the match will happen.", "options": ["Even so", "Even", "Even if", "Evenly"], "correctAnswer": "2", "explanation": "Даже если — Even if." },
+        { "order": 5, "type": "mc", "prompt": "The plan was risky. ___, he went ahead.", "options": ["Even if", "Even", "Even so", "Evenly"], "correctAnswer": "2", "explanation": "И всё же — Even so." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I even don't like him even.", "Even I don't like him.", "I don't even like him.", "Evenly I don't like him."], "correctAnswer": "2", "explanation": "even выделяет like — I don't even like him." },
+        { "order": 7, "type": "mc", "prompt": "She's ___ more talented than her sister.", "options": ["even", "even so", "even if", "evenly"], "correctAnswer": "0", "explanation": "even + comparative." },
+        { "order": 8, "type": "mc", "prompt": "___ everyone left, he kept dancing.", "options": ["Even so", "Even", "Even if", "Evenly"], "correctAnswer": "0", "explanation": "Even so = и всё же (после точки запятой)." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (даже если) you apologise, I won't change my mind.", "options": [], "correctAnswer": "Even if", "explanation": "Even if." },
+        { "order": 10, "type": "fill", "prompt": "It was expensive. ___ ___ (И всё же), we bought it.", "options": [], "correctAnswer": "Even so", "explanation": "Even so." }
+      ]
+    },
+    {
+      "order": 92,
+      "title": "I used to do vs I am used to doing",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Раньше курил vs привык курить — грамматическая ловушка.",
+      "theoryHtml": "<p>Две конструкции, похожие по виду, разные по смыслу:</p><table><tr><th>Конструкция</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>used to + инфинитив</strong></td><td>привычка в прошлом (сейчас нет)</td><td>I <strong>used to smoke</strong>, but I quit. (раньше курил)</td></tr><tr><td><strong>be used to + -ing/сущ.</strong></td><td>привык к чему-то (сейчас)</td><td>I <strong>am used to getting up</strong> early. (привык)</td></tr><tr><td><strong>get used to + -ing</strong></td><td>привыкаю (процесс)</td><td>You'll <strong>get used to working</strong> nights.</td></tr></table><p>Вопрос/отрицание used to: <em><strong>Did</strong> you use to...? I <strong>didn't use to</strong> like coffee</em>.</p><p>Проверка-обманка: <em>I used to living alone</em> ✗ (смешение!) — либо <em>I used to live alone</em> (раньше жил), либо <em>I am used to living alone</em> (привык жить).</p><p><strong>⚠ Частые ошибки:</strong> <em>I am used to smoke</em> → <em>I am used to <strong>smoking</strong></em> (после be used to — -ing!). <em>I didn't used to</em> → <em>didn't <strong>use</strong> to</em>. <em>I use to play tennis</em> (без d) — в утверждении всегда <strong>used to</strong>.</p><p><strong>Мини-диалог:</strong><br>— Do you like the night shift? — I <strong>used to hate</strong> it, but now I'm <strong>used to working</strong> at night.<br>— How long did it take? — A month <strong>to get used to</strong> it.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ smoke, but I gave up.", "options": ["am used to", "used to", "get used to", "use to"], "correctAnswer": "1", "explanation": "Привычка в прошлом — used to smoke." },
+        { "order": 2, "type": "mc", "prompt": "She's ___ to driving on the left.", "options": ["used", "use", "used to be", "using"], "correctAnswer": "0", "explanation": "be used to + -ing." },
+        { "order": 3, "type": "mc", "prompt": "___ you use to play the piano?", "options": ["Did", "Was", "Have", "Were"], "correctAnswer": "0", "explanation": "Вопрос: Did you use to." },
+        { "order": 4, "type": "mc", "prompt": "You'll soon get used to ___ early.", "options": ["wake up", "waking up", "woke up", "woken up"], "correctAnswer": "1", "explanation": "get used to + -ing." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I am used to smoke.", "I used to smoking.", "I used to smoke.", "I am used to smoke."], "correctAnswer": "2", "explanation": "used to + инфинитив — привычка в прошлом." },
+        { "order": 6, "type": "mc", "prompt": "He isn't ___ to spicy food. (не привык)", "options": ["use", "used", "using", "useful"], "correctAnswer": "1", "explanation": "be used to + существительное." },
+        { "order": 7, "type": "mc", "prompt": "«I didn't use to like olives» означает:", "options": ["Я привык не любить оливки", "Раньше я не любил оливки", "Я не привык к оливкам", "Я не использую оливки"], "correctAnswer": "1", "explanation": "didn't use to — привычка в прошлом." },
+        { "order": 8, "type": "mc", "prompt": "It took me weeks to get used to ___ alone.", "options": ["live", "living", "lived", "to live"], "correctAnswer": "1", "explanation": "get used to + -ing." },
+        { "order": 9, "type": "fill", "prompt": "I ___ ___ (привык) to the noise. (2 слова, am)", "options": [], "correctAnswer": "am used", "explanation": "am used to." },
+        { "order": 10, "type": "fill", "prompt": "There ___ ___ (бывало) a cinema here. (2 слова, used)", "options": [], "correctAnswer": "used to", "explanation": "there used to be." }
+      ]
+    },
+    {
+      "order": 93,
+      "title": "wish: I wish I knew",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Жалею, что не знаю — wish сдвигает время назад.",
+      "theoryHtml": "<p><strong>wish</strong> выражает сожаление — и «сдвигает» время на шаг назад:</p><table><tr><th>Ситуация</th><th>Форма</th><th>Пример</th></tr><tr><td>сейчас не так (настоящее)</td><td>wish + Past Simple</td><td>I wish I <strong>knew</strong> the answer. (не знаю и жалею)</td></tr><tr><td>прошлое не так</td><td>wish + Past Perfect</td><td>I wish I <strong>had studied</strong> harder. (не выучил)</td></tr><tr><td>хочу изменить чужое поведение</td><td>wish + would</td><td>I wish you <strong>would stop</strong> smoking!</td></tr></table><p><em>I wish I was/were rich</em> — were предпочтительнее.</p><p><strong>wish vs hope:</strong> <em>I <strong>hope</strong> it works</em> (реальная надежда) vs <em>I <strong>wish</strong> it worked</em> (не работает, жалею).</p><p><strong>⚠ Частые ошибки:</strong> <em>I wish I have</em> → <em>I wish I <strong>had</strong></em> (сдвиг!). <em>I wish I would have known</em> (амер. разговорно) — учебный стандарт: <em>I wish I had known</em>. <em>I wish you come</em> → <em>I wish you <strong>would come</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— I <strong>wish I knew</strong> Japanese. — Me too. And I <strong>wish I had started</strong> learning it at school.<br>— Well, <strong>I wish you'd stop</strong> regretting and start a course!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I wish I ___ taller.", "options": ["am", "was/were", "will be", "have been"], "correctAnswer": "1", "explanation": "Настоящее сожаление — Past: was/were." },
+        { "order": 2, "type": "mc", "prompt": "I wish I ___ the exam. (но провалил)", "options": ["passed", "had passed", "pass", "will pass"], "correctAnswer": "1", "explanation": "Прошлое — had passed." },
+        { "order": 3, "type": "mc", "prompt": "I wish he ___ smoking!", "options": ["stops", "would stop", "stopped smoking", "will stop"], "correctAnswer": "1", "explanation": "Хочу изменить чужое поведение — would." },
+        { "order": 4, "type": "mc", "prompt": "I wish it ___ raining now.", "options": ["stops", "stopped", "would stop", "has stopped"], "correctAnswer": "1", "explanation": "Сожаление о настоящем — stopped (Past)." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I wish I have more time.", "I wish I had more time.", "I wish I will have more time.", "I wish I having more time."], "correctAnswer": "1", "explanation": "wish + Past Simple." },
+        { "order": 6, "type": "mc", "prompt": "«I hope you pass» означает:", "options": ["Жалею, что не сдал", "Надеюсь, сдашь", "Хотел бы, чтобы сдал", "Сдашь или нет?"], "correctAnswer": "1", "explanation": "hope — реальная надежда." },
+        { "order": 7, "type": "mc", "prompt": "I wish they ___ told me earlier.", "options": ["have", "had", "would have told me", "has"], "correctAnswer": "1", "explanation": "Прошлое — had told." },
+        { "order": 8, "type": "mc", "prompt": "I wish the bus ___ here sooner.", "options": ["comes", "came", "will come", "coming"], "correctAnswer": "1", "explanation": "Сожаление о настоящем — came." },
+        { "order": 9, "type": "fill", "prompt": "I wish I ___ ___ (мог) play the guitar. (can → could)", "options": [], "correctAnswer": "could", "explanation": "wish + could." },
+        { "order": 10, "type": "fill", "prompt": "I wish we ___ ___ (не потратили) so much money. (spend → Past Perfect)", "options": [], "correctAnswer": "hadn't spent|had not spent", "explanation": "wish + hadn't + V3." }
+      ]
+    }
+  ]
+}

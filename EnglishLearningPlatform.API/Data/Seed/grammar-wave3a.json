@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 33,
+      "title": "Личные местоимения: I/me/he/him",
+      "cefrLevel": "a1",
+      "section": "Местоимения и принадлежность",
+      "shortDescription": "Когда использовать I, а когда me — главная путаница новичков.",
+      "theoryHtml": "<p>В английском местоимение зависит от <strong>роли слова в предложении</strong>, а не от того, что «красивее звучит». Два ряда: <strong>I, he, she, we, they</strong> — подлежащее (кто делает), и <strong>me, him, her, us, them</strong> — дополнение (кому/о ком).</p><table><tr><th>Подлежащее (кто?)</th><th>Дополнение (кого? кому?)</th></tr><tr><td>I love her.</td><td>She loves <strong>me</strong>.</td></tr><tr><td>He called us.</td><td>We called <strong>him</strong>.</td></tr><tr><td>They saw she.</td><td>— правильно: They saw <strong>her</strong>.</td></tr></table><p>После глаголов и предлогов всегда объектная форма: <em>between you and me</em>, <em>for him</em>, <em>with them</em>.</p><p><strong>⚠ Частые ошибки русскоговорящих:</strong> из-за русского «между мной и тобой» говорят <em>between you and I</em> — правильно <em>between you and me</em>. И в составном подлежащем: <em>Me and my friend went...</em> → <em><strong>My friend and I</strong> went to the park.</em> (вежливо ставим себя вторым).</p><p><strong>Мини-диалог:</strong><br>— Who told you? — <em>My sister told <strong>me</strong>.</em><br>— Did you call <strong>her</strong> back? — Yes, <strong>I</strong> called <strong>her</strong> yesterday.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She loves ___.", "options": ["I", "me", "my", "mine"], "correctAnswer": "1", "explanation": "После глагола loves нужна объектная форма me." },
+        { "order": 2, "type": "mc", "prompt": "___ and my brother went fishing.", "options": ["Me", "I", "Mine", "My"], "correctAnswer": "1", "explanation": "Составное подлежащее: My brother and I. Вежливо — себя вторым." },
+        { "order": 3, "type": "mc", "prompt": "Can you help ___ with this box?", "options": ["I", "me", "my", "we"], "correctAnswer": "1", "explanation": "После глагола help — объектная форма me." },
+        { "order": 4, "type": "mc", "prompt": "Between you and ___, I don't trust him.", "options": ["I", "me", "mine", "myself"], "correctAnswer": "1", "explanation": "После предлога between всегда объектная форма: you and me." },
+        { "order": 5, "type": "mc", "prompt": "They invited ___ to the party.", "options": ["we", "us", "our", "ours"], "correctAnswer": "1", "explanation": "Пригласили нас — объектная форма us." },
+        { "order": 6, "type": "mc", "prompt": "Give the book to ___, please.", "options": ["she", "her", "hers", "herself"], "correctAnswer": "1", "explanation": "После предлога to — объектная форма her." },
+        { "order": 7, "type": "mc", "prompt": "___ saw them at the mall yesterday.", "options": ["Us", "We", "Ours", "Our"], "correctAnswer": "1", "explanation": "Подлежащее — кто видел? We." },
+        { "order": 8, "type": "fill", "prompt": "He is taller than ___ (я).", "options": [], "correctAnswer": "me|I am", "explanation": "В сравнениях разговорно говорят than me; формально — than I am." },
+        { "order": 9, "type": "fill", "prompt": "Let ___ (нас) help you.", "options": [], "correctAnswer": "us", "explanation": "После глагола let — объектная форма: Let us = Let's." },
+        { "order": 10, "type": "fill", "prompt": "This gift is for ___ (они).", "options": [], "correctAnswer": "them", "explanation": "После предлога for — them." }
+      ]
+    },
+    {
+      "order": 34,
+      "title": "Возвратные местоимения: myself, yourself",
+      "cefrLevel": "a1",
+      "section": "Местоимения и принадлежность",
+      "shortDescription": "Когда «сам» нужен, а когда лишний — enjoy yourself и типичные ошибки.",
+      "theoryHtml": "<p>Возвратные местоимения показывают, что действие направлено на самого себя: <strong>myself, yourself, himself, herself, itself, ourselves, yourselves, themselves</strong>.</p><table><tr><th>Использование</th><th>Пример</th></tr><tr><td>Действие на себя</td><td>I cut <strong>myself</strong> shaving.</td></tr><tr><td>Усиление «сам»</td><td>I did it <strong>myself</strong>. (= без помощи)</td></tr><tr><td>Фиксированные фразы</td><td>enjoy <strong>yourself</strong>, help <strong>yourself</strong>, by <strong>myself</strong> (один)</td></tr></table><p><strong>⚠ Частые ошибки:</strong> русскоговорящие добавляют myself «для красоты»: <em>I myself went there myself</em>. Возвратное нужно ТОЛЬКО когда действие возвращается на субъект: <em>She looked at <strong>herself</strong> in the mirror</em> (сама на себя), но <em>She looked at <strong>her</strong> sister</em> (на сестру — без self!). Также нельзя: <em>Enjoy!</em> → в английском нужно <em>Enjoy <strong>yourself</strong>!</em></p><p><strong>Примечание:</strong> by myself = «один/самостоятельно»: <em>I live by myself</em>. Это не то же, что <em>alone</em> (просто один), хотя близко.</p><p><strong>Мини-диалог:</strong><br>— Did you fix the bike? — Yes, I fixed it <strong>myself</strong>!<br>— Wow! I can't even cut bread <strong>myself</strong> without cutting <strong>myself</strong>.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She looked at ___ in the mirror.", "options": ["her", "herself", "she", "hers"], "correctAnswer": "1", "explanation": "Смотрит на себя — herself." },
+        { "order": 2, "type": "mc", "prompt": "Enjoy ___ at the party!", "options": ["you", "yourself", "yours", "yourselves is wrong here"], "correctAnswer": "1", "explanation": "Фиксированная фраза enjoy yourself." },
+        { "order": 3, "type": "mc", "prompt": "I finished the project by ___.", "options": ["me", "myself", "I", "mine"], "correctAnswer": "1", "explanation": "by myself = самостоятельно, без помощи." },
+        { "order": 4, "type": "mc", "prompt": "They introduced ___ to the class.", "options": ["them", "themselves", "they", "their"], "correctAnswer": "1", "explanation": "Представили себя — themselves." },
+        { "order": 5, "type": "mc", "prompt": "Help ___ to some cake, kids!", "options": ["you", "yourselves", "yourself", "them"], "correctAnswer": "1", "explanation": "Обращение ко многим — yourselves." },
+        { "order": 6, "type": "mc", "prompt": "The cat cleaned ___ after dinner.", "options": ["it", "itself", "its", "himself"], "correctAnswer": "1", "explanation": "Животное неизвестного пола — itself." },
+        { "order": 7, "type": "mc", "prompt": "We should be proud of ___.", "options": ["us", "ourselves", "our", "we"], "correctAnswer": "1", "explanation": "Гордиться собой — ourselves." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["He himself is a doctor.", "He is himself a doctor himself.", "Himself is a doctor.", "He is a himself doctor."], "correctAnswer": "0", "explanation": "Возвратное-усиление ставится сразу после подлежащего: He himself..." },
+        { "order": 9, "type": "fill", "prompt": "I taught ___ (сам себя) to swim.", "options": [], "correctAnswer": "myself", "explanation": "Учить себя — teach myself." },
+        { "order": 10, "type": "fill", "prompt": "She lives by ___ (одна).", "options": [], "correctAnswer": "herself", "explanation": "by herself = одна, самостоятельно." }
+      ]
+    },
+    {
+      "order": 35,
+      "title": "Притяжательность: Kate's car и the end of the film",
+      "cefrLevel": "a1",
+      "section": "Местоимения и принадлежность",
+      "shortDescription": "Когда ставим 's, а когда конструкцию с of.",
+      "theoryHtml": "<p>Два способа выразить принадлежность: <strong>-'s</strong> (для людей и животных) и <strong>of</strong> (для предметов и абстракций).</p><table><tr><th>Чей?</th><th>Как сказать</th></tr><tr><td>Человек/животное</td><td>Kate's car, my father's house, the dog's tail</td></tr><tr><td>Предмет/абстракция</td><td>the end <strong>of</strong> the film, the colour <strong>of</strong> the car, the name <strong>of</strong> the street</td></tr></table><p>Множественное число: <em>my parents' house</em> (s уже есть — только апостроф), <em>children's toys</em> (без s — добавляем 's).</p><p><strong>⚠ Частые ошибки:</strong> говорить <em>the car's colour</em> — машина не владелец! Правильно <em>the colour of the car</em>. Имена, оканчивающиеся на -s: <em>James's book</em> или <em>James' book</em> — оба варианта встречаются, первый предпочтительнее в учебниках.</p><p><strong>Мини-диалог:</strong><br>— Whose bag is this? — It's <strong>Maria's</strong>.<br>— And what's the name <strong>of</strong> this street? — Baker Street. — That's <strong>Sherlock Holmes's</strong> street!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "This is ___ car.", "options": ["John", "John's", "Johns'", "of John"], "correctAnswer": "1", "explanation": "Человек — добавляем 's." },
+        { "order": 2, "type": "mc", "prompt": "The end ___ the film was surprising.", "options": ["'s", "of", "to", "for"], "correctAnswer": "1", "explanation": "Фильм — предмет, нужен of." },
+        { "order": 3, "type": "mc", "prompt": "My ___ house is near the lake.", "options": ["parents", "parents'", "parent's", "parents's"], "correctAnswer": "1", "explanation": "Множественное число на -s — только апостроф." },
+        { "order": 4, "type": "mc", "prompt": "The ___ toys are everywhere.", "options": ["childrens", "children's", "childrens'", "children"], "correctAnswer": "1", "explanation": "Children без s в конце — добавляем 's." },
+        { "order": 5, "type": "mc", "prompt": "Whose dog is that? It's ___.", "options": ["my sister", "my sister's", "of my sister", "my sisters"], "correctAnswer": "1", "explanation": "Животное-владелец через 's." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The colour of the door is red.", "The door's colour is red.", "The colour's door is red.", "Of door the colour is red."], "correctAnswer": "0", "explanation": "Дверь — предмет: the colour of the door." },
+        { "order": 7, "type": "mc", "prompt": "Yesterday was ___ birthday.", "options": ["James", "James's", "Jameses", "of James"], "correctAnswer": "1", "explanation": "Имя на -s — James's (или James', но первый вариант учебный)." },
+        { "order": 8, "type": "mc", "prompt": "I need the keys of ___.", "options": ["the car", "the car's", "the cars'", "car"], "correctAnswer": "0", "explanation": "Машина — предмет: the keys of the car." },
+        { "order": 9, "type": "fill", "prompt": "This is my ___ (брат) bike.", "options": [], "correctAnswer": "brother's", "explanation": "brother's bike — велосипед брата." },
+        { "order": 10, "type": "fill", "prompt": "The capital ___ (Россия) is Moscow.", "options": [], "correctAnswer": "of Russia", "explanation": "Страна здесь как предмет-абстракция: the capital of Russia." }
+      ]
+    }
+  ]
+}

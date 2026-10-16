@@ -1,0 +1,84 @@
+{
+  "units": [
+    {
+      "order": 51,
+      "title": "Краткие реакции: So do I / Neither do I",
+      "cefrLevel": "a2",
+      "section": "Вопросы и реакции",
+      "shortDescription": "Я тоже / Я тоже нет — короткий ответ, в котором все путаются.",
+      "theoryHtml": "<p>Чтобы согласиться с чужим утверждением, используют конструкцию <strong>So + вспомогательный глагол + подлежащее</strong>: <em>I like tea. — <strong>So do I.</strong></em> <em>She is a doctor. — <strong>So is</strong> my sister.</em> <em>They've finished. — <strong>So have</strong> we.</em></p><p>Согласие с отрицанием — <strong>Neither/Nor + вспом. глагол + подлежащее</strong>: <em>I don't smoke. — <strong>Neither do I.</strong></em> <em>He can't swim. — <strong>Nor can</strong> I.</em></p><p><strong>⚠ Частые ошибки:</strong> <em>Me too</em> после отрицания (<em>I don't like it — Me too</em> ✗ → <em>Me neither</em>). Глагол должен совпадать по времени с исходным: <em>I went... — So <strong>did</strong> I</em> (не So do I!). Порядок слов — инверсия: глагол ПЕРЕД подлежащим.</p><p><strong>Мини-диалог:</strong><br>— I've never tried sushi. — <strong>Neither have I!</strong> Let's try it together.<br>— I love hiking. — <strong>So do I!</strong> — And I'm free on Saturday. — <strong>So am I.</strong></p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I like coffee. — ___", "options": ["So I do.", "So do I.", "I do so.", "So am I."], "correctAnswer": "1", "explanation": "Present Simple — вспомогательный do, инверсия: So do I." },
+        { "order": 2, "type": "mc", "prompt": "I don't eat meat. — ___", "options": ["So do I.", "Me too.", "Neither do I.", "I don't too."], "correctAnswer": "2", "explanation": "Согласие с отрицанием — Neither do I." },
+        { "order": 3, "type": "mc", "prompt": "She is a student. — ___", "options": ["So am I.", "So do I.", "So I am.", "Neither am I."], "correctAnswer": "0", "explanation": "С to be — глагол am: So am I." },
+        { "order": 4, "type": "mc", "prompt": "I went to Paris last year. — ___", "options": ["So do I.", "So did I.", "So was I.", "So have I."], "correctAnswer": "1", "explanation": "Past Simple — did." },
+        { "order": 5, "type": "mc", "prompt": "I have never been to Japan. — ___", "options": ["So have I.", "Neither have I.", "Neither do I.", "Me too."], "correctAnswer": "1", "explanation": "Отрицание в Present Perfect — Neither have I." },
+        { "order": 6, "type": "mc", "prompt": "I can't drive. — ___", "options": ["So can I.", "Neither can I.", "Neither do I.", "Me either can."], "correctAnswer": "1", "explanation": "can't — Neither can I." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct reaction: «I was tired yesterday.»", "options": ["So did I.", "So was I.", "So am I.", "Neither was I."], "correctAnswer": "1", "explanation": "was — So was I." },
+        { "order": 8, "type": "mc", "prompt": "«I love this song!» Устойчивый разговорный ответ:", "options": ["Me too!", "Neither do I.", "So am I.", "Nor do I."], "correctAnswer": "0", "explanation": "Me too — разговорный вариант согласия с утверждением." },
+        { "order": 9, "type": "fill", "prompt": "I'll call you later. — ___ ___ I. (Я тоже)", "options": [], "correctAnswer": "So will", "explanation": "will — So will I." },
+        { "order": 10, "type": "fill", "prompt": "I haven't seen him. — ___ ___ I. (Я тоже)", "options": [], "correctAnswer": "Neither have|Nor have", "explanation": "Neither/Nor + have." }
+      ]
+    },
+    {
+      "order": 52,
+      "title": "Who saw you? / Who did you see?",
+      "cefrLevel": "a2",
+      "section": "Вопросы и реакции",
+      "shortDescription": "Кто-кто? Когда вопросительное слово — подлежащее, порядок не меняется.",
+      "theoryHtml": "<p>Обычный вопрос требует вспомогательного глагола: <em><strong>Who did you see?</strong></em> (видишь кого — you подлежащее). Но если вопросительное слово САМО является подлежащим, вспомогательный глагол НЕ нужен: <em><strong>Who saw you?</strong></em> (кто видел — who подлежащее).</p><table><tr><th>Вопрос</th><th>Роль Who</th><th>Порядок</th></tr><tr><td>Who saw you?</td><td>подлежащее (кто видел)</td><td>прямой, без did</td></tr><tr><td>Who did you see?</td><td>дополнение (кого видел)</td><td>did + you + see</td></tr><tr><td>What happened?</td><td>подлежащее</td><td>прямой</td></tr><tr><td>What did he say?</td><td>дополнение</td><td>did + he + say</td></tr></table><p>То же с What/Which/How many: <em><strong>How many people</strong> came?</em> (люди подлежащее — без did) vs <em><strong>How many books</strong> did you read?</em></p><p><strong>⚠ Частые ошибки:</strong> <em>Who did call you?</em> → <em>Who called you?</em> (лишний did). <em>Who you saw?</em> → <em>Who did you see?</em></p><p><strong>Мини-диалог:</strong><br>— Who broke the window? — Nobody broke it. It fell by itself.<br>— Really? Then who did you call this morning? — The landlord.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ the door? — My brother did.", "options": ["Who opened", "Who did open", "Who did you open", "Whom opened"], "correctAnswer": "0", "explanation": "Who — подлежащее (кто открыл), прямой порядок." },
+        { "order": 2, "type": "mc", "prompt": "___ at the concert? — Lots of friends.", "options": ["Who you met", "Who did you meet", "Who did met you", "Whom you meet"], "correctAnswer": "1", "explanation": "Ты встретил кого — did + you + meet." },
+        { "order": 3, "type": "mc", "prompt": "What ___ yesterday?", "options": ["happened", "did happen", "did happened", "was happened"], "correctAnswer": "0", "explanation": "What — подлежащее (что случилось), без did." },
+        { "order": 4, "type": "mc", "prompt": "___ to the party?", "options": ["Who did invite you", "Who invited you", "Who you invited", "Whom invited you"], "correctAnswer": "1", "explanation": "Кто пригласил тебя — Who + invited (подлежащее)." },
+        { "order": 5, "type": "mc", "prompt": "How many students ___ the exam?", "options": ["did pass", "passed", "did passed", "pass did"], "correctAnswer": "1", "explanation": "students — подлежащее, passed без did." },
+        { "order": 6, "type": "mc", "prompt": "Which car ___ ?", "options": ["did he buy", "he bought did", "bought he did", "he did bought"], "correctAnswer": "0", "explanation": "car — дополнение, he подлежащее: did + he + buy." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct question:", "options": ["Who did write this letter?", "Who wrote this letter?", "Who you wrote this letter?", "Whom wrote this letter?"], "correctAnswer": "1", "explanation": "Who — подлежащее (кто написал)." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct question:", "options": ["What means this word?", "What this word means?", "What does this word mean?", "What did this word mean? (обычный вопрос)"], "correctAnswer": "2", "explanation": "word — подлежащее → does + this word + mean." },
+        { "order": 9, "type": "fill", "prompt": "___ (Кто) wants ice cream?", "options": [], "correctAnswer": "Who", "explanation": "Who — подлежащее, прямой порядок." },
+        { "order": 10, "type": "fill", "prompt": "Who ___ (ты видел) at the airport? — My cousin.", "options": [], "correctAnswer": "did you see", "explanation": "you подлежащее — did + you + see." }
+      ]
+    },
+    {
+      "order": 53,
+      "title": "What is she like? / What does she look like?",
+      "cefrLevel": "a2",
+      "section": "Вопросы и реакции",
+      "shortDescription": "Три вопроса с like — про характер, внешность и вкусы.",
+      "theoryHtml": "<p>Три похожих вопроса с разным смыслом:</p><table><tr><th>Вопрос</th><th>О чём?</th><th>Ответ</th></tr><tr><td>What is she <strong>like</strong>?</td><td>характер и качества</td><td>She's kind and smart.</td></tr><tr><td>What does she <strong>look like</strong>?</td><td>внешность</td><td>She's tall, with blue eyes.</td></tr><tr><td>What does she <strong>like</strong>?</td><td>что любит</td><td>She likes jazz and books.</td></tr></table><p>Ещё: <em>What does it taste like?</em> (на вкус), <em>What's the weather like?</em> (какая погода). Обрати внимание: like в этих вопросах — предлог «похож на», не глагол! Вспомогательный — do/does/is.</p><p><strong>⚠ Частые ошибки:</strong> <em>How is she?</em> = «как она поживает?» (о самочувствии), а не о характере! <em>What does she looks like?</em> → <em>look</em> без -s (после does).</p><p><strong>Мини-диалог:</strong><br>— What's your new boss <strong>like</strong>? — Strict but fair. — And what does she <strong>look like</strong>? — Tall, short dark hair, glasses.<br>— Does she like football? — Funny you ask: that's all she talks about!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ your new colleague ___? — Friendly and hardworking.", "options": ["What does / like", "What is / like", "How is / like", "What does / look like"], "correctAnswer": "1", "explanation": "О характере: What is he/she like?" },
+        { "order": 2, "type": "mc", "prompt": "___ your sister ___? — Tall, with curly hair.", "options": ["What is / like", "How does / like", "What does / look like", "What does / like"], "correctAnswer": "2", "explanation": "О внешности: What does she look like?" },
+        { "order": 3, "type": "mc", "prompt": "___ music ___? — Rock, mostly.", "options": ["What does / like", "What is / like", "How is / like", "What do / like"], "correctAnswer": "0", "explanation": "Что любит: What does she/he like?" },
+        { "order": 4, "type": "mc", "prompt": "What's the weather ___ today?", "options": ["look like", "like", "likes", "liking"], "correctAnswer": "1", "explanation": "Что за погода: What's the weather like?" },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct question:", "options": ["What does he looks like?", "What does he look like?", "What he looks like?", "What is he look like?"], "correctAnswer": "1", "explanation": "does + he + look (без -s)." },
+        { "order": 6, "type": "mc", "prompt": "«How is your grandmother?» Спрашивают о:", "options": ["характере", "самочувствии", "внешности", "вкусах"], "correctAnswer": "1", "explanation": "How is she? = как поживает." },
+        { "order": 7, "type": "mc", "prompt": "___ the new restaurant ___? — The food is amazing.", "options": ["What is / like", "What does / like", "How does / like", "What does / look like"], "correctAnswer": "0", "explanation": "О впечатлениях: What is it like?" },
+        { "order": 8, "type": "mc", "prompt": "What does it ___ like? — Like chicken, honestly.", "options": ["taste", "tastes", "tasted", "tasting"], "correctAnswer": "0", "explanation": "does + taste (без -s)." },
+        { "order": 9, "type": "fill", "prompt": "What ___ your teacher ___ (какой он по характеру)?", "options": [], "correctAnswer": "is / like|is / like?", "explanation": "What is he like?" },
+        { "order": 10, "type": "fill", "prompt": "What ___ your dream house ___ (как выглядит)?", "options": [], "correctAnswer": "does / look like", "explanation": "Внешность — What does it look like?" }
+      ]
+    },
+    {
+      "order": 54,
+      "title": "What/Which/How — вопросительные слова",
+      "cefrLevel": "a2",
+      "section": "Вопросы и реакции",
+      "shortDescription": "What time, Which one, How long — точный выбор вопросительного слова.",
+      "theoryHtml": "<p>Основные вопросительные слова и их «пары»:</p><table><tr><th>Слово</th><th>Смысл</th><th>Пример</th></tr><tr><td>What time</td><td>во сколько</td><td>What time does it start?</td></tr><tr><td>Which</td><td>который (из известных)</td><td>Which door is mine?</td></tr><tr><td>How long</td><td>как долго</td><td>How long is the flight?</td></tr><tr><td>How much / many</td><td>сколько (неисч./исч.)</td><td>How much is it? How many bags?</td></tr><tr><td>How often</td><td>как часто</td><td>How often do you train?</td></tr><tr><td>How far</td><td>как далеко</td><td>How far is the station?</td></tr><tr><td>Why</td><td>почему</td><td>Why are you late?</td></tr></table><p><strong>What vs Which:</strong> What — открытый выбор из бесконечности (What's your name?); Which — выбор из ограниченного набора (Which colour: red or blue?). В разговоре часто взаимозаменяемы.</p><p><strong>⚠ Частые ошибки:</strong> <em>How much time does it take? how much time — приемлемо, но про длительность лучше <strong>How long</strong>. <em>How long is it?</em> о цене → <strong>How much</strong>. Порядок: вопросительное слово + вспомогательный глагол + подлежащее.</p><p><strong>Мини-диалог:</strong><br>— <strong>How often</strong> do the buses run? — Every ten minutes. — And <strong>how far</strong> is the museum? — About a kilometre. <strong>How much</strong> is the ticket? — Two euros. — <strong>Which</strong> stop do I need? — The third one.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ does the lesson start? — At nine.", "options": ["How long", "What time", "How much", "Which"], "correctAnswer": "1", "explanation": "Точное время — What time." },
+        { "order": 2, "type": "mc", "prompt": "___ is the flight to Rome? — Two hours.", "options": ["How much", "How many", "How long", "How far"], "correctAnswer": "2", "explanation": "Длительность — How long." },
+        { "order": 3, "type": "mc", "prompt": "___ of these two shirts do you like?", "options": ["What", "Which", "How", "Who"], "correctAnswer": "1", "explanation": "Выбор из двух — Which." },
+        { "order": 4, "type": "mc", "prompt": "___ do you go to the gym?", "options": ["How long", "How much", "How often", "How far"], "correctAnswer": "2", "explanation": "Частота — How often." },
+        { "order": 5, "type": "mc", "prompt": "___ does this jacket cost?", "options": ["How many", "How much", "How long", "Which"], "correctAnswer": "1", "explanation": "Цена — How much." },
+        { "order": 6, "type": "mc", "prompt": "___ is it from here to the beach?", "options": ["How long", "How much", "How far", "How often"], "correctAnswer": "2", "explanation": "Расстояние — How far." },
+        { "order": 7, "type": "mc", "prompt": "___ books did you read last month?", "options": ["How much", "How long", "How many", "What many"], "correctAnswer": "2", "explanation": "books исчисляемые — How many." },
+        { "order": 8, "type": "mc", "prompt": "___ way to the station is faster — by bus or on foot?", "options": ["What", "Which", "How", "Whose"], "correctAnswer": "1", "explanation": "Выбор из двух названных вариантов — Which." },
+        { "order": 9, "type": "fill", "prompt": "___ ___ (во сколько) do the shops open?", "options": [], "correctAnswer": "What time", "explanation": "What time + do + shops + open." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (как долго) have you lived here?", "options": [], "correctAnswer": "How long", "explanation": "Длительность — How long." }
+      ]
+    }
+  ]
+}

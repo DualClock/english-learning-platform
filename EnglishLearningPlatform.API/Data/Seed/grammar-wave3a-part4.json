@@ -1,0 +1,84 @@
+{
+  "units": [
+    {
+      "order": 42,
+      "title": "some/any + something/anybody",
+      "cefrLevel": "a2",
+      "section": "Кванторы",
+      "shortDescription": "some в отрицаниях? any в просьбах? Классика путаницы.",
+      "theoryHtml": "<p>База: <strong>some</strong> — в утверждениях, <strong>any</strong> — в отрицаниях и вопросах. НО есть важные исключения:</p><ul><li><strong>Просьбы и предложения</strong> → some: <em>Can I have <strong>some</strong> water?</em> <em>Would you like <strong>some</strong> coffee?</em> (ожидаем «да»)</li><li><strong>Отрицания с отрицательным смыслом</strong> → any: <em>I didn't see <strong>anyone</strong></em></li><li>НО отрицание с внутренним отрицанием (hardly, without, refuse) → some: <em>She left <strong>without any</strong> money → without some money (редко)</em>; корректно: <em>I refused <strong>any</strong> help</em> или <em>I accepted <strong>some</strong> help</em></li></ul><p>Наречия и местоимения: <strong>something, someone, somebody</strong> (утв.) ↔ <strong>anything, anyone, anybody</strong> (отр./вопр.).</p><p><strong>⚠ Частые ошибки:</strong> <em>Would you like any tea?</em> — грамматически возможно, но невежливо и звучит как «тебе вообще чай, или нет?»; вежливо — <em>some</em>. И в отрицании: <em>I don't have some money</em> → <em>I don't have <strong>any</strong> money</em>.</p><p><strong>Мини-диалог:</strong><br>— Would you like some dessert? — Yes, please. Is there any cake?<br>— There isn't any cake, but we have some ice cream.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Would you like ___ tea?", "options": ["any", "some", "a", "no"], "correctAnswer": "1", "explanation": "Предложение — вежливо some." },
+        { "order": 2, "type": "mc", "prompt": "I don't have ___ money on me.", "options": ["some", "any", "a", "no any"], "correctAnswer": "1", "explanation": "Отрицание — any." },
+        { "order": 3, "type": "mc", "prompt": "Can I have ___ water, please?", "options": ["any", "some", "no", "many"], "correctAnswer": "1", "explanation": "Просьба — some." },
+        { "order": 4, "type": "mc", "prompt": "There isn't ___ in the fridge.", "options": ["something", "anything", "some", "somebody"], "correctAnswer": "1", "explanation": "Отрицание — anything." },
+        { "order": 5, "type": "mc", "prompt": "___ called you while you were out.", "options": ["Anyone", "Someone", "Anybody is", "No anyone"], "correctAnswer": "1", "explanation": "Утверждение — someone." },
+        { "order": 6, "type": "mc", "prompt": "Did you buy ___ at the market?", "options": ["something", "anything", "some", "somebody"], "correctAnswer": "1", "explanation": "Вопрос — anything (нейтрально)." },
+        { "order": 7, "type": "mc", "prompt": "She's not ___ special — just a colleague.", "options": ["somebody", "anybody", "nobody", "someone"], "correctAnswer": "1", "explanation": "После отрицания — anybody." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I don't need some help.", "I don't need any help.", "I don't need no help.", "I not need any help."], "correctAnswer": "1", "explanation": "Отрицание — any help." },
+        { "order": 9, "type": "fill", "prompt": "Would you like ___ (что-нибудь) to drink?", "options": [], "correctAnswer": "something|some", "explanation": "Предложение — something to drink." },
+        { "order": 10, "type": "fill", "prompt": "I can't find my keys ___ (нигде).", "options": [], "correctAnswer": "anywhere", "explanation": "Отрицание — anywhere." }
+      ]
+    },
+    {
+      "order": 43,
+      "title": "no/none/nobody/nothing",
+      "cefrLevel": "a2",
+      "section": "Кванторы",
+      "shortDescription": "Два отрицания в одном предложении — норма для английского.",
+      "theoryHtml": "<p><strong>no + существительное</strong> — само по себе отрицание: <em>I have <strong>no money</strong></em> = <em>I don't have any money</em>. Глагол при этом ОСТАЁТСЯ утвердительным! Двойное отрицание (<em>I don't have no money</em>) — ошибка в стандартном английском.</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>no + сущ.</td><td>There are no tickets left.</td></tr><tr><td>none (местоимение)</td><td>— How much? — None.</td></tr><tr><td>nobody/no one (кто)</td><td>Nobody knows.</td></tr><tr><td>nothing (что)</td><td>Nothing happened.</td></tr><tr><td>nowhere (где)</td><td>Nowhere to go.</td></tr></table><p>Местоимения nobody/nothing ведут себя как единственное число: <em>Nobody <strong>is</strong> here</em>, <em>Nothing <strong>was</strong> said</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>Nobody don't know</em> → <em>Nobody knows</em> (nobody уже отрицает). <em>There's no many people</em> → <em>There aren't many people</em> (no + существительное, но с many/much не сочетается!).</p><p><strong>Мини-диалог:</strong><br>— What's wrong? — Nothing. — Are you sure? You said nothing at dinner.<br>— None of your business... OK, fine. Something is wrong, but I don't want to talk about it.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ knows the answer.", "options": ["Nobody don't", "Nobody", "Nobody doesn't", "Nobody isn't"], "correctAnswer": "1", "explanation": "Nobody + утвердительный глагол." },
+        { "order": 2, "type": "mc", "prompt": "There's ___ milk in the fridge. (совсем нет)", "options": ["any", "no", "not", "some"], "correctAnswer": "1", "explanation": "no milk = no + существительное." },
+        { "order": 3, "type": "mc", "prompt": "— How many tickets left? — ___.", "options": ["No", "None", "Nothing", "Nobody"], "correctAnswer": "1", "explanation": "none = ни одного (местоимение для количества)." },
+        { "order": 4, "type": "mc", "prompt": "Nothing ___ changed.", "options": ["have", "has", "are", "is"], "correctAnswer": "1", "explanation": "nothing — единственное число." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I don't know nothing.", "I don't know anything.", "I know nothing don't.", "I don't know none."], "correctAnswer": "1", "explanation": "don't + anything; двойное отрицание запрещено." },
+        { "order": 6, "type": "mc", "prompt": "We found ___ interesting at the exhibition.", "options": ["nothing", "none", "no", "nobody"], "correctAnswer": "0", "explanation": "«ничего интересного» — nothing." },
+        { "order": 7, "type": "mc", "prompt": "There are ___ tickets left. (нет билетов)", "options": ["no", "none of", "nothing", "not none"], "correctAnswer": "0", "explanation": "no + существительное во мн.ч." },
+        { "order": 8, "type": "mc", "prompt": "___ of my friends came to the party. (никто)", "options": ["Nobody", "None", "Nothing", "No one"], "correctAnswer": "1", "explanation": "None of + множественное (none of my friends)." },
+        { "order": 9, "type": "fill", "prompt": "He has ___ (никаких) friends here.", "options": [], "correctAnswer": "no", "explanation": "no + существительное." },
+        { "order": 10, "type": "fill", "prompt": "I have ___ (ничего) to wear.", "options": [], "correctAnswer": "nothing", "explanation": "nothing to wear — нечего надеть." }
+      ]
+    },
+    {
+      "order": 44,
+      "title": "all/most/some/any + of",
+      "cefrLevel": "a2",
+      "section": "Кванторы",
+      "shortDescription": "All students или all of students? Слова с of и без.",
+      "theoryHtml": "<p>Кванторы бывают с <strong>of</strong> и без. Схема простая: перед существительным БЕЗ of (<em>all students</em>), а перед местоимением С of (<em>all of them</em>). Перед определённым существительным с the — только of: <em>all of <strong>the</strong> students</em>.</p><table><tr><th>+ существительное</th><th>+ местоимение/the + сущ.</th></tr><tr><td>All students study hard.</td><td>All of them study hard.</td></tr><tr><td>Most people like pizza.</td><td>Most of my friends like it.</td></tr><tr><td>Some days are rainy.</td><td>Some of the days were sunny.</td></tr></table><p><strong>Глагол</strong> после all/most/some зависит от существительного: <em>All <strong>the water is</strong> gone</em> (неисчисляемое) но <em>All <strong>the students are</strong> here</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>all of students</em> → <em>all of the students</em> или <em>all students</em>. <em>most of people</em> → <em>most people</em> / <em>most of the people</em>. Опускай the только с обобщающими множественными.</p><p><strong>Мини-диалог:</strong><br>— Did all of the guests come? — Most of them did. Some of my colleagues couldn't make it.<br>— And the cake? — All of it is gone, sorry. Everyone loved it.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ of my friends live abroad.", "options": ["All", "All of", "The all", "Alls"], "correctAnswer": "0", "explanation": "all of + местоимение (my friends = the + существительное)." },
+        { "order": 2, "type": "mc", "prompt": "___ students passed the exam.", "options": ["Most of", "Most", "The most of", "Most the"], "correctAnswer": "1", "explanation": "Перед существительным без the — most." },
+        { "order": 3, "type": "mc", "prompt": "Some ___ the information was wrong.", "options": ["of", "—", "the", "from"], "correctAnswer": "0", "explanation": "Перед the + существительное — some of." },
+        { "order": 4, "type": "mc", "prompt": "All the milk ___ gone.", "options": ["are", "is", "were", "have"], "correctAnswer": "1", "explanation": "milk неисчисляемое — is." },
+        { "order": 5, "type": "mc", "prompt": "Most ___ the work is done.", "options": ["of", "—", "the", "from"], "correctAnswer": "0", "explanation": "the work — нужен of: most of the work." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["All of students were late.", "All students were late.", "All the students were late of.", "All of the student were late."], "correctAnswer": "1", "explanation": "Без the — all students; с the — all of the students." },
+        { "order": 7, "type": "mc", "prompt": "I invited twenty people, but only some ___ came.", "options": ["of them", "them", "of", "they"], "correctAnswer": "0", "explanation": "some of them — часть из них." },
+        { "order": 8, "type": "mc", "prompt": "Any ___ the suggestions will help.", "options": ["of", "—", "the", "from"], "correctAnswer": "0", "explanation": "any of the suggestions." },
+        { "order": 9, "type": "fill", "prompt": "___ (Все) of us are ready.", "options": [], "correctAnswer": "All", "explanation": "All of us — все мы." },
+        { "order": 10, "type": "fill", "prompt": "Most ___ (из) the time I work from home.", "options": [], "correctAnswer": "of", "explanation": "most of the time — большую часть времени." }
+      ]
+    },
+    {
+      "order": 45,
+      "title": "both/either/neither + one/ones",
+      "cefrLevel": "a2",
+      "section": "Кванторы",
+      "shortDescription": "Оба, любой из двух, ни один — и замена слова словом one.",
+      "theoryHtml": "<p>Три слова для пары:</p><table><tr><th>Слово</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>both</strong></td><td>оба (и тот, и другой)</td><td>Both my brothers are doctors.</td></tr><tr><td><strong>either</strong></td><td>любой из двух / тоже не</td><td>You can take either road. — I don't like it either.</td></tr><tr><td><strong>neither</strong></td><td>ни тот, ни другой</td><td>Neither answer is correct.</td></tr></table><p><strong>Глагол</strong> с both — мн.ч.: <em>both are</em>. С either/neither — обычно ед.ч.: <em>neither is</em>. В разговорной речи встречается <em>neither are</em>, но на уроках пишем ед.ч.</p><p><strong>one/ones</strong> заменяют повторное существительное: <em>Which shirt do you want? — The red <strong>one</strong>.</em> <em>I'd like the big <strong>ones</strong>.</em></p><p><strong>⚠ Частые ошибки:</strong> <em>both of students</em> → <em>both of the students</em>. <em>I don't like it too</em> (отрицание) → <em>I don't like it <strong>either</strong></em>. <em>neither...or</em> → правильно <em>neither...<strong>nor</strong></em>: <em>Neither John nor Mary came</em>.</p><p><strong>Мини-диалог:</strong><br>— Which of the two films shall we watch? — Neither. I don't like horror films either.<br>— Then let's rent both comedies and watch either one tonight.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ my parents are teachers.", "options": ["Both", "Either", "Neither", "All"], "correctAnswer": "0", "explanation": "Оба родителя — both (all — для 3+)." },
+        { "order": 2, "type": "mc", "prompt": "You can take ___ road — they both lead to the village.", "options": ["both", "either", "neither", "none"], "correctAnswer": "1", "explanation": "Любая из двух дорог — either." },
+        { "order": 3, "type": "mc", "prompt": "___ of the two answers is right.", "options": ["Both", "Either", "Neither", "All"], "correctAnswer": "2", "explanation": "Ни один (из двух) не верен — neither." },
+        { "order": 4, "type": "mc", "prompt": "I don't like coffee ___.", "options": ["too", "either", "also", "neither"], "correctAnswer": "1", "explanation": "В отрицании «тоже» = either." },
+        { "order": 5, "type": "mc", "prompt": "Neither John ___ Mary came.", "options": ["or", "nor", "and", "but"], "correctAnswer": "1", "explanation": "neither... nor — ни... ни." },
+        { "order": 6, "type": "mc", "prompt": "Which bag is yours? — The black ___.", "options": ["one", "ones", "a", "it"], "correctAnswer": "0", "explanation": "Замена единственного существительного — one." },
+        { "order": 7, "type": "mc", "prompt": "Buy two kilos of apples and give me the red ___.", "options": ["one", "ones", "it", "they"], "correctAnswer": "1", "explanation": "Множественное существительное — ones." },
+        { "order": 8, "type": "mc", "prompt": "___ of the twins is at home now.", "options": ["Neither", "Both", "All", "Every"], "correctAnswer": "0", "explanation": "is — ед.ч., значит neither (ни один из двух дома)." },
+        { "order": 9, "type": "fill", "prompt": "Both ___ (из) my sisters live in Moscow.", "options": [], "correctAnswer": "of", "explanation": "both of my sisters." },
+        { "order": 10, "type": "fill", "prompt": "___ (Ни один) of us understood the joke.", "options": [], "correctAnswer": "Neither", "explanation": "neither of us — никто из нас (двух)." }
+      ]
+    }
+  ]
+}

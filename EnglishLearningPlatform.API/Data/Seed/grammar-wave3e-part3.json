@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 82,
+      "title": "Пассив 2: is being done / has been done",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "Пассив в продолженном и перфектном временах + с модальными.",
+      "theoryHtml": "<p>Пассив = <strong>be + V3</strong>. Время и вид несёт глагол be:</p><table><tr><th>Время</th><th>Актив</th><th>Пассив</th></tr><tr><td>Present Continuous</td><td>They are building the bridge.</td><td>The bridge <strong>is being built</strong>.</td></tr><tr><td>Present Perfect</td><td>They have painted the wall.</td><td>The wall <strong>has been painted</strong>.</td></tr><tr><td>Past Simple</td><td>They built it in 1990.</td><td>It <strong>was built</strong> in 1990.</td></tr><tr><td>Future</td><td>They will open it soon.</td><td>It <strong>will be opened</strong> soon.</td></tr><tr><td>с модальными</td><td>You must do it.</td><td>It <strong>must be done</strong>.</td></tr></table><p><strong>Пассив с модальными:</strong> must/can/should/may + be + V3: <em>The window <strong>must be fixed</strong></em>. <em>Tickets <strong>can be bought</strong> online</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>The bridge is building</em> → <em>is being built</em> (забыли being). <em>It has being done</em> → <em>has been done</em> (been, не being). <em>It must done</em> → <em>must be done</em>. Кем? — <strong>by</strong>: <em>It was painted by Picasso</em>.</p><p><strong>Мини-диалог:</strong><br>— Why is the road closed? — The bridge <strong>is being repaired</strong>. — Again? It <strong>was repaired</strong> only last year!<br>— I know. The new road <strong>will be opened</strong> next month. The bill <strong>must be paid</strong> by the city.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Look! A new stadium ___ over there.", "options": ["is building", "is being built", "is built", "has built"], "correctAnswer": "1", "explanation": "Процесс сейчас — is being built." },
+        { "order": 2, "type": "mc", "prompt": "The window ___ yet.", "options": ["hasn't been fixed", "hasn't fixed", "isn't being fix", "wasn't be fixed"], "correctAnswer": "0", "explanation": "Present Perfect пассив — hasn't been fixed." },
+        { "order": 3, "type": "mc", "prompt": "This road ___ in 1950.", "options": ["is built", "was built", "has been built", "is being built"], "correctAnswer": "1", "explanation": "Past Simple — was built." },
+        { "order": 4, "type": "mc", "prompt": "The results ___ tomorrow.", "options": ["will announce", "will be announced", "are announcing", "have announced"], "correctAnswer": "1", "explanation": "Future пассив — will be announced." },
+        { "order": 5, "type": "mc", "prompt": "This form ___ be filled in black ink.", "options": ["must", "must to", "must being", "must have"], "correctAnswer": "0", "explanation": "must be + V3." },
+        { "order": 6, "type": "mc", "prompt": "The Mona Lisa ___ by Leonardo.", "options": ["painted", "was painted", "is painting", "has painted"], "correctAnswer": "1", "explanation": "was painted by." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The house is painting now.", "The house is being painted now.", "The house has being painted now.", "The house is been painted now."], "correctAnswer": "1", "explanation": "is being painted." },
+        { "order": 8, "type": "mc", "prompt": "Tickets ___ at the door.", "options": ["can buy", "can be bought", "can been bought", "can buying"], "correctAnswer": "1", "explanation": "can be + V3." },
+        { "order": 9, "type": "fill", "prompt": "My car ___ ___ (чинят) right now. (is being repaired)", "options": [], "correctAnswer": "is being repaired", "explanation": "is being repaired." },
+        { "order": 10, "type": "fill", "prompt": "The thief ___ ___ (был арестован) by the police. (was arrested)", "options": [], "correctAnswer": "was arrested", "explanation": "was arrested by." }
+      ]
+    },
+    {
+      "order": 83,
+      "title": "want you to do / make him do / let her go",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "Complex object: три схемы «заставить/позволить/попросить кого-то сделать».",
+      "theoryHtml": "<p>По-русски: «Я хочу, чтобы ты сделал». По-английски структура другая — <strong>want + someone + to do</strong>:</p><table><tr><th>Схема</th><th>Пример</th></tr><tr><td>want/ask/tell + sb + <strong>to do</strong></td><td>I want <strong>you to help</strong> me. She told <strong>him to wait</strong>.</td></tr><tr><td>make + sb + <strong>do</strong> (заставить)</td><td>They made <strong>me work</strong> all night.</td></tr><tr><td>let + sb + <strong>do</strong> (позволить)</td><td>My parents let <strong>me stay</strong> out late.</td></tr><tr><td>help + sb + (to) do</td><td>He helped <strong>me carry</strong> it.</td></tr></table><p><strong>make/let — БЕЗ to!</strong> Но в пассиве make возвращает to: <em>I was made <strong>to work</strong></em>.</p><p><strong>⚠ Частые ошибки:</strong> «Я хочу, чтобы ты пришёл» → <em>I want that you come</em> ✗ → <em>I want <strong>you to come</strong></em>. <em>My mom let me to go</em> → <em>let me go</em>. <em>make me to laugh</em> → <em>make me laugh</em>.</p><p><strong>Мини-диалог:</strong><br>— I want <strong>you to be</strong> honest with me. — I am! — Then tell me who made <strong>you do</strong> it. — Nobody! They just <strong>let me</strong> borrow the car.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I want ___ me the truth.", "options": ["that you tell", "you to tell", "you tell to", "you telling"], "correctAnswer": "1", "explanation": "want + sb + to do." },
+        { "order": 2, "type": "mc", "prompt": "My parents didn't let me ___ late.", "options": ["to stay", "staying", "stay", "stayed"], "correctAnswer": "2", "explanation": "let + do без to." },
+        { "order": 3, "type": "mc", "prompt": "The teacher made us ___ the essay again.", "options": ["to write", "writing", "write", "written"], "correctAnswer": "2", "explanation": "make + do без to." },
+        { "order": 4, "type": "mc", "prompt": "She asked me ___ the door.", "options": ["close", "to close", "closing", "closed"], "correctAnswer": "1", "explanation": "ask sb to do." },
+        { "order": 5, "type": "mc", "prompt": "I was made ___ overtime last week.", "options": ["work", "to work", "working", "worked"], "correctAnswer": "1", "explanation": "Пассив make — to возвращает: made to work." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["He wants that I come.", "He wants me come.", "He wants me to come.", "He wants that I to come."], "correctAnswer": "2", "explanation": "want + sb + to do." },
+        { "order": 7, "type": "mc", "prompt": "They told us ___ about the delay.", "options": ["not worry", "to not worry", "not to worry", "don't worry"], "correctAnswer": "2", "explanation": "Отрицание в tell sb to: not to worry." },
+        { "order": 8, "type": "mc", "prompt": "Let him ___! Он прав.", "options": ["to speak", "speaking", "speak", "speaks"], "correctAnswer": "2", "explanation": "let + do." },
+        { "order": 9, "type": "fill", "prompt": "I want ___ ___ (чтобы ты знал) everything.", "options": [], "correctAnswer": "you to know", "explanation": "want you to know." },
+        { "order": 10, "type": "fill", "prompt": "My boss made ___ ___ (меня переделать) the report.", "options": [], "correctAnswer": "me redo|me do again", "explanation": "make me redo." }
+      ]
+    },
+    {
+      "order": 84,
+      "title": "stop/remember/forget + -ing vs to",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "I stopped smoking vs I stopped to smoke — смысл меняется.",
+      "theoryHtml": "<p>Некоторые глаголы меняют смысл в зависимости от того, что за ними: <strong>-ing</strong> или <strong>to do</strong>:</p><table><tr><th>Глагол</th><th>+ -ing</th><th>+ to do</th></tr><tr><td>stop</td><td>перестал делать: I stopped smoking. (бросил курить)</td><td>остановился, чтобы сделать: I stopped to smoke. (остановился — покурить)</td></tr><tr><td>remember</td><td>помню, что делал: I remember locking the door.</td><td>не забыть сделать: Remember to lock the door!</td></tr><tr><td>forget</td><td>забыл, что делал: I forgot meeting him.</td><td>чуть не забыл сделать: I forgot to meet him. (и не встретил)</td></tr><tr><td>try</td><td>пробовать способы: Try restarting it.</td><td>стараться (сложно): I tried to open it.</td></tr><tr><td>regret</td><td>сожалею о прошлом: I regret saying that.</td><td>жалею сообщать: I regret to inform you...</td></tr></table><p><strong>enjoy/avoid/mind/suggest/finish</strong> — всегда + <strong>-ing</strong>: <em>I enjoy reading</em>, <em>avoid making mistakes</em>. <strong>want/decide/hope/promise/plan</strong> — всегда + <strong>to do</strong>: <em>I decided to stay</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>I enjoy to read</em> → <em>enjoy reading</em>. <em>I decided going</em> → <em>decided to go</em>. <em>Remember locking the door!</em> (когда просишь) → <em>Remember <strong>to lock</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— Why did you stop <strong>working</strong>? — I stopped <strong>to drink</strong> some water. I was dying of thirst!<br>— OK. And please remember <strong>to send</strong> the file. — I remember <strong>sending</strong> it this morning!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "He stopped ___ two years ago.", "options": ["to smoke", "smoking", "smoke", "smoked"], "correctAnswer": "1", "explanation": "Бросил курить — stopped smoking." },
+        { "order": 2, "type": "mc", "prompt": "On the way home, we stopped ___ some petrol.", "options": ["buying", "to buy", "buy", "bought"], "correctAnswer": "1", "explanation": "Остановились, чтобы купить — to buy." },
+        { "order": 3, "type": "mc", "prompt": "Remember ___ the lights when you leave.", "options": ["turning off", "to turn off", "turn off", "turned off"], "correctAnswer": "1", "explanation": "Не забыть сделать — to turn off." },
+        { "order": 4, "type": "mc", "prompt": "I remember ___ this film as a child.", "options": ["to see", "seeing", "see", "saw"], "correctAnswer": "1", "explanation": "Помню, что видел — seeing." },
+        { "order": 5, "type": "mc", "prompt": "I enjoy ___ to podcasts.", "options": ["to listen", "listening", "listen", "listened"], "correctAnswer": "1", "explanation": "enjoy всегда + -ing." },
+        { "order": 6, "type": "mc", "prompt": "We decided ___ in Berlin.", "options": ["staying", "stay", "to stay", "stayed"], "correctAnswer": "2", "explanation": "decide + to do." },
+        { "order": 7, "type": "mc", "prompt": "Try ___ the router — it might help.", "options": ["to restart", "restarting", "restart", "to restarting"], "correctAnswer": "1", "explanation": "Попробуй способ — try + -ing." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I avoid to drive at night.", "I avoid driving at night.", "I avoid drive at night.", "I avoid to driving at night."], "correctAnswer": "1", "explanation": "avoid + -ing." },
+        { "order": 9, "type": "fill", "prompt": "Don't forget ___ ___ (позвонить) grandma.", "options": [], "correctAnswer": "to call|to ring", "explanation": "forget to do." },
+        { "order": 10, "type": "fill", "prompt": "I'll never forget ___ (встречу) the president. (meet)", "options": [], "correctAnswer": "meeting", "explanation": "Воспоминание — meeting." }
+      ]
+    }
+  ]
+}

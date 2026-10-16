@@ -1,0 +1,44 @@
+{
+  "units": [
+    {
+      "order": 49,
+      "title": "so/such + quite/pretty",
+      "cefrLevel": "a2",
+      "section": "Прилагательные и наречия",
+      "shortDescription": "Такой красивый день — so beautiful или such a beautiful day?",
+      "theoryHtml": "<p><strong>so</strong> усиливает прилагательное и наречие: <em>The film was <strong>so boring</strong></em>. <strong>such</strong> усиливает СУЩЕСТВИТЕЛЬНОЕ (с прилагательным): <em>It was <strong>such a boring film</strong></em>. Запомни: such a + прилагательное + существительное — артикль обязателен.</p><table><tr><th>Правильно</th><th>Неправильно</th></tr><tr><td>so beautiful</td><td>such beautiful</td></tr><tr><td>such a beautiful city</td><td>so a beautiful city</td></tr><tr><td>so many books, so much rain</td><td>such many books</td></tr></table><p><strong>quite/pretty/rather</strong> — «довольно»: <em>The hotel is quite good</em>. <strong>such</strong> перед множественным без a: <em>such nice people</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>It was so nice day</em> → <em>such a nice day</em>. <em>He's such tall</em> → <em>so tall</em>. <em>so a long journey</em> → <em>such a long journey</em>.</p><p><strong>Мини-диалог:</strong><br>— How was the trip? — exhausting! <strong>Such a long</strong> flight, and the seats were <strong>so uncomfortable</strong>.<br>— But the views were <strong>pretty</strong> amazing, right? — <strong>Quite</strong>!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "The weather was ___ lovely that we stayed outside all day.", "options": ["such", "so", "such a", "quite"], "correctAnswer": "1", "explanation": "so + прилагательное." },
+        { "order": 2, "type": "mc", "prompt": "It was ___ lovely day!", "options": ["so", "such a", "so a", "such"], "correctAnswer": "1", "explanation": "such a + прилагательное + существительное." },
+        { "order": 3, "type": "mc", "prompt": "They are ___ nice people.", "options": ["so", "such", "such a", "so much"], "correctAnswer": "1", "explanation": "such + прилагательное + множественное." },
+        { "order": 4, "type": "mc", "prompt": "I've got ___ many things to do.", "options": ["such", "so", "such a", "quite"], "correctAnswer": "1", "explanation": "so many + существительное." },
+        { "order": 5, "type": "mc", "prompt": "The hotel was ___ good. (довольно)", "options": ["so", "quite", "such", "much"], "correctAnswer": "1", "explanation": "quite good — довольно хороший." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["It was so a funny joke.", "It was such funny joke.", "It was such a funny joke.", "It was a so funny joke."], "correctAnswer": "2", "explanation": "such a + adj + noun." },
+        { "order": 7, "type": "mc", "prompt": "I've never heard ___ loud music!", "options": ["such", "so", "such a", "quite"], "correctAnswer": "0", "explanation": "such + adj + uncountable noun (music)." },
+        { "order": 8, "type": "mc", "prompt": "The exam was ___ difficult than I expected.", "options": ["quite more", "pretty", "more", "such"], "correctAnswer": "2", "explanation": "more difficult — comparative; quite/pretty не ставятся перед comparative." },
+        { "order": 9, "type": "fill", "prompt": "She is ___ (такая) talented singer!", "options": [], "correctAnswer": "such a", "explanation": "such a talented singer." },
+        { "order": 10, "type": "fill", "prompt": "The problem is ___ (настолько) serious that we need help.", "options": [], "correctAnswer": "so", "explanation": "so serious that..." }
+      ]
+    },
+    {
+      "order": 50,
+      "title": "Наречия частотности: always, never + still/yet/already",
+      "cefrLevel": "a2",
+      "section": "Прилагательные и наречия",
+      "shortDescription": "Где ставить always и чем still отличается от yet.",
+      "theoryHtml": "<p><strong>Наречия частотности</strong> (always, usually, often, sometimes, rarely, never) стоят ПЕРЕД обычным глаголом, но ПОСЛЕ глагола to be: <em>I <strong>usually</strong> walk to work</em>. <em>She <strong>is</strong> always late</em>. <em>He <strong>doesn't</strong> often cook</em>.</p><p>Три слова, которые все путают:</p><table><tr><th>Слово</th><th>Смысл</th><th>Место</th></tr><tr><td><strong>still</strong></td><td>всё ещё (продолжается)</td><td>перед глаголом / после be: He <strong>still</strong> lives there. He is <strong>still</strong> here.</td></tr><tr><td><strong>yet</strong></td><td>уже/ещё (ожидание) — в вопросах и отрицаниях</td><td>В КОНЦЕ: Have you finished <strong>yet</strong>? I haven't seen it <strong>yet</strong>.</td></tr><tr><td><strong>already</strong></td><td>уже (раньше ожидаемого)</td><td>перед глаголом / в конце (амер.): I've <strong>already</strong> seen it.</td></tr></table><p><strong>⚠ Частые ошибки:</strong> <em>I have yet finished</em> → <em>I have already finished</em>. <em>He is yet here</em> → <em>He is still here</em>. <em>I go always there</em> → <em>I always go there</em>.</p><p><strong>Мини-диалог:</strong><br>— Have you called the bank <strong>yet</strong>? — I've <strong>already</strong> called twice. They're <strong>still</strong> closed. It's Sunday!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She ___ drinks coffee in the morning.", "options": ["drinks usually", "usually drinks", "is usually drinking", "usual drinks"], "correctAnswer": "1", "explanation": "Частотное наречие перед обычным глаголом." },
+        { "order": 2, "type": "mc", "prompt": "He is ___ late for meetings.", "options": ["always", "always is", "late always", "allways"], "correctAnswer": "0", "explanation": "После to be." },
+        { "order": 3, "type": "mc", "prompt": "Have you finished your homework ___?", "options": ["still", "already", "yet", "ever"], "correctAnswer": "2", "explanation": "Вопрос с ожиданием — yet в конце." },
+        { "order": 4, "type": "mc", "prompt": "I've ___ seen this film twice.", "options": ["yet", "still", "already", "ever"], "correctAnswer": "2", "explanation": "already — раньше ожидаемого." },
+        { "order": 5, "type": "mc", "prompt": "My grandmother ___ lives in the same house.", "options": ["yet", "already", "still", "ever"], "correctAnswer": "2", "explanation": "still — продолжает жить." },
+        { "order": 6, "type": "mc", "prompt": "I haven't received the parcel ___.", "options": ["already", "still", "yet", "ever"], "correctAnswer": "2", "explanation": "Отрицание + yet в конце." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I go always to the gym.", "I always go to the gym.", "I go to the gym always usually.", "Always I go to the gym."], "correctAnswer": "1", "explanation": "always перед обычным глаголом." },
+        { "order": 8, "type": "mc", "prompt": "They don't ___ eat meat.", "options": ["often", "oftens", "oftener", "oftenly"], "correctAnswer": "0", "explanation": "Наречие частотности после don't." },
+        { "order": 9, "type": "fill", "prompt": "Is the shop ___ (всё ещё) open?", "options": [], "correctAnswer": "still", "explanation": "still — продолжается." },
+        { "order": 10, "type": "fill", "prompt": "We have ___ (уже) booked the hotel.", "options": [], "correctAnswer": "already", "explanation": "already — раньше ожидаемого." }
+      ]
+    }
+  ]
+}

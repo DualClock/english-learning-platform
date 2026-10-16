@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 73,
+      "title": "and/but/or/so/because",
+      "cefrLevel": "a1",
+      "section": "Союзы и время",
+      "shortDescription": "Пять союзов, которые склеивают мысли.",
+      "theoryHtml": "<p>Союзы соединяют два предложения и задают логику между ними:</p><table><tr><th>Союз</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>and</strong></td><td>и (добавление)</td><td>I opened the door and saw him.</td></tr><tr><td><strong>but</strong></td><td>но (противопоставление)</td><td>He's rich but unhappy.</td></tr><tr><td><strong>or</strong></td><td>или (выбор)</td><td>Tea or coffee?</td></tr><tr><td><strong>so</strong></td><td>поэтому (следствие)</td><td>It was late, so we went home.</td></tr><tr><td><strong>because</strong></td><td>потому что (причина)</td><td>We stayed home because it was raining.</td></tr></table><p><strong>so vs because:</strong> причина идёт ПОСЛЕ because, следствие — ПОСЛЕ so: <em>I was tired, <strong>so</strong> I slept</em> (so = поэтому) ↔ <em>I slept <strong>because</strong> I was tired</em> (because = потому что).</p><p><strong>⚠ Частые ошибки:</strong> двойной союз: <em>Because it was late, so we left</em> — только один из них! Также <em>and</em> не начинает отрицание: <em>I don't like it and I won't buy it</em> — корректно, но лучше <em>...it, <strong>so</strong> I won't buy it</em>.</p><p><strong>Мини-диалог:</strong><br>— Why didn't you come? — <strong>Because</strong> I was sick. — You could have called! — I know, <strong>but</strong> my phone was dead, <strong>so</strong> I slept all day.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "It was raining, ___ we took a taxi.", "options": ["because", "so", "but", "or"], "correctAnswer": "1", "explanation": "Следствие — so." },
+        { "order": 2, "type": "mc", "prompt": "We stayed home ___ it was raining.", "options": ["so", "but", "because", "or"], "correctAnswer": "2", "explanation": "Причина — because." },
+        { "order": 3, "type": "mc", "prompt": "He's rich, ___ he isn't happy.", "options": ["so", "because", "but", "and"], "correctAnswer": "2", "explanation": "Противопоставление — but." },
+        { "order": 4, "type": "mc", "prompt": "Do you want tea ___ coffee?", "options": ["and", "but", "so", "or"], "correctAnswer": "3", "explanation": "Выбор — or." },
+        { "order": 5, "type": "mc", "prompt": "I opened the window ___ the room was still hot.", "options": ["so", "but", "because", "and"], "correctAnswer": "2", "explanation": "Причина — because." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Because it was cold, so I wore a coat.", "It was cold, so I wore a coat.", "It was cold, because I wore a coat.", "So it was cold because I wore a coat."], "correctAnswer": "1", "explanation": "Только один союз: причина → so + следствие." },
+        { "order": 7, "type": "mc", "prompt": "Hurry up, ___ we'll miss the train!", "options": ["and", "or", "but", "so"], "correctAnswer": "1", "explanation": "or = «иначе»." },
+        { "order": 8, "type": "mc", "prompt": "She speaks English ___ French fluently.", "options": ["or", "but", "and", "so"], "correctAnswer": "2", "explanation": "Добавление — and." },
+        { "order": 9, "type": "fill", "prompt": "I was hungry, ___ I made a sandwich.", "options": [], "correctAnswer": "so", "explanation": "so = поэтому." },
+        { "order": 10, "type": "fill", "prompt": "He didn't call ___ (потому что) he lost my number.", "options": [], "correctAnswer": "because", "explanation": "because + причина." }
+      ]
+    },
+    {
+      "order": 74,
+      "title": "when/while/before/after/until",
+      "cefrLevel": "a2",
+      "section": "Союзы и время",
+      "shortDescription": "Придаточные времени: до, после, пока, пока не.",
+      "theoryHtml": "<p>Придаточные времени связывают два события по хронологии:</p><table><tr><th>Союз</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>when</strong></td><td>когда (момент)</td><td>Call me when you arrive.</td></tr><tr><td><strong>while</strong></td><td>в то время как (процесс)</td><td>While I was cooking, he was sleeping.</td></tr><tr><td><strong>before</strong></td><td>прежде чем</td><td>Wash your hands before you eat.</td></tr><tr><td><strong>after</strong></td><td>после того как</td><td>After I finished, I left.</td></tr><tr><td><strong>until/till</strong></td><td>до тех пор пока (не)</td><td>Wait until I come back.</td></tr><tr><td><strong>as soon as</strong></td><td>как только</td><td>As soon as I saw him, I smiled.</td></tr></table><p><strong>Важно — о будущем:</strong> после when/before/after/until/as soon as НЕ ставим will, даже если речь о будущем: <em>I'll call you when I <strong>arrive</strong></em> (не when I will arrive!).</p><p><strong>when vs while:</strong> when — момент или короткое действие; while — длительный процесс-фон: <em>The phone rang <strong>while</strong> I was having a shower</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>Wait until I will come</em> → <em>until I come</em>. <em>After I will finish</em> → <em>After I finish</em>.</p><p><strong>Мини-диалог:</strong><br>— What will you do <strong>when</strong> you graduate? — I'll travel <strong>before</strong> I start working.<br>— And I'll keep studying <strong>until</strong> I get my diploma. <strong>As soon as</strong> I finish, we'll celebrate!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I'll call you when I ___ home.", "options": ["will get", "get", "will arrive", "am get"], "correctAnswer": "1", "explanation": "После when о будущем — Present: get." },
+        { "order": 2, "type": "mc", "prompt": "___ I was walking home, I saw an accident.", "options": ["While", "Until", "As soon as", "Before"], "correctAnswer": "0", "explanation": "Процесс-фон — While." },
+        { "order": 3, "type": "mc", "prompt": "Wait here ___ I come back.", "options": ["while", "until", "before", "when"], "correctAnswer": "1", "explanation": "Пока не вернусь — until." },
+        { "order": 4, "type": "mc", "prompt": "___ she finished, she went to bed.", "options": ["Before", "Until", "After", "While"], "correctAnswer": "2", "explanation": "После того как — After." },
+        { "order": 5, "type": "mc", "prompt": "___ I get my salary, I'll buy a new laptop.", "options": ["As soon as", "While", "Until", "Before"], "correctAnswer": "0", "explanation": "Как только — As soon as." },
+        { "order": 6, "type": "mc", "prompt": "Brush your teeth ___ you go to bed.", "options": ["while", "until", "before", "as soon as"], "correctAnswer": "2", "explanation": "Прежде чем — before." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["When I will see him, I'll tell him.", "When I see him, I'll tell him.", "When I see him, I tell him.", "When I saw him, I will tell him."], "correctAnswer": "1", "explanation": "when + Present, главное предложение — will." },
+        { "order": 8, "type": "mc", "prompt": "He fell asleep ___ the film.", "options": ["while", "until", "as soon as", "before"], "correctAnswer": "0", "explanation": "В процессе — while." },
+        { "order": 9, "type": "fill", "prompt": "Don't leave ___ (пока не) I tell you.", "options": [], "correctAnswer": "until", "explanation": "until I tell you." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (как только) the light turns green, we go.", "options": [], "correctAnswer": "As soon as", "explanation": "As soon as." }
+      ]
+    },
+    {
+      "order": 75,
+      "title": "during/for/while + How long does it take?",
+      "cefrLevel": "a2",
+      "section": "Союзы и время",
+      "shortDescription": "During the film vs for two hours — не путать.",
+      "theoryHtml": "<p>Три способа сказать о времени:</p><table><tr><th>Слово</th><th>Смысл</th><th>Пример</th></tr><tr><td><strong>during</strong> + сущ.</td><td>в течение (что-то происходило внутри периода)</td><td>During the film, my phone rang.</td></tr><tr><td><strong>for</strong> + длительность</td><td>сколько длилось</td><td>We talked for two hours.</td></tr><tr><td><strong>while</strong> + предложение</td><td>в то время как</td><td>My phone rang while we were watching the film.</td></tr></table><p>Формула длительности: <strong>How long does it take...?</strong> — <strong>It takes</strong> + время: <em><strong>How long does it take</strong> to learn English? — <strong>It takes</strong> years!</em> Прошедшее: <em>It took me an hour</em>. Будущее: <em>It will take an hour</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>during two hours</em> → <em>for two hours</em> (during + существительное-событие, for + длительность). <em>It takes me for an hour</em> → <em>It takes me an hour</em> (без for!). <em>How long does it takes?</em> → <em>does it take</em>.</p><p><strong>Мини-диалог:</strong><br>— <strong>How long did it take</strong> you to fix the car? — About three hours. — <strong>During</strong> those three hours I called you five times!<br>— I know. Sorry. I was <strong>under</strong> the car — my phone was <strong>in</strong> the house.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "We stayed in Rome ___ five days.", "options": ["during", "for", "while", "since"], "correctAnswer": "1", "explanation": "Длительность — for." },
+        { "order": 2, "type": "mc", "prompt": "___ the lesson, nobody spoke.", "options": ["For", "While", "During", "Since"], "correctAnswer": "2", "explanation": "during + существительное." },
+        { "order": 3, "type": "mc", "prompt": "My phone rang ___ we were talking.", "options": ["during", "for", "while", "since"], "correctAnswer": "2", "explanation": "while + предложение." },
+        { "order": 4, "type": "mc", "prompt": "How long does it ___ to get a visa?", "options": ["make", "do", "take", "have"], "correctAnswer": "2", "explanation": "it takes — занимает." },
+        { "order": 5, "type": "mc", "prompt": "It ___ me two hours to find the error.", "options": ["took", "made", "did", "had"], "correctAnswer": "0", "explanation": "Прошедшее — took." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I slept during eight hours.", "I slept for eight hours.", "I slept while eight hours.", "I slept since eight hours."], "correctAnswer": "1", "explanation": "Длительность — for." },
+        { "order": 7, "type": "mc", "prompt": "He fell asleep ___ the lecture.", "options": ["for", "while", "during", "since"], "correctAnswer": "2", "explanation": "during the lecture." },
+        { "order": 8, "type": "mc", "prompt": "___ we were waiting, it started to rain.", "options": ["During", "For", "While", "Since"], "correctAnswer": "2", "explanation": "while + предложение." },
+        { "order": 9, "type": "fill", "prompt": "It will ___ (займёт) an hour to get there.", "options": [], "correctAnswer": "take", "explanation": "It will take." },
+        { "order": 10, "type": "fill", "prompt": "I haven't seen her ___ (в течение) years.", "options": [], "correctAnswer": "for", "explanation": "for + длительность." }
+      ]
+    }
+  ]
+}

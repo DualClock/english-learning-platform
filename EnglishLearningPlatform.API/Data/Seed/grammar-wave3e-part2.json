@@ -1,0 +1,64 @@
+{
+  "units": [
+    {
+      "order": 79,
+      "title": "have to / must — обязанность и её времена",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "Must — личная обязанность; have to — внешняя. И главное: у have to есть все времена.",
+      "theoryHtml": "<p><strong>must</strong> — обязанность от говорящего, настоятельное правило: <em>You <strong>must</strong> stop smoking</em> (я настаиваю). <strong>have to</strong> — обязанность внешняя (законы, правила, обстоятельства): <em>I <strong>have to</strong> wear a uniform at work</em> (такой порядок).</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>must (наст., только одна форма)</td><td>I must go now.</td></tr><tr><td>have to — все времена</td><td>I had to go. / I'll have to go. / I don't have to work on Sundays.</td></tr><tr><td>mustn't = запрещено!</td><td>You mustn't smoke here. (нельзя)</td></tr><tr><td>don't have to = не обязан</td><td>You don't have to come. (можешь не приходить)</td></tr></table><p><strong>Главное различие в отрицаниях:</strong> <em>mustn't</em> — «запрещено», <em>don't have to</em> — «можно не делать». Это разные вещи!</p><p><strong>⚠ Частые ошибки:</strong> <em>I must to go</em> → <em>must go</em> (без to). <em>You mustn't pay</em> в значении «можешь не платить» → <em>You don't have to pay</em>. Прошедшее от must — <em>had to</em> (must не имеет прошедшего в обычном смысле: <em>I had to work yesterday</em>).</p><p><strong>Мини-диалог:</strong><br>— Do we <strong>have to</strong> wear helmets? — Yes, it's the law. You <strong>mustn't</strong> ride without one.<br>— And you? — I <strong>don't have to</strong> — I'm on a bicycle, not a motorbike!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Yesterday I ___ work until nine.", "options": ["must", "musted", "had to", "have to"], "correctAnswer": "2", "explanation": "Прошедшее от must — had to." },
+        { "order": 2, "type": "mc", "prompt": "You ___ smoke here — it's forbidden!", "options": ["don't have to", "mustn't", "haven't to", "shouldn't have"], "correctAnswer": "1", "explanation": "Запрет — mustn't." },
+        { "order": 3, "type": "mc", "prompt": "It's Saturday — I ___ get up early.", "options": ["mustn't", "don't have to", "must not to", "haven't to"], "correctAnswer": "1", "explanation": "Не обязан — don't have to." },
+        { "order": 4, "type": "mc", "prompt": "She ___ work on weekends — it's in her contract.", "options": ["must", "has to", "have to", "should"], "correctAnswer": "1", "explanation": "Внешнее правило — has to (she)." },
+        { "order": 5, "type": "mc", "prompt": "I ___ go now or I'll miss the train.", "options": ["must to", "have to", "must", "had to"], "correctAnswer": "2", "explanation": "Личная настоятельность — must (без to)." },
+        { "order": 6, "type": "mc", "prompt": "Tomorrow I ___ finish the report.", "options": ["will must", "will have to", "must have", "have must"], "correctAnswer": "1", "explanation": "Будущее — will have to." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["You don't must tell him.", "You mustn't tell him — it's a secret.", "You haven't to tell him.", "You must to not tell him."], "correctAnswer": "1", "explanation": "Запрет — mustn't." },
+        { "order": 8, "type": "mc", "prompt": "Students ___ wear a uniform in this school.", "options": ["must to", "have to", "has to", "mustn't"], "correctAnswer": "1", "explanation": "Внешнее правило — have to." },
+        { "order": 9, "type": "fill", "prompt": "I ___ ___ (должен был) study last night.", "options": [], "correctAnswer": "had to", "explanation": "had to study." },
+        { "order": 10, "type": "fill", "prompt": "Visitors ___ ___ (не обязаны) book in advance.", "options": [], "correctAnswer": "don't have to", "explanation": "don't have to." }
+      ]
+    },
+    {
+      "order": 80,
+      "title": "can/could глубже: умение, просьбы, разрешения",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "Can в прошлом, вежливые просьбы и was able to.",
+      "theoryHtml": "<p><strong>can</strong> — умение/возможность сейчас: <em>I can swim</em>. <strong>could</strong> — умение в прошлом: <em>I <strong>could</strong> swim when I was five</em>.</p><p>Тонкость: <strong>was able to</strong> — «смог» в конкретной ситуации (достиг результата), could — общее умение: <em>The fire spread, but everyone <strong>was able to</strong> escape</em> (в конкретном случае смог выбраться).</p><table><tr><th>Функция</th><th>Форма</th><th>Пример</th></tr><tr><td>умение (наст.)</td><td>can</td><td>She can drive.</td></tr><tr><td>умение (прош.)</td><td>could</td><td>He could read at four.</td></tr><tr><td>разрешение</td><td>can / could (вежливее)</td><td>Can I leave early? Could I...?</td></tr><tr><td>просьба</td><td>can / could / would</td><td>Could you help me?</td></tr><tr><td>возможность (буд.)</td><td>can / will be able to</td><td>I can't come tomorrow, but I'll be able to on Friday.</td></tr></table><p>У can нет будущего и инфинитива — используем <strong>be able to</strong>: <em>I'd like <strong>to be able to</strong> cook</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>I can to swim</em> → <em>can swim</em> (без to). <em>He can swims</em> → <em>can swim</em>. <em>I will can come</em> → <em>I will be able to come</em>.</p><p><strong>Мини-диалог:</strong><br>— <strong>Could you</strong> open the window? — Sure. You know, when I was a kid I <strong>could</strong> sleep with the window open even in winter.<br>— I wish I <strong>could</strong> do that. I'm allergic to cold air — I'll never <strong>be able to</strong>.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She ___ speak three languages.", "options": ["cans", "can to", "can", "is can"], "correctAnswer": "2", "explanation": "can + инфинитив без to." },
+        { "order": 2, "type": "mc", "prompt": "When I was young, I ___ run very fast.", "options": ["can", "could", "can't", "will can"], "correctAnswer": "1", "explanation": "Умение в прошлом — could." },
+        { "order": 3, "type": "mc", "prompt": "I'd love ___ ___ to play the piano. (уметь)", "options": ["to be able", "be able", "can", "to can"], "correctAnswer": "0", "explanation": "to be able to." },
+        { "order": 4, "type": "mc", "prompt": "___ you help me with this bag, please?", "options": ["Can to", "Could", "Are you can", "Do you can"], "correctAnswer": "1", "explanation": "Вежливая просьба — Could." },
+        { "order": 5, "type": "mc", "prompt": "The fire was big, but everyone ___ escape.", "options": ["could", "was able to", "can", "could to"], "correctAnswer": "1", "explanation": "Конкретный результат — was able to." },
+        { "order": 6, "type": "mc", "prompt": "Tomorrow I won't ___ come, sorry.", "options": ["can", "be able to", "could", "able to"], "correctAnswer": "1", "explanation": "Будущее — be able to." },
+        { "order": 7, "type": "mc", "prompt": "___ I use your phone?", "options": ["Am I", "Could", "Do I can", "Will I can"], "correctAnswer": "1", "explanation": "Разрешение/просьба — Could I." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["He can drives.", "He can to drive.", "He can drive.", "He cans drive."], "correctAnswer": "2", "explanation": "can + глагол без изменений." },
+        { "order": 9, "type": "fill", "prompt": "I've never ___ ___ (смог) understand cricket. (be able to)", "options": [], "correctAnswer": "been able to", "explanation": "has never been able to." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (можешь) pass the salt?", "options": [], "correctAnswer": "Could you|Can you", "explanation": "Could you / Can you." }
+      ]
+    },
+    {
+      "order": 81,
+      "title": "would: I'd like / Would you like",
+      "cefrLevel": "b1",
+      "section": "Модальность и структуры",
+      "shortDescription": "Вежливые желания и предложения: I'd like, Would you like.",
+      "theoryHtml": "<p><strong>would like</strong> = «хотел бы» — вежливая форма want: <em>I <strong>would like</strong> a coffee, please</em>. Кратко: <em>I'd like</em>. Вопрос: <em><strong>Would you like</strong> a coffee?</em> — предложение (ожидаем «да»).</p><table><tr><th>Форма</th><th>Пример</th></tr><tr><td>I'd like + сущ.</td><td>I'd like a ticket to Rome.</td></tr><tr><td>I'd like to + глагол</td><td>I'd like to book a table.</td></tr><tr><td>Would you like + сущ./to?</td><td>Would you like some tea? Would you like to dance?</td></tr><tr><td>Do you like...?</td><td>Do you like tea? (вообще, твои вкусы)</td></tr></table><p><strong>Критичная разница:</strong> <em>Would you like tea?</em> = «хочешь чаю (сейчас)?», <em>Do you like tea?</em> = «ты любишь чай (вообще)?». На вопрос <em>Would you like...?</em> отвечают <em>Yes, please / No, thank you</em>.</p><p>Также <strong>would</strong> — вежливые просьбы и мнения: <em>I <strong>would</strong> say...</em>, <em><strong>Would</strong> you mind...</em> (см. юнит о вежливости).</p><p><strong>⚠ Частые ошибки:</strong> <em>I would like to drink now</em> vs <em>I want to drink</em> — would like вежливее. <em>Would you like to tea?</em> → <em>a tea / some tea</em>. <em>I'd like going</em> → <em>I'd like <strong>to go</strong></em>.</p><p><strong>Мини-диалог:</strong><br>— <strong>Would you like</strong> something to drink? — Yes, <strong>I'd like</strong> a sparkling water, please.<br>— <strong>Do you like</strong> sparkling water in general? — Honestly? No. But today — yes!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "___ you like a dessert?", "options": ["Do", "Would", "Are", "Have"], "correctAnswer": "1", "explanation": "Предложение — Would you like." },
+        { "order": 2, "type": "mc", "prompt": "I ___ like to book a table for two.", "options": ["would", "do", "am", "will"], "correctAnswer": "0", "explanation": "I would like to." },
+        { "order": 3, "type": "mc", "prompt": "___ you like horror films? (вообще)", "options": ["Would", "Do", "Are", "Have"], "correctAnswer": "1", "explanation": "О вкусах — Do you like." },
+        { "order": 4, "type": "mc", "prompt": "I'd like ___ a question, if I may.", "options": ["asking", "ask", "to ask", "asked"], "correctAnswer": "2", "explanation": "would like to + инфинитив." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I'd like going home.", "I'd like to go home.", "I'd like go home.", "I like to going home."], "correctAnswer": "1", "explanation": "would like to + инфинитив." },
+        { "order": 6, "type": "mc", "prompt": "Ответ на «Would you like some cake?»:", "options": ["Yes, I like.", "Yes, please.", "Yes, I would like do.", "No, I wouldn't like."], "correctAnswer": "1", "explanation": "Yes, please / No, thank you." },
+        { "order": 7, "type": "mc", "prompt": "___ you like your new job? (твои впечатления)", "options": ["Would", "Do", "Are", "Have"], "correctAnswer": "1", "explanation": "О мнении — Do you like." },
+        { "order": 8, "type": "mc", "prompt": "She said she ___ like a glass of water.", "options": ["will", "would", "does", "has"], "correctAnswer": "1", "explanation": "Косвенная речь: would like." },
+        { "order": 9, "type": "fill", "prompt": "I'd like ___ (заказать) a taxi for six.", "options": [], "correctAnswer": "to book|to order", "explanation": "would like to + инфинитив." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ ___ (Хочешь) to join us? (Would you like)", "options": [], "correctAnswer": "Would you like", "explanation": "Would you like to join." }
+      ]
+    }
+  ]
+}

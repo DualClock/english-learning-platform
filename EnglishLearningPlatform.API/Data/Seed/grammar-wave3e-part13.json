@@ -1,0 +1,49 @@
+{
+  "units": [
+    {
+      "order": 114,
+      "title": "Порядок слов — финальная ревизия",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "S-V-O и инверсия: жёсткий порядок слов английского.",
+      "theoryHtml": "<p>Английский — язык жёсткого порядка: <strong>Подлежащее → Глагол → Дополнение → Как → Где → Когда</strong>: <em>She (S) plays (V) the piano (O) beautifully (Как) at home (Где) every day (Когда)</em>.</p><p>Нарушение порядка меняет смысл: <em>The dog bit the man</em> ≠ <em>The man bit the dog</em>. Падежей нет — порядок несёт смысл.</p><p><strong>Инверсия</strong> (глагол перед подлежащим) — в вопросах и для эмфазы: <em>Never <strong>have I seen</strong> such a mess.</em> <em><strong>Not only did</strong> he lie, but he also stole.</em> <em><strong>Here comes</strong> the bus!</em></p><p><strong>⚠ Частые ошибки русскоговорящих:</strong> свободный порядок как в русском: <em>The homework I did quickly yesterday</em> → <em>I did the homework quickly yesterday</em>. Тема-рема: <em>Very interesting this book is</em> → <em>This book is very interesting</em>.</p><p><strong>Мини-диалог:</strong><br>— Why do you never call? — I <strong>always write</strong>, you never answer! <strong>Never have I met</strong> someone so stubborn.<br>— Ha! <strong>Not only do</strong> I answer — I also visit. <strong>Seldom have I seen</strong> you, though!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Choose the correct order:", "options": ["Yesterday I to the cinema went.", "I went to the cinema yesterday.", "I yesterday went the cinema to.", "To the cinema I went yesterday."], "correctAnswer": "1", "explanation": "S-V-O-Как-Где-Когда." },
+        { "order": 2, "type": "mc", "prompt": "Choose the correct order:", "options": ["She sings beautifully the song.", "She sings the song beautifully.", "She the song sings beautifully.", "Beautifully she the song sings."], "correctAnswer": "1", "explanation": "Глагол → дополнение → наречие образа действия." },
+        { "order": 3, "type": "mc", "prompt": "Инверсия для эмфазы (Never...):", "options": ["Never I have seen such rain.", "Never have I seen such rain.", "Never I saw such rain.", "Never such rain I have seen."], "correctAnswer": "1", "explanation": "Never + have + подлежащее + V3." },
+        { "order": 4, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Rarely he smiles.", "Rarely does he smile.", "Rarely he does smile.", "Rarely smiles he."], "correctAnswer": "1", "explanation": "Rarely + does + he + smile." },
+        { "order": 5, "type": "mc", "prompt": "«The dog bit the man» означает:", "options": ["Собаку укусил мужчина", "Собака укусила мужчину", "Оба верны", "Неясно"], "correctAnswer": "1", "explanation": "Порядок несёт смысл: подлежащее — собака." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Very interesting this book is.", "This book is very interesting.", "This book very interesting is.", "Is this book very interesting. (утверждение)"], "correctAnswer": "1", "explanation": "Прямой порядок: S-V-O." },
+        { "order": 7, "type": "mc", "prompt": "Here ___ the bus!", "options": ["come", "comes", "coming", "is come"], "correctAnswer": "1", "explanation": "Here comes the bus — инверсия." },
+        { "order": 8, "type": "mc", "prompt": "Not only ___ she sing, but she also dances.", "options": ["does", "is", "has", "do"], "correctAnswer": "0", "explanation": "Not only does she sing — инверсия." },
+        { "order": 9, "type": "fill", "prompt": "I sent the email ___ ___ (вчера утром) to the client. (2 слова, время в конец)", "options": [], "correctAnswer": "yesterday morning", "explanation": "manner-place-time: время в конец." },
+        { "order": 10, "type": "fill", "prompt": "Seldom ___ ___ (я такое видел). (have I seen / 3 слова)", "options": [], "correctAnswer": "have I seen such", "explanation": "Seldom have I seen such a thing." }
+      ]
+    },
+    {
+      "order": 115,
+      "title": "Финальный экзамен: 12 времён + структура",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Смешанный тест на всё, что ты прошёл.",
+      "theoryHtml": "<p>Поздравляю! Это последний юнит курса. Ты прошёл весь путь красного Мёрфи: от <strong>am/is/are</strong> до <strong>wish</strong> и <strong>пассива</strong>. Ниже — смешанный тест без подсказок. Если ошибок меньше трёх — твой уровень уверенно B1, и пришло время браться за синий Мёрфи (B1–B2).</p><table><tr><th>Тема</th><th>Юниты для повторения</th></tr><tr><td>Времена</td><td>2, 7-19, 85-86, 100-101, 113, 115</td></tr><tr><td>Модальность</td><td>6, 20-24, 79-81, 97</td></tr><tr><td>Артикли и кванторы</td><td>3, 37-45, 88</td></tr><tr><td>Предлоги</td><td>64-72, 114</td></tr><tr><td>Условия и пассив</td><td>25-28, 82</td></tr></table><p><strong>Совет напоследок:</strong> теория без практики улетучивается за неделю. Читай (книги ждут в библиотеке), собирай слова, повторяй по системе и говори с Alex. Дисциплина сильнее таланта.</p><p><strong>Мини-диалог — прощание курса:</strong><br>— I wish I <strong>had started</strong> earlier! — The best time was yesterday. The second best — <strong>today</strong>.<br>— So... what <strong>should I do</strong> now? — Read a page, learn five words, say a sentence aloud. <strong>Every single day</strong>. That's the whole secret.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "By the time we arrived, the party ___.", "options": ["already finished", "had already finished", "has already finished", "already finishes"], "correctAnswer": "1", "explanation": "До прибытия — Past Perfect." },
+        { "order": 2, "type": "mc", "prompt": "She ___ here for ten years next month.", "options": ["will work", "will have been working", "works", "worked"], "correctAnswer": "1", "explanation": "К сроку в будущем — Future Perfect Continuous." },
+        { "order": 3, "type": "mc", "prompt": "If I ___ more time, I would travel more.", "options": ["have", "had", "will have", "would have"], "correctAnswer": "1", "explanation": "Second Conditional — had." },
+        { "order": 4, "type": "mc", "prompt": "This bridge ___ in the 19th century.", "options": ["is built", "was built", "has built", "built"], "correctAnswer": "1", "explanation": "Past Simple пассив." },
+        { "order": 5, "type": "mc", "prompt": "I wish I ___ where he lives.", "options": ["know", "knew", "have known", "will know"], "correctAnswer": "1", "explanation": "wish + Past Simple." },
+        { "order": 6, "type": "mc", "prompt": "The doctor advised ___ more water.", "options": ["drink", "drinking", "to drinking", "drank"], "correctAnswer": "1", "explanation": "advise + -ing." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Do you know where does she live?", "Do you know where she lives?", "Do you know where she does live?", "Do you know where live she?"], "correctAnswer": "1", "explanation": "Косвенный вопрос — прямой порядок." },
+        { "order": 8, "type": "mc", "prompt": "He's the man ___ dog won the competition.", "options": ["who", "which", "whose", "who's"], "correctAnswer": "2", "explanation": "whose dog — чья собака." },
+        { "order": 9, "type": "mc", "prompt": "You'd better ___ this before it's too late.", "options": ["to fix", "fixing", "fix", "fixed"], "correctAnswer": "2", "explanation": "had better + инфинитив без to." },
+        { "order": 10, "type": "mc", "prompt": "How long ___ you ___ here?", "options": ["do / work", "have / been working", "did / worked", "are / worked"], "correctAnswer": "1", "explanation": "Длится до сих пор — Present Perfect Continuous." },
+        { "order": 11, "type": "fill", "prompt": "If I ___ ___ (мог бы) fly, I would visit every country.", "options": [], "correctAnswer": "could", "explanation": "Second Conditional — could." },
+        { "order": 12, "type": "fill", "prompt": "The report ___ ___ (будет отправлен) tomorrow. (will be sent)", "options": [], "correctAnswer": "will be sent", "explanation": "Future пассив." },
+        { "order": 13, "type": "fill", "prompt": "She's interested in ___ (изучать) languages. (learn)", "options": [], "correctAnswer": "learning", "explanation": "предлог + -ing." },
+        { "order": 14, "type": "fill", "prompt": "I look forward to ___ (увидеть) you soon. (see)", "options": [], "correctAnswer": "seeing", "explanation": "look forward to + -ing." },
+        { "order": 15, "type": "fill", "prompt": "It's high time we ___ (пошли) home. (go → Past)", "options": [], "correctAnswer": "went", "explanation": "It's high time + Past." }
+      ]
+    }
+  ]
+}

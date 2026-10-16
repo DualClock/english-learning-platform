@@ -1,0 +1,124 @@
+{
+  "units": [
+    {
+      "order": 108,
+      "title": "Устойчивые сравнения: as busy as a bee",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Идиоматические сравнения, которые украсят речь.",
+      "theoryHtml": "<p>Популярные сравнения <strong>as ... as</strong> — выучи как готовые фразы:</p><table><tr><th>Фраза</th><th>Смысл</th></tr><tr><td>as busy as a bee</td><td>как пчёлка — очень занят</td></tr><tr><td>as cool as a cucumber</td><td>спокоен как удав</td></tr><tr><td>as easy as pie / ABC</td><td>проще простого</td></tr><tr><td>as fit as a fiddle</td><td>в отличной форме</td></tr><tr><td>as light as a feather</td><td>легкий как пёрышко</td></tr><tr><td>as quiet as a mouse</td><td>тише воды</td></tr><tr><td>as stubborn as a mule</td><td>упрямый как осёл</td></tr><tr><td>as clear as mud</td><td>ясно как день — иронично «ничего не ясно»</td></tr></table><p>Отрицание часто неожиданно: <em>as easy as pie → not as easy as it looks</em>.</p><p><strong>⚠ Частые ошибки:</strong> выдумывать свои сравнения дословно с русского: <em>as a fish in water</em> — англичане так не говорят; есть <em>take to it like a duck to water</em>.</p><p><strong>Мини-диалог:</strong><br>— How's the new job? — I'm <strong>as busy as a bee</strong>, but the boss is <strong>as cool as a cucumber</strong>.<br>— Is the training hard? — <strong>As easy as pie</strong> for someone like me!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "«Очень занят» —", "options": ["as busy as a bee", "as cool as a bee", "as busy as a cucumber", "as easy as a bee"], "correctAnswer": "0", "explanation": "as busy as a bee." },
+        { "order": 2, "type": "mc", "prompt": "«Спокоен как удав» —", "options": ["as cool as a cucumber", "as calm as water", "as cool as a mouse", "as quiet as a bee"], "correctAnswer": "0", "explanation": "as cool as a cucumber." },
+        { "order": 3, "type": "mc", "prompt": "«Проще простого» —", "options": ["as easy as pie", "as hard as pie", "as light as a feather", "as clear as mud"], "correctAnswer": "0", "explanation": "as easy as pie." },
+        { "order": 4, "type": "mc", "prompt": "«Ничего не понятно» (иронично) —", "options": ["as clear as day", "as clear as mud", "as easy as ABC", "as clean as a whistle"], "correctAnswer": "1", "explanation": "as clear as mud — ирония." },
+        { "order": 5, "type": "mc", "prompt": "«В отличной форме» —", "options": ["as fit as a fiddle", "as fit as a flea", "as thin as a fiddle", "as good as gold"], "correctAnswer": "0", "explanation": "as fit as a fiddle." },
+        { "order": 6, "type": "mc", "prompt": "Он «тише воды» —", "options": ["as quiet as a mouse", "as quiet as a bee", "as slow as a mouse", "as quiet as a cat"], "correctAnswer": "0", "explanation": "as quiet as a mouse." },
+        { "order": 7, "type": "mc", "prompt": "«As stubborn as a mule» — про:", "options": ["упрямство", "силу", "скорость", "глупость"], "correctAnswer": "0", "explanation": "stubborn = упрямый." },
+        { "order": 8, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["She's as busy as bee.", "She's as busy as a bee.", "She's so busy as a bee.", "She's as busy like a bee."], "correctAnswer": "1", "explanation": "as + a bee (с артиклем)." },
+        { "order": 9, "type": "fill", "prompt": "After the gym I felt ___ ___ ___ (как новенький). (as good as new → 4 слова)", "options": [], "correctAnswer": "as good as new", "explanation": "as good as new." },
+        { "order": 10, "type": "fill", "prompt": "He took to coding like a duck ___ ___ (к воде). (2 слова)", "options": [], "correctAnswer": "to water", "explanation": "like a duck to water." }
+      ]
+    },
+    {
+      "order": 109,
+      "title": "Цепочки принадлежности и a couple of",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "My sister's friend's car + a couple of, dozens of.",
+      "theoryHtml": "<p><strong>Цепочки 's</strong> допустимы, но длинные лучше перестроить: <em>my sister's friend's car</em> (машина друга моей сестры) — корректно, но громоздко: лучше <em>the car belonging to my sister's friend</em>.</p><p><strong>Примерное количество:</strong></p><table><tr><th>Выражение</th><th>Смысл</th><th>Пример</th></tr><tr><td>a couple of</td><td>пара (2) / несколько</td><td>a couple of days, a couple of friends</td></tr><tr><td>a few / several</td><td>несколько</td><td>several times</td></tr><tr><td>dozens of</td><td>дюжины (много)</td><td>dozens of emails</td></tr><tr><td>loads of / tons of</td><td>куча (разг.)</td><td>loads of fun, tons of work</td></tr><tr><td>plenty of</td><td>много (достаточно)</td><td>plenty of time</td></tr></table><p>После dozens of / loads of / plenty of — мн.ч. или неисчисляемое: <em>plenty of time</em> (не times!).</p><p><strong>⚠ Частые ошибки:</strong> <em>a couple of friends is</em> → <em>are</em> (в брит. разговорном). <em>loads of funs</em> → <em>loads of fun</em>. <em>a couple minutes</em> → <em>a couple of minutes</em>.</p><p><strong>Мини-диалог:</strong><br>— How long will the repair take? — <strong>A couple of</strong> hours. But there are <strong>dozens of</strong> cars ahead of you.<br>— Ugh. OK, I'll grab a coffee. I have <strong>plenty of</strong> time and <strong>tons of</strong> patience.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I'll be back in ___ minutes.", "options": ["a couple of", "couple of", "a couple", "couples of"], "correctAnswer": "0", "explanation": "a couple of + мн.ч." },
+        { "order": 2, "type": "mc", "prompt": "We received ___ emails today.", "options": ["dozen of", "dozens of", "a dozens", "dozen"], "correctAnswer": "1", "explanation": "dozens of." },
+        { "order": 3, "type": "mc", "prompt": "Take your time — there's ___ of it.", "options": ["plenty", "loads", "a couple", "dozens"], "correctAnswer": "0", "explanation": "plenty of time (неисчисляемое)." },
+        { "order": 4, "type": "mc", "prompt": "This is my ___ car.", "options": ["sister's friend's", "sisters friend's", "sister friend's", "sister's friends"], "correctAnswer": "0", "explanation": "машина друга сестры — два 's подряд." },
+        { "order": 5, "type": "mc", "prompt": "I have ___ work today.", "options": ["tons of", "ton of", "tons", "a tons of"], "correctAnswer": "0", "explanation": "tons of work." },
+        { "order": 6, "type": "mc", "prompt": "There were ___ people at the concert.", "options": ["hundreds of", "hundred of", "hundreds", "hundred"], "correctAnswer": "0", "explanation": "hundreds of people." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Plenty of options are open.", "Plenty of option is open.", "Plenty options are open.", "Plenty of funs are open."], "correctAnswer": "0", "explanation": "plenty of + мн.ч." },
+        { "order": 8, "type": "mc", "prompt": "Whose phone is it? — It's my ___ (жены брата).", "options": ["brother's wife's", "brother's wife", "brothers' wifes", "brother wife's"], "correctAnswer": "0", "explanation": "брата → жены: два 's." },
+        { "order": 9, "type": "fill", "prompt": "I need ___ ___ (пару) days off.", "options": [], "correctAnswer": "a couple of", "explanation": "a couple of days." },
+        { "order": 10, "type": "fill", "prompt": "She's got ___ (кучу) friends. (разг.)", "options": [], "correctAnswer": "loads of|tons of|lots of", "explanation": "loads of friends." }
+      ]
+    },
+    {
+      "order": 110,
+      "title": "Разделительные вопросы — ревизия",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "You're coming, aren't you? — хвосты и ответы-ловушки.",
+      "theoryHtml": "<p>Разделительный вопрос = утверждение + хвост-вопрос. Правило: <strong>утверждение → отрицательный хвост; отрицание → утвердительный</strong>. Глагол хвоста = вспомогательный глагол предложения.</p><table><tr><th>Предложение</th><th>Хвост</th></tr><tr><td>You're coming,</td><td><strong>aren't you</strong>?</td></tr><tr><td>She doesn't like it,</td><td><strong>does she</strong>?</td></tr><tr><td>They went home,</td><td><strong>didn't they</strong>?</td></tr><tr><td>He can swim,</td><td><strong>can't he</strong>?</td></tr><tr><td>I'm late,</td><td><strong>aren't I</strong>? (особая форма!)</td></tr><tr><td>Let's go,</td><td><strong>shall we</strong>?</td></tr><tr><td>Open the window,</td><td><strong>will you</strong>?</td></tr></table><p><strong>Ответы-ловушки:</strong> «Yes» на отрицательный вопрос подтверждает отрицание: <em>You don't like it, do you? — <strong>No</strong>, I don't / <strong>Yes</strong>, I do (мне нравится)</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>I'm late, amn't I?</em> → <em>aren't I</em>. <em>He has a car, hasn't he?</em> — верно в британском; в американском: <em>doesn't he</em>. Наречия never/seldom делают предложение отрицательным: <em>He never smiles, <strong>does he</strong>?</em></p><p><strong>Мини-диалог:</strong><br>— It's a beautiful day, <strong>isn't it</strong>? — Yes, it is! You don't have work today, <strong>do you</strong>?<br>— No, I don't. <strong>Let's go</strong> to the beach, <strong>shall we</strong>?</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "She's a doctor, ___?", "options": ["is she", "isn't she", "does she", "hasn't she"], "correctAnswer": "1", "explanation": "Утверждение с is — isn't she." },
+        { "order": 2, "type": "mc", "prompt": "They didn't call, ___?", "options": ["did they", "didn't they", "do they", "was it"], "correctAnswer": "0", "explanation": "Отрицание — did they." },
+        { "order": 3, "type": "mc", "prompt": "I'm right, ___?", "options": ["am I not I", "amn't I", "aren't I", "not am I"], "correctAnswer": "2", "explanation": "Особая форма — aren't I." },
+        { "order": 4, "type": "mc", "prompt": "Let's start, ___?", "options": ["will we", "shall we", "don't we", "let we"], "correctAnswer": "1", "explanation": "Let's — shall we." },
+        { "order": 5, "type": "mc", "prompt": "Open the window, ___?", "options": ["do you", "will you", "shall you", "don't you"], "correctAnswer": "1", "explanation": "Побудительное — will you." },
+        { "order": 6, "type": "mc", "prompt": "He never smokes, ___?", "options": ["doesn't he", "does he", "is he", "smokes he"], "correctAnswer": "1", "explanation": "never — отрицание по смыслу → does he." },
+        { "order": 7, "type": "mc", "prompt": "«You don't like fish, do you?» Ответ «мне нравится»:", "options": ["No, I don't.", "Yes, I do.", "Yes, I don't.", "No, I do."], "correctAnswer": "1", "explanation": "Yes, I do — мне нравится." },
+        { "order": 8, "type": "mc", "prompt": "He's got a car, ___? (брит.)", "options": ["does he", "hasn't he", "isn't he", "didn't he"], "correctAnswer": "1", "explanation": "has got — hasn't he." },
+        { "order": 9, "type": "fill", "prompt": "They're arriving tomorrow, ___ ___? (2 слова)", "options": [], "correctAnswer": "aren't they", "explanation": "are + they → aren't they." },
+        { "order": 10, "type": "fill", "prompt": "Pass me the salt, ___ ___? (2 слова)", "options": [], "correctAnswer": "will you|won't you", "explanation": "Побудительное — will you." }
+      ]
+    },
+    {
+      "order": 111,
+      "title": "Пассив — ревизия всех форм",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Все формы пассива в одной таблице + типичные ошибки.",
+      "theoryHtml": "<p>Пассив — <strong>be в нужном времени + V3</strong>:</p><table><tr><th>Время</th><th>Пассив</th><th>Пример</th></tr><tr><td>Present Simple</td><td>am/is/are + V3</td><td>English is spoken here.</td></tr><tr><td>Past Simple</td><td>was/were + V3</td><td>It was stolen.</td></tr><tr><td>Present Continuous</td><td>am/is/are being + V3</td><td>It is being cleaned.</td></tr><tr><td>Past Continuous</td><td>was/were being + V3</td><td>It was being cleaned.</td></tr><tr><td>Present Perfect</td><td>has/have been + V3</td><td>It has been done.</td></tr><tr><td>Past Perfect</td><td>had been + V3</td><td>It had been done.</td></tr><tr><td>Future</td><td>will be + V3</td><td>It will be done.</td></tr><tr><td>модальные</td><td>must/can/should be + V3</td><td>It must be done.</td></tr></table><p><strong>Кем?</strong> — by: <em>written by Orwell</em>. <strong>Чем?</strong> — with: <em>cut with a knife</em>.</p><p><strong>Когда пассив уместен:</strong> исполнитель неизвестен/неважен: <em>My bike was stolen!</em> (кем — неважно). Наука и новости: <em>The vaccine was developed in 2021</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>is be done</em>, <em>will been done</em>, <em>was be done</em> — запомни схему. Глаголы без пассива: have (владеть), fit, suit, lack, resemble.</p><p><strong>Мини-диалог:</strong><br>— Was the package delivered? — It says it <strong>was delivered</strong> yesterday, but nothing <strong>has been left</strong> at the door.<br>— Maybe it <strong>will be delivered</strong> today. It <strong>should have been sent</strong> by courier.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "Rice ___ in many Asian countries.", "options": ["is grown", "grows is", "is growing", "has grown"], "correctAnswer": "0", "explanation": "Present Simple пассив — is grown." },
+        { "order": 2, "type": "mc", "prompt": "The letter ___ when I came.", "options": ["was being written", "was written", "is being written", "has been written"], "correctAnswer": "0", "explanation": "Past Continuous пассив." },
+        { "order": 3, "type": "mc", "prompt": "The bridge ___ since May.", "options": ["has been closed", "is closed being", "was closed", "has closed"], "correctAnswer": "0", "explanation": "Present Perfect пассив." },
+        { "order": 4, "type": "mc", "prompt": "The homework must ___ by Friday.", "options": ["be submitted", "submitted", "been submitted", "submit"], "correctAnswer": "0", "explanation": "must be + V3." },
+        { "order": 5, "type": "mc", "prompt": "The results ___ next week.", "options": ["will announce", "will be announced", "are announced will", "have announced"], "correctAnswer": "1", "explanation": "Future пассив." },
+        { "order": 6, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["The window is been broken.", "The window has been broken.", "The window has being broken.", "The window is been break."], "correctAnswer": "1", "explanation": "has been broken." },
+        { "order": 7, "type": "mc", "prompt": "The thief was caught ___ a security guard.", "options": ["with", "by", "from", "of"], "correctAnswer": "1", "explanation": "Исполнитель — by." },
+        { "order": 8, "type": "mc", "prompt": "The door was opened ___ a key.", "options": ["by", "with", "from", "of"], "correctAnswer": "1", "explanation": "Инструмент — with." },
+        { "order": 9, "type": "fill", "prompt": "The office ___ ___ (убирается) every evening. (is cleaned)", "options": [], "correctAnswer": "is cleaned", "explanation": "is cleaned every evening." },
+        { "order": 10, "type": "fill", "prompt": "Nothing ___ ___ ___ (было сказано) about it. (had been said)", "options": [], "correctAnswer": "had been said", "explanation": "Past Perfect пассив." }
+      ]
+    },
+    {
+      "order": 112,
+      "title": "Союзы — финальная ревизия",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "however, therefore, moreover, in case — связки продвинутого уровня.",
+      "theoryHtml": "<p>Формальные связки для письменной речи:</p><table><tr><th>Связка</th><th>Смысл</th><th>Пример</th></tr><tr><td>however</td><td>однако</td><td>He was tired. <strong>However</strong>, he continued.</td></tr><tr><td>therefore</td><td>следовательно</td><td>It was late; <strong>therefore</strong>, we left.</td></tr><tr><td>moreover / furthermore</td><td>более того</td><td><strong>Moreover</strong>, the price is fair.</td></tr><tr><td>in case</td><td>на случай если</td><td>Take an umbrella <strong>in case</strong> it rains.</td></tr><tr><td>even so</td><td>и всё же</td><td><strong>Even so</strong>, it's worth trying.</td></tr><tr><td>on the other hand</td><td>с другой стороны</td><td><strong>On the other hand</strong>, it's risky.</td></tr><tr><td>as a result</td><td>в результате</td><td><strong>As a result</strong>, sales doubled.</td></tr></table><p><strong>however</strong> — не союз, а наречие: после него точка или точка с запятой, перед ним тоже: <em>It was late. However, we left. / It was late; however, we left.</em> (не <em>It was late, however we left</em> — запятая недостаточна).</p><p><strong>in case</strong> vs <strong>if</strong>: <em>Take an umbrella in case it rains</em> (запас на будущее) vs <em>We'll cancel if it rains</em> (условие). После in case — тоже Present о будущем: <em>in case it rains</em>.</p><p><strong>⚠ Частые ошибки:</strong> <em>in case of it rains</em> → <em>in case it rains</em> (in case of + существительное: <em>in case of rain</em>). <em>,however,</em> запятые с двух сторон — в начале предложения лучше.</p><p><strong>Мини-диалог:</strong><br>— Should we take the ferry? — The weather is bad. <strong>However</strong>, ferries rarely stop. Take a jacket <strong>in case</strong> it gets windy.<br>— <strong>In case of</strong> an emergency? — Life vests are under the seats, <strong>therefore</strong> — relax and enjoy.</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "He was exhausted. ___, he finished the race.", "options": ["However", "Because", "Moreover", "In case"], "correctAnswer": "0", "explanation": "Противопоставление — However." },
+        { "order": 2, "type": "mc", "prompt": "It was raining; ___, we stayed in.", "options": ["therefore", "however", "in case", "moreover"], "correctAnswer": "0", "explanation": "Следствие — therefore." },
+        { "order": 3, "type": "mc", "prompt": "Take a jumper ___ it gets cold.", "options": ["if", "in case", "however", "therefore"], "correctAnswer": "1", "explanation": "Запас на случай — in case." },
+        { "order": 4, "type": "mc", "prompt": "The flat is small. ___, it's cheap and central.", "options": ["However", "Moreover", "Therefore", "In case"], "correctAnswer": "1", "explanation": "Добавление плюса — Moreover." },
+        { "order": 5, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["Take cash in case of you need it.", "Take cash in case you need it.", "Take cash in case of needing cash you need.", "Take cash however you need it."], "correctAnswer": "1", "explanation": "in case + предложение." },
+        { "order": 6, "type": "mc", "prompt": "___ of rain, the event moves indoors.", "options": ["In case", "In the case", "In case", "However"], "correctAnswer": "2", "explanation": "in case of + существительное." },
+        { "order": 7, "type": "mc", "prompt": "The first attempt failed; ___, the second succeeded.", "options": ["in case", "moreover", "however", "therefore"], "correctAnswer": "2", "explanation": "Противопоставление — however (после ;)." },
+        { "order": 8, "type": "mc", "prompt": "Sales doubled. ___, the company hired ten people.", "options": ["In case", "However", "As a result", "Even so"], "correctAnswer": "2", "explanation": "Следствие — As a result." },
+        { "order": 9, "type": "fill", "prompt": "Bring a map ___ ___ (на случай) you get lost. (2 слова)", "options": [], "correctAnswer": "in case", "explanation": "in case you get lost." },
+        { "order": 10, "type": "fill", "prompt": "___ ___ (в случае) rain, call me.", "options": [], "correctAnswer": "In case of", "explanation": "in case of rain." }
+      ]
+    },
+    {
+      "order": 113,
+      "title": "Итоговая ревизия времён — диагностика",
+      "cefrLevel": "b1",
+      "section": "Продвинутый уровень B1",
+      "shortDescription": "Все 12 времён на одной странице — шпаргалка и тест.",
+      "theoryHtml": "<table><tr><th>Время</th><th>Форма</th><th>Маркер</th><th>Пример</th></tr><tr><td>Present Simple</td><td>do/does</td><td>usually, every day</td><td>I work here.</td></tr><tr><td>Present Continuous</td><td>am/is/are + -ing</td><td>now, at the moment</td><td>I'm working now.</td></tr><tr><td>Past Simple</td><td>V2</td><td>yesterday, ago</td><td>I worked there.</td></tr><tr><td>Past Continuous</td><td>was/were + -ing</td><td>while, at 5 pm yesterday</td><td>I was working at 6.</td></tr><tr><td>Present Perfect</td><td>have/has + V3</td><td>just, ever, since</td><td>I've worked here for years.</td></tr><tr><td>Present Perfect Continuous</td><td>have/has been + -ing</td><td>for 2 hours, since morning</td><td>I've been working since 8.</td></tr><tr><td>Past Perfect</td><td>had + V3</td><td>before, by then</td><td>I had worked there before.</td></tr><tr><td>Past Perfect Continuous</td><td>had been + -ing</td><td>for 2 hours before</td><td>I had been working for hours.</td></tr><tr><td>Future Simple</td><td>will + V1</td><td>tomorrow, soon</td><td>I'll work tomorrow.</td></tr><tr><td>Future Continuous</td><td>will be + -ing</td><td>at 6 pm tomorrow</td><td>I'll be working at 6.</td></tr><tr><td>Future Perfect</td><td>will have + V3</td><td>by next year</td><td>I'll have finished by June.</td></tr><tr><td>going to</td><td>am/is/are going to</td><td>план</td><td>I'm going to work abroad.</td></tr></table><p><strong>Алгоритм выбора:</strong> 1) Есть ли маркер времени? 2) Действие завершено или идёт? 3) Важен процесс или результат? 4) Связь с настоящим?</p><p><strong>⚠ Главные ошибки:</strong> will после when/if; have seen + yesterday; was + V3 без being; am knowing; since + период.</p><p><strong>Мини-диалог (все времена!):</strong><br>— I <strong>'ve been working</strong> here <strong>since</strong> 2020. Before that, I <strong>had been living</strong> in Japan for five years.<br>— Wow. And what <strong>will you be doing</strong> next year? — By then I <strong>'ll have finished</strong> my project and <strong>'ll move</strong> closer to the sea. <strong>When I move</strong>, I'll send you photos!</p>",
+      "exercises": [
+        { "order": 1, "type": "mc", "prompt": "I ___ here since 2019.", "options": ["work", "worked", "have worked", "had worked"], "correctAnswer": "2", "explanation": "since + до сих пор — Present Perfect." },
+        { "order": 2, "type": "mc", "prompt": "When I arrived, they ___ for an hour.", "options": ["have been waiting", "had been waiting", "were waiting since", "waited"], "correctAnswer": "1", "explanation": "До прибытия — Past Perfect Continuous." },
+        { "order": 3, "type": "mc", "prompt": "By June, I ___ the course.", "options": ["will finish", "will have finished", "finish", "have finished"], "correctAnswer": "1", "explanation": "by June — Future Perfect." },
+        { "order": 4, "type": "mc", "prompt": "I'll call you when I ___ the results.", "options": ["will get", "get", "will have got", "got"], "correctAnswer": "1", "explanation": "when о будущем — Present." },
+        { "order": 5, "type": "mc", "prompt": "Look at the sky! It ___ all day — the ground is soaked.", "options": ["rained", "has been raining", "rains", "had rained"], "correctAnswer": "1", "explanation": "Длится до сих пор — PPContinuous." },
+        { "order": 6, "type": "mc", "prompt": "While I ___, the phone rang.", "options": ["cooked", "was cooking", "have cooked", "had cooked"], "correctAnswer": "1", "explanation": "Фон — Past Continuous." },
+        { "order": 7, "type": "mc", "prompt": "Choose the correct sentence:", "options": ["I have seen him yesterday.", "I saw him yesterday.", "I have saw him yesterday.", "I seen him yesterday."], "correctAnswer": "1", "explanation": "yesterday — Past Simple." },
+        { "order": 8, "type": "mc", "prompt": "This time tomorrow, we ___ on the beach.", "options": ["will lie", "will be lying", "will have lain", "lie"], "correctAnswer": "1", "explanation": "This time tomorrow — Future Continuous." },
+        { "order": 9, "type": "fill", "prompt": "By the time you read this, I ___ ___ (уйду). (leave → Future Perfect)", "options": [], "correctAnswer": "will have left", "explanation": "will have left." },
+        { "order": 10, "type": "fill", "prompt": "She ___ (живёт) in Paris since she graduated. (live)", "options": [], "correctAnswer": "has lived|has been living", "explanation": "since graduation — Present Perfect (Continuous)." }
+      ]
+    }
+  ]
+}
