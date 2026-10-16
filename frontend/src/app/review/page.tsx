@@ -209,28 +209,28 @@ export default function ReviewPage() {
 
         {/* Кнопки оценки */}
         {showAnswer && (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button
               onClick={() => handleQuality(1)}
-              className="py-4 rounded-xl bg-[rgba(217,45,32,0.10)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
+              className="py-4 rounded-lg bg-[rgba(217,45,32,0.10)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
             >
               Забыл
             </button>
             <button
               onClick={() => handleQuality(3)}
-              className="py-4 rounded-xl bg-[rgba(249,231,159,0.20)] text-[#7A3A00] font-medium hover:bg-[var(--color-tint-yellow-bold)] hover:text-[var(--color-ink)] transition-colors"
+              className="py-4 rounded-lg bg-[rgba(249,231,159,0.20)] text-[#7A3A00] font-medium hover:bg-[var(--color-tint-yellow-bold)] hover:text-[var(--color-ink)] transition-colors"
             >
               Трудно
             </button>
             <button
               onClick={() => handleQuality(4)}
-              className="py-4 rounded-xl bg-[rgba(26,156,60,0.10)] text-[var(--color-success)] font-medium hover:bg-[var(--color-success)] hover:text-white transition-colors"
+              className="py-4 rounded-lg bg-[rgba(26,156,60,0.10)] text-[var(--color-success)] font-medium hover:bg-[var(--color-success)] hover:text-white transition-colors"
             >
               Хорошо
             </button>
             <button
               onClick={() => handleQuality(5)}
-              className="py-4 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-pressed)] transition-colors"
+              className="py-4 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-pressed)] transition-colors"
             >
               Легко
             </button>

@@ -150,7 +150,7 @@ export default function LessonPage() {
       {/* Word popup */}
       {selectedWordData && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-20">
-          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] shadow-medium p-6">
+          <div className="bg-white rounded-lg border border-[var(--color-hairline)] shadow-card p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-semibold text-[var(--color-ink)] mb-1">

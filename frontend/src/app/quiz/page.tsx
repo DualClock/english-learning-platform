@@ -157,7 +157,7 @@ export default function QuizPage() {
           {/* Варианты ответов */}
           <div className="space-y-3">
             {currentQuestion.options.map((option, index) => {
-              let buttonClass = "w-full p-4 rounded-xl border-2 text-left transition-all ";
+              let buttonClass = "w-full p-4 rounded-lg border-2 text-left transition-all ";
               
               if (showResult) {
                 if (index === currentQuestion.correctIndex) {

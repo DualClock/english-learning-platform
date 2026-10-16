@@ -21,8 +21,8 @@ const FETCH_PAGE_SIZE = 200; // максимум, который принима�
 const cefrStyles: Record<string, string> = {
   A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
   A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
-  B1: 'bg-[rgba(249,231,159,0.15)] text-[#8A6D1D]',
-  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A5C10]',
+  B1: 'bg-[rgba(249,231,159,0.15)] text-[#7A3A00]',
+  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A3A00]',
   C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
   C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
 };
@@ -383,13 +383,13 @@ function PracticeContent() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => answer(true)}
-              className="py-3 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[#2D5A44] transition-colors"
+              className="py-3 rounded-lg font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-pressed)] transition-colors"
             >
               Знаю ✓
             </button>
             <button
               onClick={() => answer(false)}
-              className="py-3 rounded-xl font-semibold bg-[var(--color-error)] text-white hover:bg-[#A04F4F] transition-colors"
+              className="py-3 rounded-lg font-semibold bg-[var(--color-error)] text-white hover:bg-[#B42318] transition-colors"
             >
               Не знаю ✗
             </button>

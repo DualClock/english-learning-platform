@@ -33,8 +33,8 @@ const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const cefrStyles: Record<string, string> = {
   A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
   A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
-  B1: 'bg-[rgba(249,231,159,0.15)] text-[#8A6D1D]',
-  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A5C10]',
+  B1: 'bg-[rgba(249,231,159,0.15)] text-[#7A3A00]',
+  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A3A00]',
   C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
   C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
 };
