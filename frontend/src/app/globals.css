@@ -3,25 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #F7F5EF;
-  --bg-secondary: #E7ECE4;
-  --text-primary: #20231F;
-  --text-secondary: #5A5F5A;
-  --accent-primary: #356B52;
-  --accent-secondary: #EBCB75;
-  --accent-warm: #C4A77D;
-  --error: #B85C5C;
-  --success: #4A7C59;
-  --border: #D6D3CC;
+  /* Brand */
+  --color-primary: #0E7C7B;
+  --color-primary-pressed: #0A6362;
+  --color-primary-deep: #084F4E;
+  --color-navy: #0B2545;
+  --color-navy-deep: #081A33;
+  --color-link: #0B5FA5;
+
+  /* Surfaces */
+  --color-canvas: #FFFFFF;
+  --color-surface: #F6F7F9;
+  --color-surface-soft: #FAFAFB;
+  --color-hairline: #E5E7EB;
+  --color-hairline-soft: #EEF0F3;
+  --color-hairline-strong: #C9CDD4;
+
+  /* Text */
+  --color-ink: #1A1D23;
+  --color-ink-deep: #000000;
+  --color-charcoal: #373B44;
+  --color-slate: #5D6470;
+  --color-steel: #7A8089;
+  --color-muted: #AEB3BB;
+  --color-on-dark: #FFFFFF;
+  --color-on-dark-muted: #A8B3C7;
+
+  /* Pastel tints */
+  --color-tint-peach: #FFE8D4;
+  --color-tint-rose: #FDE0EC;
+  --color-tint-mint: #D9F3E1;
+  --color-tint-lavender: #E6E0F5;
+  --color-tint-sky: #DCECFA;
+  --color-tint-yellow: #FEF7D6;
+  --color-tint-yellow-bold: #F9E79F;
+
+  /* Semantic */
+  --color-success: #1A9C3C;
+  --color-warning: #B45309;
+  --color-error: #D92D20;
 }
 
 @layer base {
   body {
-    @apply bg-[#F7F5EF] text-[#20231F] font-sans antialiased;
+    @apply bg-[var(--color-surface)] text-[var(--color-ink)] antialiased;
+    font-family: var(--font-inter), Inter, system-ui, sans-serif;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+    @apply font-semibold tracking-tight text-[var(--color-ink)];
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -44,71 +80,117 @@
 
   /* Кнопки */
   .btn-primary {
-    @apply bg-[#356B52] text-white px-6 py-3 rounded-lg font-medium
-           hover:bg-[#2A5542] transition-colors duration-200
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white px-[18px] py-2.5 rounded-md text-sm font-medium
+           hover:bg-[var(--color-primary-pressed)] transition-colors duration-200
+           disabled:bg-[var(--color-hairline)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed;
   }
-  
+
   .btn-secondary {
-    @apply bg-transparent text-[#20231F] px-6 py-3 rounded-lg font-medium
-           border border-[#D6D3CC] hover:bg-[#E7ECE4] transition-colors duration-200
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
+           border border-[var(--color-hairline-strong)] hover:bg-[var(--color-surface)] transition-colors duration-200
+           disabled:text-[var(--color-muted)] disabled:border-[var(--color-hairline)] disabled:cursor-not-allowed;
   }
-  
+
   .btn-ghost {
-    @apply text-[#5A5F5A] px-4 py-2 rounded-lg font-medium
-           hover:text-[#20231F] hover:bg-[#E7ECE4] transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 text-[var(--color-slate)] px-3 py-2 rounded-md text-sm font-medium
+           hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-colors duration-200;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-error)] px-[18px] py-2.5 rounded-md text-sm font-medium
+           border border-[var(--color-error)] hover:bg-red-50 transition-colors duration-200;
+  }
+
+  .btn-on-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-white text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
+           hover:bg-[var(--color-surface)] transition-colors duration-200;
+  }
+
+  .btn-secondary-on-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-white px-[18px] py-2.5 rounded-md text-sm font-medium
+           border border-[var(--color-on-dark-muted)] hover:border-white transition-colors duration-200;
   }
 
   /* Карточки */
   .card {
-    @apply bg-white rounded-xl border border-[#D6D3CC] 
-           hover:border-[#C4A77D] transition-colors duration-200;
+    @apply bg-white rounded-lg border border-[var(--color-hairline)] p-6;
   }
-  
+
   .card-interactive {
-    @apply bg-white rounded-xl border border-[#D6D3CC] 
-           hover:border-[#356B52] hover:shadow-lg transition-all duration-200
+    @apply bg-white rounded-lg border border-[var(--color-hairline)]
+           hover:border-[var(--color-primary)] hover:shadow-card transition-all duration-200
            cursor-pointer;
   }
 
+  .card-tint-peach    { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-peach); }
+  .card-tint-rose     { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-rose); }
+  .card-tint-mint     { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-mint); }
+  .card-tint-lavender { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-lavender); }
+  .card-tint-sky      { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-sky); }
+  .card-tint-yellow   { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-yellow); }
+  .card-tint-yellow-bold { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-yellow-bold); }
+
   /* Поля ввода */
   .input {
-    @apply w-full px-4 py-3 rounded-lg border border-[#D6D3CC] bg-white
-           text-[#20231F] placeholder-[#5A5F5A]
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent
+    @apply w-full h-11 px-4 rounded-md border border-[var(--color-hairline-strong)] bg-white
+           text-[var(--color-ink)] placeholder-[var(--color-muted)]
+           focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20
            transition-shadow duration-200;
   }
 
-  /* Заголовки секций */
+  /* Заголовки секций и страниц */
   .section-title {
-    @apply text-2xl md:text-3xl font-bold text-[#20231F] mb-2;
+    @apply text-2xl md:text-3xl font-semibold text-[var(--color-ink)] mb-2;
   }
-  
+
   .section-subtitle {
-    @apply text-[#5A5F5A] text-lg mb-8;
+    @apply text-[var(--color-slate)] text-lg mb-8;
+  }
+
+  .page-header {
+    @apply mb-8;
   }
 
   /* Бейджи */
   .badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-[13px] font-semibold;
   }
-  
+
   .badge-primary {
-    @apply bg-[#E7ECE4] text-[#356B52];
+    @apply bg-[var(--color-primary)] text-white;
   }
-  
+
   .badge-secondary {
-    @apply bg-[#EBCB75] text-[#20231F];
+    @apply bg-[var(--color-surface)] text-[var(--color-slate)] border border-[var(--color-hairline)];
+  }
+
+  .badge-tag {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[13px] font-semibold;
+  }
+
+  .badge-tag-green  { @apply badge-tag; background-color: var(--color-tint-mint); color: #14662B; }
+  .badge-tag-orange { @apply badge-tag; background-color: var(--color-tint-peach); color: #7A3A00; }
+  .badge-tag-purple { @apply badge-tag; background-color: var(--color-tint-lavender); color: #3D2463; }
+  .badge-tag-sky    { @apply badge-tag; background-color: var(--color-tint-sky); color: #0B4A7A; }
+
+  /* Пилюли-табы */
+  .pill-tab {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-[var(--color-steel)]
+           border border-[var(--color-hairline)] hover:text-[var(--color-ink)] transition-colors duration-200;
+  }
+
+  .pill-tab-active {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium
+           bg-[var(--color-navy)] text-white border border-[var(--color-navy)];
   }
 
   /* Прогресс-бар */
   .progress-bar {
-    @apply h-2 bg-[#E7ECE4] rounded-full overflow-hidden;
+    @apply h-2 bg-[var(--color-hairline-soft)] rounded-full overflow-hidden;
   }
-  
+
   .progress-fill {
-    @apply h-full bg-[#356B52] rounded-full transition-all duration-500;
+    @apply h-full bg-[var(--color-primary)] rounded-full transition-all duration-500;
   }
 }
 
@@ -119,22 +201,22 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F7F5EF;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D6D3CC;
+  background: var(--color-hairline-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C4A77D;
+  background: var(--color-steel);
 }
 
 /* Выделение текста */
 ::selection {
-  background: #EBCB75;
-  color: #20231F;
+  background: rgba(14, 124, 123, 0.2);
+  color: var(--color-ink);
 }
 
 /* Анимация курсора печатания */
@@ -152,17 +234,18 @@
 /* Приглашающая пульсация слова */
 @keyframes hero-word-invite {
   0%, 100% {
-    background-color: rgba(235, 203, 117, 0.30);
-    box-shadow: 0 0 0 0 rgba(235, 203, 117, 0.35);
+    background-color: rgba(14, 124, 123, 0.12);
+    box-shadow: 0 0 0 0 rgba(14, 124, 123, 0.25);
   }
   50% {
-    background-color: rgba(235, 203, 117, 0.65);
-    box-shadow: 0 0 0 5px rgba(235, 203, 117, 0.18);
+    background-color: rgba(14, 124, 123, 0.28);
+    box-shadow: 0 0 0 5px rgba(14, 124, 123, 0.12);
   }
 }
 
 .hero-word-invite {
   animation: hero-word-invite 1.8s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 /* Кольцо-ripple в точке касания */
@@ -263,10 +346,10 @@
 /* Пульс свечения аватара */
 @keyframes assistant-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(53, 107, 82, 0.25);
+    box-shadow: 0 0 0 0 rgba(14, 124, 123, 0.25);
   }
   50% {
-    box-shadow: 0 0 0 14px rgba(53, 107, 82, 0);
+    box-shadow: 0 0 0 14px rgba(14, 124, 123, 0);
   }
 }
 
