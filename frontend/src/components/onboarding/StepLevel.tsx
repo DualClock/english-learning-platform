@@ -44,7 +44,7 @@ export default function StepLevel({ onNext, onBack }: StepProps) {
             <button
               key={level.id}
               onClick={() => setSelected(level.id)}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+              className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                 selected === level.id
                   ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                   : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'

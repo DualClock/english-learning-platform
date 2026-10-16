@@ -44,7 +44,7 @@ export default function StepGoal({ onNext, onBack }: StepProps) {
             <button
               key={goal.id}
               onClick={() => setSelected(goal.id)}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+              className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                 selected === goal.id
                   ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                   : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'

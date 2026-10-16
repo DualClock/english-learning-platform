@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                   <button
                     key={level.value}
                     onClick={() => setData({ ...data, level: level.value })}
-                    className={`w-full p-5 rounded-xl border-2 text-left transition-all ${
+                    className={`w-full p-5 rounded-lg border-2 text-left transition-all ${
                       data.level === level.value
                         ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                         : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
               <button
                 onClick={startPlacement}
                 disabled={isPlacementLoading}
-                className="w-full mb-8 py-3 rounded-xl border-2 border-dashed border-[var(--color-primary-pressed)] text-[var(--color-primary)] font-medium hover:bg-[var(--color-tint-mint)] disabled:opacity-50 transition-all"
+                className="w-full mb-8 py-3 rounded-lg border-2 border-dashed border-[var(--color-primary-pressed)] text-[var(--color-primary)] font-medium hover:bg-[var(--color-tint-mint)] disabled:opacity-50 transition-all"
               >
                 {isPlacementLoading ? 'Загружаем тест...' : 'Не знаю свой уровень — пройти тест'}
               </button>
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                       <button
                         key={i}
                         onClick={() => setPlacementChoice(i)}
-                        className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                        className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                           placementChoice === i
                             ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                             : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
@@ -437,7 +437,7 @@ export default function OnboardingPage() {
                     <button
                       key={goal.value}
                       onClick={() => toggleGoal(goal.value)}
-                      className={`relative p-6 rounded-xl border-2 transition-all ${
+                      className={`relative p-6 rounded-lg border-2 transition-all ${
                         selected
                           ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                           : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
@@ -482,7 +482,7 @@ export default function OnboardingPage() {
                   <button
                     key={option.value}
                     onClick={() => setData({ ...data, time: option.value })}
-                    className={`w-full p-5 rounded-xl border-2 text-left transition-all ${
+                    className={`w-full p-5 rounded-lg border-2 text-left transition-all ${
                       data.time === option.value
                         ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                         : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'

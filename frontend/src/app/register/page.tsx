@@ -31,8 +31,8 @@ export default function RegisterPage() {
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 1 из 6</span>
           </div>
-          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '16%' }}></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '16%' }}></div>
           </div>
         </div>
 
@@ -42,6 +42,7 @@ export default function RegisterPage() {
 
           <input
             type="text"
+            aria-label="Твоё имя"
             value={data.name}
             onChange={(e) => updateData({ name: e.target.value })}
             placeholder="Твоё имя"
@@ -69,8 +70,8 @@ export default function RegisterPage() {
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 2 из 6</span>
           </div>
-          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '33%' }}></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '33%' }}></div>
           </div>
         </div>
 
@@ -80,6 +81,7 @@ export default function RegisterPage() {
 
           <input
             type="email"
+            aria-label="Email"
             value={data.email}
             onChange={(e) => updateData({ email: e.target.value })}
             placeholder="email@example.com"
@@ -111,8 +113,8 @@ export default function RegisterPage() {
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 3 из 6</span>
           </div>
-          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '50%' }}></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '50%' }}></div>
           </div>
         </div>
 
@@ -122,6 +124,7 @@ export default function RegisterPage() {
 
           <input
             type="password"
+            aria-label="Пароль"
             value={data.password}
             onChange={(e) => updateData({ password: e.target.value })}
             placeholder="Пароль"
@@ -162,8 +165,8 @@ export default function RegisterPage() {
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 4 из 6</span>
           </div>
-          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '66%' }}></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '66%' }}></div>
           </div>
         </div>
 
@@ -176,7 +179,7 @@ export default function RegisterPage() {
               <button
                 key={goal.id}
                 onClick={() => updateData({ goal: goal.id })}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                className={`p-4 rounded-lg border-2 text-left transition-all ${
                   data.goal === goal.id
                     ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                     : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
@@ -219,8 +222,8 @@ export default function RegisterPage() {
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 5 из 6</span>
           </div>
-          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '83%' }}></div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '83%' }}></div>
           </div>
         </div>
 
@@ -233,7 +236,7 @@ export default function RegisterPage() {
               <button
                 key={time.id}
                 onClick={() => updateData({ time: time.id })}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                   data.time === time.id
                     ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
                     : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
@@ -331,8 +334,8 @@ export default function RegisterPage() {
         <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 6 из 6</span>
         </div>
-        <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
-          <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '100%' }}></div>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: '100%' }}></div>
         </div>
       </div>
 

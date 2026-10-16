@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/app/lib/api-url';
+import AuthLayout from '@/app/auth-layout';
 
 const inputCls =
   'w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent';
@@ -84,12 +85,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col items-center justify-center p-6">
-      <Link href="/" className="text-3xl font-bold text-[var(--color-ink)] mb-8">
-        Lexicon
-      </Link>
-
-      <div className="w-full max-w-md bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8">
+    <AuthLayout>
+      <div className="card p-8">
         {success ? (
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
@@ -131,8 +128,9 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={resetPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
+                <label htmlFor="new-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
                 <input
+                  id="new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -145,10 +143,11 @@ export default function ForgotPasswordPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
+                <label htmlFor="repeat-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">
                   Повторите новый пароль
                 </label>
                 <input
+                  id="repeat-password"
                   type="password"
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
@@ -184,8 +183,9 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={requestToken} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
+                <label htmlFor="email" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -214,11 +214,11 @@ export default function ForgotPasswordPage() {
         )}
       </div>
 
-      <p className="text-sm text-[var(--color-slate)] mt-8">
+      <p className="text-sm text-[var(--color-slate)] mt-8 text-center">
         <Link href="/login" className="text-[var(--color-primary)] font-medium hover:underline">
           ← Вернуться ко входу
         </Link>
       </p>
-    </div>
+    </AuthLayout>
   );
 }
