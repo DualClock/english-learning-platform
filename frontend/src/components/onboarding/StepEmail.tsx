@@ -21,10 +21,10 @@ export default function StepEmail({ onNext, onBack }: StepProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
       {/* Прогресс */}
       <div className="w-full max-w-md mx-auto mb-8">
-        <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+        <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 2 из 6</span>
           <span>Твой email</span>
         </div>
@@ -35,10 +35,10 @@ export default function StepEmail({ onNext, onBack }: StepProps) {
 
       {/* Контент */}
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-        <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+        <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           Где тебе удобно учиться? 📧
         </h2>
-        <p className="text-[#5A5F5A] text-center mb-8">
+        <p className="text-[var(--color-slate)] text-center mb-8">
           Мы отправим подборку книг под твой уровень
         </p>
 
@@ -53,7 +53,7 @@ export default function StepEmail({ onNext, onBack }: StepProps) {
         />
 
         {error && (
-          <p className="text-[#B85C5C] text-sm mb-4">{error}</p>
+          <p className="text-[var(--color-error)] text-sm mb-4">{error}</p>
         )}
 
         {/* Согласие на уведомления */}
@@ -62,9 +62,9 @@ export default function StepEmail({ onNext, onBack }: StepProps) {
             type="checkbox"
             checked={notifications}
             onChange={(e) => setNotifications(e.target.checked)}
-            className="mt-1 w-5 h-5 rounded border-[#D6D3CC] text-[#356B52] focus:ring-[#356B52]"
+            className="mt-1 w-5 h-5 rounded border-[var(--color-hairline-strong)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
           />
-          <span className="text-sm text-[#5A5F5A]">
+          <span className="text-sm text-[var(--color-slate)]">
             Присылать напоминания о повторении и новые книги под мой уровень. 
             Никакого спама, только полезное.
           </span>
@@ -79,7 +79,7 @@ export default function StepEmail({ onNext, onBack }: StepProps) {
         </button>
       </div>
 
-      <button onClick={onBack} className="text-[#5A5F5A] hover:text-[#20231F] mx-auto">
+      <button onClick={onBack} className="text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto">
         ← Назад
       </button>
     </div>

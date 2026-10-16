@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { API_URL } from '@/app/lib/api-url';
 
 const inputCls =
-  'w-full px-4 py-3 rounded-lg border border-[#D6D3CC] focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent';
+  'w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -84,39 +84,39 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col items-center justify-center p-6">
-      <Link href="/" className="text-3xl font-bold text-[#20231F] mb-8">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col items-center justify-center p-6">
+      <Link href="/" className="text-3xl font-bold text-[var(--color-ink)] mb-8">
         Lexicon
       </Link>
 
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[#D6D3CC] p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8">
         {success ? (
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#356B52]/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
+              <svg className="w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-[#20231F] mb-2">Пароль изменён</h1>
-            <p className="text-[#5A5F5A]">Теперь войдите с новым паролем…</p>
+            <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Пароль изменён</h1>
+            <p className="text-[var(--color-slate)]">Теперь войдите с новым паролем…</p>
           </div>
         ) : resetToken ? (
           <>
-            <h1 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+            <h1 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
               Придумайте новый пароль
             </h1>
-            <p className="text-[#5A5F5A] text-center mb-6">
+            <p className="text-[var(--color-slate)] text-center mb-6">
               Для аккаунта {email}
             </p>
 
             {/* Токен восстановления (бета) */}
-            <div className="mb-6 p-4 rounded-xl bg-[#EBCB75]/20 border border-[#EBCB75]">
-              <p className="text-sm font-medium text-[#20231F] mb-2">
+            <div className="mb-6 p-4 rounded-xl bg-[rgba(249,231,159,0.20)] border border-[var(--color-tint-yellow-bold)]">
+              <p className="text-sm font-medium text-[var(--color-ink)] mb-2">
                 Токен восстановления{' '}
-                <span className="font-normal text-[#5A5F5A]">(бета: вместо письма)</span>
+                <span className="font-normal text-[var(--color-slate)]">(бета: вместо письма)</span>
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 min-w-0 text-xs text-[#20231F] bg-white border border-[#D6D3CC] rounded-lg px-3 py-2 break-all">
+                <code className="flex-1 min-w-0 text-xs text-[var(--color-ink)] bg-white border border-[var(--color-hairline-strong)] rounded-lg px-3 py-2 break-all">
                   {resetToken}
                 </code>
                 <button
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
 
             <form onSubmit={resetPassword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#20231F] mb-2">Новый пароль</label>
+                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -145,7 +145,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#20231F] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
                   Повторите новый пароль
                 </label>
                 <input
@@ -159,7 +159,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               {error && (
-                <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm">
+                <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm">
                   {error}
                 </div>
               )}
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Сохраняем…' : 'Сменить пароль'}
               </button>
@@ -175,16 +175,16 @@ export default function ForgotPasswordPage() {
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+            <h1 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
               Восстановление пароля
             </h1>
-            <p className="text-[#5A5F5A] text-center mb-8">
+            <p className="text-[var(--color-slate)] text-center mb-8">
               Введите email — мы подготовим токен восстановления
             </p>
 
             <form onSubmit={requestToken} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#20231F] mb-2">Email</label>
+                <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
@@ -197,7 +197,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               {error && (
-                <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm">
+                <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm">
                   {error}
                 </div>
               )}
@@ -205,7 +205,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoading ? 'Отправляем…' : 'Получить токен'}
               </button>
@@ -214,8 +214,8 @@ export default function ForgotPasswordPage() {
         )}
       </div>
 
-      <p className="text-sm text-[#5A5F5A] mt-8">
-        <Link href="/login" className="text-[#356B52] font-medium hover:underline">
+      <p className="text-sm text-[var(--color-slate)] mt-8">
+        <Link href="/login" className="text-[var(--color-primary)] font-medium hover:underline">
           ← Вернуться ко входу
         </Link>
       </p>

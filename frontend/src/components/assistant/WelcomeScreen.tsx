@@ -28,13 +28,13 @@ export default function WelcomeScreen({ onStart }: { onStart: () => void }) {
       </div>
 
       <h1
-        className="text-3xl font-bold text-[#20231F] mb-3 assistant-fade-up"
+        className="text-3xl font-bold text-[var(--color-ink)] mb-3 assistant-fade-up"
         style={{ animationDelay: '0.15s' }}
       >
         Познакомьтесь: Alex
       </h1>
       <p
-        className="text-[#5A5F5A] text-lg mb-10 assistant-fade-up"
+        className="text-[var(--color-slate)] text-lg mb-10 assistant-fade-up"
         style={{ animationDelay: '0.3s' }}
       >
         Твой AI-собеседник — носитель английского. Просто общайся, а Alex поможет
@@ -49,8 +49,8 @@ export default function WelcomeScreen({ onStart }: { onStart: () => void }) {
             style={{ animationDelay: `${0.45 + idx * 0.2}s` }}
           >
             <div className="text-2xl mb-2">{feature.emoji}</div>
-            <h3 className="font-semibold text-[#20231F] mb-1">{feature.title}</h3>
-            <p className="text-sm text-[#5A5F5A]">{feature.text}</p>
+            <h3 className="font-semibold text-[var(--color-ink)] mb-1">{feature.title}</h3>
+            <p className="text-sm text-[var(--color-slate)]">{feature.text}</p>
           </div>
         ))}
       </div>

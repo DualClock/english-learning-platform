@@ -18,7 +18,7 @@ function Check({ done }: { done: boolean }) {
   return (
     <span
       className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-        done ? 'bg-[#356B52] text-white' : 'bg-white border-2 border-[#D6D3CC] text-transparent'
+        done ? 'bg-[var(--color-primary)] text-white' : 'bg-white border-2 border-[var(--color-hairline-strong)] text-transparent'
       }`}
       aria-hidden="true"
     >
@@ -120,11 +120,11 @@ export default function FirstLesson() {
   if (complete && doneShown) return null;
 
   return (
-    <div className="card p-6 mb-6 border-[#EBCB75] bg-gradient-to-br from-white to-[#EBCB75]/10">
+    <div className="card p-6 mb-6 border-[var(--color-tint-yellow-bold)] bg-gradient-to-br from-white to-[rgba(249,231,159,0.10)]">
       <div className="flex items-start justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-xl font-bold text-[#20231F]">Твой первый урок — 15 минут</h2>
-          <p className="text-sm text-[#5A5F5A] mt-1">
+          <h2 className="text-xl font-bold text-[var(--color-ink)]">Твой первый урок — 15 минут</h2>
+          <p className="text-sm text-[var(--color-slate)] mt-1">
             Добавь рассказ, собери слова и пройди мини-тест
           </p>
         </div>
@@ -132,9 +132,9 @@ export default function FirstLesson() {
       </div>
 
       {complete ? (
-        <div className="rounded-xl bg-[#356B52]/10 border border-[#356B52]/30 p-5 text-center">
-          <p className="text-lg font-semibold text-[#356B52] mb-1">🎉 Поздравляем!</p>
-          <p className="text-sm text-[#5A5F5A]">Первый урок пройден — так держать!</p>
+        <div className="rounded-xl bg-[rgba(14,124,123,0.10)] border border-[rgba(14,124,123,0.30)] p-5 text-center">
+          <p className="text-lg font-semibold text-[var(--color-primary)] mb-1">🎉 Поздравляем!</p>
+          <p className="text-sm text-[var(--color-slate)]">Первый урок пройден — так держать!</p>
         </div>
       ) : (
         <>
@@ -143,11 +143,11 @@ export default function FirstLesson() {
             <li className="flex items-center gap-3">
               <Check done={state.bookAdded} />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
+                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[var(--color-slate)] line-through' : 'text-[var(--color-ink)]'}`}>
                   Добавь первый рассказ
                 </p>
                 {!state.bookAdded && (
-                  <p className="text-xs text-[#5A5F5A] mt-0.5">
+                  <p className="text-xs text-[var(--color-slate)] mt-0.5">
                     «The Lost Kitten» — короткая история уровня A1
                   </p>
                 )}
@@ -167,11 +167,11 @@ export default function FirstLesson() {
             <li className="flex items-center gap-3">
               <Check done={state.bookAdded} />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
+                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[var(--color-slate)] line-through' : 'text-[var(--color-ink)]'}`}>
                   Прочитай первую страницу
                 </p>
                 {state.bookAdded && (
-                  <p className="text-xs text-[#5A5F5A] mt-0.5">
+                  <p className="text-xs text-[var(--color-slate)] mt-0.5">
                     Кликай по словам — увидишь перевод
                   </p>
                 )}
@@ -190,14 +190,14 @@ export default function FirstLesson() {
             <li className="flex items-center gap-3">
               <Check done={state.wordsCount >= TARGET_WORDS} />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
+                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[var(--color-slate)] line-through' : 'text-[var(--color-ink)]'}`}>
                   Собери {TARGET_WORDS} слов в конспект
                 </p>
-                <p className="text-xs text-[#5A5F5A] mt-0.5">
+                <p className="text-xs text-[var(--color-slate)] mt-0.5">
                   В читалке кликай по словам с ✦ — они попадут в конспект
                 </p>
                 {state.bookAdded && state.wordsCount < TARGET_WORDS && (
-                  <p className="text-xs font-semibold text-[#356B52] mt-1">
+                  <p className="text-xs font-semibold text-[var(--color-primary)] mt-1">
                     Слов собрано: {state.wordsCount} из {TARGET_WORDS}
                   </p>
                 )}
@@ -208,10 +208,10 @@ export default function FirstLesson() {
             <li className="flex items-center gap-3">
               <Check done={state.wordsCount >= TARGET_WORDS} />
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
+                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[var(--color-slate)] line-through' : 'text-[var(--color-ink)]'}`}>
                   Пройди мини-тест
                 </p>
-                <p className="text-xs text-[#5A5F5A] mt-0.5">
+                <p className="text-xs text-[var(--color-slate)] mt-0.5">
                   Появится после нажатия «Завершить чтение» в читалке
                 </p>
               </div>
@@ -219,18 +219,18 @@ export default function FirstLesson() {
           </ol>
 
           {state.bookAdded && state.wordsCount < TARGET_WORDS && (
-            <div className="mt-5 rounded-xl bg-[#E7ECE4] p-4 text-center">
-              <p className="text-sm text-[#20231F]">
+            <div className="mt-5 rounded-xl bg-[var(--color-tint-mint)] p-4 text-center">
+              <p className="text-sm text-[var(--color-ink)]">
                 Отлично! Продолжай в читалке: кликай по словам с ✦
               </p>
-              <p className="text-sm font-semibold text-[#356B52] mt-1">
+              <p className="text-sm font-semibold text-[var(--color-primary)] mt-1">
                 Слов собрано: {state.wordsCount} из {TARGET_WORDS}
               </p>
             </div>
           )}
 
           {addError && (
-            <p className="mt-4 text-sm text-[#B85C5C]">{addError}</p>
+            <p className="mt-4 text-sm text-[var(--color-error)]">{addError}</p>
           )}
         </>
       )}

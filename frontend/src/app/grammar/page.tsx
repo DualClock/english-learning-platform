@@ -63,8 +63,8 @@ export default function GrammarPage() {
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#20231F] mb-2">Грамматика</h1>
-        <p className="text-[#5A5F5A] mb-8">
+        <h1 className="text-3xl font-bold text-[var(--color-ink)] mb-2">Грамматика</h1>
+        <p className="text-[var(--color-slate)] mb-8">
           Учи грамматику короткими уроками: теория + практика
         </p>
 
@@ -73,28 +73,28 @@ export default function GrammarPage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-[#D6D3CC] p-6 animate-pulse"
+                className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 animate-pulse"
               >
-                <div className="h-4 w-16 bg-[#E7ECE4] rounded mb-4" />
-                <div className="h-5 w-3/4 bg-[#E7ECE4] rounded mb-3" />
-                <div className="h-4 w-full bg-[#E7ECE4] rounded mb-2" />
-                <div className="h-4 w-2/3 bg-[#E7ECE4] rounded mb-6" />
-                <div className="h-9 w-24 bg-[#E7ECE4] rounded-lg" />
+                <div className="h-4 w-16 bg-[var(--color-tint-mint)] rounded mb-4" />
+                <div className="h-5 w-3/4 bg-[var(--color-tint-mint)] rounded mb-3" />
+                <div className="h-4 w-full bg-[var(--color-tint-mint)] rounded mb-2" />
+                <div className="h-4 w-2/3 bg-[var(--color-tint-mint)] rounded mb-6" />
+                <div className="h-9 w-24 bg-[var(--color-tint-mint)] rounded-lg" />
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl border border-[#D6D3CC] p-8 text-center">
-            <p className="text-[#20231F] mb-4">{error}</p>
+          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+            <p className="text-[var(--color-ink)] mb-4">{error}</p>
             <button onClick={loadUnits} className="btn-primary">
               Попробовать снова
             </button>
           </div>
         ) : units.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[#D6D3CC] p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#E7ECE4] flex items-center justify-center">
+          <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-[#5A5F5A]"
+                className="w-8 h-8 text-[var(--color-slate)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -107,10 +107,10 @@ export default function GrammarPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-[#20231F] mb-2">
+            <h2 className="text-xl font-bold text-[var(--color-ink)] mb-2">
               Юниты скоро появятся
             </h2>
-            <p className="text-[#5A5F5A]">
+            <p className="text-[var(--color-slate)]">
               Мы уже готовим для тебя уроки грамматики
             </p>
           </div>
@@ -119,10 +119,10 @@ export default function GrammarPage() {
             {sections.map(([section, sectionUnits]) => (
               <div key={section}>
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-lg font-semibold text-[#20231F]">
+                  <h2 className="text-lg font-semibold text-[var(--color-ink)]">
                     {section}
                   </h2>
-                  <span className="text-xs text-[#5A5F5A]">
+                  <span className="text-xs text-[var(--color-slate)]">
                     {sectionUnits.length}{' '}
                     {sectionUnits.length === 1
                       ? 'юнит'
@@ -130,17 +130,17 @@ export default function GrammarPage() {
                         ? 'юнита'
                         : 'юнитов'}
                   </span>
-                  <div className="flex-1 h-px bg-[#D6D3CC]" />
+                  <div className="flex-1 h-px bg-[var(--color-hairline-strong)]" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {sectionUnits.map((unit) => (
                     <div
                       key={unit.id}
-                      className="bg-white rounded-2xl border border-[#D6D3CC] p-6 flex flex-col"
+                      className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-6 flex flex-col"
                     >
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-8 h-8 shrink-0 rounded-full bg-[#E7ECE4] text-[#356B52] text-sm font-semibold flex items-center justify-center">
+                          <span className="w-8 h-8 shrink-0 rounded-full bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-sm font-semibold flex items-center justify-center">
                             {unit.order}
                           </span>
                           <span className="badge badge-primary text-xs">
@@ -148,7 +148,7 @@ export default function GrammarPage() {
                           </span>
                         </div>
                         {unit.completed ? (
-                          <span className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-[#356B52]">
+                          <span className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-primary)]">
                             <svg
                               className="w-4 h-4"
                               fill="none"
@@ -165,16 +165,16 @@ export default function GrammarPage() {
                             Пройден · {unit.score}%
                           </span>
                         ) : (
-                          <span className="shrink-0 text-sm text-[#5A5F5A]">
+                          <span className="shrink-0 text-sm text-[var(--color-slate)]">
                             Не пройден
                           </span>
                         )}
                       </div>
 
-                      <h3 className="text-lg font-semibold text-[#20231F] mb-1">
+                      <h3 className="text-lg font-semibold text-[var(--color-ink)] mb-1">
                         {unit.title}
                       </h3>
-                      <p className="text-sm text-[#5A5F5A] mb-5 flex-1">
+                      <p className="text-sm text-[var(--color-slate)] mb-5 flex-1">
                         {unit.shortDescription}
                       </p>
 

@@ -39,24 +39,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col items-center justify-center p-6">
       {/* Лого */}
-      <Link href="/" className="text-3xl font-bold text-[#20231F] mb-8">
+      <Link href="/" className="text-3xl font-bold text-[var(--color-ink)] mb-8">
         Lexicon
       </Link>
 
       {/* Карточка */}
-      <div className="w-full max-w-md bg-white rounded-2xl border border-[#D6D3CC] p-8">
-        <h1 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8">
+        <h1 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           С возвращением 👋
         </h1>
-        <p className="text-[#5A5F5A] text-center mb-8">
+        <p className="text-[var(--color-slate)] text-center mb-8">
           Продолжим читать?
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#20231F] mb-2">
+            <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
               Email
             </label>
             <input
@@ -66,13 +66,13 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
-              className="w-full px-4 py-3 rounded-lg border border-[#D6D3CC] focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent"
+              className="w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#20231F] mb-2">
+            <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
               Пароль
             </label>
             <input
@@ -82,13 +82,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-lg border border-[#D6D3CC] focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent"
+              className="w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               required
             />
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm">
+            <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm">
               {error}
             </div>
           )}
@@ -96,28 +96,28 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? 'Вход...' : 'Войти'}
           </button>
         </form>
 
         <div className="mt-4 text-center">
-          <Link href="/forgot-password" className="text-sm text-[#5A5F5A] hover:text-[#356B52] hover:underline">
+          <Link href="/forgot-password" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] hover:underline">
             Забыли пароль?
           </Link>
         </div>
 
         <div className="mt-6 text-center">
-          <span className="text-[#5A5F5A]">Нет аккаунта? </span>
-          <Link href="/onboarding" className="text-[#356B52] font-medium hover:underline">
+          <span className="text-[var(--color-slate)]">Нет аккаунта? </span>
+          <Link href="/onboarding" className="text-[var(--color-primary)] font-medium hover:underline">
             Зарегистрироваться
           </Link>
         </div>
       </div>
 
       {/* Футер */}
-      <p className="text-sm text-[#5A5F5A] mt-8">
+      <p className="text-sm text-[var(--color-slate)] mt-8">
         Читай. Учи. Помни.
       </p>
     </div>

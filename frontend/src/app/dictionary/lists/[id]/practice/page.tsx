@@ -19,12 +19,12 @@ interface ListItem {
 const FETCH_PAGE_SIZE = 200; // максимум, который принимает бэкенд
 
 const cefrStyles: Record<string, string> = {
-  A1: 'bg-[#5A5F5A]/10 text-[#5A5F5A]',
-  A2: 'bg-[#356B52]/10 text-[#356B52]',
-  B1: 'bg-[#EBCB75]/15 text-[#8a6d1d]',
-  B2: 'bg-[#EBCB75]/25 text-[#7a5c10]',
-  C1: 'bg-[#356B52]/20 text-[#356B52]',
-  C2: 'bg-[#356B52]/20 text-[#356B52]'
+  A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
+  A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
+  B1: 'bg-[rgba(249,231,159,0.15)] text-[#8A6D1D]',
+  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A5C10]',
+  C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
+  C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
 };
 
 function LevelChip({ level }: { level: string }) {
@@ -212,7 +212,7 @@ function PracticeContent() {
     return (
       <AppLayout>
         <div className="max-w-lg mx-auto flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
       </AppLayout>
     );
@@ -223,7 +223,7 @@ function PracticeContent() {
       <AppLayout>
         <div className="max-w-lg mx-auto text-center py-16">
           <div className="card p-8">
-            <p className="text-[#B85C5C] mb-6">Не удалось загрузить слова. Проверьте соединение и попробуйте снова.</p>
+            <p className="text-[var(--color-error)] mb-6">Не удалось загрузить слова. Проверьте соединение и попробуйте снова.</p>
             <div className="flex justify-center gap-3">
               <button onClick={loadBatch} className="btn-primary">Попробовать снова</button>
               <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-secondary">
@@ -242,10 +242,10 @@ function PracticeContent() {
         <div className="max-w-lg mx-auto text-center py-16">
           <div className="card p-8">
             <div className="text-4xl mb-4">🎉</div>
-            <h1 className="text-xl font-bold text-[#20231F] mb-2">
+            <h1 className="text-xl font-bold text-[var(--color-ink)] mb-2">
               Все слова этого уровня уже у вас в словаре
             </h1>
-            <p className="text-[#5A5F5A] mb-8">
+            <p className="text-[var(--color-slate)] mb-8">
               {levels.length > 0
                 ? `Для уровней ${levels.join(', ')} в этом сборнике не осталось новых слов.`
                 : 'В этом сборнике не осталось новых слов.'}
@@ -265,37 +265,37 @@ function PracticeContent() {
       <AppLayout>
         <div className="max-w-lg mx-auto text-center py-12">
           <div className="card p-8">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#356B52]/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
+              <svg className="w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-[#20231F] mb-2">Раунд завершён</h1>
-            <p className="text-[#5A5F5A] mb-6">
-              Знали: <span className="font-semibold text-[#356B52]">{knownCount}</span>
+            <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Раунд завершён</h1>
+            <p className="text-[var(--color-slate)] mb-6">
+              Знали: <span className="font-semibold text-[var(--color-primary)]">{knownCount}</span>
               {' · '}
               Добавлено в словарь:{' '}
-              <span className="font-semibold text-[#356B52]">
+              <span className="font-semibold text-[var(--color-primary)]">
                 {isSaving ? '…' : learnError ? '—' : addedCount ?? 0}
               </span>
             </p>
 
             {learnError && (
-              <p className="text-sm text-[#B85C5C] mb-6">
+              <p className="text-sm text-[var(--color-error)] mb-6">
                 Не удалось добавить незнакомые слова. Попробуйте ещё раз позже.
               </p>
             )}
 
             {unknown.length > 0 && (
               <div className="mb-8 text-left">
-                <p className="text-sm font-semibold text-[#20231F] mb-2">
+                <p className="text-sm font-semibold text-[var(--color-ink)] mb-2">
                   Слова, отправленные в словарь ({unknown.length}):
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {unknown.map(word => (
                     <span
                       key={word}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#F7F5EF] border border-[#D6D3CC] text-[#20231F]"
+                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-surface)] border border-[var(--color-hairline-strong)] text-[var(--color-ink)]"
                     >
                       {word}
                     </span>
@@ -323,7 +323,7 @@ function PracticeContent() {
       <div className="max-w-lg mx-auto">
         {/* Прогресс */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Слово {index + 1} из {batch.length}</span>
             <span>Не знаю: {unknown.length}</span>
           </div>
@@ -340,10 +340,10 @@ function PracticeContent() {
           <div className="text-center mb-8">
             <LevelChip level={currentWord.cefrLevel} />
             <div className="flex items-center justify-center gap-3 mt-4 mb-1">
-              <h1 className="text-4xl font-bold text-[#20231F] break-words">{currentWord.wordText}</h1>
+              <h1 className="text-4xl font-bold text-[var(--color-ink)] break-words">{currentWord.wordText}</h1>
               <button
                 onClick={() => speak(currentWord.wordText)}
-                className="p-2 text-xl rounded-full hover:bg-[#E7ECE4] transition-colors shrink-0"
+                className="p-2 text-xl rounded-full hover:bg-[var(--color-tint-mint)] transition-colors shrink-0"
                 title="Произнести"
                 aria-label="Произнести слово"
               >
@@ -355,23 +355,23 @@ function PracticeContent() {
               {translation.status === 'hidden' && (
                 <button
                   onClick={revealTranslation}
-                  className="text-sm font-medium text-[#356B52] hover:underline transition-colors"
+                  className="text-sm font-medium text-[var(--color-primary)] hover:underline transition-colors"
                 >
                   Показать перевод
                 </button>
               )}
               {translation.status === 'loading' && (
-                <div className="w-5 h-5 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
               )}
               {translation.status === 'ok' && (
-                <p className="text-lg text-[#5A5F5A]">{translation.text}</p>
+                <p className="text-lg text-[var(--color-slate)]">{translation.text}</p>
               )}
               {translation.status === 'error' && (
                 <div className="text-center">
-                  <p className="text-sm text-[#B85C5C] mb-2">Перевод недоступен</p>
+                  <p className="text-sm text-[var(--color-error)] mb-2">Перевод недоступен</p>
                   <button
                     onClick={revealTranslation}
-                    className="text-sm text-[#356B52] hover:underline transition-colors"
+                    className="text-sm text-[var(--color-primary)] hover:underline transition-colors"
                   >
                     Попробовать снова
                   </button>
@@ -383,13 +383,13 @@ function PracticeContent() {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => answer(true)}
-              className="py-3 rounded-xl font-semibold bg-[#356B52] text-white hover:bg-[#2d5a44] transition-colors"
+              className="py-3 rounded-xl font-semibold bg-[var(--color-primary)] text-white hover:bg-[#2D5A44] transition-colors"
             >
               Знаю ✓
             </button>
             <button
               onClick={() => answer(false)}
-              className="py-3 rounded-xl font-semibold bg-[#B85C5C] text-white hover:bg-[#a04f4f] transition-colors"
+              className="py-3 rounded-xl font-semibold bg-[var(--color-error)] text-white hover:bg-[#A04F4F] transition-colors"
             >
               Не знаю ✗
             </button>
@@ -399,7 +399,7 @@ function PracticeContent() {
         <div className="text-center">
           <button
             onClick={() => router.push(`/dictionary/lists/${listId}`)}
-            className="text-sm text-[#5A5F5A] hover:text-[#356B52] transition-colors"
+            className="text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
           >
             ← К сборнику
           </button>
@@ -415,7 +415,7 @@ export default function PracticePage() {
       fallback={
         <AppLayout>
           <div className="max-w-lg mx-auto flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
           </div>
         </AppLayout>
       }

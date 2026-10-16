@@ -31,12 +31,12 @@ const PAGE_SIZE = 50;
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
 const cefrStyles: Record<string, string> = {
-  A1: 'bg-[#5A5F5A]/10 text-[#5A5F5A]',
-  A2: 'bg-[#356B52]/10 text-[#356B52]',
-  B1: 'bg-[#EBCB75]/15 text-[#8a6d1d]',
-  B2: 'bg-[#EBCB75]/25 text-[#7a5c10]',
-  C1: 'bg-[#356B52]/20 text-[#356B52]',
-  C2: 'bg-[#356B52]/20 text-[#356B52]'
+  A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
+  A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
+  B1: 'bg-[rgba(249,231,159,0.15)] text-[#8A6D1D]',
+  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A5C10]',
+  C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
+  C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
 };
 
 function LevelChip({ level }: { level: string }) {
@@ -183,15 +183,15 @@ export default function WordListPage() {
   if (status === 'loading' || isLoading || !list) {
     return (
       <AppLayout>
-        <div className="mb-6 h-4 bg-[#D6D3CC]/40 rounded w-32 animate-pulse"></div>
-        <div className="h-8 bg-[#D6D3CC]/40 rounded w-64 mb-2 animate-pulse"></div>
-        <div className="h-4 bg-[#D6D3CC]/40 rounded w-96 mb-6 animate-pulse"></div>
+        <div className="mb-6 h-4 bg-[rgba(201,205,212,0.40)] rounded w-32 animate-pulse"></div>
+        <div className="h-8 bg-[rgba(201,205,212,0.40)] rounded w-64 mb-2 animate-pulse"></div>
+        <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-96 mb-6 animate-pulse"></div>
         <div className="card p-4 mb-3 animate-pulse" >
-          <div className="h-5 bg-[#D6D3CC]/40 rounded w-1/3"></div>
+          <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-1/3"></div>
         </div>
         {[...Array(8)].map((_, i) => (
           <div key={i} className="card p-4 mb-3 animate-pulse">
-            <div className="h-5 bg-[#D6D3CC]/40 rounded w-1/4"></div>
+            <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-1/4"></div>
           </div>
         ))}
       </AppLayout>
@@ -202,19 +202,19 @@ export default function WordListPage() {
     <AppLayout>
       <button
         onClick={() => router.push('/dictionary?tab=lists')}
-        className="mb-4 text-sm text-[#5A5F5A] hover:text-[#356B52] transition-colors"
+        className="mb-4 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
       >
         ← Назад к словарю
       </button>
 
       {notice && (
-        <div className="mb-4 p-4 rounded-xl bg-[#356B52]/10 border border-[#356B52] text-[#356B52]">
+        <div className="mb-4 p-4 rounded-xl bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)]">
           ✅ Добавлено {notice.added} слов{notice.skipped > 0 ? `, пропущено ${notice.skipped}` : ''}
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 rounded-xl bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] flex items-center justify-between gap-4">
+        <div className="mb-4 p-4 rounded-xl bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] flex items-center justify-between gap-4">
           <span>{error}</span>
           <button onClick={() => loadList(page)} className="btn-secondary shrink-0">
             Попробовать снова
@@ -224,13 +224,13 @@ export default function WordListPage() {
 
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-2xl font-bold text-[#20231F]">{list.name}</h1>
+          <h1 className="text-2xl font-bold text-[var(--color-ink)]">{list.name}</h1>
           {list.cefrFrom && list.cefrTo && (
             <span className="badge badge-primary">{list.cefrFrom}–{list.cefrTo}</span>
           )}
         </div>
-        {list.description && <p className="text-[#5A5F5A]">{list.description}</p>}
-        <p className="text-sm text-[#5A5F5A] mt-1">
+        {list.description && <p className="text-[var(--color-slate)]">{list.description}</p>}
+        <p className="text-sm text-[var(--color-slate)] mt-1">
           {list.items.filter(i => i.inDictionary).length} из {list.items.length.toLocaleString('ru-RU')} на этой странице уже в вашем словаре
         </p>
       </div>
@@ -239,14 +239,14 @@ export default function WordListPage() {
       <div className="card p-4 sm:p-5 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-wrap">
           <div className="flex-1 min-w-[260px]">
-            <h2 className="text-sm font-semibold text-[#20231F] mb-2">Практика</h2>
+            <h2 className="text-sm font-semibold text-[var(--color-ink)] mb-2">Практика</h2>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <button
                 onClick={() => setPracticeLevels(new Set())}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                   practiceLevels.size === 0
-                    ? 'bg-[#356B52] border-[#356B52] text-white'
-                    : 'bg-white border-[#D6D3CC] text-[#5A5F5A] hover:border-[#356B52] hover:text-[#356B52]'
+                    ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+                    : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
                 }`}
               >
                 Все уровни
@@ -259,8 +259,8 @@ export default function WordListPage() {
                     onClick={() => togglePracticeLevel(level)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                       active
-                        ? 'bg-[#356B52] border-[#356B52] text-white'
-                        : 'bg-white border-[#D6D3CC] text-[#5A5F5A] hover:border-[#356B52] hover:text-[#356B52]'
+                        ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+                        : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
                     }`}
                   >
                     {level}
@@ -268,15 +268,15 @@ export default function WordListPage() {
                 );
               })}
             </div>
-            <div className="inline-flex rounded-xl border border-[#D6D3CC] overflow-hidden">
+            <div className="inline-flex rounded-xl border border-[var(--color-hairline-strong)] overflow-hidden">
               {[10, 20, 50].map(n => (
                 <button
                   key={n}
                   onClick={() => setPracticeCount(n)}
                   className={`px-4 py-1.5 text-xs font-semibold transition-colors ${
                     practiceCount === n
-                      ? 'bg-[#356B52] text-white'
-                      : 'bg-white text-[#5A5F5A] hover:bg-[#F7F5EF]'
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'bg-white text-[var(--color-slate)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
                   {n} слов
@@ -284,8 +284,8 @@ export default function WordListPage() {
               ))}
             </div>
           </div>
-          <div className="sm:border-l sm:border-[#D6D3CC] sm:pl-6">
-            <p className="text-xs text-[#5A5F5A] mb-2 max-w-[220px]">
+          <div className="sm:border-l sm:border-[var(--color-hairline-strong)] sm:pl-6">
+            <p className="text-xs text-[var(--color-slate)] mb-2 max-w-[220px]">
               Повторите слова, а незнакомые автоматически попадут в ваш словарь.
             </p>
             <button onClick={startPractice} className="btn-primary">
@@ -297,8 +297,8 @@ export default function WordListPage() {
 
       {/* Панель действий */}
       <div className="card p-4 mb-6 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-[#5A5F5A]">
-          Выбрано <span className="font-semibold text-[#20231F]">{selected.size}</span> слов
+        <span className="text-sm text-[var(--color-slate)]">
+          Выбрано <span className="font-semibold text-[var(--color-ink)]">{selected.size}</span> слов
         </span>
         <div className="flex gap-2 ml-auto">
           <button
@@ -320,14 +320,14 @@ export default function WordListPage() {
 
       {/* Таблица слов */}
       <div className="card overflow-hidden mb-4">
-        <div className="hidden sm:grid grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 border-b border-[#D6D3CC] bg-[#F7F5EF] text-xs font-semibold text-[#5A5F5A] uppercase tracking-wide">
+        <div className="hidden sm:grid grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 border-b border-[var(--color-hairline-strong)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-slate)] uppercase tracking-wide">
           <div>
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
               disabled={selectable.length === 0}
-              className="accent-[#356B52]"
+              className="accent-[var(--color-primary)]"
               aria-label="Выбрать все"
             />
           </div>
@@ -339,8 +339,8 @@ export default function WordListPage() {
           <div
             key={`${item.wordText}-${idx}`}
             onClick={() => toggleWord(item)}
-            className={`grid grid-cols-[2.5rem_1fr_auto] sm:grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 items-center border-b border-[#D6D3CC]/60 last:border-0 transition-colors ${
-              item.inDictionary ? 'opacity-70 cursor-default' : 'cursor-pointer hover:bg-[#F7F5EF]'
+            className={`grid grid-cols-[2.5rem_1fr_auto] sm:grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 items-center border-b border-[rgba(201,205,212,0.60)] last:border-0 transition-colors ${
+              item.inDictionary ? 'opacity-70 cursor-default' : 'cursor-pointer hover:bg-[var(--color-surface)]'
             }`}
           >
             <div onClick={(e) => e.stopPropagation()}>
@@ -349,18 +349,18 @@ export default function WordListPage() {
                 checked={selected.has(item.wordText)}
                 disabled={item.inDictionary}
                 onChange={() => toggleWord(item)}
-                className="accent-[#356B52]"
+                className="accent-[var(--color-primary)]"
                 aria-label={`Выбрать ${item.wordText}`}
               />
             </div>
-            <div className="font-medium text-[#20231F] flex items-center gap-2 min-w-0">
+            <div className="font-medium text-[var(--color-ink)] flex items-center gap-2 min-w-0">
               <span className="truncate">{item.wordText}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   speak(item.wordText);
                 }}
-                className="p-1 text-sm rounded-full hover:bg-[#E7ECE4] transition-colors shrink-0"
+                className="p-1 text-sm rounded-full hover:bg-[var(--color-tint-mint)] transition-colors shrink-0"
                 title="Произнести"
                 aria-label={`Произнести ${item.wordText}`}
               >
@@ -370,7 +370,7 @@ export default function WordListPage() {
             <div><LevelChip level={item.cefrLevel} /></div>
             <div className="text-right">
               {item.inDictionary && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-[#356B52]/10 text-[#356B52]">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]">
                   ✅ В словаре
                 </span>
               )}
@@ -378,7 +378,7 @@ export default function WordListPage() {
           </div>
         ))}
         {list.items.length === 0 && (
-          <div className="p-8 text-center text-[#5A5F5A]">В этом сборнике пока пусто</div>
+          <div className="p-8 text-center text-[var(--color-slate)]">В этом сборнике пока пусто</div>
         )}
       </div>
 
@@ -392,7 +392,7 @@ export default function WordListPage() {
           >
             ← Назад
           </button>
-          <span className="text-sm text-[#5A5F5A]">
+          <span className="text-sm text-[var(--color-slate)]">
             страница {page} из {totalPages}
           </span>
           <button

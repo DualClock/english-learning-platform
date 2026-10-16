@@ -20,9 +20,9 @@ export default function StepLevel({ onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
       <div className="w-full max-w-md mx-auto mb-8">
-        <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+        <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 6 из 6</span>
           <span>Твой уровень</span>
         </div>
@@ -32,10 +32,10 @@ export default function StepLevel({ onNext, onBack }: StepProps) {
       </div>
 
       <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-        <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+        <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           Какой у тебя уровень? 📊
         </h2>
-        <p className="text-[#5A5F5A] text-center mb-8">
+        <p className="text-[var(--color-slate)] text-center mb-8">
           Не уверен? Выбери примерное — потом пройдём тест
         </p>
 
@@ -46,15 +46,15 @@ export default function StepLevel({ onNext, onBack }: StepProps) {
               onClick={() => setSelected(level.id)}
               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                 selected === level.id
-                  ? 'border-[#356B52] bg-[#E7ECE4]'
-                  : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
+                  : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
               }`}
             >
               <div className="flex items-center gap-4">
                 <span className="text-2xl">{level.emoji}</span>
                 <div>
-                  <h3 className="font-semibold text-[#20231F]">{level.title}</h3>
-                  <p className="text-sm text-[#5A5F5A]">{level.desc}</p>
+                  <h3 className="font-semibold text-[var(--color-ink)]">{level.title}</h3>
+                  <p className="text-sm text-[var(--color-slate)]">{level.desc}</p>
                 </div>
               </div>
             </button>
@@ -70,7 +70,7 @@ export default function StepLevel({ onNext, onBack }: StepProps) {
         </button>
       </div>
 
-      <button onClick={onBack} className="text-[#5A5F5A] hover:text-[#20231F] mx-auto mt-4">
+      <button onClick={onBack} className="text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto mt-4">
         ← Назад
       </button>
     </div>

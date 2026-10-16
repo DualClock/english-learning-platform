@@ -85,7 +85,7 @@ export default function ReviewPage() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
       </AppLayout>
     );
@@ -95,13 +95,13 @@ export default function ReviewPage() {
     return (
       <AppLayout>
         <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#356B52]/10 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
+            <svg className="w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Повторение завершено</h1>
-          <p className="text-[#5A5F5A] mb-8">Повторено {words.length} слов</p>
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Повторение завершено</h1>
+          <p className="text-[var(--color-slate)] mb-8">Повторено {words.length} слов</p>
           <button onClick={() => router.push('/dashboard')} className="btn-primary">
             На главную
           </button>
@@ -114,13 +114,13 @@ export default function ReviewPage() {
     return (
       <AppLayout>
         <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#E7ECE4] flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
+            <svg className="w-8 h-8 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Нет слов на сегодня</h1>
-          <p className="text-[#5A5F5A] mb-8">Добавь новые слова в словарь</p>
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Нет слов на сегодня</h1>
+          <p className="text-[var(--color-slate)] mb-8">Добавь новые слова в словарь</p>
           <button onClick={() => router.push('/dictionary/add')} className="btn-primary">
             Добавить слово
           </button>
@@ -136,7 +136,7 @@ export default function ReviewPage() {
       <div className="max-w-2xl mx-auto">
         {/* Прогресс */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Слово {currentIndex + 1} из {words.length}</span>
             <span>Всего на сегодня: {totalCount}</span>
           </div>
@@ -154,36 +154,36 @@ export default function ReviewPage() {
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => speak(currentWord.text)}
-                className="text-4xl font-bold text-[#20231F] hover:text-[#356B52] transition-colors"
+                className="text-4xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors"
               >
                 {currentWord.text}
               </button>
               <button
                 onClick={() => speak(currentWord.text)}
-                className="p-2 text-xl rounded-full hover:bg-[#E7ECE4] transition-colors"
+                className="p-2 text-xl rounded-full hover:bg-[var(--color-tint-mint)] transition-colors"
                 title="Произнести"
                 aria-label="Произнести слово"
               >
                 🔊
               </button>
             </div>
-            <p className="text-sm text-[#5A5F5A] mt-2">Нажми для озвучки</p>
+            <p className="text-sm text-[var(--color-slate)] mt-2">Нажми для озвучки</p>
           </div>
 
           {showAnswer ? (
-            <div className="border-t border-[#D6D3CC] pt-6">
+            <div className="border-t border-[var(--color-hairline-strong)] pt-6">
               {currentWord.definitions.map((def, idx) => (
                 <div key={idx} className="text-center">
-                  <p className="text-xl text-[#20231F]">{def.definition}</p>
+                  <p className="text-xl text-[var(--color-ink)]">{def.definition}</p>
                   {def.partOfSpeech && (
                     <span className="badge badge-primary mt-2">{def.partOfSpeech}</span>
                   )}
                   {def.example && (
                     <div className="mt-4">
-                      <p className="text-[#5A5F5A] italic">«{def.example}»</p>
+                      <p className="text-[var(--color-slate)] italic">«{def.example}»</p>
                       <button
                         onClick={() => speak(def.example!)}
-                        className="text-sm text-[#356B52] hover:underline mt-1 flex items-center gap-1"
+                        className="text-sm text-[var(--color-primary)] hover:underline mt-1 flex items-center gap-1"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -212,25 +212,25 @@ export default function ReviewPage() {
           <div className="grid grid-cols-4 gap-3">
             <button
               onClick={() => handleQuality(1)}
-              className="py-4 rounded-xl bg-[#B85C5C]/10 text-[#B85C5C] font-medium hover:bg-[#B85C5C] hover:text-white transition-colors"
+              className="py-4 rounded-xl bg-[rgba(217,45,32,0.10)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
             >
               Забыл
             </button>
             <button
               onClick={() => handleQuality(3)}
-              className="py-4 rounded-xl bg-[#EBCB75]/20 text-[#8B6914] font-medium hover:bg-[#EBCB75] hover:text-[#20231F] transition-colors"
+              className="py-4 rounded-xl bg-[rgba(249,231,159,0.20)] text-[#7A3A00] font-medium hover:bg-[var(--color-tint-yellow-bold)] hover:text-[var(--color-ink)] transition-colors"
             >
               Трудно
             </button>
             <button
               onClick={() => handleQuality(4)}
-              className="py-4 rounded-xl bg-[#4A7C59]/10 text-[#4A7C59] font-medium hover:bg-[#4A7C59] hover:text-white transition-colors"
+              className="py-4 rounded-xl bg-[rgba(26,156,60,0.10)] text-[var(--color-success)] font-medium hover:bg-[var(--color-success)] hover:text-white transition-colors"
             >
               Хорошо
             </button>
             <button
               onClick={() => handleQuality(5)}
-              className="py-4 rounded-xl bg-[#356B52] text-white font-medium hover:bg-[#2A5542] transition-colors"
+              className="py-4 rounded-xl bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-pressed)] transition-colors"
             >
               Легко
             </button>

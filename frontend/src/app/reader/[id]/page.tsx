@@ -658,32 +658,32 @@ export default function ReaderPage() {
     return (
       <div
         onMouseEnter={handleMarkerLeave /* не гасим при входе в тултип */ }
-        className={`absolute left-0 z-30 w-[240px] max-w-[240px] bg-white rounded-lg shadow-lg border border-[#D6D3CC] p-3 ${
+        className={`absolute left-0 z-30 w-[240px] max-w-[240px] bg-white rounded-lg shadow-lg border border-[var(--color-hairline-strong)] p-3 ${
           tooltip.below ? 'top-full mt-1' : 'bottom-full mb-1'
         }`}
       >
         {tooltip.loading || !t ? (
           <div className="space-y-2 animate-pulse">
-            <div className="h-3 w-2/3 bg-[#E7ECE4] rounded"></div>
-            <div className="h-3 w-1/3 bg-[#E7ECE4] rounded"></div>
-            <div className="h-3 w-1/2 bg-[#E7ECE4] rounded"></div>
+            <div className="h-3 w-2/3 bg-[var(--color-tint-mint)] rounded"></div>
+            <div className="h-3 w-1/3 bg-[var(--color-tint-mint)] rounded"></div>
+            <div className="h-3 w-1/2 bg-[var(--color-tint-mint)] rounded"></div>
           </div>
         ) : (
           <>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-[#20231F] text-sm break-words">{t.word}</span>
+              <span className="font-semibold text-[var(--color-ink)] text-sm break-words">{t.word}</span>
               {t.cefrLevel && (
-                <span className="px-1.5 py-0.5 bg-[#E7ECE4] text-[#356B52] text-[10px] rounded-full shrink-0">
+                <span className="px-1.5 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-[10px] rounded-full shrink-0">
                   {t.cefrLevel}
                 </span>
               )}
             </div>
             {translationText ? (
-              <p className="text-sm text-[#20231F]">{translationText}</p>
+              <p className="text-sm text-[var(--color-ink)]">{translationText}</p>
             ) : (
-              <p className="text-sm text-[#5A5F5A] italic">перевод появится позже</p>
+              <p className="text-sm text-[var(--color-slate)] italic">перевод появится позже</p>
             )}
-            <p className="text-[10px] text-[#5A5F5A] mt-2">нажмите, чтобы добавить в конспект</p>
+            <p className="text-[10px] text-[var(--color-slate)] mt-2">нажмите, чтобы добавить в конспект</p>
           </>
         )}
       </div>
@@ -713,12 +713,12 @@ export default function ReaderPage() {
               >
                 <span
                   onClick={() => toggleCollected(lower, token)}
-                  className={`inline-block rounded px-0.5 border-b border-dashed border-[#C4A77D] cursor-pointer transition-colors hover:bg-[#EBCB75]/20 ${
-                    isCollected ? 'bg-[#EBCB75]/60 text-[#20231F]' : ''
+                  className={`inline-block rounded px-0.5 border-b border-dashed border-[var(--color-primary-pressed)] cursor-pointer transition-colors hover:bg-[rgba(249,231,159,0.20)] ${
+                    isCollected ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]' : ''
                   }`}
                 >
                   {token.word}
-                  <span className="text-[#C4A77D] text-xs ml-0.5 select-none">
+                  <span className="text-[var(--color-primary-pressed)] text-xs ml-0.5 select-none">
                     {isCollected ? '✓' : '✦'}
                   </span>
                 </span>
@@ -733,10 +733,10 @@ export default function ReaderPage() {
               onClick={() => isClickable && handleWordClick(idx)}
               className={`inline-block mr-1 rounded px-0.5 transition-colors ${
                 isSelected
-                  ? 'bg-[#EBCB75] text-[#20231F]'
+                  ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
                   : isClickable
-                    ? 'cursor-pointer hover:bg-[#EBCB75]/20'
-                    : 'text-[#5A5F5A]'
+                    ? 'cursor-pointer hover:bg-[rgba(249,231,159,0.20)]'
+                    : 'text-[var(--color-slate)]'
               }`}
             >
               {token.word}
@@ -753,9 +753,9 @@ export default function ReaderPage() {
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
           {[95, 88, 92, 70].map((w, i) => (
             <Fragment key={i}>
-              <div className="h-5 rounded bg-[#E7ECE4] animate-pulse" style={{ width: `${w}%` }}></div>
+              <div className="h-5 rounded bg-[var(--color-tint-mint)] animate-pulse" style={{ width: `${w}%` }}></div>
               <div
-                className="h-4 mt-1 rounded bg-[#E7ECE4]/60 animate-pulse"
+                className="h-4 mt-1 rounded bg-[rgba(217,243,225,0.60)] animate-pulse"
                 style={{ width: `${Math.max(40, w - 25)}%` }}
               ></div>
             </Fragment>
@@ -767,7 +767,7 @@ export default function ReaderPage() {
     if (parallelError) {
       return (
         <div className="text-center py-10">
-          <p className="text-sm text-[#B85C5C] mb-4">Не удалось загрузить перевод</p>
+          <p className="text-sm text-[var(--color-error)] mb-4">Не удалось загрузить перевод</p>
           <button
             onClick={() => loadParallel(currentPage, true)}
             className="btn-secondary text-sm py-2 px-4"
@@ -783,7 +783,7 @@ export default function ReaderPage() {
     return (
       <div>
         {showParallelHint && (
-          <p className="text-xs text-[#5A5F5A] italic mb-4">
+          <p className="text-xs text-[var(--color-slate)] italic mb-4">
             Кликайте по словам в обычном режиме EN
           </p>
         )}
@@ -791,8 +791,8 @@ export default function ReaderPage() {
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
           {chunks.map((chunk, i) => (
             <Fragment key={i}>
-              <p className="text-[#20231F]">{chunk.en}</p>
-              <p className="text-base leading-relaxed text-[#5A5F5A]">{chunk.ru ?? ''}</p>
+              <p className="text-[var(--color-ink)]">{chunk.en}</p>
+              <p className="text-base leading-relaxed text-[var(--color-slate)]">{chunk.ru ?? ''}</p>
             </Fragment>
           ))}
         </div>
@@ -804,7 +804,7 @@ export default function ReaderPage() {
     return (
       <AppLayout fullWidth>
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
       </AppLayout>
     );
@@ -814,13 +814,13 @@ export default function ReaderPage() {
     return (
       <AppLayout fullWidth>
         <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#B85C5C]/10 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#B85C5C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(217,45,32,0.10)] flex items-center justify-center">
+            <svg className="w-8 h-8 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <p className="text-[#B85C5C] mb-2">{error || 'Книга не найдена'}</p>
-          <p className="text-sm text-[#5A5F5A] mb-6">ID книги: {bookId}</p>
+          <p className="text-[var(--color-error)] mb-2">{error || 'Книга не найдена'}</p>
+          <p className="text-sm text-[var(--color-slate)] mb-6">ID книги: {bookId}</p>
           <button onClick={() => router.push('/books')} className="btn-primary">
             ← Назад к книгам
           </button>
@@ -836,30 +836,30 @@ export default function ReaderPage() {
   const renderFinishModal = () => {
     if (!finishResult) return null;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#20231F]/50 p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,29,35,0.50)] p-4">
         <div className="card max-w-md w-full p-8 text-center max-h-[90vh] overflow-y-auto">
-          <h2 className="text-2xl font-bold text-[#20231F] mb-2">Отличная работа! 🎉</h2>
-          <p className="text-[#5A5F5A] mb-1">Добавлено {finishResult.added} слов в словарь</p>
-          <p className="text-[#5A5F5A] mb-6">Время чтения: {finishResult.minutes} мин</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Отличная работа! 🎉</h2>
+          <p className="text-[var(--color-slate)] mb-1">Добавлено {finishResult.added} слов в словарь</p>
+          <p className="text-[var(--color-slate)] mb-6">Время чтения: {finishResult.minutes} мин</p>
 
           {quizQuestions.length > 0 && !quizDone && quizCurrent ? (
             <div className="text-left">
-              <p className="text-xs text-[#5A5F5A] mb-3 text-center">
+              <p className="text-xs text-[var(--color-slate)] mb-3 text-center">
                 Вопрос {quizIndex + 1} из {quizQuestions.length}
               </p>
-              <p className="text-3xl font-bold text-[#20231F] text-center mb-6 break-words">
+              <p className="text-3xl font-bold text-[var(--color-ink)] text-center mb-6 break-words">
                 {quizCurrent.wordText}
               </p>
               <div className="space-y-2 mb-4">
                 {quizCurrent.options.map((opt, i) => {
-                  let cls = 'bg-white border-[#D6D3CC] hover:bg-[#E7ECE4]';
+                  let cls = 'bg-white border-[var(--color-hairline-strong)] hover:bg-[var(--color-tint-mint)]';
                   if (quizAnswer !== null) {
                     if (i === quizCurrent.correctIndex) {
-                      cls = 'bg-[#E7ECE4] border-[#356B52] text-[#356B52]';
+                      cls = 'bg-[var(--color-tint-mint)] border-[var(--color-primary)] text-[var(--color-primary)]';
                     } else if (i === quizAnswer) {
-                      cls = 'bg-[#B85C5C]/10 border-[#B85C5C] text-[#B85C5C]';
+                      cls = 'bg-[rgba(217,45,32,0.10)] border-[var(--color-error)] text-[var(--color-error)]';
                     } else {
-                      cls = 'bg-white border-[#D6D3CC] opacity-60';
+                      cls = 'bg-white border-[var(--color-hairline-strong)] opacity-60';
                     }
                   }
                   return (
@@ -895,10 +895,10 @@ export default function ReaderPage() {
             </div>
           ) : quizQuestions.length > 0 && quizDone ? (
             <div>
-              <p className="text-xl font-semibold text-[#356B52] mb-2">
+              <p className="text-xl font-semibold text-[var(--color-primary)] mb-2">
                 Результат: {quizScore} из {quizQuestions.length}
               </p>
-              <p className="text-sm text-[#5A5F5A] mb-6">
+              <p className="text-sm text-[var(--color-slate)] mb-6">
                 Слова уже в вашем словаре — система подстроит повторения
               </p>
               <div className="flex gap-3 justify-center">
@@ -931,14 +931,14 @@ export default function ReaderPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#20231F]">{book.title}</h1>
-            {book.author && <p className="text-[#5A5F5A]">{book.author}</p>}
+            <h1 className="text-2xl font-bold text-[var(--color-ink)]">{book.title}</h1>
+            {book.author && <p className="text-[var(--color-slate)]">{book.author}</p>}
           </div>
 
           {content && (
             <div className="flex items-center gap-4">
               <div className="w-48">
-                <div className="flex justify-between text-xs text-[#5A5F5A] mb-1">
+                <div className="flex justify-between text-xs text-[var(--color-slate)] mb-1">
                   <span>{content.progress}%</span>
                   <span>{content.wordsRead.toLocaleString()} / {content.totalWords.toLocaleString()}</span>
                 </div>
@@ -946,7 +946,7 @@ export default function ReaderPage() {
                   <div className="progress-fill" style={{ width: `${content.progress}%` }}></div>
                 </div>
               </div>
-              <span className="text-sm text-[#5A5F5A]">
+              <span className="text-sm text-[var(--color-slate)]">
                 {content.currentPage} / {content.totalPages}
               </span>
               <button
@@ -954,8 +954,8 @@ export default function ReaderPage() {
                 title="Параллельный перевод"
                 className={`h-10 px-3.5 rounded-full text-sm font-semibold shadow-md transition-colors ${
                   parallelMode
-                    ? 'bg-[#EBCB75] text-[#20231F] hover:bg-[#e3bf5f]'
-                    : 'bg-white border border-[#D6D3CC] text-[#5A5F5A] hover:bg-[#E7ECE4]'
+                    ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] hover:bg-[#E3BF5F]'
+                    : 'bg-white border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
                 }`}
               >
                 {parallelMode ? 'RU ⇄' : 'EN'}
@@ -963,7 +963,7 @@ export default function ReaderPage() {
               {readingSessionId && (
                 <button
                   onClick={() => setShowNotes(v => !v)}
-                  className="relative w-10 h-10 rounded-full bg-[#EBCB75] text-[#20231F] font-semibold shadow-md hover:shadow-lg transition-shadow"
+                  className="relative w-10 h-10 rounded-full bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] font-semibold shadow-md hover:shadow-lg transition-shadow"
                   title="Конспект"
                 >
                   ✦ {collectedKeys.length}
@@ -977,24 +977,24 @@ export default function ReaderPage() {
       {/* Поповер конспекта */}
       {showNotes && readingSessionId && (
         <div className="card absolute right-8 top-32 z-40 w-80 p-4 shadow-xl max-h-[60vh] flex flex-col">
-          <h3 className="font-semibold text-[#20231F] mb-3">Конспект ✦ {collectedKeys.length}</h3>
+          <h3 className="font-semibold text-[var(--color-ink)] mb-3">Конспект ✦ {collectedKeys.length}</h3>
           <div className="overflow-y-auto space-y-2 mb-3 flex-1">
             {collectedKeys.length === 0 ? (
-              <p className="text-sm text-[#5A5F5A]">Нажимайте на маркерные слова (✦), чтобы собрать их в конспект.</p>
+              <p className="text-sm text-[var(--color-slate)]">Нажимайте на маркерные слова (✦), чтобы собрать их в конспект.</p>
             ) : (
               collectedKeys.map(key => {
                 const item = collectedRef.current.get(key)!;
                 return (
-                  <div key={key} className="p-2 bg-[#F7F5EF] rounded-lg border border-[#D6D3CC] flex items-start justify-between gap-2">
+                  <div key={key} className="p-2 bg-[var(--color-surface)] rounded-lg border border-[var(--color-hairline-strong)] flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#20231F] break-words">{item.text}</p>
+                      <p className="text-sm font-medium text-[var(--color-ink)] break-words">{item.text}</p>
                       {item.sentence && (
-                        <p className="text-xs text-[#5A5F5A] mt-0.5 line-clamp-2 break-words">{item.sentence}</p>
+                        <p className="text-xs text-[var(--color-slate)] mt-0.5 line-clamp-2 break-words">{item.sentence}</p>
                       )}
                     </div>
                     <button
                       onClick={() => removeCollected(key)}
-                      className="text-[#B85C5C] hover:text-[#8f4343] text-lg leading-none shrink-0"
+                      className="text-[var(--color-error)] hover:text-[#8F4343] text-lg leading-none shrink-0"
                       title="Удалить"
                     >
                       ×
@@ -1018,7 +1018,7 @@ export default function ReaderPage() {
         {/* Текст книги */}
         <div className="flex-1 min-w-0">
           <div className="card p-8">
-            <div className="font-serif text-xl leading-loose text-[#20231F]">
+            <div className="font-serif text-xl leading-loose text-[var(--color-ink)]">
               {parallelMode ? renderParallelText() : renderText()}
             </div>
           </div>
@@ -1053,8 +1053,8 @@ export default function ReaderPage() {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`w-10 h-10 rounded-lg transition-colors ${
                         pageNum === currentPage
-                          ? 'bg-[#356B52] text-white'
-                          : 'bg-white border border-[#D6D3CC] hover:bg-[#E7ECE4]'
+                          ? 'bg-[var(--color-primary)] text-white'
+                          : 'bg-white border border-[var(--color-hairline-strong)] hover:bg-[var(--color-tint-mint)]'
                       }`}
                     >
                       {pageNum}
@@ -1080,18 +1080,18 @@ export default function ReaderPage() {
           <div className="card p-5 sticky top-8">
             {selectedWord ? (
               <>
-                <div className="flex items-start justify-between mb-4 pb-3 border-b border-[#D6D3CC]">
+                <div className="flex items-start justify-between mb-4 pb-3 border-b border-[var(--color-hairline-strong)]">
                   <div className="min-w-0">
-                    <h2 className="text-2xl font-bold text-[#20231F] break-words">{selectedWord}</h2>
+                    <h2 className="text-2xl font-bold text-[var(--color-ink)] break-words">{selectedWord}</h2>
                     {translation?.partOfSpeech && (
-                      <span className="inline-block mt-1 px-2 py-0.5 bg-[#E7ECE4] text-[#356B52] text-xs rounded-full">
+                      <span className="inline-block mt-1 px-2 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-xs rounded-full">
                         {translation.partOfSpeech}
                       </span>
                     )}
                   </div>
                   <button
                     onClick={() => speak(selectedWord)}
-                    className="p-2 text-[#5A5F5A] hover:text-[#356B52] transition-colors shrink-0"
+                    className="p-2 text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors shrink-0"
                     title="Произнести"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1103,22 +1103,22 @@ export default function ReaderPage() {
                 {isTranslating ? (
                   <div className="flex flex-col items-center justify-center py-8 gap-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#356B52] animate-pulse" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-2 h-2 rounded-full bg-[#356B52] animate-pulse" style={{ animationDelay: '200ms' }}></span>
-                      <span className="w-2 h-2 rounded-full bg-[#356B52] animate-pulse" style={{ animationDelay: '400ms' }}></span>
+                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '0ms' }}></span>
+                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '200ms' }}></span>
+                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '400ms' }}></span>
                     </div>
                     {aiMode && (
-                      <p className="text-sm text-[#5A5F5A]">ИИ анализирует контекст…</p>
+                      <p className="text-sm text-[var(--color-slate)]">ИИ анализирует контекст…</p>
                     )}
                   </div>
                 ) : translationError ? (
                   <div className="text-center py-6">
-                    <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[#B85C5C]/10 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[#B85C5C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[rgba(217,45,32,0.10)] flex items-center justify-center">
+                      <svg className="w-5 h-5 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 21a9 9 0 100-18 9 9 000 18z" />
                       </svg>
                     </div>
-                    <p className="text-sm text-[#B85C5C] mb-4">Не удалось перевести.<br />Попробуйте ещё раз</p>
+                    <p className="text-sm text-[var(--color-error)] mb-4">Не удалось перевести.<br />Попробуйте ещё раз</p>
                     <button
                       onClick={() => selectedWordIndex !== null && handleWordClick(selectedWordIndex)}
                       className="btn-secondary text-sm py-2 px-4"
@@ -1129,14 +1129,14 @@ export default function ReaderPage() {
                 ) : translation ? (
                   <div className="space-y-4">
                     <div>
-                      <p className="text-xl text-[#356B52] font-medium min-h-[2rem]">
+                      <p className="text-xl text-[var(--color-primary)] font-medium min-h-[2rem]">
                         {displayedTranslation}
                         {isTyping && (
-                          <span className="inline-block w-0.5 h-5 bg-[#356B52] ml-1 animate-pulse align-middle"></span>
+                          <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 animate-pulse align-middle"></span>
                         )}
                       </p>
                       {!isTyping && translation.source && (
-                        <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-[#5A5F5A]">
+                        <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-[var(--color-slate)]">
                           {translation.source}
                         </span>
                       )}
@@ -1144,10 +1144,10 @@ export default function ReaderPage() {
 
                     {!isTyping && translation.alternatives && translation.alternatives.length > 0 && (
                       <div>
-                        <h3 className="text-xs font-medium text-[#5A5F5A] mb-2">Варианты</h3>
+                        <h3 className="text-xs font-medium text-[var(--color-slate)] mb-2">Варианты</h3>
                         <div className="flex flex-wrap gap-2">
                           {translation.alternatives.map((alt, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-[#E7ECE4] text-[#20231F] text-xs rounded-lg">
+                            <span key={idx} className="px-2 py-1 bg-[var(--color-tint-mint)] text-[var(--color-ink)] text-xs rounded-lg">
                               {alt}
                             </span>
                           ))}
@@ -1157,18 +1157,18 @@ export default function ReaderPage() {
 
                     {!isTyping && translation.examples && translation.examples.length > 0 && (
                       <div>
-                        <h3 className="text-xs font-medium text-[#5A5F5A] mb-2">Примеры</h3>
+                        <h3 className="text-xs font-medium text-[var(--color-slate)] mb-2">Примеры</h3>
                         <div className="space-y-2">
                           {translation.examples.slice(0, 2).map((ex, idx) => (
-                            <div key={idx} className="p-3 bg-[#F7F5EF] rounded-lg border border-[#D6D3CC]">
+                            <div key={idx} className="p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-hairline-strong)]">
                               <button
                                 onClick={() => speak(ex.english)}
                                 className="text-left w-full group"
                               >
-                                <p className="text-sm text-[#20231F] group-hover:text-[#356B52] font-medium">
+                                <p className="text-sm text-[var(--color-ink)] group-hover:text-[var(--color-primary)] font-medium">
                                   {ex.english}
                                 </p>
-                                <p className="text-xs text-[#5A5F5A] mt-1">{ex.translation}</p>
+                                <p className="text-xs text-[var(--color-slate)] mt-1">{ex.translation}</p>
                               </button>
                             </div>
                           ))}
@@ -1181,7 +1181,7 @@ export default function ReaderPage() {
                       disabled={isTyping || addedToDict}
                       className={`w-full text-sm py-2 rounded-lg transition-colors ${
                         addedToDict
-                          ? 'bg-[#E7ECE4] text-[#356B52] cursor-default'
+                          ? 'bg-[var(--color-tint-mint)] text-[var(--color-primary)] cursor-default'
                           : 'btn-primary'
                       }`}
                     >
@@ -1194,7 +1194,7 @@ export default function ReaderPage() {
                         disabled={isTyping || collectedRef.current.has(selectedWord)}
                         className={`w-full text-sm py-2 rounded-lg transition-colors ${
                           collectedRef.current.has(selectedWord)
-                            ? 'bg-[#EBCB75]/40 text-[#20231F] cursor-default'
+                            ? 'bg-[rgba(249,231,159,0.40)] text-[var(--color-ink)] cursor-default'
                             : 'btn-secondary'
                         }`}
                       >
@@ -1206,26 +1206,26 @@ export default function ReaderPage() {
               </>
             ) : (
               <div className="text-center py-8">
-                <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[#E7ECE4] flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                   </svg>
                 </div>
-                <p className="text-sm text-[#5A5F5A]">Нажми на слово<br />для перевода</p>
+                <p className="text-sm text-[var(--color-slate)]">Нажми на слово<br />для перевода</p>
               </div>
             )}
 
             {/* Переключатель ИИ-перевода с контекстом */}
-            <label className="mt-4 flex cursor-pointer items-start gap-2 border-t border-[#D6D3CC] pt-3">
+            <label className="mt-4 flex cursor-pointer items-start gap-2 border-t border-[var(--color-hairline-strong)] pt-3">
               <input
                 type="checkbox"
                 checked={aiMode}
                 onChange={(e) => toggleAiMode(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[#356B52]"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-primary)]"
               />
               <span className="min-w-0">
-                <span className="block text-sm font-medium text-[#20231F]">✨ ИИ-перевод с контекстом</span>
-                <span className="block text-xs text-[#5A5F5A]">Медленнее, но понимает смысл в контексте</span>
+                <span className="block text-sm font-medium text-[var(--color-ink)]">✨ ИИ-перевод с контекстом</span>
+                <span className="block text-xs text-[var(--color-slate)]">Медленнее, но понимает смысл в контексте</span>
               </span>
             </label>
           </div>
@@ -1256,7 +1256,7 @@ export default function ReaderPage() {
                 />
                 {/* Карточка с текстом шага */}
                 <div
-                  className="absolute w-80 max-w-[90vw] bg-white rounded-2xl border border-[#D6D3CC] p-5 shadow-2xl transition-all duration-200"
+                  className="absolute w-80 max-w-[90vw] bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-5 shadow-2xl transition-all duration-200"
                   style={{
                     top: step.card.top,
                     left: step.card.left,
@@ -1264,14 +1264,14 @@ export default function ReaderPage() {
                     opacity: tutorialVisible ? 1 : 0,
                   }}
                 >
-                  <p className="text-xs font-semibold text-[#356B52] mb-2">
+                  <p className="text-xs font-semibold text-[var(--color-primary)] mb-2">
                     Шаг {tutorialStep + 1} из {TUTORIAL_STEPS.length}
                   </p>
-                  <p className="text-sm text-[#20231F] leading-relaxed mb-4">{step.text}</p>
+                  <p className="text-sm text-[var(--color-ink)] leading-relaxed mb-4">{step.text}</p>
                   <div className="flex items-center justify-between gap-3">
                     <button
                       onClick={finishTutorial}
-                      className="text-xs text-[#5A5F5A] hover:text-[#20231F] transition-colors"
+                      className="text-xs text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors"
                     >
                       Пропустить
                     </button>

@@ -46,19 +46,19 @@ const actions = [
 export default function QuickActions() {
   return (
     <section>
-      <h2 className="text-lg font-semibold text-[#20231F] mb-4">Быстрые действия</h2>
+      <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Быстрые действия</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {actions.map((action) => (
           <Link
             key={action.href}
             href={action.href}
-            className="group bg-white rounded-2xl border border-[#D6D3CC] p-4 hover:border-[#356B52] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+            className="group bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-4 hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#E7ECE4] text-[#356B52] flex items-center justify-center mb-3 group-hover:bg-[#356B52] group-hover:text-white transition-colors duration-200">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-tint-mint)] text-[var(--color-primary)] flex items-center justify-center mb-3 group-hover:bg-[var(--color-primary)] group-hover:text-white transition-colors duration-200">
               {action.icon}
             </div>
-            <h3 className="font-medium text-[#20231F]">{action.title}</h3>
-            <p className="text-sm text-[#5A5F5A] mt-0.5">{action.subtitle}</p>
+            <h3 className="font-medium text-[var(--color-ink)]">{action.title}</h3>
+            <p className="text-sm text-[var(--color-slate)] mt-0.5">{action.subtitle}</p>
           </Link>
         ))}
       </div>

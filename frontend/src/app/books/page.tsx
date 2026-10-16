@@ -246,20 +246,20 @@ export default function BooksPage() {
     <AppLayout>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#20231F]">Библиотека</h1>
-          <p className="mt-1 text-[#5A5F5A]">Читайте то, что по силам — и чуть сложнее</p>
+          <h1 className="text-3xl font-bold text-[var(--color-ink)]">Библиотека</h1>
+          <p className="mt-1 text-[var(--color-slate)]">Читайте то, что по силам — и чуть сложнее</p>
         </div>
         <div className="flex items-center gap-3">
-          {!isLoading && <span className="text-sm text-[#5A5F5A]">{pluralBooks(books.length)}</span>}
+          {!isLoading && <span className="text-sm text-[var(--color-slate)]">{pluralBooks(books.length)}</span>}
           <label className="btn-secondary flex cursor-pointer items-center gap-2 px-4 py-2 text-sm">
             {uploading ? (
               <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#D6D3CC] border-t-[#356B52]" />
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)]" />
                 Загрузка…
               </>
             ) : (
               <>
-                <span className="text-base font-bold leading-none text-[#356B52]">+</span>
+                <span className="text-base font-bold leading-none text-[var(--color-primary)]">+</span>
                 Загрузить свою книгу
               </>
             )}
@@ -275,7 +275,7 @@ export default function BooksPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl border border-[#B85C5C] bg-[#B85C5C]/10 p-4 text-[#B85C5C]">
+        <div className="mb-6 rounded-xl border border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] p-4 text-[var(--color-error)]">
           {error}
         </div>
       )}
@@ -284,22 +284,22 @@ export default function BooksPage() {
         <div>
           <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-[#D6D3CC] bg-white p-3">
-                <div className="aspect-[2/3] w-full rounded-xl bg-[#E7ECE4]" />
-                <div className="mt-3 h-3 w-full rounded bg-[#E7ECE4]" />
-                <div className="mt-2 h-3 w-2/3 rounded bg-[#E7ECE4]" />
+              <div key={i} className="rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-3">
+                <div className="aspect-[2/3] w-full rounded-xl bg-[var(--color-tint-mint)]" />
+                <div className="mt-3 h-3 w-full rounded bg-[var(--color-tint-mint)]" />
+                <div className="mt-2 h-3 w-2/3 rounded bg-[var(--color-tint-mint)]" />
               </div>
             ))}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl border border-[#D6D3CC] bg-white p-4">
+              <div key={i} className="h-28 rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-4">
                 <div className="flex h-full items-center gap-4">
-                  <div className="h-20 w-14 shrink-0 rounded-lg bg-[#E7ECE4]" />
+                  <div className="h-20 w-14 shrink-0 rounded-lg bg-[var(--color-tint-mint)]" />
                   <div className="flex-1">
-                    <div className="h-4 w-2/3 rounded bg-[#E7ECE4]" />
-                    <div className="mt-2 h-3 w-full rounded bg-[#E7ECE4]" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-[#E7ECE4]" />
+                    <div className="h-4 w-2/3 rounded bg-[var(--color-tint-mint)]" />
+                    <div className="mt-2 h-3 w-full rounded bg-[var(--color-tint-mint)]" />
+                    <div className="mt-2 h-3 w-1/2 rounded bg-[var(--color-tint-mint)]" />
                   </div>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export default function BooksPage() {
         <>
           {books.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">Мои книги</h2>
+              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">Мои книги</h2>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                 {books.map((book) => (
                   <MyBookCard
@@ -325,9 +325,9 @@ export default function BooksPage() {
           )}
 
           {books.length === 0 && (
-            <div className="mb-10 rounded-2xl border border-dashed border-[#D6D3CC] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[#20231F]">В библиотеке пока пусто</p>
-              <p className="mt-1 text-sm text-[#5A5F5A]">
+            <div className="mb-10 rounded-2xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
+              <p className="font-medium text-[var(--color-ink)]">В библиотеке пока пусто</p>
+              <p className="mt-1 text-sm text-[var(--color-slate)]">
                 Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB.
               </p>
             </div>
@@ -335,7 +335,7 @@ export default function BooksPage() {
 
           {stories.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">
+              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">
                 Рассказы для вашего уровня
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
@@ -355,27 +355,27 @@ export default function BooksPage() {
 
           {classicGroups.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">Классика по уровням</h2>
+              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">Классика по уровням</h2>
               {classicGroups.map(({ level, items }) => {
                 const recommended = userLevel === level;
                 return (
                   <div
                     key={level}
                     className={`relative mb-8 rounded-2xl p-4 ${
-                      recommended ? 'bg-[#EBCB75]/10 ring-2 ring-[#EBCB75]' : ''
+                      recommended ? 'bg-[rgba(249,231,159,0.10)] ring-2 ring-[var(--color-tint-yellow-bold)]' : ''
                     }`}
                   >
                     {recommended && (
-                      <span className="absolute -top-3 left-4 rounded-full bg-[#EBCB75] px-3 py-1 text-xs font-semibold text-[#20231F] shadow-sm">
+                      <span className="absolute -top-3 left-4 rounded-full bg-[var(--color-tint-yellow-bold)] px-3 py-1 text-xs font-semibold text-[var(--color-ink)] shadow-sm">
                         для вас
                       </span>
                     )}
                     <div className="mb-4 flex items-center gap-2">
                       <LevelChip level={level} />
-                      <h3 className="font-semibold text-[#20231F]">
+                      <h3 className="font-semibold text-[var(--color-ink)]">
                         {level} — {LEVEL_CAPTIONS[level]}
                       </h3>
-                      <span className="text-sm text-[#5A5F5A]">{items.length}</span>
+                      <span className="text-sm text-[var(--color-slate)]">{items.length}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                       {items.map((book) => (
@@ -394,8 +394,8 @@ export default function BooksPage() {
               {uncategorized.length > 0 && (
                 <div className="mb-8 rounded-2xl p-4">
                   <div className="mb-4 flex items-center gap-2">
-                    <h3 className="font-semibold text-[#20231F]">Без указания уровня</h3>
-                    <span className="text-sm text-[#5A5F5A]">{uncategorized.length}</span>
+                    <h3 className="font-semibold text-[var(--color-ink)]">Без указания уровня</h3>
+                    <span className="text-sm text-[var(--color-slate)]">{uncategorized.length}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                     {uncategorized.map((book) => (
@@ -414,9 +414,9 @@ export default function BooksPage() {
           )}
 
           {classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#D6D3CC] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[#20231F]">Каталог пока недоступен</p>
-              <p className="mt-1 text-sm text-[#5A5F5A]">
+            <div className="rounded-2xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
+              <p className="font-medium text-[var(--color-ink)]">Каталог пока недоступен</p>
+              <p className="mt-1 text-sm text-[var(--color-slate)]">
                 Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги».
               </p>
             </div>
@@ -427,7 +427,7 @@ export default function BooksPage() {
       {toast && (
         <div
           className={`animate-fade-in fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
-            toast.kind === 'ok' ? 'bg-[#356B52] text-white' : 'bg-[#B85C5C] text-white'
+            toast.kind === 'ok' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-error)] text-white'
           }`}
         >
           {toast.text}

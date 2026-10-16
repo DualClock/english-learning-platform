@@ -23,8 +23,8 @@ export default function AppLayout({
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[var(--color-surface)] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -34,7 +34,7 @@ export default function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF]">
+    <div className="min-h-screen bg-[var(--color-surface)]">
       <Sidebar />
       <main className="ml-64 min-h-screen">
         <div className={fullWidth ? 'px-8 py-8' : 'max-w-5xl mx-auto px-8 py-8'}>

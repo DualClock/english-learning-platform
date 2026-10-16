@@ -1,11 +1,11 @@
 'use client';
 
 const STYLES: Record<string, string> = {
-  A1: 'bg-[#E7ECE4] text-[#356B52]',
-  A2: 'bg-[#E7ECE4] text-[#356B52]',
+  A1: 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]',
+  A2: 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]',
   B1: 'bg-[#F0E4D2] text-[#7A5C33]',
-  B2: 'bg-[#F6EAC9] text-[#8A6D1F]',
-  C1: 'bg-[#356B52] text-white',
+  B2: 'bg-[#F6EAC9] text-[#7A3A00]',
+  C1: 'bg-[var(--color-primary)] text-white',
 };
 
 export function normalizeLevel(level?: string | null): string {
@@ -22,7 +22,7 @@ export default function LevelChip({ level, className = '' }: LevelChipProps) {
   const normalized = normalizeLevel(level);
   if (!normalized) return null;
 
-  const style = STYLES[normalized] ?? 'bg-[#F7F5EF] text-[#5A5F5A] border border-[#D6D3CC]';
+  const style = STYLES[normalized] ?? 'bg-[var(--color-surface)] text-[var(--color-slate)] border border-[var(--color-hairline-strong)]';
 
   return (
     <span

@@ -35,14 +35,14 @@ export default function StepProcessing({ onNext }: StepProps) {
   }, [onNext]);
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col items-center justify-center p-6">
       {/* Анимация */}
       <div className="relative mb-12">
-        <div className="w-32 h-32 bg-[#E7ECE4] rounded-full flex items-center justify-center">
+        <div className="w-32 h-32 bg-[var(--color-tint-mint)] rounded-full flex items-center justify-center">
           <span className="text-5xl animate-pulse">📚</span>
         </div>
-        <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#EBCB75] rounded-full animate-bounce"></div>
-        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[#356B52] rounded-full animate-bounce delay-100"></div>
+        <div className="absolute -top-2 -right-2 w-8 h-8 bg-[var(--color-tint-yellow-bold)] rounded-full animate-bounce"></div>
+        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-[var(--color-primary)] rounded-full animate-bounce delay-100"></div>
       </div>
 
       {/* Прогресс */}
@@ -53,10 +53,10 @@ export default function StepProcessing({ onNext }: StepProps) {
       </div>
 
       {/* Текст */}
-      <h2 className="text-xl font-semibold text-[#20231F] mb-2">
+      <h2 className="text-xl font-semibold text-[var(--color-ink)] mb-2">
         {message}
       </h2>
-      <p className="text-[#5A5F5A] text-sm">
+      <p className="text-[var(--color-slate)] text-sm">
         Это займёт пару секунд
       </p>
     </div>

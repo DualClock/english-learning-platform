@@ -39,7 +39,7 @@ export default function MyBookCard({ book, onOpen, onDelete }: MyBookCardProps) 
     <div className="group">
       <div
         onClick={() => onOpen(book.id)}
-        className="cursor-pointer rounded-2xl border border-[#D6D3CC] bg-white p-2 transition-all duration-200 hover:-translate-y-1 hover:border-[#C4A77D] hover:shadow-lg"
+        className="cursor-pointer rounded-2xl border border-[var(--color-hairline-strong)] bg-white p-2 transition-all duration-200 hover:-translate-y-1 hover:border-[var(--color-primary-pressed)] hover:shadow-lg"
       >
         <div className="relative">
           <BookCover
@@ -57,25 +57,25 @@ export default function MyBookCard({ book, onOpen, onDelete }: MyBookCardProps) 
               e.stopPropagation();
               if (confirm(`Удалить «${book.title}»?`)) onDelete(book);
             }}
-            className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-sm text-[#5A5F5A] opacity-0 shadow transition-opacity hover:bg-[#B85C5C] hover:text-white group-hover:opacity-100"
+            className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-sm text-[var(--color-slate)] opacity-0 shadow transition-opacity hover:bg-[var(--color-error)] hover:text-white group-hover:opacity-100"
             aria-label="Удалить книгу"
           >
             ✕
           </button>
         </div>
         <div className="px-1 pb-1 pt-2">
-          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-[#20231F]">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-[var(--color-ink)]">
             {book.title}
           </h3>
-          <p className="mt-0.5 truncate text-xs text-[#5A5F5A]">{book.author || '—'}</p>
+          <p className="mt-0.5 truncate text-xs text-[var(--color-slate)]">{book.author || '—'}</p>
           <div className="mt-2 flex items-center gap-2">
-            <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#E7ECE4]">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--color-tint-mint)]">
               <div
-                className="h-full rounded-full bg-[#356B52] transition-all duration-500"
+                className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-[11px] tabular-nums text-[#5A5F5A]">{progress}%</span>
+            <span className="text-[11px] tabular-nums text-[var(--color-slate)]">{progress}%</span>
           </div>
         </div>
       </div>

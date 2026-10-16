@@ -82,7 +82,7 @@ export default function QuizPage() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
       </AppLayout>
     );
@@ -95,17 +95,17 @@ export default function QuizPage() {
       <AppLayout>
         <div className="max-w-md mx-auto text-center py-12">
           <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${
-            percentage >= 80 ? 'bg-[#356B52]/10' : percentage >= 50 ? 'bg-[#EBCB75]/20' : 'bg-[#B85C5C]/10'
+            percentage >= 80 ? 'bg-[rgba(14,124,123,0.10)]' : percentage >= 50 ? 'bg-[rgba(249,231,159,0.20)]' : 'bg-[rgba(217,45,32,0.10)]'
           }`}>
             <svg className={`w-8 h-8 ${
-              percentage >= 80 ? 'text-[#356B52]' : percentage >= 50 ? 'text-[#8B6914]' : 'text-[#B85C5C]'
+              percentage >= 80 ? 'text-[var(--color-primary)]' : percentage >= 50 ? 'text-[#7A3A00]' : 'text-[var(--color-error)]'
             }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Тест завершён</h1>
-          <p className="text-4xl font-bold text-[#356B52] my-4">{percentage}%</p>
-          <p className="text-[#5A5F5A] mb-8">
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Тест завершён</h1>
+          <p className="text-4xl font-bold text-[var(--color-primary)] my-4">{percentage}%</p>
+          <p className="text-[var(--color-slate)] mb-8">
             Правильно {score} из {questions.length}
           </p>
           <div className="flex gap-4 justify-center">
@@ -128,7 +128,7 @@ export default function QuizPage() {
       <div className="max-w-2xl mx-auto">
         {/* Прогресс */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Вопрос {currentIndex + 1} из {questions.length}</span>
             <span>Score: {score}</span>
           </div>
@@ -142,14 +142,14 @@ export default function QuizPage() {
 
         {/* Вопрос */}
         <div className="card p-8">
-          <p className="text-center text-[#5A5F5A] mb-4">Выбери правильный перевод:</p>
+          <p className="text-center text-[var(--color-slate)] mb-4">Выбери правильный перевод:</p>
           
           <button
             onClick={() => speak(currentQuestion.text)}
-            className="text-3xl font-bold text-[#20231F] hover:text-[#356B52] transition-colors flex items-center justify-center gap-3 mx-auto mb-8"
+            className="text-3xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center gap-3 mx-auto mb-8"
           >
             {currentQuestion.text}
-            <svg className="w-6 h-6 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
             </svg>
           </button>
@@ -161,14 +161,14 @@ export default function QuizPage() {
               
               if (showResult) {
                 if (index === currentQuestion.correctIndex) {
-                  buttonClass += "border-[#4A7C59] bg-[#4A7C59]/10 text-[#4A7C59]";
+                  buttonClass += "border-[var(--color-success)] bg-[rgba(26,156,60,0.10)] text-[var(--color-success)]";
                 } else if (index === selectedAnswer) {
-                  buttonClass += "border-[#B85C5C] bg-[#B85C5C]/10 text-[#B85C5C]";
+                  buttonClass += "border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] text-[var(--color-error)]";
                 } else {
-                  buttonClass += "border-[#D6D3CC] text-[#5A5F5A]";
+                  buttonClass += "border-[var(--color-hairline-strong)] text-[var(--color-slate)]";
                 }
               } else {
-                buttonClass += "border-[#D6D3CC] hover:border-[#356B52] hover:bg-[#E7ECE4]";
+                buttonClass += "border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)] hover:bg-[var(--color-tint-mint)]";
               }
 
               return (
@@ -187,7 +187,7 @@ export default function QuizPage() {
           {/* Результат */}
           {showResult && (
             <div className="mt-6 text-center">
-              <p className={`text-lg font-medium ${selectedAnswer === currentQuestion.correctIndex ? 'text-[#4A7C59]' : 'text-[#B85C5C]'}`}>
+              <p className={`text-lg font-medium ${selectedAnswer === currentQuestion.correctIndex ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                 {selectedAnswer === currentQuestion.correctIndex 
                   ? 'Правильно' 
                   : `Неправильно. Правильный ответ: ${currentQuestion.options[currentQuestion.correctIndex]}`}

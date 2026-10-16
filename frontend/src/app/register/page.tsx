@@ -26,33 +26,33 @@ export default function RegisterPage() {
   // Шаг 1: Имя
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+      <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
         <div className="w-full max-w-md mx-auto mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 1 из 6</span>
           </div>
-          <div className="h-2 bg-[#E7ECE4] rounded-full">
-            <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '16%' }}></div>
+          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '16%' }}></div>
           </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-          <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Привет</h2>
-          <p className="text-[#5A5F5A] text-center mb-8">Как тебя зовут?</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Привет</h2>
+          <p className="text-[var(--color-slate)] text-center mb-8">Как тебя зовут?</p>
 
           <input
             type="text"
             value={data.name}
             onChange={(e) => updateData({ name: e.target.value })}
             placeholder="Твоё имя"
-            className="w-full px-4 py-4 rounded-lg border border-[#D6D3CC] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[#356B52]"
+            className="w-full px-4 py-4 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             autoFocus
           />
 
           <button
             onClick={() => data.name.length >= 2 && setStep(2)}
             disabled={data.name.length < 2}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Продолжить
           </button>
@@ -64,38 +64,38 @@ export default function RegisterPage() {
   // Шаг 2: Email
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+      <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
         <div className="w-full max-w-md mx-auto mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 2 из 6</span>
           </div>
-          <div className="h-2 bg-[#E7ECE4] rounded-full">
-            <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '33%' }}></div>
+          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '33%' }}></div>
           </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-          <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Твой email</h2>
-          <p className="text-[#5A5F5A] text-center mb-8">Пришлём подборку книг под твой уровень</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Твой email</h2>
+          <p className="text-[var(--color-slate)] text-center mb-8">Пришлём подборку книг под твой уровень</p>
 
           <input
             type="email"
             value={data.email}
             onChange={(e) => updateData({ email: e.target.value })}
             placeholder="email@example.com"
-            className="w-full px-4 py-4 rounded-lg border border-[#D6D3CC] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[#356B52]"
+            className="w-full px-4 py-4 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             autoFocus
           />
 
           <button
             onClick={() => data.email.includes('@') && setStep(3)}
             disabled={!data.email.includes('@')}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Продолжить
           </button>
 
-          <button onClick={() => setStep(1)} className="mt-4 text-[#5A5F5A] hover:text-[#20231F]">
+          <button onClick={() => setStep(1)} className="mt-4 text-[var(--color-slate)] hover:text-[var(--color-ink)]">
             ← Назад
           </button>
         </div>
@@ -106,38 +106,38 @@ export default function RegisterPage() {
   // Шаг 3: Пароль
   if (step === 3) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+      <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
         <div className="w-full max-w-md mx-auto mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 3 из 6</span>
           </div>
-          <div className="h-2 bg-[#E7ECE4] rounded-full">
-            <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '50%' }}></div>
+          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '50%' }}></div>
           </div>
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-          <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Придумай пароль</h2>
-          <p className="text-[#5A5F5A] text-center mb-8">Минимум 6 символов</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Придумай пароль</h2>
+          <p className="text-[var(--color-slate)] text-center mb-8">Минимум 6 символов</p>
 
           <input
             type="password"
             value={data.password}
             onChange={(e) => updateData({ password: e.target.value })}
             placeholder="Пароль"
-            className="w-full px-4 py-4 rounded-lg border border-[#D6D3CC] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[#356B52]"
+            className="w-full px-4 py-4 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-center text-lg mb-6 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             autoFocus
           />
 
           <button
             onClick={() => data.password.length >= 6 && setStep(4)}
             disabled={data.password.length < 6}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Продолжить
           </button>
 
-          <button onClick={() => setStep(2)} className="mt-4 text-[#5A5F5A] hover:text-[#20231F]">
+          <button onClick={() => setStep(2)} className="mt-4 text-[var(--color-slate)] hover:text-[var(--color-ink)]">
             ← Назад
           </button>
         </div>
@@ -157,19 +157,19 @@ export default function RegisterPage() {
 
   if (step === 4) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+      <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
         <div className="w-full max-w-md mx-auto mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 4 из 6</span>
           </div>
-          <div className="h-2 bg-[#E7ECE4] rounded-full">
-            <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '66%' }}></div>
+          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '66%' }}></div>
           </div>
         </div>
 
         <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-          <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Зачем тебе английский</h2>
-          <p className="text-[#5A5F5A] text-center mb-8">Выбери главную цель</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Зачем тебе английский</h2>
+          <p className="text-[var(--color-slate)] text-center mb-8">Выбери главную цель</p>
 
           <div className="grid grid-cols-2 gap-3 mb-8">
             {goals.map((goal) => (
@@ -178,12 +178,12 @@ export default function RegisterPage() {
                 onClick={() => updateData({ goal: goal.id })}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   data.goal === goal.id
-                    ? 'border-[#356B52] bg-[#E7ECE4]'
-                    : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
+                    : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
                 }`}
               >
-                <div className="text-[#356B52] mb-2">{goal.icon}</div>
-                <span className="font-medium text-[#20231F]">{goal.title}</span>
+                <div className="text-[var(--color-primary)] mb-2">{goal.icon}</div>
+                <span className="font-medium text-[var(--color-ink)]">{goal.title}</span>
               </button>
             ))}
           </div>
@@ -191,12 +191,12 @@ export default function RegisterPage() {
           <button
             onClick={() => data.goal && setStep(5)}
             disabled={!data.goal}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Продолжить
           </button>
 
-          <button onClick={() => setStep(3)} className="mt-4 text-[#5A5F5A] hover:text-[#20231F] mx-auto">
+          <button onClick={() => setStep(3)} className="mt-4 text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto">
             ← Назад
           </button>
         </div>
@@ -214,19 +214,19 @@ export default function RegisterPage() {
 
   if (step === 5) {
     return (
-      <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+      <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
         <div className="w-full max-w-md mx-auto mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Шаг 5 из 6</span>
           </div>
-          <div className="h-2 bg-[#E7ECE4] rounded-full">
-            <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '83%' }}></div>
+          <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+            <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '83%' }}></div>
           </div>
         </div>
 
         <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-          <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Сколько времени</h2>
-          <p className="text-[#5A5F5A] text-center mb-8">В день, честно</p>
+          <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Сколько времени</h2>
+          <p className="text-[var(--color-slate)] text-center mb-8">В день, честно</p>
 
           <div className="space-y-3 mb-8">
             {times.map((time) => (
@@ -235,11 +235,11 @@ export default function RegisterPage() {
                 onClick={() => updateData({ time: time.id })}
                 className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                   data.time === time.id
-                    ? 'border-[#356B52] bg-[#E7ECE4]'
-                    : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
+                    ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
+                    : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
                 }`}
               >
-                <span className="font-semibold text-[#20231F]">{time.label}</span>
+                <span className="font-semibold text-[var(--color-ink)]">{time.label}</span>
               </button>
             ))}
           </div>
@@ -247,12 +247,12 @@ export default function RegisterPage() {
           <button
             onClick={() => data.time && setStep(6)}
             disabled={!data.time}
-            className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Продолжить
           </button>
 
-          <button onClick={() => setStep(4)} className="mt-4 text-[#5A5F5A] hover:text-[#20231F] mx-auto">
+          <button onClick={() => setStep(4)} className="mt-4 text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto">
             ← Назад
           </button>
         </div>
@@ -326,19 +326,19 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
       <div className="w-full max-w-md mx-auto mb-8">
-        <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+        <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 6 из 6</span>
         </div>
-        <div className="h-2 bg-[#E7ECE4] rounded-full">
-          <div className="h-full bg-[#356B52] rounded-full transition-all" style={{ width: '100%' }}></div>
+        <div className="h-2 bg-[var(--color-tint-mint)] rounded-full">
+          <div className="h-full bg-[var(--color-primary)] rounded-full transition-all" style={{ width: '100%' }}></div>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-        <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">Твой уровень</h2>
-        <p className="text-[#5A5F5A] text-center mb-8">Примерно, потом уточним</p>
+        <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">Твой уровень</h2>
+        <p className="text-[var(--color-slate)] text-center mb-8">Примерно, потом уточним</p>
 
         <div className="flex flex-wrap gap-2 justify-center mb-4">
           {levels.map((level) => (
@@ -347,8 +347,8 @@ export default function RegisterPage() {
               onClick={() => updateData({ level: level.id })}
               className={`px-5 py-2.5 rounded-full border-2 text-sm font-semibold transition-all ${
                 data.level === level.id
-                  ? 'border-[#356B52] bg-[#E7ECE4] text-[#356B52]'
-                  : 'border-[#D6D3CC] bg-white text-[#20231F] hover:border-[#C4A77D]'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
+                  : 'border-[var(--color-hairline-strong)] bg-white text-[var(--color-ink)] hover:border-[var(--color-primary-pressed)]'
               }`}
             >
               {level.title}
@@ -358,20 +358,20 @@ export default function RegisterPage() {
             onClick={() => updateData({ level: '' })}
             className={`px-5 py-2.5 rounded-full border-2 border-dashed text-sm font-medium transition-all ${
               !data.level
-                ? 'border-[#356B52] bg-[#E7ECE4] text-[#356B52]'
-                : 'border-[#C4A77D] text-[#5A5F5A] hover:border-[#356B52]'
+                ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
+                : 'border-[var(--color-primary-pressed)] text-[var(--color-slate)] hover:border-[var(--color-primary)]'
             }`}
           >
             пройду тест позже
           </button>
         </div>
 
-        <p className="text-center text-sm text-[#5A5F5A] mb-8">
+        <p className="text-center text-sm text-[var(--color-slate)] mb-8">
           Цель: {goals.find((g) => g.id === data.goal)?.title || '—'} · Время: {times.find((t) => t.id === data.time)?.label || '—'}
         </p>
 
         {error && (
-          <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm mb-6">
+          <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm mb-6">
             {error}
           </div>
         )}
@@ -379,12 +379,12 @@ export default function RegisterPage() {
         <button
           onClick={handleRegister}
           disabled={isSubmitting}
-          className="w-full py-4 bg-[#356B52] text-white rounded-lg font-medium hover:bg-[#2A5542] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-4 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-pressed)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? 'Создаём аккаунт...' : 'Создать аккаунт'}
         </button>
 
-        <button onClick={() => setStep(5)} className="mt-4 text-[#5A5F5A] hover:text-[#20231F] mx-auto">
+        <button onClick={() => setStep(5)} className="mt-4 text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto">
           ← Назад
         </button>
       </div>

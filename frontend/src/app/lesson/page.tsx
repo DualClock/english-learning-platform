@@ -61,11 +61,11 @@ export default function LessonPage() {
           onClick={() => isClickable && handleWordClick(cleanWord)}
           className={`${
             isClickable
-              ? 'cursor-pointer hover:bg-[#EBCB75] hover:px-1 transition-colors rounded'
+              ? 'cursor-pointer hover:bg-[var(--color-tint-yellow-bold)] hover:px-1 transition-colors rounded'
               : ''
           } ${
             isSaved
-              ? 'bg-[#E7ECE4] px-1 rounded text-[#356B52]'
+              ? 'bg-[var(--color-tint-mint)] px-1 rounded text-[var(--color-primary)]'
               : ''
           }`}
         >
@@ -82,11 +82,11 @@ export default function LessonPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF]">
+    <div className="min-h-screen bg-[var(--color-surface)]">
       {/* Header */}
-      <header className="border-b border-[#D6D3CC] bg-white sticky top-0 z-10">
+      <header className="border-b border-[var(--color-hairline-strong)] bg-white sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3 text-[#5A5F5A] hover:text-[#20231F] transition-colors">
+          <Link href="/dashboard" className="flex items-center gap-3 text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -94,8 +94,8 @@ export default function LessonPage() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <div className="text-sm text-[#5A5F5A]">
-              <span className="text-[#356B52] font-medium">{savedWords.size}</span> слов сохранено
+            <div className="text-sm text-[var(--color-slate)]">
+              <span className="text-[var(--color-primary)] font-medium">{savedWords.size}</span> слов сохранено
             </div>
             <Link href="/review" className="btn-primary text-sm">
               Повторить
@@ -105,38 +105,38 @@ export default function LessonPage() {
       </header>
 
       {/* Lesson info */}
-      <div className="border-b border-[#D6D3CC] bg-white">
+      <div className="border-b border-[var(--color-hairline-strong)] bg-white">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#20231F] mb-1">
+              <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-1">
                 {lessonContent.title}
               </h1>
-              <p className="text-[#5A5F5A]">{lessonContent.author}</p>
+              <p className="text-[var(--color-slate)]">{lessonContent.author}</p>
             </div>
             <div className="flex items-center gap-3">
               <span className="badge badge-primary">{lessonContent.level}</span>
-              <span className="text-sm text-[#5A5F5A]">{lessonContent.chapter}</span>
+              <span className="text-sm text-[var(--color-slate)]">{lessonContent.chapter}</span>
             </div>
           </div>
 
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: '15%' }} />
           </div>
-          <p className="text-sm text-[#5A5F5A] mt-2">Прочитано 15%</p>
+          <p className="text-sm text-[var(--color-slate)] mt-2">Прочитано 15%</p>
         </div>
       </div>
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-2xl border border-[#D6D3CC] p-8 md:p-12 shadow-soft">
+        <div className="bg-white rounded-2xl border border-[var(--color-hairline-strong)] p-8 md:p-12 shadow-soft">
           {lessonContent.paragraphs.map((paragraph) => (
-            <p key={paragraph.id} className="text-lg md:text-xl leading-relaxed text-[#20231F] mb-6 font-serif">
+            <p key={paragraph.id} className="text-lg md:text-xl leading-relaxed text-[var(--color-ink)] mb-6 font-serif">
               {renderParagraph(paragraph)}
             </p>
           ))}
 
-          <div className="flex items-center justify-between pt-8 border-t border-[#D6D3CC]">
+          <div className="flex items-center justify-between pt-8 border-t border-[var(--color-hairline-strong)]">
             <button className="btn-ghost text-sm">
               ← Предыдущая глава
             </button>
@@ -150,19 +150,19 @@ export default function LessonPage() {
       {/* Word popup */}
       {selectedWordData && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-6 z-20">
-          <div className="bg-white rounded-xl border border-[#D6D3CC] shadow-medium p-6">
+          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] shadow-medium p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-xl font-semibold text-[#20231F] mb-1">
+                <h3 className="text-xl font-semibold text-[var(--color-ink)] mb-1">
                   {selectedWordData.word}
                 </h3>
-                <p className="text-sm text-[#5A5F5A] italic">
+                <p className="text-sm text-[var(--color-slate)] italic">
                   «{selectedWordData.context}»
                 </p>
               </div>
               <button
                 onClick={() => setSelectedWord(null)}
-                className="text-[#5A5F5A] hover:text-[#20231F] transition-colors"
+                className="text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -171,7 +171,7 @@ export default function LessonPage() {
             </div>
 
             <div className="mb-4">
-              <div className="text-2xl font-bold text-[#356B52] mb-2">
+              <div className="text-2xl font-bold text-[var(--color-primary)] mb-2">
                 {selectedWordData.translation}
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function LessonPage() {
       {/* Overlay */}
       {selectedWordData && (
         <div
-          className="fixed inset-0 bg-[#20231F]/20 z-10"
+          className="fixed inset-0 bg-[rgba(26,29,35,0.20)] z-10"
           onClick={() => setSelectedWord(null)}
         />
       )}

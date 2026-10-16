@@ -18,7 +18,7 @@ const tagClass: Record<Tone, string> = {
   orange: 'badge-tag-orange',
   purple: 'badge-tag-purple',
   sky: 'badge-tag-sky',
-  navy: 'badge-tag bg-[var(--color-tint-sky)] text-[#0B2545]',
+  navy: 'badge-tag bg-[var(--color-tint-sky)] text-[var(--color-navy)]',
   secondary: 'badge-tag bg-[var(--color-surface)] text-[var(--color-slate)]',
 };
 

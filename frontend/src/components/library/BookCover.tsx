@@ -5,7 +5,7 @@ import { useState } from 'react';
 const GRADIENTS = [
   'bg-gradient-to-br from-[#DDE7DE] to-[#B4C8B7] text-[#2C5540]',
   'bg-gradient-to-br from-[#F3E3B6] to-[#E2C67E] text-[#7A5F1E]',
-  'bg-gradient-to-br from-[#EBDCC5] to-[#C4A77D] text-[#5F4426]',
+  'bg-gradient-to-br from-[#EBDCC5] to-[var(--color-primary-pressed)] text-[#5F4426]',
 ];
 
 function hashString(value: string): number {

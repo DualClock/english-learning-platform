@@ -24,7 +24,7 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 const inputCls =
-  'w-full px-4 py-3 rounded-lg border border-[#D6D3CC] focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent';
+  'w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent';
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -146,7 +146,7 @@ export default function SettingsPage() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
       </AppLayout>
     );
@@ -155,15 +155,15 @@ export default function SettingsPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#20231F] mb-8">Настройки</h1>
+        <h1 className="text-3xl font-bold text-[var(--color-ink)] mb-8">Настройки</h1>
 
         {/* Профиль */}
         <section className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold text-[#20231F] mb-5">Профиль</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Профиль</h2>
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">Имя</label>
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Имя</label>
               <input
                 type="text"
                 value={displayName}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">Уровень</label>
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Уровень</label>
               <div className="flex flex-wrap gap-2">
                 {LEVELS.map((level) => (
                   <button
@@ -182,32 +182,32 @@ export default function SettingsPage() {
                     onClick={() => setCefrLevel(cefrLevel === level ? '' : level)}
                     className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
                       cefrLevel === level
-                        ? 'bg-[#356B52] border-[#356B52] text-white'
-                        : 'bg-white border-[#D6D3CC] text-[#5A5F5A] hover:border-[#356B52] hover:text-[#356B52]'
+                        ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+                        : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
                     }`}
                   >
                     {LEVEL_LABELS[level]}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-[#5A5F5A] mt-2">
+              <p className="text-xs text-[var(--color-slate)] mt-2">
                 Нажмите ещё раз, чтобы снять выбор («уровень не определён»)
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
                 Норма дня, минут
               </label>
-              <div className="inline-flex rounded-xl border border-[#D6D3CC] overflow-hidden">
+              <div className="inline-flex rounded-xl border border-[var(--color-hairline-strong)] overflow-hidden">
                 {[10, 20, 30].map((n) => (
                   <button
                     key={n}
                     onClick={() => setDailyGoalMinutes(n)}
                     className={`px-5 py-2 text-sm font-semibold transition-colors ${
                       dailyGoalMinutes === n
-                        ? 'bg-[#356B52] text-white'
-                        : 'bg-white text-[#5A5F5A] hover:bg-[#F7F5EF]'
+                        ? 'bg-[var(--color-primary)] text-white'
+                        : 'bg-white text-[var(--color-slate)] hover:bg-[var(--color-surface)]'
                     }`}
                   >
                     {n}
@@ -217,12 +217,12 @@ export default function SettingsPage() {
             </div>
 
             {profileToast && (
-              <div className="p-3 rounded-lg bg-[#356B52]/10 border border-[#356B52] text-[#356B52] text-sm">
+              <div className="p-3 rounded-lg bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)] text-sm">
                 {profileToast}
               </div>
             )}
             {profileError && (
-              <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm">
+              <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm">
                 {profileError}
               </div>
             )}
@@ -239,11 +239,11 @@ export default function SettingsPage() {
 
         {/* Смена пароля */}
         <section className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold text-[#20231F] mb-5">Смена пароля</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Смена пароля</h2>
 
           <form onSubmit={changePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
                 Текущий пароль
               </label>
               <input
@@ -257,7 +257,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">Новый пароль</label>
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
               <input
                 type="password"
                 value={newPassword}
@@ -269,7 +269,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#20231F] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
                 Повторите новый пароль
               </label>
               <input
@@ -283,12 +283,12 @@ export default function SettingsPage() {
             </div>
 
             {passwordSuccess && (
-              <div className="p-3 rounded-lg bg-[#356B52]/10 border border-[#356B52] text-[#356B52] text-sm">
+              <div className="p-3 rounded-lg bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)] text-sm">
                 ✓ {passwordSuccess}
               </div>
             )}
             {passwordErrors.length > 0 && (
-              <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm space-y-1">
+              <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm space-y-1">
                 {passwordErrors.map((err, i) => (
                   <p key={i}>{err}</p>
                 ))}
@@ -307,21 +307,21 @@ export default function SettingsPage() {
 
         {/* Аккаунт */}
         <section className="card p-6">
-          <h2 className="text-lg font-semibold text-[#20231F] mb-5">Аккаунт</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Аккаунт</h2>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-[#20231F] mb-2">Email</label>
+            <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
             <input
               type="email"
               value={session?.user?.email || ''}
               readOnly
-              className={`${inputCls} bg-[#F7F5EF] text-[#5A5F5A] cursor-not-allowed`}
+              className={`${inputCls} bg-[var(--color-surface)] text-[var(--color-slate)] cursor-not-allowed`}
             />
           </div>
 
           <button
             onClick={handleLogout}
-            className="px-4 py-2 rounded-lg border border-[#B85C5C] text-[#B85C5C] font-medium hover:bg-[#B85C5C] hover:text-white transition-colors"
+            className="px-4 py-2 rounded-lg border border-[var(--color-error)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
           >
             Выйти
           </button>

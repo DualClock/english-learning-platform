@@ -18,9 +18,9 @@ export default function StepTime({ onNext, onBack }: StepProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
       <div className="w-full max-w-md mx-auto mb-8">
-        <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+        <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 5 из 6</span>
           <span>Сколько времени?</span>
         </div>
@@ -30,10 +30,10 @@ export default function StepTime({ onNext, onBack }: StepProps) {
       </div>
 
       <div className="flex-1 flex flex-col max-w-md mx-auto w-full">
-        <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+        <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           Сколько времени готов уделять? ⏰
         </h2>
-        <p className="text-[#5A5F5A] text-center mb-8">
+        <p className="text-[var(--color-slate)] text-center mb-8">
           Честный ответ поможет составить реалистичный план
         </p>
 
@@ -44,13 +44,13 @@ export default function StepTime({ onNext, onBack }: StepProps) {
               onClick={() => setSelected(option.id)}
               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                 selected === option.id
-                  ? 'border-[#356B52] bg-[#E7ECE4]'
-                  : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-tint-mint)]'
+                  : 'border-[var(--color-hairline-strong)] bg-white hover:border-[var(--color-primary-pressed)]'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-[#20231F]">{option.label}</span>
-                <span className="text-sm text-[#5A5F5A]">{option.desc}</span>
+                <span className="font-semibold text-[var(--color-ink)]">{option.label}</span>
+                <span className="text-sm text-[var(--color-slate)]">{option.desc}</span>
               </div>
             </button>
           ))}
@@ -65,7 +65,7 @@ export default function StepTime({ onNext, onBack }: StepProps) {
         </button>
       </div>
 
-      <button onClick={onBack} className="text-[#5A5F5A] hover:text-[#20231F] mx-auto mt-4">
+      <button onClick={onBack} className="text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto mt-4">
         ← Назад
       </button>
     </div>

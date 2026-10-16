@@ -25,9 +25,9 @@ export default function StepPassword({ onNext, onBack }: StepProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col p-6">
+    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col p-6">
       <div className="w-full max-w-md mx-auto mb-8">
-        <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
+        <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
           <span>Шаг 3 из 6</span>
           <span>Придумай пароль</span>
         </div>
@@ -37,10 +37,10 @@ export default function StepPassword({ onNext, onBack }: StepProps) {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-        <h2 className="text-2xl font-bold text-[#20231F] text-center mb-2">
+        <h2 className="text-2xl font-bold text-[var(--color-ink)] text-center mb-2">
           Защити свой прогресс 🔒
         </h2>
-        <p className="text-[#5A5F5A] text-center mb-8">
+        <p className="text-[var(--color-slate)] text-center mb-8">
           Твои слова и книги будут сохранены в аккаунте
         </p>
 
@@ -62,7 +62,7 @@ export default function StepPassword({ onNext, onBack }: StepProps) {
         />
 
         {error && (
-          <p className="text-[#B85C5C] text-sm mb-4">{error}</p>
+          <p className="text-[var(--color-error)] text-sm mb-4">{error}</p>
         )}
 
         <button
@@ -74,7 +74,7 @@ export default function StepPassword({ onNext, onBack }: StepProps) {
         </button>
       </div>
 
-      <button onClick={onBack} className="text-[#5A5F5A] hover:text-[#20231F] mx-auto">
+      <button onClick={onBack} className="text-[var(--color-slate)] hover:text-[var(--color-ink)] mx-auto">
         ← Назад
       </button>
     </div>

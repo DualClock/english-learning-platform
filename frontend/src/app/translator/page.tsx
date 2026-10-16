@@ -193,17 +193,17 @@ export default function TranslatorPage() {
       ) : (
         <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
           {/* Шапка */}
-          <div className="flex items-center gap-3 py-4 border-b border-[#D6D3CC]">
+          <div className="flex items-center gap-3 py-4 border-b border-[var(--color-hairline-strong)]">
             <AlexAvatar size="md" />
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-[#20231F] leading-tight">Alex</h1>
-              <p className="text-xs text-[#5A5F5A]">
+              <h1 className="text-lg font-bold text-[var(--color-ink)] leading-tight">Alex</h1>
+              <p className="text-xs text-[var(--color-slate)]">
                 AI-собеседник{userLevel ? ` · уровень ${userLevel}` : ''}
               </p>
             </div>
             <button
               onClick={startNewConversation}
-              className="text-sm text-[#5A5F5A] hover:text-[#20231F] px-3 py-1.5 rounded-lg hover:bg-[#E7ECE4] transition-colors"
+              className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)] px-3 py-1.5 rounded-lg hover:bg-[var(--color-tint-mint)] transition-colors"
             >
               🔄 Новый разговор
             </button>
@@ -216,13 +216,13 @@ export default function TranslatorPage() {
                 <div key={idx} className="flex gap-2 items-end assistant-message-in">
                   <AlexAvatar size="sm" />
                   <div className="max-w-[80%]">
-                    <div className="bg-white border border-[#D6D3CC] rounded-2xl rounded-bl-sm px-4 py-2.5 text-[#20231F] whitespace-pre-wrap">
+                    <div className="bg-white border border-[var(--color-hairline-strong)] rounded-2xl rounded-bl-sm px-4 py-2.5 text-[var(--color-ink)] whitespace-pre-wrap">
                       {message.text}
                     </div>
                     <button
                       onClick={() => speak(message.text)}
                       title="Озвучить"
-                      className="mt-1 text-xs text-[#5A5F5A] hover:text-[#356B52] transition-colors"
+                      className="mt-1 text-xs text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
                     >
                       🔊 Озвучить
                     </button>
@@ -233,17 +233,17 @@ export default function TranslatorPage() {
                   <button
                     onClick={() => toggleAnalysis(idx)}
                     title="Разбор сообщения"
-                    className="text-sm px-2 py-0.5 rounded-full text-[#5A5F5A] hover:text-[#EBCB75] hover:bg-white transition-colors mb-0.5"
+                    className="text-sm px-2 py-0.5 rounded-full text-[var(--color-slate)] hover:text-[var(--color-tint-yellow-bold)] hover:bg-white transition-colors mb-0.5"
                   >
                     💡
                   </button>
-                  <div className="max-w-[80%] bg-[#356B52] text-white rounded-2xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
+                  <div className="max-w-[80%] bg-[var(--color-primary)] text-white rounded-2xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
                     {message.text}
                   </div>
                   {openAnalyses[idx] && (
                     <>
                       {analyzing[idx] && (
-                        <div className="mt-2 text-sm text-[#5A5F5A] inline-flex items-center gap-1">
+                        <div className="mt-2 text-sm text-[var(--color-slate)] inline-flex items-center gap-1">
                           Разбираем сообщение
                           <span className="inline-flex gap-0.5">
                             <span className="assistant-typing-dot">·</span>
@@ -253,7 +253,7 @@ export default function TranslatorPage() {
                         </div>
                       )}
                       {analysisFailed[idx] && !analyzing[idx] && (
-                        <div className="mt-2 text-sm text-[#B85C5C]">
+                        <div className="mt-2 text-sm text-[var(--color-error)]">
                           Не получилось разобрать сообщение. Попробуй ещё раз.
                         </div>
                       )}
@@ -267,7 +267,7 @@ export default function TranslatorPage() {
             {sending && (
               <div className="flex gap-2 items-end">
                 <AlexAvatar size="sm" />
-                <div className="bg-white border border-[#D6D3CC] rounded-2xl rounded-bl-sm px-4 py-3 inline-flex items-center gap-2 text-sm text-[#5A5F5A]">
+                <div className="bg-white border border-[var(--color-hairline-strong)] rounded-2xl rounded-bl-sm px-4 py-3 inline-flex items-center gap-2 text-sm text-[var(--color-slate)]">
                   Alex печатает
                   <span className="inline-flex gap-0.5">
                     <span className="assistant-typing-dot">·</span>
@@ -279,7 +279,7 @@ export default function TranslatorPage() {
             )}
 
             {error && (
-              <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C]/40 text-[#B85C5C] text-sm text-center">
+              <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[rgba(217,45,32,0.40)] text-[var(--color-error)] text-sm text-center">
                 {error}
               </div>
             )}
@@ -295,7 +295,7 @@ export default function TranslatorPage() {
                   setInput(chip);
                   textareaRef.current?.focus();
                 }}
-                className="text-xs px-3 py-1.5 rounded-full bg-white border border-[#D6D3CC] text-[#5A5F5A] hover:border-[#356B52] hover:text-[#356B52] transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full bg-white border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
               >
                 {chip}
               </button>
