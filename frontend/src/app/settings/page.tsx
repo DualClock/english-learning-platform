@@ -163,8 +163,8 @@ export default function SettingsPage() {
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Имя</label>
-              <input
+              <label htmlFor="setting-name" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Имя</label>
+              <input id="setting-name"
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
@@ -204,6 +204,7 @@ export default function SettingsPage() {
                   <button
                     key={n}
                     onClick={() => setDailyGoalMinutes(n)}
+                    aria-pressed={dailyGoalMinutes === n}
                     className={`px-5 py-2 text-sm font-semibold transition-colors ${
                       dailyGoalMinutes === n
                         ? 'bg-[var(--color-primary)] text-white'
@@ -243,10 +244,8 @@ export default function SettingsPage() {
 
           <form onSubmit={changePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
-                Текущий пароль
-              </label>
-              <input
+              <label htmlFor="setting-current-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Текущий пароль</label>
+              <input id="setting-current-password"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -257,8 +256,8 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
-              <input
+              <label htmlFor="setting-new-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
+              <input id="setting-new-password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -269,10 +268,8 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
-                Повторите новый пароль
-              </label>
-              <input
+              <label htmlFor="setting-repeat-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Повторите новый пароль</label>
+              <input id="setting-repeat-password"
                 type="password"
                 value={repeatPassword}
                 onChange={(e) => setRepeatPassword(e.target.value)}
@@ -310,8 +307,8 @@ export default function SettingsPage() {
           <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Аккаунт</h2>
 
           <div className="mb-5">
-            <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
-            <input
+            <label htmlFor="setting-email" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
+            <input id="setting-email"
               type="email"
               value={session?.user?.email || ''}
               readOnly

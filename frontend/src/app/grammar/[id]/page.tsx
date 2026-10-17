@@ -272,7 +272,7 @@ export default function GrammarUnitPage() {
                 <div
                   key={ex.id}
                   id={`exercise-${ex.id}`}
-                  className={`rounded-xl border p-4 transition-colors ${
+                  className={`rounded-lg border p-4 transition-colors ${
                     result
                       ? result.correct
                         ? 'border-[var(--color-primary)] bg-[rgba(14,124,123,0.05)]'
