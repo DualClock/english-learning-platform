@@ -53,20 +53,23 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
   return (
     <>
       {/* Оверлей для мобильного drawer */}
-      {open !== undefined && (
-        <div
-          className={`fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden ${
-            open ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden ${
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <aside
         className={`fixed left-0 top-0 h-full w-64 bg-navy flex flex-col z-40 transition-transform duration-200
           ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
         aria-label="Основная навигация"
+        role={open ? 'dialog' : undefined}
+        aria-modal={open ? true : undefined}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onClose?.();
+        }}
       >
         <div className="h-16 flex items-center px-6 border-b border-white/10">
           <Link href="/dashboard" className="text-xl font-semibold text-white font-heading" onClick={onClose}>

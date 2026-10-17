@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
 
 export default function AppLayout({
@@ -15,12 +15,22 @@ export default function AppLayout({
   const { data: session, status } = useSession();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const burgerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
+
+  // Возвращаем фокус на бургер после закрытия drawer (не при первом рендере)
+  const prevSidebarOpen = useRef(false);
+  useEffect(() => {
+    if (prevSidebarOpen.current && !sidebarOpen) {
+      burgerRef.current?.focus();
+    }
+    prevSidebarOpen.current = sidebarOpen;
+  }, [sidebarOpen]);
 
   if (status === 'loading') {
     return (
@@ -40,6 +50,7 @@ export default function AppLayout({
       <header className="lg:hidden sticky top-0 z-20 h-14 bg-navy flex items-center gap-3 px-4">
         <button
           type="button"
+          ref={burgerRef}
           onClick={() => setSidebarOpen(true)}
           className="p-2.5 -ml-2 text-white rounded-md hover:bg-white/10 transition-colors"
           aria-label="Открыть меню"

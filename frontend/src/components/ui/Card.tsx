@@ -15,7 +15,18 @@ export default function Card({ tint, interactive = false, className = '', childr
   const cls = `${base} ${className}`.trim();
   if (onClick) {
     return (
-      <div className={cls} onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
+      <div
+        className={cls}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+      >
         {children}
       </div>
     );

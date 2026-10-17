@@ -20,17 +20,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
-export default function Button({ variant = 'primary', href, className = '', children, ...rest }: ButtonProps) {
+export default function Button({ variant = 'primary', href, className = '', children, disabled, ...rest }: ButtonProps) {
   const cls = `${variantClass[variant]} ${className}`.trim();
   if (href) {
+    const { type, ...linkRest } = rest;
+    void type;
     return (
-      <Link href={href} className={cls}>
+      <Link
+        href={href}
+        className={cls}
+        aria-disabled={disabled || undefined}
+        tabIndex={disabled ? -1 : undefined}
+        {...(linkRest as Record<string, unknown>)}
+      >
         {children}
       </Link>
     );
   }
   return (
-    <button className={cls} {...rest}>
+    <button className={cls} disabled={disabled} {...rest}>
       {children}
     </button>
   );
