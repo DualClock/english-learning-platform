@@ -22,11 +22,14 @@ public class SpeechService
         "without quotes, comments or punctuation notes. If there is no speech, return an empty string.";
 
     // Модели, умеющие слушать аудио. Первая рабочая запоминается на процесс.
+    // 2.5-flash больше не выдаётся новым проектам (404 "no longer available"),
+    // поэтому список начинается с актуальных моделей, а Gemini:Model
+    // подставляется первым кандидатом в TranscribeAsync.
     private static readonly string[] TranscriptionModels =
     {
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
+        "gemini-3.8-flash",
+        "gemini-flash-latest",
+        "gemini-3.5-flash"
     };
 
     private static string? _resolvedTranscriptionModel;
@@ -164,6 +167,13 @@ public class SpeechService
         if (_resolvedTranscriptionModel != null)
         {
             candidates.Add(_resolvedTranscriptionModel);
+        }
+
+        // Основная модель из конфига — та же, что работает для чата
+        var configuredModel = _configuration["Gemini:Model"];
+        if (!string.IsNullOrWhiteSpace(configuredModel))
+        {
+            candidates.Add(configuredModel.Trim());
         }
 
         candidates.AddRange(TranscriptionModels);
