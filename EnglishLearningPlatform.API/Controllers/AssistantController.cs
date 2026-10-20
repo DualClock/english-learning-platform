@@ -19,11 +19,16 @@ public class AssistantController : ControllerBase
 
     private readonly AssistantService _assistantService;
     private readonly ApplicationDbContext _context;
+    private readonly ActivityService _activityService;
 
-    public AssistantController(AssistantService assistantService, ApplicationDbContext context)
+    public AssistantController(
+        AssistantService assistantService,
+        ApplicationDbContext context,
+        ActivityService activityService)
     {
         _assistantService = assistantService;
         _context = context;
+        _activityService = activityService;
     }
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
@@ -52,6 +57,13 @@ public class AssistantController : ControllerBase
             if (reply == null)
             {
                 return StatusCode(503, new { error = ChatUnavailableMessage });
+            }
+
+            // XP за живую практику с Alex: кап 10 в день считается в ActivityService,
+            // чтобы частые сообщения не превращались в фарм
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await _activityService.TrackAsync(userId, "alex_message", 1);
             }
 
             return Ok(new { reply });

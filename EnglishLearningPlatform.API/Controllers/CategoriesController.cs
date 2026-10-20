@@ -19,10 +19,12 @@ public class CategoriesController : ControllerBase
     };
 
     private readonly ApplicationDbContext _context;
+    private readonly ActivityService _activityService;
 
-    public CategoriesController(ApplicationDbContext context)
+    public CategoriesController(ApplicationDbContext context, ActivityService activityService)
     {
         _context = context;
+        _activityService = activityService;
     }
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
@@ -138,6 +140,10 @@ public class CategoriesController : ControllerBase
         var progress = await _context.UserCategoryWordProgresses
             .FirstOrDefaultAsync(p => p.UserId == userId && p.CategoryWordId == id);
 
+        // XP даём только за переход в learned: переключение туда-обратно
+        // не должно фармить награду повторно
+        var wasLearned = string.Equals(progress?.Status, "learned", StringComparison.OrdinalIgnoreCase);
+
         if (progress == null)
         {
             progress = new UserCategoryWordProgress
@@ -156,6 +162,11 @@ public class CategoriesController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+
+        if (status == "learned" && !wasLearned)
+        {
+            await _activityService.TrackAsync(userId, "category_word", 1);
+        }
 
         return Ok(new { progress.CategoryWordId, progress.Status, progress.UpdatedAt });
     }

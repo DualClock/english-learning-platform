@@ -9,6 +9,20 @@ public class ActivityService
     private const int DailyMinutesCap = 60;
     private const int StreakScanLimit = 400;
 
+    /// <summary>
+    /// XP за практики: сколько даём за одно действие и сколько максимум XP
+    /// в день. Кап считается по XpEvents за локальные сутки пользователя,
+    /// поэтому его нельзя «перелить» повторными запросами.
+    /// </summary>
+    private static readonly Dictionary<string, (int UnitXp, int DailyCapXp)> PracticeRewards = new()
+    {
+        ["category_word"] = (2, 30),        // 15 слов категорий в день
+        ["dictation_word"] = (2, 20),       // 10 слов диктанта в день
+        ["pronunciation_check"] = (1, 20),  // 20 проверок произношения
+        ["alex_message"] = (1, 10),         // 10 реплик с Alex
+        ["writing_submitted"] = (5, 15)     // 3 работы в день (по 5 XP)
+    };
+
     private readonly ApplicationDbContext _context;
 
     public ActivityService(ApplicationDbContext context)
@@ -19,7 +33,8 @@ public class ActivityService
     /// <summary>
     /// Трекает активность пользователя за сегодня (по его часовому поясу),
     /// начисляет XP и пересчитывает стрик.
-    /// kind: read_page, review_word, quiz_done, goal_met
+    /// kind: read_page, review_word, quiz_done, goal_met,
+    /// category_word, dictation_word, pronunciation_check, alex_message, writing_submitted
     /// </summary>
     public async Task TrackAsync(string userId, string kind, int amount = 1)
     {
@@ -63,7 +78,23 @@ public class ActivityService
                 break;
 
             default:
-                return; // неизвестный вид активности
+                // Практики (диктант, произношение, письмо, Alex, слова категорий)
+                // не меняют счётчики дня — только XP с дневным капом
+                if (!PracticeRewards.TryGetValue(kind, out var reward))
+                {
+                    return; // неизвестный вид активности
+                }
+
+                var dayStart = UserTime.StartOfDayUtc(user);
+                var earnedToday = await _context.XpEvents
+                    .Where(e => e.UserId == userId && e.Reason == kind && e.CreatedAt >= dayStart)
+                    .SumAsync(e => (int?)e.Xp) ?? 0;
+
+                var remaining = Math.Max(0, reward.DailyCapXp - earnedToday);
+                xp = Math.Min(reward.UnitXp * Math.Max(1, amount), remaining);
+
+                if (xp <= 0) return; // кап на сегодня выбран
+                break;
         }
 
         if (xp > 0)
