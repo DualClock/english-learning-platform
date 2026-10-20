@@ -22,11 +22,12 @@ public class BooksController : ControllerBase
     private readonly ActivityService _activityService;
     private readonly BookAnalyzerService _analyzerService;
     private readonly AiService _aiService;
+    private readonly ReaderDifficultyService _difficultyService;
     private readonly IMemoryCache _cache;
     private readonly ILogger<BooksController> _logger;
 
     // Один конструктор с обоими сервисами
-    public BooksController(BookService bookService, PopularBooksService popularBooksService, StorySeeder storySeeder, ApplicationDbContext context, ActivityService activityService, BookAnalyzerService analyzerService, AiService aiService, IMemoryCache cache, ILogger<BooksController> logger)
+    public BooksController(BookService bookService, PopularBooksService popularBooksService, StorySeeder storySeeder, ApplicationDbContext context, ActivityService activityService, BookAnalyzerService analyzerService, AiService aiService, ReaderDifficultyService difficultyService, IMemoryCache cache, ILogger<BooksController> logger)
     {
         _bookService = bookService;
         _popularBooksService = popularBooksService;
@@ -35,6 +36,7 @@ public class BooksController : ControllerBase
         _activityService = activityService;
         _analyzerService = analyzerService;
         _aiService = aiService;
+        _difficultyService = difficultyService;
         _cache = cache;
         _logger = logger;
     }
@@ -527,6 +529,146 @@ public class BooksController : ControllerBase
         _ => 0
     };
 
+    // GET: api/books/5/difficulty — доля знакомых/изучаемых/новых слов по страницам
+    [HttpGet("{id}/difficulty")]
+    public async Task<IActionResult> GetDifficulty(int id)
+    {
+        var userId = GetUserId();
+
+        var book = await _bookService.GetBookAsync(userId, id);
+        if (book == null) return NotFound();
+
+        var difficulty = await _difficultyService.GetAsync(userId, id);
+        if (difficulty == null) return NotFound();
+
+        static object Map(PageDifficulty page) => new
+        {
+            page = page.Page,
+            totalWords = page.TotalWords,
+            known = page.KnownWords,
+            learning = page.LearningWords,
+            newWords = page.NewWords,
+            knownPercent = page.KnownPercent,
+            learningPercent = page.LearningPercent,
+            newPercent = page.NewPercent
+        };
+
+        return Ok(new
+        {
+            pages = difficulty.Pages.Select(Map).ToList(),
+            average = Map(difficulty.Average),
+            totalWords = difficulty.TotalWords,
+            knownWordCount = difficulty.KnownWordCount,
+            learningWordCount = difficulty.LearningWordCount
+        });
+    }
+
+    // GET: api/books/5/toc — оглавление с номерами страниц
+    [HttpGet("{id}/toc")]
+    public async Task<IActionResult> GetToc(int id)
+    {
+        var book = await _bookService.GetBookAsync(GetUserId(), id);
+        if (book == null) return NotFound();
+
+        var items = await _bookService.GetTableOfContentsAsync(id);
+
+        return Ok(new
+        {
+            items = (items ?? new List<BookTocItem>()).Select(i => new
+            {
+                title = i.Title,
+                page = i.Page,
+                level = i.Level
+            }),
+            count = items?.Count ?? 0
+        });
+    }
+
+    // GET: api/books/5/bookmarks
+    [HttpGet("{id}/bookmarks")]
+    public async Task<IActionResult> GetBookmarks(int id)
+    {
+        var userId = GetUserId();
+
+        var book = await _bookService.GetBookAsync(userId, id);
+        if (book == null) return NotFound();
+
+        var items = await _context.BookBookmarks.AsNoTracking()
+            .Where(b => b.BookId == id && b.UserId == userId)
+            .OrderBy(b => b.Page)
+            .Select(b => new { id = b.Id, page = b.Page, note = b.Note, createdAt = b.CreatedAt })
+            .ToListAsync();
+
+        return Ok(new { items });
+    }
+
+    // POST: api/books/5/bookmarks — поставить/обновить закладку на странице
+    [HttpPost("{id}/bookmarks")]
+    public async Task<IActionResult> UpsertBookmark(int id, [FromBody] BookmarkRequest request)
+    {
+        var userId = GetUserId();
+
+        var book = await _bookService.GetBookAsync(userId, id);
+        if (book == null) return NotFound();
+
+        if (request == null || request.Page < 1)
+        {
+            return BadRequest(new { error = "Некорректный номер страницы." });
+        }
+
+        var note = request.Note?.Trim();
+        if (note is { Length: > 500 })
+        {
+            return BadRequest(new { error = "Заметка слишком длинная (максимум 500 символов)." });
+        }
+
+        var bookmark = await _context.BookBookmarks
+            .FirstOrDefaultAsync(b => b.BookId == id && b.UserId == userId && b.Page == request.Page);
+
+        if (bookmark == null)
+        {
+            bookmark = new BookBookmark
+            {
+                BookId = id,
+                UserId = userId,
+                Page = request.Page,
+                Note = string.IsNullOrWhiteSpace(note) ? null : note
+            };
+            _context.BookBookmarks.Add(bookmark);
+        }
+        else
+        {
+            bookmark.Note = string.IsNullOrWhiteSpace(note) ? null : note;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            id = bookmark.Id,
+            page = bookmark.Page,
+            note = bookmark.Note,
+            createdAt = bookmark.CreatedAt
+        });
+    }
+
+    // DELETE: api/books/5/bookmarks/12
+    [HttpDelete("{id}/bookmarks/{bookmarkId:int}")]
+    public async Task<IActionResult> DeleteBookmark(int id, int bookmarkId)
+    {
+        var userId = GetUserId();
+
+        var bookmark = await _context.BookBookmarks
+            .FirstOrDefaultAsync(b => b.Id == bookmarkId && b.BookId == id && b.UserId == userId);
+
+        if (bookmark == null) return NotFound();
+
+        _context.BookBookmarks.Remove(bookmark);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     // DELETE: api/books/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBook(int id)
@@ -544,3 +686,9 @@ public class BooksController : ControllerBase
 
 // Один блок параллельного чтения: en — оригинал, ru — перевод (null, если перевод не удался)
 public record ParallelChunk(string En, string? Ru);
+
+public class BookmarkRequest
+{
+    public int Page { get; set; }
+    public string? Note { get; set; }
+}

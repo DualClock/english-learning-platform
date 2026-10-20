@@ -78,6 +78,38 @@ interface ParallelChunk {
   ru: string | null;
 }
 
+interface TocItem {
+  title: string;
+  page: number;
+  level: number;
+}
+
+interface PageDifficulty {
+  page: number;
+  totalWords: number;
+  known: number;
+  learning: number;
+  newWords: number;
+  knownPercent: number;
+  learningPercent: number;
+  newPercent: number;
+}
+
+interface BookDifficulty {
+  pages: PageDifficulty[];
+  average: PageDifficulty;
+  totalWords: number;
+  knownWordCount: number;
+  learningWordCount: number;
+}
+
+interface Bookmark {
+  id: number;
+  page: number;
+  note?: string | null;
+  createdAt: string;
+}
+
 const SENTENCE_ENDINGS = '.!?…';
 
 function getSentenceContext(text: string, start: number, end: number): string {
@@ -211,6 +243,17 @@ export default function ReaderPage() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const tutorialCheckRef = useRef(false);
 
+  // Reader 2.0: оглавление, закладки, доля знакомых слов
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [tocLoading, setTocLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<'toc' | 'bookmarks'>('toc');
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [difficulty, setDifficulty] = useState<BookDifficulty | null>(null);
+  const [knownWords, setKnownWords] = useState<Set<string>>(new Set());
+  const [knownBusy, setKnownBusy] = useState(false);
+  const readerDataLoadedRef = useRef(false);
+
   // Восстановление ИИ-режима перевода слов
   useEffect(() => {
     try {
@@ -334,6 +377,145 @@ export default function ReaderPage() {
   useEffect(() => {
     loadBook();
   }, [loadBook]);
+
+  // Оглавление, закладки и доля знакомых слов — одним пакетом при открытии книги.
+  // Любая из этих частей может не прийти: читалка всё равно должна работать.
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token || !book || readerDataLoadedRef.current) return;
+    readerDataLoadedRef.current = true;
+
+    let cancelled = false;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    (async () => {
+      setTocLoading(true);
+      try {
+        const [tocRes, diffRes, bookmarkRes, knownRes] = await Promise.all([
+          fetch(`${API_URL}/api/books/${bookId}/toc`, { headers }),
+          fetch(`${API_URL}/api/books/${bookId}/difficulty`, { headers }),
+          fetch(`${API_URL}/api/books/${bookId}/bookmarks`, { headers }),
+          fetch(`${API_URL}/api/known-words`, { headers }),
+        ]);
+
+        if (cancelled) return;
+
+        if (tocRes.ok) {
+          const data = await tocRes.json();
+          setTocItems(Array.isArray(data?.items) ? data.items : []);
+        }
+
+        if (diffRes.ok) {
+          setDifficulty(await diffRes.json());
+        }
+
+        if (bookmarkRes.ok) {
+          const data = await bookmarkRes.json();
+          setBookmarks(Array.isArray(data?.items) ? data.items : []);
+        }
+
+        if (knownRes.ok) {
+          const data = await knownRes.json();
+          const texts: string[] = (data?.items ?? []).map((item: { text: string }) => item.text);
+          setKnownWords(new Set(texts.map(text => text.toLowerCase())));
+        }
+      } catch {
+        // без оглавления и бейджа читалка остаётся рабочей
+      } finally {
+        if (!cancelled) setTocLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [book, bookId, session?.accessToken]);
+
+  const currentPageDifficulty = useMemo(
+    () => difficulty?.pages.find(page => page.page === content?.currentPage) ?? null,
+    [difficulty, content?.currentPage]
+  );
+
+  const currentBookmark = useMemo(
+    () => bookmarks.find(item => item.page === currentPage) ?? null,
+    [bookmarks, currentPage]
+  );
+
+  const refreshBookmarks = useCallback(async () => {
+    const token = session?.accessToken;
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/books/${bookId}/bookmarks`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBookmarks(Array.isArray(data?.items) ? data.items : []);
+      }
+    } catch {
+      // список обновится при следующем заходе
+    }
+  }, [bookId, session?.accessToken]);
+
+  const toggleBookmark = useCallback(async () => {
+    const token = session?.accessToken;
+    if (!token) return;
+
+    try {
+      if (currentBookmark) {
+        await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${currentBookmark.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch(`${API_URL}/api/books/${bookId}/bookmarks`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page: currentPage }),
+        });
+      }
+
+      await refreshBookmarks();
+    } catch {
+      // закладка не сохранилась — не блокируем чтение
+    }
+  }, [bookId, currentBookmark, currentPage, refreshBookmarks, session?.accessToken]);
+
+  const toggleKnownWord = useCallback(async () => {
+    const token = session?.accessToken;
+    const word = selectedWord.trim().toLowerCase();
+    if (!token || !word || knownBusy) return;
+
+    setKnownBusy(true);
+    try {
+      const res = await fetch(`${API_URL}/api/known-words/toggle`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: word }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setKnownWords(prev => {
+          const next = new Set(prev);
+          if (data?.known) next.add(word);
+          else next.delete(word);
+          return next;
+        });
+
+        // Сервер сбросил кэш сложности — пересчитываем бейдж
+        const diffRes = await fetch(`${API_URL}/api/books/${bookId}/difficulty`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (diffRes.ok) setDifficulty(await diffRes.json());
+      }
+    } catch {
+      // отметка не сохранилась — слово останется «новым»
+    } finally {
+      setKnownBusy(false);
+    }
+  }, [bookId, knownBusy, selectedWord, session?.accessToken]);
 
   // Туториал — только при первом заходе в читалку
   useEffect(() => {
@@ -1218,6 +1400,50 @@ export default function ReaderPage() {
                 {content.currentPage} / {content.totalPages}
               </span>
 
+              {/* Доля знакомых слов на текущей странице */}
+              {currentPageDifficulty && (
+                <span
+                  className="inline-flex h-10 items-center gap-1 rounded-full border border-[var(--color-hairline-strong)] bg-white px-3 text-sm text-[var(--color-slate)] shadow-md"
+                  title={`Знакомых: ${currentPageDifficulty.knownPercent}% · изучаемых: ${currentPageDifficulty.learningPercent}% · новых: ${currentPageDifficulty.newPercent}%`}
+                >
+                  <span className="font-semibold text-[var(--color-primary)]">
+                    {Math.round(currentPageDifficulty.knownPercent)}%
+                  </span>
+                  <span className="hidden sm:inline">знакомых</span>
+                </span>
+              )}
+
+              {/* Оглавление и закладки */}
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerTab('toc');
+                  setDrawerOpen(true);
+                }}
+                title="Оглавление"
+                aria-label="Оглавление"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)]"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleBookmark}
+                title={currentBookmark ? 'Убрать закладку' : 'Поставить закладку'}
+                aria-label={currentBookmark ? 'Убрать закладку' : 'Поставить закладку'}
+                aria-pressed={Boolean(currentBookmark)}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border text-lg shadow-md transition-colors ${
+                  currentBookmark
+                    ? 'border-transparent bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
+                    : 'border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
+                }`}
+              >
+                <span aria-hidden="true">{currentBookmark ? '★' : '☆'}</span>
+              </button>
+
               {/* Настройки текста: кегль и ширина строки */}
               <div className="relative">
                 <button
@@ -1386,6 +1612,139 @@ export default function ReaderPage() {
             {isFinishing ? 'Завершаем…' : 'Завершить чтение'}
           </button>
         </div>
+      )}
+
+      {/* Drawer: оглавление и закладки */}
+      {drawerOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-[rgba(11,37,69,0.35)]"
+            onClick={() => setDrawerOpen(false)}
+            aria-hidden="true"
+          />
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Оглавление и закладки"
+            className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-xl"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') setDrawerOpen(false);
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-[var(--color-hairline-strong)] px-3 py-3">
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setDrawerTab('toc')}
+                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                    drawerTab === 'toc'
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
+                  }`}
+                >
+                  Оглавление
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDrawerTab('bookmarks')}
+                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
+                    drawerTab === 'bookmarks'
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
+                  }`}
+                >
+                  Закладки ({bookmarks.length})
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Закрыть"
+                className="p-1 text-xl leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2">
+              {drawerTab === 'toc' ? (
+                tocLoading ? (
+                  <p className="p-3 text-sm text-[var(--color-slate)]">Загружаем оглавление…</p>
+                ) : tocItems.length === 0 ? (
+                  <p className="p-3 text-sm text-[var(--color-slate)]">
+                    В этой книге нет оглавления — листайте страницы стрелками.
+                  </p>
+                ) : (
+                  <ul>
+                    {tocItems.map((item, index) => (
+                      <li key={`${item.page}-${index}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            goToPage(item.page);
+                            setDrawerOpen(false);
+                          }}
+                          className="flex w-full items-center justify-between gap-2 rounded-lg py-2 pr-2 text-left text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-tint-mint)]"
+                          style={{ paddingLeft: `${0.5 + item.level * 0.75}rem` }}
+                        >
+                          <span className="truncate">{item.title}</span>
+                          <span className="shrink-0 text-xs tabular-nums text-[var(--color-slate)]">
+                            {item.page}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : bookmarks.length === 0 ? (
+                <p className="p-3 text-sm text-[var(--color-slate)]">
+                  Пока нет закладок. Нажмите ☆ в шапке, чтобы отметить страницу.
+                </p>
+              ) : (
+                <ul className="space-y-1">
+                  {bookmarks.map((bookmark) => (
+                    <li
+                      key={bookmark.id}
+                      className="flex items-center gap-2 rounded-lg p-1 hover:bg-[var(--color-surface)]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          goToPage(bookmark.page);
+                          setDrawerOpen(false);
+                        }}
+                        className="min-w-0 flex-1 px-2 py-1.5 text-left text-sm text-[var(--color-ink)]"
+                      >
+                        Страница {bookmark.page}
+                        {bookmark.note && (
+                          <span className="mt-0.5 block truncate text-xs text-[var(--color-slate)]">
+                            {bookmark.note}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Удалить закладку на странице ${bookmark.page}`}
+                        onClick={async () => {
+                          const token = session?.accessToken;
+                          if (!token) return;
+                          await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${bookmark.id}`, {
+                            method: 'DELETE',
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          await refreshBookmarks();
+                        }}
+                        className="shrink-0 px-2 text-lg leading-none text-[var(--color-error)] hover:text-[#8F4343]"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+        </>
       )}
 
       <div className="flex flex-col gap-4 md:flex-row">
@@ -1617,6 +1976,21 @@ export default function ReaderPage() {
                       }`}
                     >
                       {addedToDict ? '✓ Добавлено' : '+ В словарь'}
+                    </button>
+
+                    <button
+                      onClick={toggleKnownWord}
+                      disabled={isTyping || knownBusy}
+                      title="Слово не попадёт в «новые» при подсчёте сложности"
+                      className={`w-full text-sm py-2 rounded-lg transition-colors disabled:opacity-60 ${
+                        knownWords.has(selectedWord.trim().toLowerCase())
+                          ? 'bg-[rgba(26,156,60,0.10)] text-[var(--color-success)]'
+                          : 'btn-secondary'
+                      }`}
+                    >
+                      {knownWords.has(selectedWord.trim().toLowerCase())
+                        ? '★ Знакомое слово'
+                        : '☆ Уже знаю'}
                     </button>
 
                     {readingSessionId && (

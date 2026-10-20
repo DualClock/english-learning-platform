@@ -37,6 +37,8 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
     public DbSet<AiUsageLog> AiUsageLogs => Set<AiUsageLog>();
     public DbSet<UserErrorBankEntry> UserErrorBankEntries => Set<UserErrorBankEntry>();
+    public DbSet<UserKnownWord> UserKnownWords => Set<UserKnownWord>();
+    public DbSet<BookBookmark> BookBookmarks => Set<BookBookmark>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -262,6 +264,34 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Известные слова читалки: одно слово на пользователя
+        builder.Entity<UserKnownWord>()
+            .HasIndex(k => new { k.UserId, k.Text })
+            .IsUnique();
+
+        builder.Entity<UserKnownWord>()
+            .HasOne(k => k.User)
+            .WithMany()
+            .HasForeignKey(k => k.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Закладки: одна закладка на страницу книги у пользователя
+        builder.Entity<BookBookmark>()
+            .HasIndex(b => new { b.BookId, b.UserId, b.Page })
+            .IsUnique();
+
+        builder.Entity<BookBookmark>()
+            .HasOne(b => b.Book)
+            .WithMany()
+            .HasForeignKey(b => b.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<BookBookmark>()
+            .HasOne(b => b.User)
+            .WithMany()
+            .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -229,7 +229,7 @@ public class BookService
         return content.Trim();
     }
 
-    private string CleanHtml(string html)
+    internal static string CleanHtml(string html)
     {
         if (string.IsNullOrEmpty(html))
             return string.Empty;
@@ -281,7 +281,138 @@ public class BookService
 
         return true;
     }
+
+    /// <summary>
+    /// Оглавление книги: главы из EPUB-навигации с номером страницы, на которой
+    /// глава начинается. Глава ищется по первым словам её текста — точнее
+    /// привязка к страницам ~300 слов не строится. Результат кэшируется:
+    /// содержимое книги неизменно.
+    /// </summary>
+    public async Task<List<BookTocItem>?> GetTableOfContentsAsync(int bookId, int pageSize = 300)
+    {
+        var cacheKey = $"booktoc:{bookId}:{pageSize}";
+        if (_cache.TryGetValue(cacheKey, out List<BookTocItem>? cached) && cached != null)
+        {
+            return cached;
+        }
+
+        var book = await _context.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == bookId);
+        if (book == null) return null;
+
+        var filePath = Path.Combine(_environment.ContentRootPath, "uploads", "books", book.FilePath);
+        if (!File.Exists(filePath)) return null;
+
+        var pages = await GetPagesAsync(bookId, pageSize);
+        if (pages == null || pages.Count == 0) return null;
+
+        try
+        {
+            var epubBook = await EpubReader.ReadBookAsync(filePath);
+
+            var navigation = new List<NavEntry>();
+            FlattenNavigation(epubBook.Navigation, 0, navigation);
+
+            var items = new List<BookTocItem>();
+            var lastPage = 1;
+
+            foreach (var entry in navigation)
+            {
+                var page = lastPage;
+
+                var chapterHtml = entry.Content;
+                if (chapterHtml == null && !string.IsNullOrWhiteSpace(entry.FilePath))
+                {
+                    chapterHtml = epubBook.ReadingOrder
+                        .FirstOrDefault(c => FileNamesMatch(c.FilePath, entry.FilePath))?.Content;
+                }
+
+                if (!string.IsNullOrWhiteSpace(chapterHtml))
+                {
+                    var snippet = BuildSnippet(CleanHtml(chapterHtml));
+                    if (snippet.Length > 0)
+                    {
+                        var found = pages.FindIndex(p => p.Contains(snippet, StringComparison.OrdinalIgnoreCase));
+                        if (found >= 0)
+                        {
+                            page = found + 1;
+                        }
+                    }
+                }
+
+                lastPage = page;
+                items.Add(new BookTocItem(entry.Title, page, entry.Level));
+            }
+
+            _cache.Set(cacheKey, items, TocCacheTtl);
+            return items;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to read EPUB navigation for book {BookId}", bookId);
+            return null;
+        }
+    }
+
+    private static readonly TimeSpan TocCacheTtl = TimeSpan.FromHours(6);
+
+    private sealed record NavEntry(string Title, string? Content, string? FilePath, int Level);
+
+    private static void FlattenNavigation(
+        List<EpubNavigationItem>? source,
+        int level,
+        List<NavEntry> target)
+    {
+        if (source == null) return;
+
+        foreach (var item in source)
+        {
+            var title = item.Title?.Trim();
+            if (!string.IsNullOrEmpty(title))
+            {
+                target.Add(new NavEntry(
+                    title,
+                    item.HtmlContentFile?.Content,
+                    item.HtmlContentFile?.FilePath ?? item.Link?.ContentFilePath,
+                    level));
+            }
+
+            FlattenNavigation(item.NestedItems, level + 1, target);
+        }
+    }
+
+    private static bool FileNamesMatch(string? filePath, string? contentFileName)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || string.IsNullOrWhiteSpace(contentFileName))
+        {
+            return false;
+        }
+
+        var left = filePath.Replace('\\', '/');
+        var right = contentFileName.Replace('\\', '/');
+
+        return left.Equals(right, StringComparison.OrdinalIgnoreCase) ||
+               left.EndsWith("/" + right, StringComparison.OrdinalIgnoreCase) ||
+               right.EndsWith("/" + left, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(Path.GetFileName(left), Path.GetFileName(right), StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Первые слова главы — маркер для поиска страницы. Шесть слов достаточно,
+    // чтобы не спутать главы, и мало, чтобы не разорваться на границе страницы.
+    private static string BuildSnippet(string chapterText)
+    {
+        if (string.IsNullOrWhiteSpace(chapterText))
+        {
+            return string.Empty;
+        }
+
+        var words = chapterText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var snippet = string.Join(' ', words.Take(6));
+
+        return snippet.Length >= 15 ? snippet : string.Empty;
+    }
 }
+
+public record BookTocItem(string Title, int Page, int Level);
 
 public class BookContent
 {

@@ -183,6 +183,8 @@ builder.Services.AddScoped<AiService>();
 builder.Services.AddScoped<AssistantService>();
 builder.Services.AddScoped<SpeechService>();
 builder.Services.AddScoped<PronunciationService>();
+builder.Services.AddScoped<LemmatizerService>();
+builder.Services.AddScoped<ReaderDifficultyService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
 builder.Services.AddScoped<ActivityService>();

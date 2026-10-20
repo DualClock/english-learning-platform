@@ -149,8 +149,9 @@ public class PracticeController : ControllerBase
     }
 
     // Пример из словаря — лучший материал для диктанта. Если его нет,
-    // собираем нейтральную фразу по части речи: она всегда на английском
-    // и не тащит в аудио русский перевод.
+    // собираем естественную фразу с целевым словом. Каркасы разные и
+    // выбираются по хэшу слова: пять предложений подряд не должны звучать
+    // как одно и то же.
     internal static string BuildSentence(Word word, WordDefinition? definition)
     {
         var example = definition?.Example?.Trim();
@@ -166,16 +167,43 @@ public class PracticeController : ControllerBase
         }
 
         var partOfSpeech = definition?.PartOfSpeech?.Trim().ToLowerInvariant();
-
-        return partOfSpeech switch
+        var posSentence = partOfSpeech switch
         {
             "noun" => $"The word {term} is a noun we often use in everyday English.",
             "verb" => $"The word {term} is a verb you can use in everyday English.",
             "adjective" or "adj" => $"The word {term} is an adjective we often use in everyday English.",
             "adverb" or "adv" => $"The word {term} is an adverb you can use in everyday English.",
-            _ => $"The word {term} is useful in everyday English."
+            _ => null
         };
+
+        if (posSentence != null)
+        {
+            return posSentence;
+        }
+
+        // Стабильный выбор каркаса: string.GetHashCode рандомизирован между
+        // запусками, поэтому считаем свой простой хэш
+        var hash = 0;
+        foreach (var ch in term.ToLowerInvariant())
+        {
+            hash = (hash * 31 + ch) & 0x7fffffff;
+        }
+
+        var index = hash % Frames.Length;
+        return Frames[index].Replace("{w}", term, StringComparison.Ordinal);
     }
+
+    private static readonly string[] Frames =
+    {
+        "I learned the word {w} from a book last week.",
+        "Could you explain what {w} means in this sentence?",
+        "She wrote {w} on the board and asked us to repeat it.",
+        "The teacher says {w} is a common word in English.",
+        "Try to use {w} when you speak English today.",
+        "He looked up {w} in the dictionary before the lesson.",
+        "We practised the word {w} again and again.",
+        "Do you remember how to spell {w}?"
+    };
 }
 
 public class DictationResultRequest

@@ -171,6 +171,41 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.BookBookmark", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Page")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BookId", "UserId", "Page")
+                        .IsUnique();
+
+                    b.ToTable("BookBookmarks");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.BookKeyWord", b =>
                 {
                     b.Property<int>("Id")
@@ -792,6 +827,34 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("UserGrammarProgresses");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserKnownWord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Text")
+                        .IsUnique();
+
+                    b.ToTable("UserKnownWords");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserWord", b =>
                 {
                     b.Property<int>("Id")
@@ -1180,6 +1243,25 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.BookBookmark", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.Book", "Book")
+                        .WithMany()
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.BookKeyWord", b =>
                 {
                     b.HasOne("EnglishLearningPlatform.API.Models.Book", "Book")
@@ -1316,6 +1398,17 @@ namespace EnglishLearningPlatform.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Unit");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserKnownWord", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
