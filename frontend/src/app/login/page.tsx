@@ -33,7 +33,7 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError('Неверный email или пароль');
+      setError(await describeFailure());
     } else {
       router.push('/dashboard');
     }
@@ -41,8 +41,27 @@ export default function LoginPage() {
     setIsLoading(false);
   };
 
-  return (
-    <AuthLayout>
+  // signIn отдаёт одинаковую ошибку и на неверный пароль, и на упавший бэкенд.
+  // Спрашиваем /health, чтобы не писать «неверный пароль», когда лежит база.
+  const describeFailure = async (): Promise<string> => {
+    try {
+      // Короткий таймаут: сообщение об ошибке не должно ждать зависший health
+      const res = await fetch('/api/backend-status', {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+      const status = await res.json();
+      if (!status?.ok) {
+        return 'Сервис временно недоступен: нет связи с базой данных. Запустите Postgres (docker start english_platform_db) и попробуйте снова.';
+      }
+    } catch {
+      // проверка не удалась — считаем, что дело в пароле
+    }
+
+    return 'Неверный email или пароль';
+  };
+
+  return (    <AuthLayout>
       <div className="card p-8 animate-pop-in">
         <h1 className="text-2xl font-semibold text-ink text-center mb-2">
           С возвращением 👋

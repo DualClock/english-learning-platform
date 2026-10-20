@@ -24,7 +24,18 @@ const handler = NextAuth({
             }),
           });
 
-          if (!res.ok) return null;
+          // 401 — действительно неверная пара email/пароль
+          if (res.status === 401) return null;
+
+          // Остальные коды (500/503) — сломанный бэкенд или недоступная база.
+          // Возвращаем null (иначе NextAuth уводит на /api/auth/error), но пишем
+          // причину в лог; страница входа отдельно спрашивает /health и
+          // показывает «сервис недоступен» вместо «неверный пароль».
+          if (!res.ok) {
+            const body = await res.text().catch(() => '');
+            console.error(`Login backend error: ${res.status} ${body.slice(0, 300)}`);
+            return null;
+          }
 
           const data = await res.json();
 
