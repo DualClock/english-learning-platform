@@ -1,15 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import type { ReactNode } from 'react';
+import { resolveAvatarSrc } from '@/app/lib/avatars';
+import { prefetchApi } from '@/app/lib/api-client';
+import { useCallback, type ReactNode } from 'react';
+
+/** Данные, которые нужно прогреть в кэш при наведении на пункт меню. */
+const ROUTE_PREFETCH: Record<string, string[]> = {
+  '/dashboard': ['/api/books', '/api/profile', '/api/progress/streak', '/api/review/today', '/api/dictionary'],
+  '/books': ['/api/books', '/api/books/popular', '/api/books/stories', '/api/profile'],
+  '/dictionary': ['/api/dictionary', '/api/wordlists'],
+  '/categories': ['/api/categories'],
+  '/review': ['/api/review/today'],
+  '/progress': ['/api/progress/achievements', '/api/progress/streak'],
+  '/grammar': ['/api/grammar/units'],
+  '/translator': ['/api/profile'],
+  '/settings': ['/api/profile'],
+};
 
 const navigation: { name: string; href: string; icon: ReactNode }[] = [
   { name: 'Главная', href: '/dashboard', icon: '🏠' },
   { name: 'Библиотека', href: '/books', icon: '📚' },
   { name: 'Словарь', href: '/dictionary', icon: '📝' },
+  { name: 'Категории', href: '/categories', icon: '🗂️' },
   { name: 'Повторение', href: '/review', icon: '🔄' },
+  { name: 'Прогресс', href: '/progress', icon: '📈' },
   { name: 'Грамматика', href: '/grammar', icon: <GrammarIcon /> },
   { name: 'Тест', href: '/quiz', icon: '✓' },
   { name: 'AI Собеседник', href: '/translator', icon: '🤖' },
@@ -41,7 +58,20 @@ interface SidebarProps {
 
 export default function Sidebar({ open = true, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
+  const accessToken = session?.accessToken;
+
+  // Наведение (или фокус) на пункт меню заранее тянет данные страницы,
+  // поэтому клик открывает её уже с готовыми данными.
+  const warmRoute = useCallback(
+    (href: string) => {
+      router.prefetch(href);
+      const paths = ROUTE_PREFETCH[href];
+      if (paths) prefetchApi(paths, accessToken);
+    },
+    [router, accessToken]
+  );
 
   const linkClass = (isActive: boolean) =>
     `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-colors ${
@@ -86,6 +116,9 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 onClick={onClose}
+                onMouseEnter={() => warmRoute(item.href)}
+                onFocus={() => warmRoute(item.href)}
+                onTouchStart={() => warmRoute(item.href)}
                 className={linkClass(isActive)}
                 aria-current={isActive ? 'page' : undefined}
               >
@@ -121,8 +154,13 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
             Настройки
           </Link>
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-semibold shrink-0">
-              {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={resolveAvatarSrc(session?.avatarUrl)}
+                alt="Аватар"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">

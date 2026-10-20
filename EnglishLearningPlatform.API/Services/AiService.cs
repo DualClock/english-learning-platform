@@ -25,9 +25,6 @@ public class AiService
 
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(24);
 
-    private static readonly object HttpClientLock = new();
-    private static HttpClient? _sharedHttpClient;
-
     // Прямой клиент БЕЗ прокси — для бесплатных эндпоинтов, доступных напрямую
     private static readonly HttpClient DirectHttpClient = new(new HttpClientHandler { UseProxy = false })
     {
@@ -53,23 +50,27 @@ public class AiService
     private readonly IMemoryCache _cache;
     private readonly ILogger<AiService> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly ResilientAiService _resilient;
 
     public AiService(
         IConfiguration configuration,
         IMemoryCache cache,
         ILogger<AiService> logger,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ResilientAiService resilient)
     {
         _configuration = configuration;
         _cache = cache;
         _logger = logger;
         _context = context;
+        _resilient = resilient;
     }
 
     public async Task<TranslationResult?> TranslateWordAsync(
         string word,
         string? context = null,
-        string targetLanguage = "ru")
+        string targetLanguage = "ru",
+        string? userId = null)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
@@ -86,13 +87,13 @@ public class AiService
         }
 
         var prompt = BuildPrompt(word, context, targetLanguage, strict: false);
-        var result = await TranslateWithPromptAsync(prompt, apiKey, word);
+        var result = await TranslateWithPromptAsync(prompt, apiKey, word, userId);
 
         if (result == null)
         {
             _logger.LogInformation("Retrying translation for word {Word} with strict prompt", word);
             var strictPrompt = BuildPrompt(word, context, targetLanguage, strict: true);
-            result = await TranslateWithPromptAsync(strictPrompt, apiKey, word);
+            result = await TranslateWithPromptAsync(strictPrompt, apiKey, word, userId);
         }
 
         if (result != null)
@@ -201,7 +202,18 @@ public class AiService
                          "paragraphs/segments separated by double newlines. Return only the translation." +
                          $"\n\n{normalized}";
 
-            var responseJson = await CallGeminiAsync(prompt, apiKey, temperature: 0.3, maxOutputTokens: 2048);
+            string? responseJson = null;
+            try
+            {
+                responseJson = await CallGeminiAsync(prompt, apiKey, temperature: 0.3, maxOutputTokens: 2048,
+                    requestType: "translate_literary");
+            }
+            catch (AiUnavailableException ex)
+            {
+                // Ниже сработает gtx-fallback
+                _logger.LogWarning(ex, "Literary translation via Gemini unavailable");
+            }
+
             var raw = responseJson == null ? null : ExtractTextFromEnvelope(responseJson);
 
             if (!string.IsNullOrWhiteSpace(raw))
@@ -309,7 +321,17 @@ public class AiService
             return cached;
         }
 
-        var responseJson = await CallGeminiAsync(prompt, apiKey);
+        string? responseJson = null;
+        try
+        {
+            responseJson = await CallGeminiAsync(prompt, apiKey, requestType: "generate_json");
+        }
+        catch (AiUnavailableException ex)
+        {
+            _logger.LogWarning(ex, "Gemini unavailable for generate_json");
+            return null;
+        }
+
         if (responseJson == null)
         {
             return null;
@@ -327,9 +349,9 @@ public class AiService
         return text;
     }
 
-    private async Task<TranslationResult?> TranslateWithPromptAsync(string prompt, string apiKey, string word)
+    private async Task<TranslationResult?> TranslateWithPromptAsync(string prompt, string apiKey, string word, string? userId)
     {
-        var responseJson = await CallGeminiAsync(prompt, apiKey);
+        var responseJson = await CallGeminiAsync(prompt, apiKey, requestType: "translate", userId: userId);
         if (responseJson == null)
         {
             return null;
@@ -383,7 +405,9 @@ public class AiService
         string prompt,
         string apiKey,
         double temperature = 0.2,
-        int maxOutputTokens = 2048)
+        int maxOutputTokens = 2048,
+        string requestType = "ai",
+        string? userId = null)
     {
         var candidates = new List<string>();
         if (_resolvedModel != null)
@@ -400,9 +424,31 @@ public class AiService
         candidates.AddRange(FallbackModels);
         candidates = candidates.Distinct().ToList();
 
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = prompt }
+                    }
+                }
+            },
+            generationConfig = new
+            {
+                temperature,
+                // Запас на thinking-токены у 2.5+/3.x моделей:
+                // при 400 ответ обрезался посреди JSON и парсинг падал
+                maxOutputTokens
+            }
+        };
+
         foreach (var model in candidates)
         {
-            var (json, modelNotFound) = await SendRequestAsync(model, prompt, apiKey, temperature, maxOutputTokens);
+            var (json, modelNotFound) = await _resilient.SendAsync(
+                model, requestBody, apiKey, requestType, userId);
             if (json != null)
             {
                 if (_resolvedModel != model)
@@ -430,109 +476,6 @@ public class AiService
 
         _logger.LogError("No working Gemini model found");
         return null;
-    }
-
-    private async Task<(string? Json, bool ModelNotFound)> SendRequestAsync(
-        string model,
-        string prompt,
-        string apiKey,
-        double temperature = 0.2,
-        int maxOutputTokens = 2048)
-    {
-        try
-        {
-            var requestBody = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = prompt }
-                        }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature,
-                    // Запас на thinking-токены у 2.5+/3.x моделей:
-                    // при 400 ответ обрезался посреди JSON и парсинг падал
-                    maxOutputTokens
-                }
-            };
-
-            var json = JsonSerializer.Serialize(requestBody);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-
-            using var response = await GetHttpClient().PostAsync(url, content);
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                return (responseJson, false);
-            }
-
-            var modelNotFound = response.StatusCode == HttpStatusCode.NotFound ||
-                                responseJson.Contains("not found", StringComparison.OrdinalIgnoreCase);
-
-            _logger.LogError("Gemini API error (model {Model}): {Status}, {Response}",
-                model, response.StatusCode, TruncateForLog(responseJson));
-
-            return (null, modelNotFound);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling Gemini API (model {Model})", model);
-            return (null, false);
-        }
-    }
-
-    private HttpClient GetHttpClient()
-    {
-        if (_sharedHttpClient != null)
-        {
-            return _sharedHttpClient;
-        }
-
-        lock (HttpClientLock)
-        {
-            _sharedHttpClient ??= CreateHttpClient();
-        }
-
-        return _sharedHttpClient;
-    }
-
-    private HttpClient CreateHttpClient()
-    {
-        var proxyUrl = _configuration["Gemini:ProxyUrl"];
-        var handler = new HttpClientHandler();
-
-        if (!string.IsNullOrEmpty(proxyUrl))
-        {
-            var uri = new Uri(proxyUrl);
-            var proxy = new WebProxy
-            {
-                Address = new Uri($"{uri.Scheme}://{uri.Host}:{uri.Port}"),
-                BypassProxyOnLocal = false,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(
-                    uri.UserInfo.Split(':')[0],
-                    uri.UserInfo.Split(':')[1]
-                )
-            };
-
-            handler.Proxy = proxy;
-            handler.UseProxy = true;
-            handler.PreAuthenticate = true;
-        }
-
-        return new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromSeconds(15)
-        };
     }
 
     private static string? ExtractTextFromEnvelope(string responseJson)

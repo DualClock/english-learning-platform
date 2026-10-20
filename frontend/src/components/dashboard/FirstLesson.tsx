@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { API_URL } from '@/app/lib/api-url';
+import { apiGet } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
 
 const TARGET_WORDS = 5;
@@ -46,19 +47,16 @@ export default function FirstLesson() {
   }, [state.bookAdded, trackEvent]);
   const [doneShown, setDoneShown] = useState(false);
 
-  // Загрузка статуса: книги + размер словаря
+  // Загрузка статуса: книги + размер словаря (через кэш, чтобы не дёргать API зря)
   const refreshStatus = useCallback(async () => {
     const token = session?.accessToken;
     if (!token) return;
-    const headers = { Authorization: `Bearer ${token}` };
     try {
-      const [booksRes, dictRes] = await Promise.all([
-        fetch(`${API_URL}/api/books`, { headers }),
-        fetch(`${API_URL}/api/dictionary`, { headers }),
+      const [books, words] = await Promise.all([
+        apiGet<unknown[]>('/api/books', { token, maxAgeMs: 15_000 }),
+        apiGet<unknown[]>('/api/dictionary', { token, maxAgeMs: 15_000 }),
       ]);
-      const bookAdded = booksRes.ok ? ((await booksRes.json()) as unknown[]).length > 0 : false;
-      const wordsCount = dictRes.ok ? ((await dictRes.json()) as unknown[]).length : 0;
-      setState({ bookAdded, wordsCount });
+      setState({ bookAdded: books.length > 0, wordsCount: words.length });
     } catch {
       // тихо: чек-лист не критичен
     }

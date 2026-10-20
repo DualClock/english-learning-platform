@@ -6,13 +6,15 @@ import AnalysisCard, {
   type AssistantAnalysis,
 } from '@/components/assistant/AnalysisCard';
 import WelcomeScreen from '@/components/assistant/WelcomeScreen';
-import { API_URL } from '@/app/lib/api-url';
+import { ApiError, apiMutate } from '@/app/lib/api-client';
+import { useApiQuery } from '@/app/lib/use-api';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
+  failed?: boolean;
 }
 
 const SUGGESTION_CHIPS = [
@@ -23,6 +25,7 @@ const SUGGESTION_CHIPS = [
 
 export default function TranslatorPage() {
   const { data: session } = useSession();
+  const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
 
   const [phase, setPhase] = useState<'loading' | 'welcome' | 'chat'>('loading');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -47,59 +50,77 @@ export default function TranslatorPage() {
   }, []);
 
   useEffect(() => {
-    const token = session?.accessToken;
-    if (!token) return;
-    fetch(`${API_URL}/api/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.cefrLevel) setUserLevel(String(data.cefrLevel).toUpperCase());
-      })
-      .catch(() => {});
-  }, [session?.accessToken]);
+    if (profileData?.cefrLevel) setUserLevel(String(profileData.cefrLevel).toUpperCase());
+  }, [profileData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, sending]);
 
   const requestChat = useCallback(
-    async (history: ChatMessage[]): Promise<string | null> => {
+    async (history: ChatMessage[]): Promise<{ reply: string | null; error: string | null }> => {
       try {
-        const res = await fetch(`${API_URL}/api/assistant/chat`, {
+        const data = await apiMutate<{ reply?: string }>('/api/assistant/chat', {
+          token: session?.accessToken,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-          body: JSON.stringify({ messages: history, userLevel: userLevel || undefined }),
+          body: { messages: history, userLevel: userLevel || undefined },
         });
-        if (!res.ok) throw new Error('chat failed');
-        const data = await res.json();
-        return data.reply ?? null;
-      } catch {
-        setError('Alex временно недоступен. Попробуй ещё раз чуть позже.');
-        return null;
+        if (!data?.reply) {
+          return { reply: null, error: 'Alex временно недоступен. Попробуй ещё раз чуть позже.' };
+        }
+        return { reply: data.reply, error: null };
+      } catch (err) {
+        if (err instanceof ApiError) {
+          const message =
+            err.message && !err.message.startsWith('Ошибка запроса')
+              ? err.message
+              : 'Alex временно недоступен. Попробуй ещё раз чуть позже.';
+          return { reply: null, error: message };
+        }
+        return { reply: null, error: 'Нет соединения с сервером. Проверь интернет и попробуй ещё раз.' };
       }
     },
     [session?.accessToken, userLevel]
   );
 
   // Приветствие: если история пуста, Alex пишет первым
+  const greet = useCallback(async () => {
+    setSending(true);
+    setError('');
+    const { reply, error: chatError } = await requestChat([]);
+    if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+    else if (chatError) setError(chatError);
+    setSending(false);
+  }, [requestChat]);
+
   useEffect(() => {
     if (phase !== 'chat' || greetedRef.current || sending) return;
     greetedRef.current = true;
-    (async () => {
-      setSending(true);
-      const reply = await requestChat([]);
-      if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-      setSending(false);
-    })();
-  }, [phase, sending, requestChat]);
+    greet();
+  }, [phase, sending, greet]);
 
   const startChat = () => {
     localStorage.setItem('assistant_seen', '1');
     setPhase('chat');
+  };
+
+  // Отправка истории в чат. При ошибке последнее сообщение пользователя
+  // остаётся в ленте со статусом «не отправлено» и кнопкой «Повторить».
+  const deliverMessage = async (history: ChatMessage[]) => {
+    setError('');
+    setSending(true);
+    const { reply, error: chatError } = await requestChat(history);
+    setSending(false);
+    if (reply) {
+      setMessages([...history, { role: 'assistant', text: reply }]);
+    } else {
+      setMessages(
+        history.map((m, i) =>
+          i === history.length - 1 && m.role === 'user' ? { ...m, failed: true } : m
+        )
+      );
+      if (chatError) setError(chatError);
+    }
   };
 
   const sendMessage = async () => {
@@ -110,12 +131,14 @@ export default function TranslatorPage() {
     setMessages(history);
     setInput('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    setError('');
-    setSending(true);
+    await deliverMessage(history);
+  };
 
-    const reply = await requestChat(history);
-    if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-    setSending(false);
+  const retryMessage = (idx: number) => {
+    if (sending) return;
+    const history = messages.slice(0, idx + 1).map((m) => ({ ...m, failed: false }));
+    setMessages(history);
+    deliverMessage(history);
   };
 
   const toggleAnalysis = async (idx: number) => {
@@ -126,16 +149,11 @@ export default function TranslatorPage() {
     setAnalysisFailed((prev) => ({ ...prev, [idx]: false }));
     setAnalyzing((prev) => ({ ...prev, [idx]: true }));
     try {
-      const res = await fetch(`${API_URL}/api/assistant/analyze`, {
+      const data = await apiMutate<AssistantAnalysis>('/api/assistant/analyze', {
+        token: session?.accessToken,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({ text: messages[idx].text, userLevel: userLevel || undefined }),
+        body: { text: messages[idx].text, userLevel: userLevel || undefined },
       });
-      if (!res.ok) throw new Error('analyze failed');
-      const data: AssistantAnalysis = await res.json();
       setAnalyses((prev) => ({ ...prev, [idx]: data }));
     } catch {
       setAnalysisFailed((prev) => ({ ...prev, [idx]: true }));
@@ -240,6 +258,17 @@ export default function TranslatorPage() {
                   <div className="max-w-[80%] bg-[var(--color-primary)] text-white rounded-xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
                     {message.text}
                   </div>
+                  {message.failed && (
+                    <div className="mt-1 flex items-center gap-2 text-xs text-[var(--color-error)]">
+                      <span>Не отправлено</span>
+                      <button
+                        onClick={() => retryMessage(idx)}
+                        className="underline hover:text-[var(--color-ink)] transition-colors"
+                      >
+                        Повторить
+                      </button>
+                    </div>
+                  )}
                   {openAnalyses[idx] && (
                     <>
                       {analyzing[idx] && (
@@ -281,6 +310,11 @@ export default function TranslatorPage() {
             {error && (
               <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[rgba(217,45,32,0.40)] text-[var(--color-error)] text-sm text-center">
                 {error}
+                {messages.length === 0 && !sending && (
+                  <button onClick={greet} className="ml-2 underline hover:text-[var(--color-ink)] transition-colors">
+                    Повторить
+                  </button>
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />

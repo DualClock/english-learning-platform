@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -61,8 +62,17 @@ public class ProfileController : ControllerBase
 
         if (dto.CefrLevel != null) user.CefrLevel = dto.CefrLevel;
         if (dto.StudyGoal != null) user.StudyGoal = dto.StudyGoal;
-        if (dto.DailyGoalMinutes.HasValue) user.DailyGoalMinutes = Math.Max(1, dto.DailyGoalMinutes.Value);
+        if (dto.DailyGoalMinutes.HasValue) user.DailyGoalMinutes = Math.Clamp(dto.DailyGoalMinutes.Value, 1, 240);
         if (dto.DisplayName != null) user.DisplayName = dto.DisplayName.Trim();
+        if (dto.DailyNewWords.HasValue) user.DailyNewWords = Math.Clamp(dto.DailyNewWords.Value, 0, 50);
+
+        if (dto.TimeZoneId != null)
+        {
+            user.TimeZoneId = UserTime.Normalize(dto.TimeZoneId);
+        }
+
+        if (dto.NotifyEnabled.HasValue) user.NotifyEnabled = dto.NotifyEnabled.Value;
+        if (dto.ReminderHour.HasValue) user.ReminderHour = Math.Clamp(dto.ReminderHour.Value, 0, 23);
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(result.Errors);
@@ -108,22 +118,83 @@ public class ProfileController : ControllerBase
         return Ok(new { cefrLevel = level, correctCount = correct, total });
     }
 
+    // POST: api/profile/avatar — загрузка своего аватара (JPG/PNG/WEBP, до 2 МБ)
+    [HttpPost("avatar")]
+    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    {
+        var user = await _userManager.FindByIdAsync(GetUserId());
+        if (user == null) return NotFound();
+
+        string newUrl;
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            newUrl = await AvatarService.SaveUploadedAvatarAsync(stream, file.Length);
+        }
+        catch (AvatarValidationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+
+        AvatarService.DeleteUploadedAvatar(user.AvatarUrl);
+        user.AvatarUrl = newUrl;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok(ToDto(user));
+    }
+
+    // POST: api/profile/avatar/default — выбор базового аватара (avatar-1 .. avatar-10)
+    [HttpPost("avatar/default")]
+    public async Task<IActionResult> SetDefaultAvatar([FromBody] SetDefaultAvatarDto dto)
+    {
+        if (!AvatarService.IsValidDefaultAvatarName(dto.Name))
+            return BadRequest(new { message = "Неизвестный базовый аватар" });
+
+        var user = await _userManager.FindByIdAsync(GetUserId());
+        if (user == null) return NotFound();
+
+        AvatarService.DeleteUploadedAvatar(user.AvatarUrl);
+        user.AvatarUrl = AvatarService.DefaultAvatarUrl(dto.Name);
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok(ToDto(user));
+    }
+
     private static object ToDto(User user) => new
     {
         email = user.Email,
+        emailConfirmed = user.EmailConfirmed,
         displayName = user.DisplayName,
+        avatarUrl = user.AvatarUrl,
         cefrLevel = user.CefrLevel,
         studyGoal = user.StudyGoal,
         dailyGoalMinutes = user.DailyGoalMinutes,
+        dailyNewWords = user.DailyNewWords,
         currentStreak = user.CurrentStreak,
         longestStreak = user.LongestStreak,
         totalXp = user.TotalXp,
+        timeZoneId = user.TimeZoneId,
+        notifyEnabled = user.NotifyEnabled,
+        reminderHour = user.ReminderHour,
         createdAt = user.CreatedAt,
         lastActivityDate = user.LastActivityDate
     };
 }
 
-public record UpdateProfileDto(string? CefrLevel, string? StudyGoal, int? DailyGoalMinutes, string? DisplayName);
+public record UpdateProfileDto(
+    string? CefrLevel,
+    string? StudyGoal,
+    int? DailyGoalMinutes,
+    string? DisplayName,
+    string? TimeZoneId = null,
+    bool? NotifyEnabled = null,
+    int? ReminderHour = null,
+    int? DailyNewWords = null);
+public record SetDefaultAvatarDto(string Name);
 public record PlacementAnswerDto(int Id, int Choice);
 public record PlacementResultDto(List<PlacementAnswerDto>? Answers);
 

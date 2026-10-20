@@ -2,6 +2,10 @@
 
 import AppLayout from '@/components/AppLayout';
 import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  TouchEvent as ReactTouchEvent,
+} from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { API_URL } from '@/app/lib/api-url';
@@ -89,6 +93,19 @@ const TOOLTIP_DELAY = 250;
 
 const TUTORIAL_STORAGE_KEY = 'reader_tutorial_seen';
 const AI_MODE_STORAGE_KEY = 'reader_ai_mode';
+const FONT_SIZE_STORAGE_KEY = 'reader_font_size';
+const LINE_WIDTH_STORAGE_KEY = 'reader_line_width';
+
+const MIN_FONT_SIZE = 16;
+const MAX_FONT_SIZE = 28;
+const DEFAULT_FONT_SIZE = 20;
+const MIN_LINE_WIDTH = 45;
+const MAX_LINE_WIDTH = 90;
+const DEFAULT_LINE_WIDTH = 65;
+
+// Свайп должен быть заметно горизонтальным, иначе это скролл или тап по слову
+const SWIPE_MIN_DISTANCE = 60;
+const SWIPE_DIRECTION_RATIO = 1.5;
 
 const TUTORIAL_STEPS: {
   text: string;
@@ -142,7 +159,17 @@ export default function ReaderPage() {
   // ИИ-перевод с контекстом (медленный) — по умолчанию выключен, храним в localStorage
   const [aiMode, setAiMode] = useState(false);
 
+  // Кегль и ширина строки — настраиваются и запоминаются
+  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
+  const [lineWidth, setLineWidth] = useState(DEFAULT_LINE_WIDTH);
+  const [showTextSettings, setShowTextSettings] = useState(false);
+
+  // Панель перевода: на десктопе сворачивается, на мобильных — bottom-sheet
+  const [panelOpen, setPanelOpen] = useState(true);
+
   const requestIdRef = useRef(0);
+  const pageRequestRef = useRef(0);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Маркерные слова текущей страницы (lower-case)
   const keyWordsSet = useMemo(() => {
@@ -202,6 +229,55 @@ export default function ReaderPage() {
     }
   }, []);
 
+  // Восстановление кегля и ширины строки
+  useEffect(() => {
+    try {
+      const savedFontSize = Number(window.localStorage.getItem(FONT_SIZE_STORAGE_KEY));
+      if (savedFontSize >= MIN_FONT_SIZE && savedFontSize <= MAX_FONT_SIZE) {
+        setFontSize(savedFontSize);
+      }
+      const savedLineWidth = Number(window.localStorage.getItem(LINE_WIDTH_STORAGE_KEY));
+      if (savedLineWidth >= MIN_LINE_WIDTH && savedLineWidth <= MAX_LINE_WIDTH) {
+        setLineWidth(savedLineWidth);
+      }
+    } catch {
+      // localStorage недоступен — остаются значения по умолчанию
+    }
+  }, []);
+
+  const changeFontSize = useCallback((delta: number) => {
+    setFontSize(prev => {
+      const next = Math.min(MAX_FONT_SIZE, Math.max(MIN_FONT_SIZE, prev + delta));
+      try {
+        window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, String(next));
+      } catch {
+        // настройка не сохранится — не критично
+      }
+      return next;
+    });
+  }, []);
+
+  const changeLineWidth = useCallback((next: number) => {
+    const clamped = Math.min(MAX_LINE_WIDTH, Math.max(MIN_LINE_WIDTH, next));
+    setLineWidth(clamped);
+    try {
+      window.localStorage.setItem(LINE_WIDTH_STORAGE_KEY, String(clamped));
+    } catch {
+      // настройка не сохранится — не критично
+    }
+  }, []);
+
+  const resetTextSettings = useCallback(() => {
+    setFontSize(DEFAULT_FONT_SIZE);
+    setLineWidth(DEFAULT_LINE_WIDTH);
+    try {
+      window.localStorage.removeItem(FONT_SIZE_STORAGE_KEY);
+      window.localStorage.removeItem(LINE_WIDTH_STORAGE_KEY);
+    } catch {
+      // игнорируем
+    }
+  }, []);
+
   const loadBook = useCallback(async () => {
     try {
       const token = session?.accessToken;
@@ -229,6 +305,8 @@ export default function ReaderPage() {
   }, [session, bookId]);
 
   const loadPage = useCallback(async (page: number) => {
+    // Защита от гонки: при быстром перелистывании применяем только последний ответ
+    const requestId = ++pageRequestRef.current;
     try {
       const token = session?.accessToken;
       if (!token) return;
@@ -243,9 +321,11 @@ export default function ReaderPage() {
       }
 
       const data = await res.json();
+      if (requestId !== pageRequestRef.current) return;
       setContent(data);
       setError('');
     } catch (err) {
+      if (requestId !== pageRequestRef.current) return;
       console.error('Load page error:', err);
       setError(err instanceof Error ? err.message : 'Ошибка загрузки страницы');
     }
@@ -285,11 +365,99 @@ export default function ReaderPage() {
     setTutorialStep(null);
   }, []);
 
+  // Deep-link (например, из «С возвращением!»): /reader/{id}?page=N открывает книгу сразу на нужной странице
+  useEffect(() => {
+    const page = Number(new URLSearchParams(window.location.search).get('page'));
+    if (Number.isInteger(page) && page > 1) {
+      setCurrentPage(page);
+    }
+  }, []);
+
   useEffect(() => {
     if (book) {
       loadPage(currentPage);
     }
   }, [currentPage, book, loadPage]);
+
+  const goToPage = useCallback((page: number) => {
+    const total = content?.totalPages ?? 1;
+    const next = Math.min(total, Math.max(1, page));
+    setCurrentPage(prev => (prev === next ? prev : next));
+  }, [content?.totalPages]);
+
+  // Стрелки ←/→ листают страницы; в полях ввода и модалках не перехватываем
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        if (showTextSettings) setShowTextSettings(false);
+        if (tooltip) setTooltip(null);
+        return;
+      }
+
+      if (
+        event.defaultPrevented ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        showTextSettings ||
+        showNotes ||
+        finishResult ||
+        tutorialStep !== null
+      ) {
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goToPage(currentPage - 1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goToPage(currentPage + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, goToPage, finishResult, showNotes, showTextSettings, tutorialStep, tooltip]);
+
+  // Свайп влево — следующая страница, вправо — предыдущая
+  const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 1) {
+      touchStartRef.current = null;
+      return;
+    }
+    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+
+  const handleTouchEnd = (event: ReactTouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start || !content || content.totalPages <= 1) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+
+    // Слишком короткое или вертикальное движение — это не перелистывание
+    if (Math.abs(dx) < SWIPE_MIN_DISTANCE || Math.abs(dx) < Math.abs(dy) * SWIPE_DIRECTION_RATIO) {
+      return;
+    }
+
+    goToPage(currentPage + (dx < 0 ? 1 : -1));
+  };
 
   // Создание сессии чтения один раз на mount (при готовности сессии)
   useEffect(() => {
@@ -335,6 +503,10 @@ export default function ReaderPage() {
     setTranslationError(false);
     setAddedToDict(false);
     setTooltip(null);
+    // На телефоне смена страницы закрывает bottom-sheet, чтобы не закрывать текст
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+      setPanelOpen(false);
+    }
   }, [currentPage]);
 
   // Эффект печатания перевода: cleanup отменяет таймер при смене перевода
@@ -432,6 +604,9 @@ export default function ReaderPage() {
 
     setSelectedWord(cleanWord);
     setSelectedWordIndex(wordIndex);
+    setPanelOpen(true);
+    setShowTextSettings(false);
+    setTooltip(null);
     setIsTranslating(true);
     setTranslation(null);
     setDisplayedTranslation('');
@@ -591,19 +766,25 @@ export default function ReaderPage() {
     return promise;
   }, [session, bookId]);
 
+  const showTooltip = useCallback((idx: number, cleanWord: string) => {
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+      tooltipTimerRef.current = null;
+    }
+    setTooltip({ idx, word: cleanWord, data: null, loading: true, below: idx < 12 });
+    fetchTooltip(cleanWord).then(data => {
+      setTooltip(prev =>
+        prev && prev.idx === idx && prev.word === cleanWord
+          ? { ...prev, data, loading: false }
+          : prev
+      );
+    });
+  }, [fetchTooltip]);
+
   const handleMarkerEnter = useCallback((idx: number, cleanWord: string) => {
     if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
-    tooltipTimerRef.current = setTimeout(() => {
-      setTooltip({ idx, word: cleanWord, data: null, loading: true, below: idx < 12 });
-      fetchTooltip(cleanWord).then(data => {
-        setTooltip(prev =>
-          prev && prev.idx === idx && prev.word === cleanWord
-            ? { ...prev, data, loading: false }
-            : prev
-        );
-      });
-    }, TOOLTIP_DELAY);
-  }, [fetchTooltip]);
+    tooltipTimerRef.current = setTimeout(() => showTooltip(idx, cleanWord), TOOLTIP_DELAY);
+  }, [showTooltip]);
 
   const handleMarkerLeave = useCallback(() => {
     if (tooltipTimerRef.current) {
@@ -612,6 +793,50 @@ export default function ReaderPage() {
     }
     setTooltip(null);
   }, []);
+
+  // На тач-устройствах hover нет: тап открывает карточку, а не сразу добавляет
+  // слово в конспект — добавить можно кнопкой внутри карточки.
+  const handleMarkerClick = useCallback((idx: number, cleanWord: string, token: WordToken) => {
+    const isCoarsePointer =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+    if (isCoarsePointer) {
+      setPanelOpen(false);
+      showTooltip(idx, cleanWord);
+      return;
+    }
+
+    void toggleCollected(cleanWord, token);
+  }, [showTooltip, toggleCollected]);
+
+  // Фокус с клавиатуры показывает тултип; Enter/Space — в конспект
+  const handleMarkerKeyDown = useCallback((
+    event: ReactKeyboardEvent<HTMLSpanElement>,
+    cleanWord: string,
+    token: WordToken
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      void toggleCollected(cleanWord, token);
+    }
+  }, [toggleCollected]);
+
+  // Тап мимо слова или карточки закрывает тултип
+  useEffect(() => {
+    if (!tooltip) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-word-tooltip]') || target?.closest('[data-marker-word]')) {
+        return;
+      }
+      setTooltip(null);
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [tooltip]);
 
   // ---- Завершение чтения ----
 
@@ -655,35 +880,65 @@ export default function ReaderPage() {
     if (!tooltip || tooltip.idx !== idx) return null;
     const t = tooltip.data;
     const translationText = t ? (t.translationRu ?? t.translation) : null;
+    const isCollected = collectedRef.current.has(tooltip.word.toLowerCase());
+
     return (
       <div
-        onMouseEnter={handleMarkerLeave /* не гасим при входе в тултип */ }
-        className={`absolute left-0 z-30 w-[240px] max-w-[240px] bg-white rounded-lg shadow-lg border border-[var(--color-hairline-strong)] p-3 ${
-          tooltip.below ? 'top-full mt-1' : 'bottom-full mb-1'
+        data-word-tooltip
+        // На телефоне карточка прижата к низу экрана — так она не уезжает за край
+        className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3 shadow-lg md:absolute md:inset-x-auto md:left-0 md:w-[240px] ${
+          tooltip.below
+            ? 'md:top-full md:mt-1 md:bottom-auto'
+            : 'md:bottom-full md:mb-1 md:top-auto'
         }`}
       >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="text-sm font-semibold break-words text-[var(--color-ink)]">
+              {t?.word ?? tooltip.word}
+            </span>
+            {t?.cefrLevel && (
+              <span className="px-1.5 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-[10px] rounded-full shrink-0">
+                {t.cefrLevel}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setTooltip(null)}
+            aria-label="Закрыть подсказку"
+            className="-mr-1 -mt-1 shrink-0 p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
+          >
+            ×
+          </button>
+        </div>
+
         {tooltip.loading || !t ? (
-          <div className="space-y-2 animate-pulse">
+          <div className="space-y-2 animate-pulse mt-2">
             <div className="h-3 w-2/3 bg-[var(--color-tint-mint)] rounded"></div>
             <div className="h-3 w-1/3 bg-[var(--color-tint-mint)] rounded"></div>
             <div className="h-3 w-1/2 bg-[var(--color-tint-mint)] rounded"></div>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-[var(--color-ink)] text-sm break-words">{t.word}</span>
-              {t.cefrLevel && (
-                <span className="px-1.5 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-[10px] rounded-full shrink-0">
-                  {t.cefrLevel}
-                </span>
-              )}
-            </div>
             {translationText ? (
-              <p className="text-sm text-[var(--color-ink)]">{translationText}</p>
+              <p className="mt-1 text-sm text-[var(--color-ink)]">{translationText}</p>
             ) : (
-              <p className="text-sm text-[var(--color-slate)] italic">перевод появится позже</p>
+              <p className="mt-1 text-sm text-[var(--color-slate)] italic">перевод появится позже</p>
             )}
-            <p className="text-[10px] text-[var(--color-slate)] mt-2">нажмите, чтобы добавить в конспект</p>
+            {readingSessionId && (
+              <button
+                type="button"
+                onClick={() => toggleCollected(tooltip.word, wordTokens[tooltip.idx])}
+                className={`mt-2 w-full rounded-lg py-1.5 text-xs font-medium transition-colors ${
+                  isCollected
+                    ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]'
+                    : 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
+                }`}
+              >
+                {isCollected ? '✓ В конспекте' : '+ В конспект'}
+              </button>
+            )}
           </>
         )}
       </div>
@@ -707,12 +962,25 @@ export default function ReaderPage() {
             return (
               <span
                 key={idx}
+                data-marker-word
                 className="relative inline-block mr-1"
                 onMouseEnter={() => handleMarkerEnter(idx, lower)}
                 onMouseLeave={handleMarkerLeave}
+                onBlur={(e) => {
+                  // Фокус ушёл за пределы слова и карточки — закрываем подсказку
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                    setTooltip(null);
+                  }
+                }}
               >
                 <span
-                  onClick={() => toggleCollected(lower, token)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${lower}: перевод и добавление в конспект`}
+                  aria-expanded={tooltip?.idx === idx}
+                  onClick={() => handleMarkerClick(idx, lower, token)}
+                  onKeyDown={(e) => handleMarkerKeyDown(e, lower, token)}
+                  onFocus={() => showTooltip(idx, lower)}
                   className={`inline-block rounded px-0.5 border-b border-dashed border-[var(--color-primary-pressed)] cursor-pointer transition-colors hover:bg-[rgba(249,231,159,0.20)] ${
                     isCollected ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]' : ''
                   }`}
@@ -929,15 +1197,15 @@ export default function ReaderPage() {
     <AppLayout fullWidth>
       {/* Шапка книги */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--color-ink)]">{book.title}</h1>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-[var(--color-ink)] sm:text-2xl">{book.title}</h1>
             {book.author && <p className="text-[var(--color-slate)]">{book.author}</p>}
           </div>
 
           {content && (
-            <div className="flex items-center gap-4">
-              <div className="w-48">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <div className="w-full sm:w-48">
                 <div className="flex justify-between text-xs text-[var(--color-slate)] mb-1">
                   <span>{content.progress}%</span>
                   <span>{content.wordsRead.toLocaleString()} / {content.totalWords.toLocaleString()}</span>
@@ -946,12 +1214,99 @@ export default function ReaderPage() {
                   <div className="progress-fill" style={{ width: `${content.progress}%` }}></div>
                 </div>
               </div>
-              <span className="text-sm text-[var(--color-slate)]">
+              <span className="text-sm tabular-nums text-[var(--color-slate)]">
                 {content.currentPage} / {content.totalPages}
               </span>
+
+              {/* Настройки текста: кегль и ширина строки */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowTextSettings(v => !v)}
+                  aria-label="Настройки текста"
+                  aria-expanded={showTextSettings}
+                  title="Настройки текста"
+                  className="h-10 w-10 rounded-full border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)]"
+                >
+                  Aa
+                </button>
+
+                {showTextSettings && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowTextSettings(false)}
+                      aria-hidden="true"
+                    />
+                    <div className="card fixed left-4 right-4 top-24 z-50 p-4 shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72">
+                      <div className="mb-3 flex items-center justify-between">
+                        <h2 className="text-sm font-semibold text-[var(--color-ink)]">Текст</h2>
+                        <button
+                          type="button"
+                          onClick={() => setShowTextSettings(false)}
+                          aria-label="Закрыть настройки текста"
+                          className="p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm text-[var(--color-slate)]">Размер</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => changeFontSize(-1)}
+                            disabled={fontSize <= MIN_FONT_SIZE}
+                            aria-label="Уменьшить текст"
+                            className="h-8 w-8 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold transition-colors hover:bg-[var(--color-tint-mint)] disabled:opacity-40"
+                          >
+                            A−
+                          </button>
+                          <span className="w-8 text-center text-sm tabular-nums">{fontSize}</span>
+                          <button
+                            type="button"
+                            onClick={() => changeFontSize(1)}
+                            disabled={fontSize >= MAX_FONT_SIZE}
+                            aria-label="Увеличить текст"
+                            className="h-8 w-8 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold transition-colors hover:bg-[var(--color-tint-mint)] disabled:opacity-40"
+                          >
+                            A+
+                          </button>
+                        </div>
+                      </div>
+
+                      <label className="mt-4 block">
+                        <span className="mb-1 flex items-center justify-between text-sm text-[var(--color-slate)]">
+                          <span>Ширина строки</span>
+                          <span className="tabular-nums">{lineWidth}</span>
+                        </span>
+                        <input
+                          type="range"
+                          min={MIN_LINE_WIDTH}
+                          max={MAX_LINE_WIDTH}
+                          value={lineWidth}
+                          onChange={(e) => changeLineWidth(Number(e.target.value))}
+                          className="w-full accent-[var(--color-primary)]"
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={resetTextSettings}
+                        className="mt-3 text-xs text-[var(--color-slate)] underline decoration-[var(--color-hairline-strong)] underline-offset-2 transition-colors hover:text-[var(--color-ink)]"
+                      >
+                        Сбросить
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <button
                 onClick={toggleParallelMode}
                 title="Параллельный перевод"
+                aria-pressed={parallelMode}
                 className={`h-10 px-3.5 rounded-full text-sm font-semibold shadow-md transition-colors ${
                   parallelMode
                     ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] hover:bg-[#E3BF5F]'
@@ -960,11 +1315,30 @@ export default function ReaderPage() {
               >
                 {parallelMode ? 'RU ⇄' : 'EN'}
               </button>
+
+              {/* Свернуть/развернуть панель перевода — только на десктопе */}
+              {!parallelMode && (
+                <button
+                  type="button"
+                  onClick={() => setPanelOpen(v => !v)}
+                  title={panelOpen ? 'Свернуть перевод' : 'Показать перевод'}
+                  aria-label={panelOpen ? 'Свернуть панель перевода' : 'Показать панель перевода'}
+                  aria-expanded={panelOpen}
+                  className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)] md:inline-flex"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d={panelOpen ? 'M9 5l7 7-7 7' : 'M15 5l-7 7 7 7'} />
+                  </svg>
+                </button>
+              )}
+
               {readingSessionId && (
                 <button
                   onClick={() => setShowNotes(v => !v)}
-                  className="relative w-10 h-10 rounded-full bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] font-semibold shadow-md hover:shadow-lg transition-shadow"
+                  className="relative h-10 min-w-10 rounded-full bg-[var(--color-tint-yellow-bold)] px-2 text-[var(--color-ink)] font-semibold shadow-md hover:shadow-lg transition-shadow"
                   title="Конспект"
+                  aria-label={`Конспект, слов: ${collectedKeys.length}`}
+                  aria-expanded={showNotes}
                 >
                   ✦ {collectedKeys.length}
                 </button>
@@ -976,7 +1350,7 @@ export default function ReaderPage() {
 
       {/* Поповер конспекта */}
       {showNotes && readingSessionId && (
-        <div className="card absolute right-8 top-32 z-40 w-80 p-4 shadow-xl max-h-[60vh] flex flex-col">
+        <div className="card fixed inset-x-4 top-20 z-40 flex max-h-[70vh] flex-col p-4 shadow-xl sm:absolute sm:inset-x-auto sm:right-8 sm:top-32 sm:w-80">
           <h3 className="font-semibold text-[var(--color-ink)] mb-3">Конспект ✦ {collectedKeys.length}</h3>
           <div className="overflow-y-auto space-y-2 mb-3 flex-1">
             {collectedKeys.length === 0 ? (
@@ -1014,27 +1388,39 @@ export default function ReaderPage() {
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 md:flex-row">
         {/* Текст книги */}
-        <div className="flex-1 min-w-0">
-          <div className="card p-8">
-            <div className="font-serif text-xl leading-loose text-[var(--color-ink)]">
+        <div className="min-w-0 flex-1">
+          <div
+            className="card p-4 sm:p-6 lg:p-8"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* key по номеру страницы: при перелистывании блок перемонтируется и текст мягко проявляется */}
+            <div
+              key={currentPage}
+              data-reader-text
+              className="animate-page-in mx-auto font-serif text-[var(--color-ink)]"
+              style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, maxWidth: `${lineWidth}ch` }}
+            >
               {parallelMode ? renderParallelText() : renderText()}
             </div>
           </div>
 
           {/* Пагинация */}
           {content && content.totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-4">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-4">
               <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
+                aria-label="Предыдущая страница"
                 className="btn-secondary"
               >
-                ← Назад
+                <span className="hidden sm:inline">← Назад</span>
+                <span aria-hidden="true" className="sm:hidden">←</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {Array.from({ length: Math.min(5, content.totalPages) }, (_, i) => {
                   let pageNum;
                   if (content.totalPages <= 5) {
@@ -1050,8 +1436,10 @@ export default function ReaderPage() {
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 rounded-lg transition-colors ${
+                      onClick={() => goToPage(pageNum)}
+                      aria-label={`Страница ${pageNum}`}
+                      aria-current={pageNum === currentPage ? 'page' : undefined}
+                      className={`h-9 w-9 rounded-lg text-sm transition-colors sm:h-10 sm:w-10 ${
                         pageNum === currentPage
                           ? 'bg-[var(--color-primary)] text-white'
                           : 'bg-white border border-[var(--color-hairline-strong)] hover:bg-[var(--color-tint-mint)]'
@@ -1064,20 +1452,63 @@ export default function ReaderPage() {
               </div>
 
               <button
-                onClick={() => setCurrentPage(p => Math.min(content.totalPages, p + 1))}
+                onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === content.totalPages}
+                aria-label="Следующая страница"
                 className="btn-secondary"
               >
-                Вперёд →
+                <span className="hidden sm:inline">Вперёд →</span>
+                <span aria-hidden="true" className="sm:hidden">→</span>
               </button>
             </div>
           )}
+
+          {content && content.totalPages > 1 && (
+            <p className="mt-3 text-center text-xs text-[var(--color-slate)] md:hidden">
+              Свайп влево и вправо листает страницы
+            </p>
+          )}
         </div>
 
-        {/* Панель перевода — скрыта в режиме параллельного перевода */}
+        {/* Панель перевода — скрыта в режиме параллельного перевода.
+            На телефоне это bottom-sheet, на десктопе — сворачиваемая колонка. */}
         {!parallelMode && (
-        <div className="w-72 shrink-0">
-          <div className="card p-5 sticky top-8">
+        <>
+          {/* Затемнение под bottom-sheet, только мобильные */}
+          <div
+            className={`fixed inset-0 z-40 bg-[rgba(11,37,69,0.35)] transition-opacity duration-300 md:hidden ${
+              panelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+            onClick={() => setPanelOpen(false)}
+            aria-hidden="true"
+          />
+
+          <div
+            data-translation-panel
+            className={`fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 md:static md:z-auto md:w-72 md:shrink-0 md:translate-y-0 ${
+              panelOpen ? 'translate-y-0' : 'translate-y-full md:hidden'
+            }`}
+          >
+            <div className="card max-h-[72vh] overflow-y-auto rounded-b-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:sticky md:top-8 md:max-h-none md:rounded-b-lg md:p-5">
+              {/* Ручка bottom-sheet и заголовок панели */}
+              <div className="mb-3">
+                <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[var(--color-hairline-strong)] md:hidden" />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-slate)]">
+                    Перевод
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPanelOpen(false)}
+                    aria-label="Свернуть панель перевода"
+                    className="rounded p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)] md:text-base"
+                  >
+                    <span aria-hidden="true" className="md:hidden">×</span>
+                    <span aria-hidden="true" className="hidden md:inline">→</span>
+                  </button>
+                </div>
+              </div>
+
             {selectedWord ? (
               <>
                 <div className="flex items-start justify-between mb-4 pb-3 border-b border-[var(--color-hairline-strong)]">
@@ -1132,7 +1563,7 @@ export default function ReaderPage() {
                       <p className="text-xl text-[var(--color-primary)] font-medium min-h-[2rem]">
                         {displayedTranslation}
                         {isTyping && (
-                          <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 animate-pulse align-middle"></span>
+                          <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 typing-cursor align-middle"></span>
                         )}
                       </p>
                       {!isTyping && translation.source && (
@@ -1228,8 +1659,9 @@ export default function ReaderPage() {
                 <span className="block text-xs text-[var(--color-slate)]">Медленнее, но понимает смысл в контексте</span>
               </span>
             </label>
+            </div>
           </div>
-        </div>
+        </>
         )}
       </div>
 

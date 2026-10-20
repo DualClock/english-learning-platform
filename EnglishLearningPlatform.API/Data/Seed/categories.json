@@ -1,0 +1,130 @@
+{
+  "categories": [
+    {
+      "name": "Эмоции",
+      "slug": "emotions",
+      "icon": "😊",
+      "color": "#F59E0B",
+      "description": "Слова для описания чувств и эмоций",
+      "words": [
+        { "english": "joy", "translation": "радость", "transcription": "[dʒɔɪ]", "example": "Her eyes were full of joy." },
+        { "english": "anger", "translation": "гнев", "transcription": "[ˈæŋɡə]", "example": "He could not hide his anger." },
+        { "english": "fear", "translation": "страх", "transcription": "[fɪə]", "example": "Fear of failure stopped him." },
+        { "english": "surprise", "translation": "удивление", "transcription": "[səˈpraɪz]", "example": "To my surprise, she agreed." },
+        { "english": "sadness", "translation": "грусть", "transcription": "[ˈsædnəs]", "example": "A wave of sadness came over her." },
+        { "english": "excitement", "translation": "волнение, азарт", "transcription": "[ɪkˈsaɪtmənt]", "example": "The children shouted with excitement." },
+        { "english": "anxiety", "translation": "тревога", "transcription": "[æŋˈzaɪəti]", "example": "He felt anxiety before the exam." },
+        { "english": "pride", "translation": "гордость", "transcription": "[praɪd]", "example": "She takes pride in her work." },
+        { "english": "shame", "translation": "стыд", "transcription": "[ʃeɪm]", "example": "He blushed with shame." },
+        { "english": "jealousy", "translation": "ревность, зависть", "transcription": "[ˈdʒeləsi]", "example": "Jealousy ruined their friendship." },
+        { "english": "relief", "translation": "облегчение", "transcription": "[rɪˈliːf]", "example": "She sighed with relief." },
+        { "english": "boredom", "translation": "скука", "transcription": "[ˈbɔːdəm]", "example": "He yawned out of boredom." }
+      ]
+    },
+    {
+      "name": "Еда",
+      "slug": "food",
+      "icon": "🍎",
+      "color": "#EF4444",
+      "description": "Еда, напитки и всё, что связано с кухней",
+      "words": [
+        { "english": "appetite", "translation": "аппетит", "transcription": "[ˈæpɪtaɪt]", "example": "The walk gave me an appetite." },
+        { "english": "recipe", "translation": "рецепт", "transcription": "[ˈresɪpi]", "example": "This recipe is very simple." },
+        { "english": "ingredient", "translation": "ингредиент", "transcription": "[ɪnˈɡriːdiənt]", "example": "Mix all the ingredients." },
+        { "english": "delicious", "translation": "вкусный", "transcription": "[dɪˈlɪʃəs]", "example": "The soup is delicious." },
+        { "english": "hungry", "translation": "голодный", "transcription": "[ˈhʌŋɡri]", "example": "I'm starving hungry." },
+        { "english": "beverage", "translation": "напиток", "transcription": "[ˈbevərɪdʒ]", "example": "Tea is a popular beverage." },
+        { "english": "dessert", "translation": "десерт", "transcription": "[dɪˈzɜːt]", "example": "What would you like for dessert?" },
+        { "english": "spicy", "translation": "острый", "transcription": "[ˈspaɪsi]", "example": "I don't like spicy food." },
+        { "english": "meal", "translation": "приём пищи", "transcription": "[miːl]", "example": "We had a nice meal together." },
+        { "english": "snack", "translation": "перекус", "transcription": "[snæk]", "example": "I had a quick snack at noon." },
+        { "english": "flavor", "translation": "вкус, аромат", "transcription": "[ˈfleɪvə]", "example": "This ice cream has a rich flavor." },
+        { "english": "portion", "translation": "порция", "transcription": "[ˈpɔːʃn]", "example": "The portions here are huge." }
+      ]
+    },
+    {
+      "name": "Путешествия",
+      "slug": "travel",
+      "icon": "✈️",
+      "color": "#3B82F6",
+      "description": "Слова для поездок и приключений",
+      "words": [
+        { "english": "journey", "translation": "путешествие", "transcription": "[ˈdʒɜːni]", "example": "The journey took three hours." },
+        { "english": "luggage", "translation": "багаж", "transcription": "[ˈlʌɡɪdʒ]", "example": "Where can I leave my luggage?" },
+        { "english": "destination", "translation": "пункт назначения", "transcription": "[ˌdestɪˈneɪʃn]", "example": "Paris is a popular destination." },
+        { "english": "passport", "translation": "паспорт", "transcription": "[ˈpɑːspɔːt]", "example": "Don't forget your passport." },
+        { "english": "flight", "translation": "рейс, полёт", "transcription": "[flaɪt]", "example": "Our flight was delayed." },
+        { "english": "accommodation", "translation": "жильё, размещение", "transcription": "[əˌkɒməˈdeɪʃn]", "example": "We booked accommodation in advance." },
+        { "english": "sightseeing", "translation": "осмотр достопримечательностей", "transcription": "[ˈsaɪtsiːɪŋ]", "example": "We spent the day sightseeing." },
+        { "english": "customs", "translation": "таможня", "transcription": "[ˈkʌstəmz]", "example": "It took an hour to pass customs." },
+        { "english": "itinerary", "translation": "маршрут", "transcription": "[aɪˈtɪnərəri]", "example": "Our itinerary includes three cities." },
+        { "english": "souvenir", "translation": "сувенир", "transcription": "[ˌsuːvəˈnɪə]", "example": "She bought a souvenir for her mom." },
+        { "english": "abroad", "translation": "за границей", "transcription": "[əˈbrɔːd]", "example": "He dreams of studying abroad." },
+        { "english": "departure", "translation": "отправление", "transcription": "[dɪˈpɑːtʃə]", "example": "Check the departure time." }
+      ]
+    },
+    {
+      "name": "Работа",
+      "slug": "work",
+      "icon": "💼",
+      "color": "#8B5CF6",
+      "description": "Карьера, офис и деловое общение",
+      "words": [
+        { "english": "colleague", "translation": "коллега", "transcription": "[ˈkɒliːɡ]", "example": "She is my favourite colleague." },
+        { "english": "deadline", "translation": "крайний срок", "transcription": "[ˈdedlaɪn]", "example": "We must meet the deadline." },
+        { "english": "salary", "translation": "зарплата", "transcription": "[ˈsæləri]", "example": "The salary is paid monthly." },
+        { "english": "interview", "translation": "собеседование", "transcription": "[ˈɪntəvjuː]", "example": "I have a job interview tomorrow." },
+        { "english": "promotion", "translation": "повышение", "transcription": "[prəˈməʊʃn]", "example": "He got a promotion last week." },
+        { "english": "responsibility", "translation": "ответственность", "transcription": "[rɪˌspɒnsəˈbɪləti]", "example": "This is your responsibility." },
+        { "english": "meeting", "translation": "встреча, совещание", "transcription": "[ˈmiːtɪŋ]", "example": "The meeting starts at ten." },
+        { "english": "employer", "translation": "работодатель", "transcription": "[ɪmˈplɔɪə]", "example": "Her employer offers good benefits." },
+        { "english": "experience", "translation": "опыт", "transcription": "[ɪkˈspɪəriəns]", "example": "She has five years of experience." },
+        { "english": "schedule", "translation": "расписание, график", "transcription": "[ˈʃedjuːl]", "example": "My schedule is very busy." },
+        { "english": "resign", "translation": "уволиться", "transcription": "[rɪˈzaɪn]", "example": "He decided to resign." },
+        { "english": "skill", "translation": "навык", "transcription": "[skɪl]", "example": "Communication is a key skill." }
+      ]
+    },
+    {
+      "name": "Здоровье",
+      "slug": "health",
+      "icon": "💪",
+      "color": "#10B981",
+      "description": "Здоровье, спорт и самочувствие",
+      "words": [
+        { "english": "headache", "translation": "головная боль", "transcription": "[ˈhedeɪk]", "example": "I have a terrible headache." },
+        { "english": "medicine", "translation": "лекарство", "transcription": "[ˈmedsn]", "example": "Take this medicine twice a day." },
+        { "english": "exercise", "translation": "упражнение, тренировка", "transcription": "[ˈeksəsaɪz]", "example": "Regular exercise keeps you fit." },
+        { "english": "appointment", "translation": "приём, запись", "transcription": "[əˈpɔɪntmənt]", "example": "I made a doctor's appointment." },
+        { "english": "symptom", "translation": "симптом", "transcription": "[ˈsɪmptəm]", "example": "Fever is a common symptom." },
+        { "english": "recovery", "translation": "выздоровление", "transcription": "[rɪˈkʌvəri]", "example": "Wishing you a speedy recovery." },
+        { "english": "diet", "translation": "диета, рацион", "transcription": "[ˈdaɪət]", "example": "A balanced diet is important." },
+        { "english": "allergy", "translation": "аллергия", "transcription": "[ˈælədʒi]", "example": "She has an allergy to nuts." },
+        { "english": "injury", "translation": "травма", "transcription": "[ˈɪndʒəri]", "example": "He suffered a knee injury." },
+        { "english": "vitamins", "translation": "витамины", "transcription": "[ˈvɪtəmɪnz]", "example": "Fresh fruit is full of vitamins." },
+        { "english": "prevention", "translation": "профилактика", "transcription": "[prɪˈvenʃn]", "example": "Prevention is better than cure." },
+        { "english": "stress", "translation": "стресс", "transcription": "[stres]", "example": "Too much stress harms your health." }
+      ]
+    },
+    {
+      "name": "Природа",
+      "slug": "nature",
+      "icon": "🌿",
+      "color": "#22C55E",
+      "description": "Природа, погода и окружающий мир",
+      "words": [
+        { "english": "forest", "translation": "лес", "transcription": "[ˈfɒrɪst]", "example": "We walked through a dense forest." },
+        { "english": "river", "translation": "река", "transcription": "[ˈrɪvə]", "example": "The river flows to the sea." },
+        { "english": "mountain", "translation": "гора", "transcription": "[ˈmaʊntɪn]", "example": "They climbed the highest mountain." },
+        { "english": "weather", "translation": "погода", "transcription": "[ˈweðə]", "example": "The weather is nice today." },
+        { "english": "storm", "translation": "буря, шторм", "transcription": "[stɔːm]", "example": "A storm is coming." },
+        { "english": "sunrise", "translation": "рассвет", "transcription": "[ˈsʌnraɪz]", "example": "We woke up before sunrise." },
+        { "english": "wildlife", "translation": "дикая природа", "transcription": "[ˈwaɪldlaɪf]", "example": "The park protects local wildlife." },
+        { "english": "climate", "translation": "климат", "transcription": "[ˈklaɪmət]", "example": "The climate here is mild." },
+        { "english": "ocean", "translation": "океан", "transcription": "[ˈəʊʃn]", "example": "The ocean is deep and blue." },
+        { "english": "flower", "translation": "цветок", "transcription": "[ˈflaʊə]", "example": "This flower smells wonderful." },
+        { "english": "island", "translation": "остров", "transcription": "[ˈaɪlənd]", "example": "They live on a small island." },
+        { "english": "valley", "translation": "долина", "transcription": "[ˈvæli]", "example": "The village lies in a green valley." }
+      ]
+    }
+  ]
+}

@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      <div className="card p-8">
+      <div className="card p-8 animate-pop-in">
         <h1 className="text-2xl font-semibold text-ink text-center mb-2">
           С возвращением 👋
         </h1>

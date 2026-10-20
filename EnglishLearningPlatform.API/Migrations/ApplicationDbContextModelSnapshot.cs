@@ -48,6 +48,8 @@ namespace EnglishLearningPlatform.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("Event");
 
                     b.HasIndex("UserId", "CreatedAt");
@@ -119,6 +121,8 @@ namespace EnglishLearningPlatform.API.Migrations
 
                     b.HasIndex("Title");
 
+                    b.HasIndex("UploadedByUserId");
+
                     b.ToTable("Books");
                 });
 
@@ -161,6 +165,81 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("BookKeyWords");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.CategoryWord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("English")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Example")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Transcription")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Translation")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId", "English")
+                        .IsUnique();
+
+                    b.ToTable("CategoryWords");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.DailyActivity", b =>
                 {
                     b.Property<int>("Id")
@@ -194,6 +273,63 @@ namespace EnglishLearningPlatform.API.Migrations
                         .IsUnique();
 
                     b.ToTable("DailyActivities");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.EmailMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Delivered")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<string>("Transport")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId", "Kind", "CreatedAt");
+
+                    b.ToTable("EmailMessages");
                 });
 
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.GrammarExercise", b =>
@@ -321,6 +457,45 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("Interactions");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.ReviewLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<double>("EaseFactor")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("NewInterval")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PreviousInterval")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quality")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WordId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ReviewedAt");
+
+                    b.HasIndex("WordId", "ReviewedAt");
+
+                    b.ToTable("ReviewLogs");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -328,6 +503,10 @@ namespace EnglishLearningPlatform.API.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("CefrLevel")
                         .HasMaxLength(2)
@@ -346,6 +525,9 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("DailyGoalMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DailyNewWords")
                         .HasColumnType("integer");
 
                     b.Property<string>("DisplayName")
@@ -381,6 +563,9 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<bool>("NotifyEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -390,12 +575,19 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("ReminderHour")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
                     b.Property<string>("StudyGoal")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TimeZoneId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("TotalXp")
                         .HasColumnType("integer");
@@ -417,6 +609,67 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserAchievement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UnlockedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("UserAchievements");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserCategoryWordProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryWordId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryWordId");
+
+                    b.HasIndex("UserId", "CategoryWordId")
+                        .IsUnique();
+
+                    b.ToTable("UserCategoryWordProgresses");
                 });
 
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserGrammarProgress", b =>
@@ -467,6 +720,18 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Property<int>("Interval")
                         .HasColumnType("integer");
 
+                    b.Property<int>("IntervalMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsLeech")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Lapses")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("LastQuality")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("LastReviewedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -481,6 +746,9 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -491,6 +759,8 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("WordId");
+
+                    b.HasIndex("UserId", "NextReviewDate");
 
                     b.HasIndex("UserId", "WordId")
                         .IsUnique();
@@ -832,6 +1102,17 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.CategoryWord", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.Category", "Category")
+                        .WithMany("Words")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.DailyActivity", b =>
                 {
                     b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
@@ -877,6 +1158,47 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.ReviewLog", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserAchievement", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserCategoryWordProgress", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.CategoryWord", "CategoryWord")
+                        .WithMany("UserProgresses")
+                        .HasForeignKey("CategoryWordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CategoryWord");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserGrammarProgress", b =>
@@ -1004,6 +1326,16 @@ namespace EnglishLearningPlatform.API.Migrations
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.Book", b =>
                 {
                     b.Navigation("Interactions");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.Category", b =>
+                {
+                    b.Navigation("Words");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.CategoryWord", b =>
+                {
+                    b.Navigation("UserProgresses");
                 });
 
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.GrammarUnit", b =>

@@ -2,11 +2,12 @@
 
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
-import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
 
 interface Exercise {
   id: number;
@@ -38,6 +39,7 @@ interface ExerciseResult {
   exerciseId: number;
   correct: boolean;
   expected: string;
+  explanation?: string | null;
 }
 
 interface CompleteResponse {
@@ -51,10 +53,23 @@ export default function GrammarUnitPage() {
   const unitId = Number(params?.id);
   const trackEvent = useTrack();
 
-  const [unit, setUnit] = useState<UnitDetail | null>(null);
-  const [units, setUnits] = useState<GrammarUnit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: unitData,
+    error: unitError,
+    isLoading: unitLoading,
+    refresh: refreshUnit,
+  } = useApiQuery<UnitDetail>(Number.isFinite(unitId) ? `/api/grammar/units/${unitId}` : null, {
+    enabled: status === 'authenticated',
+  });
+
+  // Список нужен только для ссылки «Следующий юнит» — берём его из общего кэша.
+  const { data: unitsData } = useApiQuery<GrammarUnit[]>('/api/grammar/units', {
+    enabled: status === 'authenticated' && Number.isFinite(unitId),
+  });
+
+  const unit = unitData;
+  const units = useMemo(() => unitsData ?? [], [unitsData]);
+  const isLoading = unitLoading && unitData === undefined;
 
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [results, setResults] = useState<Record<number, ExerciseResult>>({});
@@ -62,42 +77,9 @@ export default function GrammarUnitPage() {
   const [isChecking, setIsChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
 
-  const loadUnit = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/grammar/units/${unitId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: UnitDetail = await res.json();
-      setUnit(data);
-    } catch (err) {
-      console.error('Failed to load grammar unit:', err);
-      setError('Не удалось загрузить юнит. Проверь соединение и попробуй ещё раз.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session, unitId]);
-
-  useEffect(() => {
-    if (status === 'authenticated' && Number.isFinite(unitId)) {
-      loadUnit();
-      fetch(`${API_URL}/api/grammar/units`, {
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
-      })
-        .then((res) => (res.ok ? res.json() : []))
-        .then((data: GrammarUnit[]) => setUnits(data))
-        .catch(() => setUnits([]));
-    }
-  }, [status, unitId, loadUnit, session]);
-
-  const exercises = unit?.exercises ?? [];
-
   const sortedExercises = useMemo(
-    () => [...exercises].sort((a, b) => a.order - b.order),
-    [exercises]
+    () => [...(unit?.exercises ?? [])].sort((a, b) => a.order - b.order),
+    [unit]
   );
 
   const nextUnit = useMemo(() => {
@@ -122,22 +104,18 @@ export default function GrammarUnitPage() {
     setIsChecking(true);
     setCheckError(null);
     try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/grammar/units/${unitId}/complete`, {
+      const data = await apiMutate<CompleteResponse>(`/api/grammar/units/${unitId}/complete`, {
+        token: session?.accessToken,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+        body: {
           answers: sortedExercises.map((ex) => ({
             exerciseId: ex.id,
             answer: answers[ex.id] ?? '',
           })),
-        }),
+        },
+        // Прогресс юнита изменился — список на /grammar должен показать новый результат.
+        invalidate: ['/api/grammar/units'],
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: CompleteResponse = await res.json();
       trackEvent('grammar_unit_completed', unit?.title);
 
       const resultsMap: Record<number, ExerciseResult> = {};
@@ -183,7 +161,7 @@ export default function GrammarUnitPage() {
     );
   }
 
-  if (error || !unit) {
+  if (!unit) {
     return (
       <AppLayout>
         <div className="max-w-2xl mx-auto">
@@ -194,8 +172,12 @@ export default function GrammarUnitPage() {
             ← К грамматике
           </Link>
           <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
-            <p className="text-[var(--color-ink)] mb-4">{error || 'Юнит не найден'}</p>
-            <button onClick={loadUnit} className="btn-primary">
+            <p className="text-[var(--color-ink)] mb-4">
+              {unitError
+                ? 'Не удалось загрузить юнит. Проверь соединение и попробуй ещё раз.'
+                : 'Юнит не найден'}
+            </p>
+            <button onClick={refreshUnit} className="btn-primary">
               Попробовать снова
             </button>
           </div>
@@ -321,19 +303,26 @@ export default function GrammarUnitPage() {
                   )}
 
                   {result && (
-                    <div className="mt-3 flex items-start gap-2 text-sm">
-                      {result.correct ? (
-                        <>
-                          <span className="text-[var(--color-primary)] font-bold">✓</span>
-                          <span className="text-[var(--color-primary)]">Верно!</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[var(--color-error)] font-bold">✗</span>
-                          <span className="text-[var(--color-error)]">
-                            Правильно: {result.expected}
-                          </span>
-                        </>
+                    <div className="mt-3">
+                      <div className="flex items-start gap-2 text-sm">
+                        {result.correct ? (
+                          <>
+                            <span className="text-[var(--color-primary)] font-bold">✓</span>
+                            <span className="text-[var(--color-primary)]">Верно!</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[var(--color-error)] font-bold">✗</span>
+                            <span className="text-[var(--color-error)]">
+                              Правильно: {result.expected}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {result.explanation && (
+                        <p className="mt-2 text-sm text-[var(--color-slate)] bg-[var(--color-surface)] rounded-lg px-3 py-2">
+                          {result.explanation}
+                        </p>
                       )}
                     </div>
                   )}

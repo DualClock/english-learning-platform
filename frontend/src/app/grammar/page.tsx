@@ -2,9 +2,8 @@
 
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
+import { useApiQuery } from '@/app/lib/use-api';
 
 interface GrammarUnit {
   id: number;
@@ -18,36 +17,25 @@ interface GrammarUnit {
 }
 
 export default function GrammarPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
-  const [units, setUnits] = useState<GrammarUnit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: unitsData,
+    error: unitsError,
+    isLoading: unitsLoading,
+    refresh: refreshUnits,
+  } = useApiQuery<GrammarUnit[]>('/api/grammar/units', {
+    enabled: status === 'authenticated',
+  });
 
-  const loadUnits = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/grammar/units`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: GrammarUnit[] = await res.json();
-      setUnits(data);
-    } catch (err) {
-      console.error('Failed to load grammar units:', err);
-      setError('Не удалось загрузить юниты. Проверь соединение и попробуй ещё раз.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session]);
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      loadUnits();
-    }
-  }, [status, loadUnits]);
+  const units = unitsData ?? [];
+  const isLoading = unitsLoading && unitsData === undefined;
+  // Ошибку показываем только если данных ещё нет: при фоновом обновлении
+  // уже загруженный список не должен заменяться экраном ошибки.
+  const error =
+    unitsError && unitsData === undefined
+      ? 'Не удалось загрузить юниты. Проверь соединение и попробуй ещё раз.'
+      : null;
 
   // Группировка юнитов по разделам в порядке порядка юнитов
   const sections = (() => {
@@ -86,7 +74,7 @@ export default function GrammarPage() {
         ) : error ? (
           <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
             <p className="text-[var(--color-ink)] mb-4">{error}</p>
-            <button onClick={loadUnits} className="btn-primary">
+            <button onClick={refreshUnits} className="btn-primary">
               Попробовать снова
             </button>
           </div>
@@ -132,7 +120,7 @@ export default function GrammarPage() {
                   </span>
                   <div className="flex-1 h-px bg-[var(--color-hairline-strong)]" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger">
                   {sectionUnits.map((unit) => (
                     <div
                       key={unit.id}

@@ -2,7 +2,9 @@
 
 import AppLayout from '@/components/AppLayout';
 import { API_URL } from '@/app/lib/api-url';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { invalidateCache } from '@/app/lib/api-client';
+import { useApiQuery } from '@/app/lib/use-api';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import LevelChip, { normalizeLevel } from '@/components/library/LevelChip';
@@ -41,12 +43,23 @@ export default function BooksPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [books, setBooks] = useState<UserBook[]>([]);
-  const [popular, setPopular] = useState<PopularBook[]>([]);
-  const [stories, setStories] = useState<Story[]>([]);
-  const [profileLevel, setProfileLevel] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const {
+    data: booksData,
+    error: booksError,
+    isLoading: booksLoading,
+    refresh: refreshBooks,
+  } = useApiQuery<UserBook[]>('/api/books');
+  const { data: popularData } = useApiQuery<PopularBook[]>('/api/books/popular');
+  const { data: storiesData } = useApiQuery<Story[]>('/api/books/stories');
+  const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
+
+  const books = useMemo(() => booksData ?? [], [booksData]);
+  const popular = useMemo(() => popularData ?? [], [popularData]);
+  const stories = useMemo(() => storiesData ?? [], [storiesData]);
+  const profileLevel = profileData?.cefrLevel ?? '';
+  const isLoading = booksLoading && booksData === undefined;
+  const error = booksError ? 'Не удалось загрузить библиотеку. Попробуйте обновить страницу.' : '';
+
   const [addingPopularId, setAddingPopularId] = useState<string | null>(null);
   const [addingStoryIndex, setAddingStoryIndex] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -68,64 +81,32 @@ export default function BooksPage() {
   );
 
   const reloadBooks = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/books`, { headers: authHeaders() });
-      if (res.ok) setBooks(await res.json());
-    } catch {
-      // тихо: основная загрузка уже сообщила об ошибке сети
-    }
-  }, [authHeaders]);
+    invalidateCache('/api/books');
+    refreshBooks();
+  }, [refreshBooks]);
 
+  // Если у каких-то книг нет обложки — просим бэкенд подтянуть их (один раз за сессию страницы)
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== 'authenticated' || booksData === undefined) return;
+    if (coverRefreshRef.current || !booksData.some((b) => !b.coverUrl)) return;
+    coverRefreshRef.current = true;
 
-    const load = async () => {
-      setIsLoading(true);
-      setError('');
+    const refreshCovers = async () => {
       try {
-        const [booksRes, popularRes, storiesRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/books`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/books/popular`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/books/stories`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/profile`, { headers: authHeaders() }),
-        ]);
-
-        if (!booksRes.ok) throw new Error('books');
-        const loadedBooks: UserBook[] = await booksRes.json();
-        setBooks(loadedBooks);
-
-        if (popularRes.ok) setPopular(await popularRes.json());
-        if (storiesRes.ok) setStories(await storiesRes.json());
-        if (profileRes.ok) {
-          const profile = await profileRes.json();
-          setProfileLevel(profile?.cefrLevel ?? '');
-        }
-
-        // Если у каких-то книг нет обложки — просим бэкенд подтянуть их (один раз за сессию страницы)
-        if (!coverRefreshRef.current && loadedBooks.some((b) => !b.coverUrl)) {
-          coverRefreshRef.current = true;
-          try {
-            const res = await fetch(`${API_URL}/api/books/refresh-covers`, {
-              method: 'POST',
-              headers: authHeaders(),
-            });
-            if (res.ok) {
-              const data = await res.json().catch(() => null);
-              if (data?.updated > 0) await reloadBooks();
-            }
-          } catch {
-            // обложки не критичны — молча пропускаем
-          }
+        const res = await fetch(`${API_URL}/api/books/refresh-covers`, {
+          method: 'POST',
+          headers: authHeaders(),
+        });
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data?.updated > 0) await reloadBooks();
         }
       } catch {
-        setError('Не удалось загрузить библиотеку. Попробуйте обновить страницу.');
-      } finally {
-        setIsLoading(false);
+        // обложки не критичны — молча пропускаем
       }
     };
-
-    load();
-  }, [status, authHeaders]);
+    void refreshCovers();
+  }, [status, booksData, authHeaders, reloadBooks]);
 
   const userLevel = normalizeLevel(profileLevel);
 
@@ -203,7 +184,7 @@ export default function BooksPage() {
         method: 'DELETE',
         headers: authHeaders(),
       });
-      setBooks((prev) => prev.filter((b) => b.id !== book.id));
+      await reloadBooks();
       showToast('Книга удалена');
     } catch {
       showToast('Не удалось удалить книгу', 'err');
@@ -275,8 +256,14 @@ export default function BooksPage() {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl border border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] p-4 text-[var(--color-error)]">
-          {error}
+        <div
+          role="alert"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] p-4 text-[var(--color-error)]"
+        >
+          <span>{error}</span>
+          <button onClick={reloadBooks} className="btn-secondary shrink-0">
+            Попробовать снова
+          </button>
         </div>
       )}
 
@@ -311,7 +298,7 @@ export default function BooksPage() {
           {books.length > 0 && (
             <section className="mb-10">
               <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">Мои книги</h2>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 stagger">
                 {books.map((book) => (
                   <MyBookCard
                     key={book.id}
@@ -338,7 +325,7 @@ export default function BooksPage() {
               <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">
                 Рассказы для вашего уровня
               </h2>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 stagger">
                 {stories.map((story) => (
                   <StoryCard
                     key={story.index}

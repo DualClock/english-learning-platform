@@ -1,11 +1,14 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import WordListsSection from '@/components/dictionary/WordListsSection';
 import { useSpeech } from '@/hooks/useSpeech';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
 
 interface Word {
   id: number;
@@ -58,77 +61,72 @@ function DictionaryContent() {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
-  const [words, setWords] = useState<Word[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  // Применённый поиск: пустая строка — показываем весь словарь
+  const [appliedQuery, setAppliedQuery] = useState('');
+  const [actionError, setActionError] = useState('');
+
+  const wordsPath = appliedQuery
+    ? `/api/dictionary/search?query=${encodeURIComponent(appliedQuery)}`
+    : '/api/dictionary';
+
+  // Словарь берётся из общего кэша: повторный заход на вкладку рисуется сразу
+  const {
+    data: wordsData,
+    error: wordsError,
+    isLoading: wordsLoading,
+    refresh: refreshWords
+  } = useApiQuery<Word[]>(wordsPath, { enabled: status === 'authenticated' });
+
+  const words = wordsData ?? [];
+  const isInitialLoading = wordsLoading && wordsData === undefined;
+  const error = actionError || (wordsError ? (appliedQuery ? 'Ошибка поиска' : 'Ошибка загрузки слов') : '');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
-    } else if (status === 'authenticated') {
-      loadWords();
     }
   }, [status, router]);
 
-  const loadWords = async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/dictionary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  const searchWords = () => {
+    const nextQuery = searchQuery.trim();
 
-      if (!res.ok) throw new Error('Failed to load words');
-
-      const data = await res.json();
-      setWords(data);
-      setIsLoading(false);
-    } catch {
-      setError('Ошибка загрузки слов');
-      setIsLoading(false);
-    }
-  };
-
-  const searchWords = async () => {
-    if (!searchQuery.trim()) {
-      loadWords();
+    if (!nextQuery) {
+      setAppliedQuery('');
+      // Повторный клик без запроса — принудительно обновляем словарь
+      if (!appliedQuery) refreshWords();
       return;
     }
 
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`http://localhost:5226/api/dictionary/search?query=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Search failed');
-
-      const data = await res.json();
-      setWords(data);
-    } catch {
-      setError('Ошибка поиска');
+    if (nextQuery === appliedQuery) {
+      refreshWords();
+      return;
     }
+
+    setAppliedQuery(nextQuery);
   };
 
   const deleteWord = async (id: number) => {
     if (!confirm('Удалить это слово?')) return;
 
+    setActionError('');
     try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/dictionary/${id}`, {
+      await apiMutate(`/api/dictionary/${id}`, {
+        token: session?.accessToken,
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        invalidate: ['/api/dictionary']
       });
 
-      setWords(words.filter(w => w.id !== id));
+      // Кэш уже сброшен — забираем актуальный список из сети
+      refreshWords();
     } catch {
-      setError('Ошибка удаления');
+      setActionError('Ошибка удаления');
     }
   };
 
   const { speak } = useSpeech();
 
-  if (status === 'loading' || (isLoading && activeTab === 'my')) {
+  if (status === 'loading' || (activeTab === 'my' && isInitialLoading)) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
@@ -186,18 +184,30 @@ function DictionaryContent() {
           >
             Найти
           </button>
-          <a
+          <Link
             href="/dictionary/add"
             className="btn-primary"
           >
             + Добавить
-          </a>
+          </Link>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]">
-          {error}
+        <div
+          role="alert"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+        >
+          <span>{error}</span>
+          <button
+            onClick={() => {
+              setActionError('');
+              refreshWords();
+            }}
+            className="btn-secondary shrink-0"
+          >
+            Попробовать снова
+          </button>
         </div>
       )}
 
@@ -205,12 +215,12 @@ function DictionaryContent() {
       {words.length === 0 ? (
         <div className="card p-12 text-center">
           <p className="text-[var(--color-slate)] mb-4">Словарь пуст</p>
-          <a href="/dictionary/add" className="btn-primary">
+          <Link href="/dictionary/add" className="btn-primary">
             Добавить первое слово
-          </a>
+          </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger">
           {words.map((word) => (
             <div key={word.id} className="card p-4 flex items-center justify-between">
               <div className="flex-1">

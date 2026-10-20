@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
+import Link from 'next/link';
+import { useApiQuery } from '@/app/lib/use-api';
 
 interface WordList {
   id: number;
@@ -16,39 +16,32 @@ interface WordList {
 
 export default function WordListsSection() {
   const { data: session } = useSession();
-  const [lists, setLists] = useState<WordList[] | null>(null);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const token = session?.accessToken;
-        const res = await fetch(`${API_URL}/api/wordlists`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to load wordlists');
-        const data = await res.json();
-        setLists(Array.isArray(data) ? data : []);
-      } catch {
-        setError('Не удалось загрузить сборники. Попробуйте обновить страницу.');
-        setLists([]);
-      }
-    };
-    if (session) load();
-  }, [session]);
+  // Список сборников кэшируется: переключение вкладки «Сборники» больше не грузит его заново
+  const {
+    data: listsData,
+    error: listsError,
+    isLoading: listsLoading,
+    refresh: refreshLists
+  } = useApiQuery<WordList[]>('/api/wordlists', { enabled: Boolean(session) });
+
+  const lists = listsData === undefined ? undefined : Array.isArray(listsData) ? listsData : [];
+  const error = lists === undefined && listsError && !listsLoading
+    ? 'Не удалось загрузить сборники. Попробуйте обновить страницу.'
+    : '';
 
   if (error) {
     return (
       <div className="card p-12 text-center">
         <p className="text-[var(--color-slate)] mb-4">{error}</p>
-        <button onClick={() => { setError(''); setLists(null); window.location.reload(); }} className="btn-secondary">
+        <button onClick={refreshLists} className="btn-secondary">
           Попробовать снова
         </button>
       </div>
     );
   }
 
-  if (lists === null) {
+  if (lists === undefined) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -94,9 +87,9 @@ export default function WordListsSection() {
               <div className="h-2 rounded-full bg-[rgba(201,205,212,0.40)] overflow-hidden mb-4">
                 <div className="h-full rounded-full bg-[var(--color-primary)] transition-all" style={{ width: `${percent}%` }}></div>
               </div>
-              <a href={`/dictionary/lists/${list.id}`} className="btn-primary w-full text-center">
+              <Link href={`/dictionary/lists/${list.id}`} className="btn-primary w-full text-center">
                 Открыть
-              </a>
+              </Link>
             </div>
           </div>
         );

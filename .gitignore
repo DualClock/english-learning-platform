@@ -44,3 +44,6 @@ logs/
 *.sqlite
 # Секреты
 EnglishLearningPlatform.API/appsettings.Development.json
+
+# Пользовательские загрузки (аватары)
+EnglishLearningPlatform.API/uploads/

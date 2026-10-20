@@ -17,12 +17,14 @@ public class ActivityService
     }
 
     /// <summary>
-    /// Трекает активность пользователя за сегодня (UTC), начисляет XP и пересчитывает стрик.
+    /// Трекает активность пользователя за сегодня (по его часовому поясу),
+    /// начисляет XP и пересчитывает стрик.
     /// kind: read_page, review_word, quiz_done, goal_met
     /// </summary>
     public async Task TrackAsync(string userId, string kind, int amount = 1)
     {
-        var today = DateTime.UtcNow.Date;
+        var user = await _context.Users.FirstAsync(u => u.Id == userId);
+        var today = UserTime.Today(user);
 
         var activity = await _context.DailyActivities
             .FirstOrDefaultAsync(a => a.UserId == userId && a.Date == today);
@@ -70,7 +72,6 @@ public class ActivityService
         }
 
         // Пересчёт выполнения дневной цели
-        var user = await _context.Users.FirstAsync(u => u.Id == userId);
         if (!activity.GoalMet &&
             (activity.MinutesRead >= user.DailyGoalMinutes || activity.WordsReviewed >= 10))
         {
@@ -98,7 +99,9 @@ public class ActivityService
     }
 
     /// <summary>
-    /// Идемпотентный пересчёт CurrentStreak сканом назад от сегодня по дням с GoalMet.
+    /// Идемпотентный пересчёт CurrentStreak сканом назад по дням с GoalMet.
+    /// Если сегодняшняя цель ещё не выполнена — стрик не обнуляем, а считаем
+    /// от вчерашнего дня: у пользователя есть время до конца дня.
     /// </summary>
     private async Task RecalculateStreakAsync(string userId, DateTime today)
     {
@@ -109,15 +112,13 @@ public class ActivityService
 
         var goalSet = goalDates.Select(d => d.Date).ToHashSet();
 
+        var cursor = goalSet.Contains(today) ? today : today.AddDays(-1);
+
         var streak = 0;
-        if (goalSet.Contains(today))
+        while (goalSet.Contains(cursor) && streak < StreakScanLimit)
         {
-            var cursor = today;
-            while (goalSet.Contains(cursor) && streak < StreakScanLimit)
-            {
-                streak++;
-                cursor = cursor.AddDays(-1);
-            }
+            streak++;
+            cursor = cursor.AddDays(-1);
         }
 
         await _context.Users

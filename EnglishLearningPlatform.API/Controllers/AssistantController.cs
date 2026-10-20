@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,11 @@ namespace EnglishLearningPlatform.API.Controllers;
 [Authorize]
 public class AssistantController : ControllerBase
 {
+    private const string ChatUnavailableMessage =
+        "Собеседник сейчас недоступен. Попробуйте ещё раз чуть позже.";
+    private const string AnalyzeUnavailableMessage =
+        "Не удалось разобрать сообщение: сервис временно недоступен. Попробуйте позже.";
+
     private readonly AssistantService _assistantService;
 
     public AssistantController(AssistantService assistantService)
@@ -19,27 +25,45 @@ public class AssistantController : ControllerBase
     [HttpPost("chat")]
     public async Task<IActionResult> Chat([FromBody] AssistantChatRequest request)
     {
-        var reply = await _assistantService.ChatAsync(request.Messages, request.UserLevel);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (reply == null)
+        try
         {
-            return BadRequest(new { message = "Assistant is unavailable" });
-        }
+            var reply = await _assistantService.ChatAsync(request.Messages, request.UserLevel, userId);
 
-        return Ok(new { reply });
+            if (reply == null)
+            {
+                return StatusCode(503, new { error = ChatUnavailableMessage });
+            }
+
+            return Ok(new { reply });
+        }
+        catch (AiUnavailableException ex)
+        {
+            return StatusCode(503, new { error = ex.Message });
+        }
     }
 
     [HttpPost("analyze")]
     public async Task<IActionResult> Analyze([FromBody] AssistantAnalyzeRequest request)
     {
-        var result = await _assistantService.AnalyzeAsync(request.Text, request.UserLevel);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (result == null)
+        try
         {
-            return BadRequest(new { message = "Analysis failed" });
-        }
+            var result = await _assistantService.AnalyzeAsync(request.Text, request.UserLevel, userId);
 
-        return Ok(result);
+            if (result == null)
+            {
+                return StatusCode(503, new { error = AnalyzeUnavailableMessage });
+            }
+
+            return Ok(result);
+        }
+        catch (AiUnavailableException ex)
+        {
+            return StatusCode(503, new { error = ex.Message });
+        }
     }
 }
 

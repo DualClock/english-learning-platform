@@ -2,23 +2,35 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EnglishLearningPlatform.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("auth")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly AuthEmailService _authEmail;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(UserManager<User> userManager, IConfiguration configuration)
+    public AuthController(
+        UserManager<User> userManager,
+        IConfiguration configuration,
+        AuthEmailService authEmail,
+        ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _authEmail = authEmail;
+        _logger = logger;
     }
 
     // POST: api/auth/register
@@ -34,10 +46,15 @@ public class AuthController : ControllerBase
             DisplayName = dto.DisplayName?.Trim(),
             CefrLevel = dto.CefrLevel,
             StudyGoal = dto.StudyGoal,
-            DailyGoalMinutes = dto.DailyGoalMinutes ?? 10
+            DailyGoalMinutes = Math.Clamp(dto.DailyGoalMinutes ?? 10, 1, 240),
+            TimeZoneId = UserTime.Normalize(dto.TimeZoneId),
+            NotifyEnabled = dto.NotifyEnabled ?? false,
+            ReminderHour = Math.Clamp(dto.ReminderHour ?? 9, 0, 23),
+            // Если пользователь пропустит выбор аватара, остаётся базовый по умолчанию
+            AvatarUrl = AvatarService.DefaultAvatarUrl("avatar-1")
         };
 
-        
+
         var result = await _userManager.CreateAsync(user, dto.Password);
 
         if (!result.Succeeded)
@@ -47,7 +64,27 @@ public class AuthController : ControllerBase
 
         var token = GenerateJwtToken(user);
 
-        return Ok(new { token, userId = user.Id, email = user.Email, displayName = user.DisplayName });
+        // Письмо-подтверждение не должно ломать регистрацию: если SMTP недоступен,
+        // пользователь всё равно попадёт в приложение и сможет переслать письмо позже.
+        try
+        {
+            var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            await _authEmail.SendEmailConfirmationAsync(user, confirmToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Не удалось отправить письмо-подтверждение для {UserId}", user.Id);
+        }
+
+        return Ok(new
+        {
+            token,
+            userId = user.Id,
+            email = user.Email,
+            displayName = user.DisplayName,
+            avatarUrl = user.AvatarUrl,
+            emailConfirmed = user.EmailConfirmed
+        });
     }
 
     // POST: api/auth/login
@@ -74,29 +111,96 @@ public class AuthController : ControllerBase
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        return Ok(new { token, userId = user.Id, email = user.Email, displayName = user.DisplayName });
+        return Ok(new
+        {
+            token,
+            userId = user.Id,
+            email = user.Email,
+            displayName = user.DisplayName,
+            avatarUrl = user.AvatarUrl,
+            emailConfirmed = user.EmailConfirmed
+        });
     }
 
     // POST: api/auth/forgot-password
-    // BETA: SMTP не настроен — токен возвращается в ответе напрямую.
-    // ПЕРЕД ПРОДАКШЕНОМ заменить отправкой письма и убрать токен из ответа!
+    // Токен уходит письмом. В ответе его нет ни в Development, ни в Production —
+    // иначе сброс пароля зависел бы от того, настроен ли SMTP.
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
+        const string neutral = "Если аккаунт существует, письмо со ссылкой уже отправлено.";
+
+        if (string.IsNullOrWhiteSpace(dto.Email))
+        {
+            return Ok(new { message = neutral });
+        }
+
         var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (user == null)
         {
             // Не раскрываем существование аккаунта
-            return Ok(new { message = "If the account exists, a reset token has been generated." });
+            return Ok(new { message = neutral });
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        return Ok(new
+        await _authEmail.SendPasswordResetAsync(user, token);
+
+        return Ok(new { message = neutral });
+    }
+
+    // POST: api/auth/confirm-email
+    // Принимает токен из письма и подтверждает адрес.
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Token))
         {
-            message = "Reset token generated.",
-            resetToken = token,
-            note = "BETA: SMTP не настроен, токен возвращён в ответе. Перед продакшеном — отправка письмом."
-        });
+            return BadRequest(new { message = "Ссылка неполная — запросите письмо заново." });
+        }
+
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        if (user == null)
+        {
+            return BadRequest(new { message = "Ссылка недействительна или устарела." });
+        }
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            return Ok(new { message = "Email уже подтверждён.", alreadyConfirmed = true });
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, dto.Token);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { message = "Ссылка недействительна или устарела. Запросите письмо заново." });
+        }
+
+        return Ok(new { message = "Email подтверждён. Спасибо!" });
+    }
+
+    // POST: api/auth/resend-confirmation — повторное письмо для вошедшего пользователя
+    [HttpPost("resend-confirmation")]
+    [Authorize]
+    public async Task<IActionResult> ResendConfirmation()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = userId == null ? null : await _userManager.FindByIdAsync(userId);
+
+        if (user == null) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            return BadRequest(new { message = "У аккаунта не указан email." });
+        }
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            return Ok(new { message = "Email уже подтверждён.", alreadyConfirmed = true });
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        await _authEmail.SendEmailConfirmationAsync(user, token);
+
+        return Ok(new { message = "Письмо отправлено — проверьте почту." });
     }
 
     // POST: api/auth/reset-password
@@ -149,7 +253,17 @@ public class AuthController : ControllerBase
 }
 
 // DTOs
-public record RegisterDto(string Email, string Password, string? DisplayName, string? CefrLevel, string? StudyGoal, int? DailyGoalMinutes);
+public record RegisterDto(
+    string Email,
+    string Password,
+    string? DisplayName,
+    string? CefrLevel,
+    string? StudyGoal,
+    int? DailyGoalMinutes,
+    string? TimeZoneId = null,
+    bool? NotifyEnabled = null,
+    int? ReminderHour = null);
 public record LoginDto(string Email, string Password);
 public record ForgotPasswordDto(string Email);
 public record ResetPasswordDto(string Email, string ResetToken, string NewPassword);
+public record ConfirmEmailDto(string Email, string Token);

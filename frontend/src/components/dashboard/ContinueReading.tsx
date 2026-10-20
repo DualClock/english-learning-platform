@@ -31,7 +31,7 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
     <section className="mb-8">
       <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Продолжить чтение</h2>
 
-      <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row gap-6 hover:shadow-md transition-shadow duration-200">
+      <div className="animate-rise-in bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 shadow-sm flex flex-col sm:flex-row gap-6 hover:shadow-md transition-shadow duration-200">
         <Cover book={hero} className="w-28 aspect-[3/4]" textSize="text-5xl" />
 
         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -64,7 +64,7 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
       </div>
 
       {others.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 stagger">
           {others.slice(0, 4).map((book) => (
             <Link
               key={book.id}

@@ -34,6 +34,7 @@ const handler = NextAuth({
             email: data.email || credentials.email,
             name: data.displayName,
             displayName: data.displayName,
+            avatarUrl: data.avatarUrl ?? null,
             token: data.token,
           };
         } catch (error) {
@@ -44,15 +45,21 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.accessToken = user.token;
         token.userId = user.userId;
+        token.avatarUrl = user.avatarUrl ?? null;
+      }
+      // update({ avatarUrl }) после смены аватара на клиенте
+      if (trigger === 'update' && session?.avatarUrl !== undefined) {
+        token.avatarUrl = session.avatarUrl;
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
+      session.avatarUrl = token.avatarUrl ?? null;
       if (token.userId) {
         session.user.id = token.userId;
       }

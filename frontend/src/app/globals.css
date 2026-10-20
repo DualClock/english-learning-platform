@@ -78,37 +78,116 @@
     animation: fade-in 0.3s ease-out;
   }
 
+  /* Экран «С возвращением!» — поочерёдное появление (stagger через animation-delay) */
+  @keyframes welcome-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-welcome-in {
+    animation: welcome-in 0.35s ease-out both;
+  }
+
+  /* Появление блока снизу вверх — общий вход блоков и карточек */
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rise-in {
+    animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Лёгкое «выпрыгивание» — акцентные элементы */
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-pop-in {
+    animation: pop-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Поочерёдное появление детей контейнера: stagger на сетке/списке */
+  .stagger > * {
+    animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.12s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.19s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.26s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.33s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.40s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.47s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.54s; }
+  .stagger > *:nth-child(n + 9) { animation-delay: 0.6s; }
+
+  /* Смена страницы в читалке — деликатное проявление текста */
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-page-in {
+    animation: page-in 0.3s ease-out both;
+  }
+
   /* Кнопки */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white px-[18px] py-2.5 rounded-md text-sm font-medium
-           hover:bg-[var(--color-primary-pressed)] transition-colors duration-200
-           disabled:bg-[var(--color-hairline)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed;
+           hover:bg-[var(--color-primary-pressed)] transition-all duration-200 active:scale-[0.97]
+           disabled:bg-[var(--color-hairline)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-hairline-strong)] hover:bg-[var(--color-surface)] transition-colors duration-200
-           disabled:text-[var(--color-muted)] disabled:border-[var(--color-hairline)] disabled:cursor-not-allowed;
+           border border-[var(--color-hairline-strong)] hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97]
+           disabled:text-[var(--color-muted)] disabled:border-[var(--color-hairline)] disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 text-[var(--color-slate)] px-3 py-2 rounded-md text-sm font-medium
-           hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-colors duration-200;
+           hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97];
   }
 
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-error)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-error)] hover:bg-red-50 transition-colors duration-200;
+           border border-[var(--color-error)] hover:bg-red-50 transition-all duration-200 active:scale-[0.97];
   }
 
   .btn-on-dark {
     @apply inline-flex items-center justify-center gap-2 bg-white text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           hover:bg-[var(--color-surface)] transition-colors duration-200;
+           hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97];
   }
 
   .btn-secondary-on-dark {
     @apply inline-flex items-center justify-center gap-2 bg-transparent text-white px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-on-dark-muted)] hover:border-white transition-colors duration-200;
+           border border-[var(--color-on-dark-muted)] hover:border-white transition-all duration-200 active:scale-[0.97];
   }
 
   /* Карточки */
@@ -118,7 +197,7 @@
 
   .card-interactive {
     @apply bg-white rounded-lg border border-[var(--color-hairline)]
-           hover:border-[var(--color-primary)] hover:shadow-card transition-all duration-200
+           hover:border-[var(--color-primary)] hover:shadow-card hover:-translate-y-0.5 transition-all duration-200
            cursor-pointer;
   }
 
@@ -191,6 +270,18 @@
 
   .progress-fill {
     @apply h-full bg-[var(--color-primary)] rounded-full transition-all duration-500;
+    /* Полоса «вырастает» из левого края при появлении */
+    transform-origin: left center;
+    animation: bar-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
   }
 }
 
@@ -225,7 +316,7 @@
   51%, 100% { opacity: 0; }
 }
 
-.animate-pulse {
+.typing-cursor {
   animation: blink 1s infinite;
 }
 
@@ -302,7 +393,8 @@
   .hero-word-invite,
   .hero-ripple,
   .hero-dot,
-  .hero-caret {
+  .hero-caret,
+  .animate-welcome-in {
     animation: none !important;
   }
 }
@@ -426,5 +518,19 @@
   .assistant-message-in {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* Общий запрет анимаций интерфейса при «уменьшить анимацию» */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-pop-in,
+  .animate-welcome-in,
+  .animate-page-in,
+  .stagger > *,
+  .progress-fill {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

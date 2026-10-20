@@ -17,6 +17,20 @@
 
 ---
 
+## Шаг 0. Секреты (обязательно прочитать)
+
+В репозитории и его истории раньше лежали рабочие ключи (Gemini, прокси, `Jwt__Key`, `NEXTAUTH_SECRET`).
+Считайте их скомпрометированными:
+
+1. Перевыпустите ключ Gemini в Google AI Studio и удалите старый.
+2. Смените пароль у прокси (`ProxyUrl`).
+3. Сгенерируйте новые `Jwt__Key` и `NEXTAUTH_SECRET` (см. ниже) — все выданные ранее JWT станут недействительны.
+4. По возможности почистите историю git (`git filter-repo` / BFG), иначе старые значения останутся доступны.
+
+Никогда не коммитьте `.env`, `appsettings.Production.json` и ключи в `DEPLOY.md`.
+
+---
+
 ## Шаг 2. API — Render (10 минут)
 
 1. Открой https://dashboard.render.com → **Sign in with GitHub**.
@@ -34,13 +48,25 @@
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 | `Cors__Origins` | домен Vercel из шага 3 (например `https://lexicon-xxx.vercel.app`) |
 | `ConnectionStrings__DefaultConnection` | строка из Neon |
-| `Jwt__Key` | `q9-vgVrOrN6xM41_AaeRX8m4Cm65kF2eb7YaTPJGR2NKKG0sPJcuXNdr00gjNsTH` |
+| `Jwt__Key` | сгенерируйте свой секрет ≥ 32 символов: `openssl rand -base64 48` (не коммитьте его в git) |
 | `Jwt__Issuer` | `EnglishLearningPlatform` |
 | `Jwt__Audience` | `EnglishLearningPlatform.Users` |
 | `Gemini__ApiKey` | ключ Gemini из appsettings (возьми локально) |
 | `Gemini__ProxyUrl` | **оставь пустым** — с серверов Render Gemini доступен напрямую |
 | `Gemini__Model` | `gemini-2.5-flash` |
-| `Seeder__Key` | любой секрет, напр. `lexicon-seed-2026` |
+| `Seeder__Key` | ваш собственный секрет для сидирования (придумайте, в git не храните) |
+| `Email__Smtp__Host` | SMTP-хост (например `smtp.resend.com`); если пусто — письма попадают в журнал вместо отправки |
+| `Email__Smtp__Port` | `587` |
+| `Email__Smtp__User` | SMTP-логин |
+| `Email__Smtp__Password` | SMTP-пароль / API-ключ провайдера |
+| `Email__From` | адрес отправителя, например `no-reply@ваш-домен` |
+| `App__FrontendUrl` | адрес сайта Vercel — используется в ссылках внутри писем |
+
+> **SMTP обязателен.** Сброс пароля и подтверждение email работают только через письма:
+> токен в ответе API не отдаётся ни в Development, ни в Production. Если `Email__Smtp__Host`
+> пуст, письма остаются в журнале (`/api/notifications/outbox`) и пользователь их не получит.
+> В Production при пустых `Email__From` / `App__FrontendUrl` / `Email__Smtp__Host`
+> приложение не стартует — это защита от «молча неработающих» писем.
 
 5. Deploy. Через 5-10 минут API поднимется на `https://lexicon-api.onrender.com`.
    Проверка: открой `https://lexicon-api.onrender.com/health` → `{"status":"ok"}`.
@@ -60,7 +86,7 @@
 |---|---|
 | `NEXT_PUBLIC_API_URL` | `https://lexicon-api.onrender.com` (адрес API из шага 2) |
 | `NEXTAUTH_URL` | адрес сайта Vercel (например `https://english-learning-platform-xxx.vercel.app`) |
-| `NEXTAUTH_SECRET` | `3DJcV4HSPmf09HxZ0TFAjSQu1nNOsAh7UVkkAcq85mY` |
+| `NEXTAUTH_SECRET` | сгенерируйте свой: `openssl rand -base64 32` (в git не хранить) |
 
 5. Deploy. Сайт поднимется на `https://....vercel.app`.
 

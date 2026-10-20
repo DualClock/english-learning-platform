@@ -1,102 +1,105 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
 
-interface Word {
+interface WordResponse {
   id: number;
   text: string;
-  language?: string;
-  definitions: {
-    id: number;
-    definition: string;
-    partOfSpeech?: string;
-    example?: string;
-  }[];
-  createdAt: string;
 }
 
-export default function DictionaryPage() {
+const PARTS_OF_SPEECH = [
+  { value: '', label: 'Не указывать' },
+  { value: 'noun', label: 'Существительное (noun)' },
+  { value: 'verb', label: 'Глагол (verb)' },
+  { value: 'adjective', label: 'Прилагательное (adjective)' },
+  { value: 'adverb', label: 'Наречие (adverb)' },
+  { value: 'phrase', label: 'Фраза (phrase)' },
+  { value: 'other', label: 'Другое' },
+];
+
+const ENGLISH_RE = /^[a-zA-Z\s'-]+$/;
+
+export default function AddWordPage() {
+  const router = useRouter();
   const { data: session, status } = useSession();
-  const [words, setWords] = useState<Word[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [text, setText] = useState('');
+  const [definition, setDefinition] = useState('');
+  const [partOfSpeech, setPartOfSpeech] = useState('');
+  const [example, setExample] = useState('');
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      loadWords();
-    }
-  }, [status, session]);
-
-  const loadWords = async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/dictionary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!res.ok) throw new Error('Failed to load words');
-      
-      const data = await res.json();
-      setWords(data);
-      setIsLoading(false);
-    } catch {
-      setError('Ошибка загрузки слов');
-      setIsLoading(false);
-    }
+  const validate = (): string => {
+    const word = text.trim();
+    if (!word) return 'Введите слово';
+    if (word.length > 100) return 'Слово длиннее 100 символов';
+    if (!ENGLISH_RE.test(word)) return 'Слово должно состоять из английских букв, пробелов, дефисов и апострофов';
+    if (!definition.trim()) return 'Введите перевод';
+    if (definition.trim().length > 500) return 'Перевод длиннее 500 символов';
+    if (example.trim().length > 500) return 'Пример длиннее 500 символов';
+    return '';
   };
 
-  const searchWords = async () => {
-    if (!searchQuery.trim()) {
-      loadWords();
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
       return;
     }
-    
+
+    setSaving(true);
     try {
-      const token = session?.accessToken;
-      const res = await fetch(`http://localhost:5226/api/dictionary/search?query=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const created = await apiMutate<WordResponse>('/api/dictionary', {
+        token: session?.accessToken,
+        method: 'POST',
+        body: {
+          text: text.trim(),
+          definition: definition.trim(),
+          partOfSpeech: partOfSpeech || null,
+          example: example.trim() || null,
+          source: 'manual',
+        },
+        invalidate: ['/api/dictionary'],
       });
-      
-      if (!res.ok) throw new Error('Search failed');
-      
-      const data = await res.json();
-      setWords(data);
-    } catch {
-      setError('Ошибка поиска');
+
+      invalidateCache('/api/dictionary');
+      setSuccess(`«${created?.text ?? text.trim()}» добавлено в словарь`);
+      setText('');
+      setDefinition('');
+      setPartOfSpeech('');
+      setExample('');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setError('Это слово уже есть в словаре');
+      } else if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('Не удалось добавить слово. Проверьте соединение.');
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
-  const deleteWord = async (id: number) => {
-    if (!confirm('Удалить это слово?')) return;
-    
-    try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/dictionary/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setWords(words.filter(w => w.id !== id));
-    } catch {
-      setError('Ошибка удаления');
-    }
-  };
-
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
-  };
-
-  if (isLoading) {
+  if (status === 'unauthenticated') {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
+        <div className="card p-8 text-center">
+          <p className="text-[var(--color-slate)] mb-4">Чтобы добавлять слова, войдите в аккаунт.</p>
+          <Link href="/login" className="btn-primary">
+            Войти
+          </Link>
         </div>
       </AppLayout>
     );
@@ -104,83 +107,125 @@ export default function DictionaryPage() {
 
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Словарь</h1>
-        <p className="text-[var(--color-slate)]">{words.length} слов изучается</p>
-      </div>
-
-      {/* Поиск и добавление */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Поиск слов..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && searchWords()}
-            className="input pl-10"
-          />
-          <svg className="absolute left-3 top-3.5 w-5 h-5 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-        <button onClick={searchWords} className="btn-secondary">
-          Найти
-        </button>
-        <Link href="/dictionary/add" className="btn-primary">
-          + Добавить
-        </Link>
-      </div>
-
-      {error && (
-        <div className="mb-6 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]">
-          {error}
-        </div>
-      )}
-
-      {/* Список слов */}
-      {words.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-[var(--color-slate)] mb-4">Словарь пуст</p>
-          <Link href="/dictionary/add" className="btn-primary">
-            Добавить первое слово
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <Link href="/dictionary" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)]">
+            ← К словарю
           </Link>
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mt-3 mb-1">Добавить слово</h1>
+          <p className="text-[var(--color-slate)]">
+            Слово сразу попадёт в словарь и в расписание повторений
+          </p>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {words.map((word) => (
-            <div key={word.id} className="card p-4 flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="text-lg font-semibold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors"
-                  >
-                    {word.text}
-                  </button>
-                  {word.definitions[0]?.partOfSpeech && (
-                    <span className="badge badge-primary text-xs">
-                      {word.definitions[0].partOfSpeech}
-                    </span>
-                  )}
-                </div>
-                <p className="text-[var(--color-slate)]">{word.definitions[0]?.definition}</p>
-                {word.definitions[0]?.example && (
-                  <p className="text-sm text-[var(--color-slate)] mt-1 italic">«{word.definitions[0].example}»</p>
-                )}
-              </div>
-              <button
-                onClick={() => deleteWord(word.id)}
-                className="ml-4 p-2 text-[var(--color-slate)] hover:text-[var(--color-error)] transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+
+        {success && (
+          <div
+            role="status"
+            className="mb-6 p-4 rounded-lg bg-[rgba(34,197,94,0.10)] border border-[var(--color-primary)] text-[var(--color-ink)] flex items-center justify-between gap-4"
+          >
+            <span>{success}</span>
+            <Link href="/dictionary" className="text-sm font-medium text-[var(--color-primary)] hover:underline shrink-0">
+              Открыть словарь
+            </Link>
+          </div>
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="mb-6 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+          >
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={submit} className="card p-6 space-y-5">
+          <div>
+            <label htmlFor="word-text" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+              Слово или фраза <span className="text-[var(--color-error)]">*</span>
+            </label>
+            <input
+              id="word-text"
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="например, resilience"
+              autoComplete="off"
+              autoFocus
+              maxLength={100}
+              className="input"
+              aria-required="true"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="word-definition" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+              Перевод <span className="text-[var(--color-error)]">*</span>
+            </label>
+            <input
+              id="word-definition"
+              type="text"
+              value={definition}
+              onChange={(e) => setDefinition(e.target.value)}
+              placeholder="например, стойкость, упругость"
+              maxLength={500}
+              className="input"
+              aria-required="true"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="word-pos" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+              Часть речи
+            </label>
+            <select
+              id="word-pos"
+              value={partOfSpeech}
+              onChange={(e) => setPartOfSpeech(e.target.value)}
+              className="input"
+            >
+              {PARTS_OF_SPEECH.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="word-example" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+              Пример употребления
+            </label>
+            <textarea
+              id="word-example"
+              value={example}
+              onChange={(e) => setExample(e.target.value)}
+              placeholder="She showed great resilience after the failure."
+              maxLength={500}
+              rows={2}
+              className="input resize-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-3 pt-1">
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? 'Сохраняем…' : 'Добавить слово'}
+            </button>
+            <Link href="/dictionary" className="btn-secondary">
+              Отмена
+            </Link>
+          </div>
+        </form>
+
+        <p className="text-sm text-[var(--color-slate)] mt-6">
+          Слова из книг можно добавлять прямо в читалке — нажмите на незнакомое слово и «В словарь».
+          Готовые подборки есть в{' '}
+          <button type="button" onClick={() => router.push('/dictionary?tab=lists')} className="text-[var(--color-primary)] hover:underline">
+            сборниках
+          </button>
+          .
+        </p>
+      </div>
     </AppLayout>
   );
 }

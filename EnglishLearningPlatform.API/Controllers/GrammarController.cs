@@ -167,7 +167,8 @@ public class GrammarController : ControllerBase
             {
                 exerciseId = exercise.Id,
                 correct,
-                expected = ExpectedAnswer(exercise)
+                expected = ExpectedAnswer(exercise),
+                explanation = exercise.Explanation
             });
         }
 

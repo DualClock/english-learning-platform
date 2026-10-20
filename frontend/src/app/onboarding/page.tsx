@@ -166,6 +166,15 @@ export default function OnboardingPage() {
           cefrLevel: data.level || undefined,
           studyGoal: data.goals.length > 0 ? data.goals.join(',') : undefined,
           dailyGoalMinutes: timeOption?.minutes,
+          // Часовой пояс нужен, чтобы стрик и дневная цель считались по местному времени
+          timeZoneId: (() => {
+            try {
+              return Intl.DateTimeFormat().resolvedOptions().timeZone;
+            } catch {
+              return undefined;
+            }
+          })(),
+          notifyEnabled: data.notifications,
         }),
       });
 

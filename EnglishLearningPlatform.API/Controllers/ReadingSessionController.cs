@@ -155,23 +155,13 @@ public class ReadingSessionController : ControllerBase
             .Where(wl => texts.Contains(wl.Text))
             .ToDictionaryAsync(wl => wl.Text, wl => wl.TranslationRu, StringComparer.OrdinalIgnoreCase);
 
-        var added = 0;
-        foreach (var word in uniqueWords)
-        {
-            var definition = levelMap.TryGetValue(word.Text, out var ru) && !string.IsNullOrWhiteSpace(ru)
-                ? ru
-                : "(добавлено из чтения)";
-
-            var result = await _dictionaryService.AddWordAsync(userId, new Models.DTOs.AddWordRequest(
+        var added = await _dictionaryService.AddWordsAsync(userId, uniqueWords.Select(word =>
+            (
                 word.Text,
-                definition,
-                null,
-                word.ContextSentence,
-                null
-            ), source: "reader");
-
-            if (result != null) added++;
-        }
+                Definition: levelMap.TryGetValue(word.Text, out var ru) && !string.IsNullOrWhiteSpace(ru)
+                    ? ru
+                    : "(добавлено из чтения)"
+            )), source: "reader");
 
         var minutes = Math.Max(1, (int)Math.Ceiling((DateTime.UtcNow - session.StartedAtUtc).TotalMinutes / 2.0));
         if (uniqueWords.Count > 0)

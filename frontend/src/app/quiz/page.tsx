@@ -1,9 +1,10 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useApiQuery } from '@/app/lib/use-api';
 
 interface Question {
   wordId: number;
@@ -12,58 +13,56 @@ interface Question {
   correctIndex: number;
 }
 
+interface QuizResponse {
+  questions?: Question[];
+}
+
 export default function QuizPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
-  
-  const [questions, setQuestions] = useState<Question[]>([]);
+
+  // Колода теста всегда запрашивается свежей: maxAgeMs: 0. Ответы нигде
+  // не сохраняются, поэтому между заходами вопросы не «залипают».
+  const { data, error, isLoading, refresh: refreshQuiz } = useApiQuery<QuizResponse>(
+    '/api/review/quiz?count=10',
+    {
+      maxAgeMs: 0,
+      enabled: status === 'authenticated',
+    }
+  );
+
+  const [questions, setQuestions] = useState<Question[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
+  const [deckLocked, setDeckLocked] = useState(false);
 
-  const loadQuiz = useCallback(async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/review/quiz?count=10', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!res.ok) {
-        router.push('/dictionary');
-        return;
-      }
-      
-      const data = await res.json();
-      setQuestions(data.questions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to load quiz:', error);
-      setIsLoading(false);
-    }
-  }, [session, router]);
-
+  // Один раз сохраняем загруженную колоду в state и работаем с ней: фоновое
+  // обновление не должно подменять вопросы посреди прохождения.
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadQuiz();
-    }
-  }, [status, loadQuiz]);
+    if (!data || deckLocked) return;
+    setQuestions(data.questions ?? []);
+  }, [data, deckLocked]);
+
+  const deck = questions ?? data?.questions ?? [];
 
   const handleAnswer = (index: number) => {
     if (showResult) return;
-    
+
+    // Дальше колода зафиксирована — поздний ответ сети её не заменит.
+    setDeckLocked(true);
     setSelectedAnswer(index);
     setShowResult(true);
-    
-    if (index === questions[currentIndex].correctIndex) {
+
+    if (index === deck[currentIndex].correctIndex) {
       setScore(score + 1);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex < deck.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setSelectedAnswer(null);
       setShowResult(false);
@@ -72,13 +71,24 @@ export default function QuizPage() {
     }
   };
 
+  const restartQuiz = () => {
+    setCurrentIndex(0);
+    setScore(0);
+    setIsFinished(false);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setDeckLocked(false);
+    refreshQuiz();
+  };
+
   const speak = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     speechSynthesis.speak(utterance);
   };
 
-  if (isLoading) {
+  // Спиннер — только пока данных ещё нет
+  if (isLoading && data === undefined) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
@@ -88,9 +98,51 @@ export default function QuizPage() {
     );
   }
 
+  // Ошибка загрузки — показываем её и даём повторить, а не уводим молча
+  if (error && data === undefined) {
+    return (
+      <AppLayout>
+        <div className="max-w-md mx-auto card p-8 text-center">
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Тест не загрузился</h1>
+          <p className="text-[var(--color-slate)] mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={refreshQuiz} className="btn-primary">
+              Попробовать снова
+            </button>
+            <button onClick={() => router.push('/dictionary')} className="btn-secondary">
+              В словарь
+            </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Колода пустая — не крутим вечный спиннер, а объясняем, что делать
+  if (deck.length === 0) {
+    return (
+      <AppLayout>
+        <div className="max-w-md mx-auto card p-8 text-center">
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Пока нечего тестировать</h1>
+          <p className="text-[var(--color-slate)] mb-6">
+            Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button onClick={() => router.push('/dictionary?tab=lists')} className="btn-primary">
+              Открыть сборники
+            </button>
+            <button onClick={() => router.push('/dictionary')} className="btn-secondary">
+              Мой словарь
+            </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (isFinished) {
-    const percentage = Math.round((score / questions.length) * 100);
-    
+    const percentage = Math.round((score / deck.length) * 100);
+
     return (
       <AppLayout>
         <div className="max-w-md mx-auto text-center py-12">
@@ -106,10 +158,10 @@ export default function QuizPage() {
           <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Тест завершён</h1>
           <p className="text-4xl font-bold text-[var(--color-primary)] my-4">{percentage}%</p>
           <p className="text-[var(--color-slate)] mb-8">
-            Правильно {score} из {questions.length}
+            Правильно {score} из {deck.length}
           </p>
           <div className="flex gap-4 justify-center">
-            <button onClick={() => { setCurrentIndex(0); setScore(0); setIsFinished(false); setSelectedAnswer(null); setShowResult(false); loadQuiz(); }} className="btn-primary">
+            <button onClick={restartQuiz} className="btn-primary">
               Ещё раз
             </button>
             <button onClick={() => router.push('/dashboard')} className="btn-secondary">
@@ -121,7 +173,7 @@ export default function QuizPage() {
     );
   }
 
-  const currentQuestion = questions[currentIndex];
+  const currentQuestion = deck[currentIndex];
 
   return (
     <AppLayout>
@@ -129,13 +181,13 @@ export default function QuizPage() {
         {/* Прогресс */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
-            <span>Вопрос {currentIndex + 1} из {questions.length}</span>
+            <span>Вопрос {currentIndex + 1} из {deck.length}</span>
             <span>Score: {score}</span>
           </div>
           <div className="progress-bar">
             <div 
               className="progress-fill"
-              style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+              style={{ width: `${((currentIndex + 1) / deck.length) * 100}%` }}
             />
           </div>
         </div>
@@ -194,7 +246,7 @@ export default function QuizPage() {
               </p>
               
               <button onClick={handleNext} className="btn-primary mt-4">
-                {currentIndex < questions.length - 1 ? 'Следующий вопрос' : 'Завершить'}
+                {currentIndex < deck.length - 1 ? 'Следующий вопрос' : 'Завершить'}
               </button>
             </div>
           )}

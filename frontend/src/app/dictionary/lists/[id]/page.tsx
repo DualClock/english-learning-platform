@@ -1,10 +1,11 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
-import { API_URL } from '@/app/lib/api-url';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
 import { useSpeech } from '@/hooks/useSpeech';
 
 interface ListItem {
@@ -55,10 +56,8 @@ export default function WordListPage() {
   const params = useParams();
   const listId = params?.id as string;
 
-  const [list, setList] = useState<ListDetail | null>(null);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [learnError, setLearnError] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isLearning, setIsLearning] = useState(false);
   const [notice, setNotice] = useState<{ added: number; skipped: number } | null>(null);
@@ -66,33 +65,37 @@ export default function WordListPage() {
   const [practiceLevels, setPracticeLevels] = useState<Set<string>>(new Set());
   const [practiceCount, setPracticeCount] = useState(20);
 
-  const loadList = useCallback(async (p: number) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/wordlists/${listId}?page=${p}&pageSize=${PAGE_SIZE}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to load list');
-      const data: ListDetail = await res.json();
-      setList(data);
-      setSelected(new Set());
-      setPage(data.page || p);
-    } catch {
-      setError('Не удалось загрузить сборник. Проверьте соединение и попробуйте снова.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [session, listId]);
+  const listPath = listId
+    ? `/api/wordlists/${listId}?page=${page}&pageSize=${PAGE_SIZE}`
+    : null;
+
+  // Страница сборника кэшируется по page/pageSize: возврат на страницу — мгновенный
+  const {
+    data: list,
+    error: listError,
+    isLoading: listLoading,
+    refresh: refreshList
+  } = useApiQuery<ListDetail>(listPath, { enabled: status === 'authenticated' });
+
+  const items = list?.items ?? [];
+  const returnedPage = list?.page;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
-    } else if (status === 'authenticated' && listId) {
-      loadList(1);
     }
-  }, [status, router, listId, loadList]);
+  }, [status, router]);
+
+  // Новая страница сборника — сбрасываем выбор слов
+  useEffect(() => {
+    setSelected(new Set());
+  }, [list?.id, list?.page]);
+
+  // Бэкенд может скорректировать номер страницы — синхронизируем состояние
+  useEffect(() => {
+    if (returnedPage && returnedPage !== page) setPage(returnedPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [returnedPage]);
 
   useEffect(() => {
     return () => {
@@ -100,8 +103,8 @@ export default function WordListPage() {
     };
   }, []);
 
-  const totalPages = list ? Math.max(1, Math.ceil(list.totalItems / list.pageSize)) : 1;
-  const selectable = list?.items.filter(i => !i.inDictionary) ?? [];
+  const totalPages = list ? Math.max(1, Math.ceil(list.totalItems / (list.pageSize || PAGE_SIZE))) : 1;
+  const selectable = items.filter(i => !i.inDictionary);
   const allSelected = selectable.length > 0 && selectable.every(i => selected.has(i.wordText));
 
   const availableLevels = (() => {
@@ -112,6 +115,17 @@ export default function WordListPage() {
     }
     return LEVEL_ORDER.slice(0, 4);
   })();
+
+  const goToPage = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setSelected(new Set());
+    setPage(nextPage);
+  };
+
+  const retryLoad = () => {
+    setLearnError('');
+    refreshList();
+  };
 
   const togglePracticeLevel = (level: string) => {
     setPracticeLevels(prev => {
@@ -154,24 +168,23 @@ export default function WordListPage() {
       return;
     }
     setIsLearning(true);
+    setLearnError('');
     try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/wordlists/${listId}/learn`, {
+      const data = await apiMutate<{ added: number; skipped: number }>(`/api/wordlists/${listId}/learn`, {
+        token: session?.accessToken,
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ words })
+        body: { words },
+        invalidate: ['/api/wordlists', '/api/dictionary']
       });
-      if (!res.ok) throw new Error('Failed to learn words');
-      const data: { added: number; skipped: number } = await res.json();
+      if (!data) throw new Error('Failed to learn words');
       setNotice({ added: data.added, skipped: data.skipped });
       if (noticeTimer.current) clearTimeout(noticeTimer.current);
       noticeTimer.current = setTimeout(() => setNotice(null), 4000);
-      await loadList(page);
+      setSelected(new Set());
+      // Статусы «в словаре» изменились — обновляем страницу из сети
+      refreshList();
     } catch {
-      setError('Не удалось добавить слова. Попробуйте ещё раз.');
+      setLearnError('Не удалось добавить слова. Попробуйте ещё раз.');
     } finally {
       setIsLearning(false);
     }
@@ -180,7 +193,7 @@ export default function WordListPage() {
   const learnSelected = () => learnWords(Array.from(selected));
   const learnAll = () => learnWords(selectable.map(i => i.wordText));
 
-  if (status === 'loading' || isLoading || !list) {
+  if (status === 'loading' || (listLoading && !list)) {
     return (
       <AppLayout>
         <div className="mb-6 h-4 bg-[rgba(201,205,212,0.40)] rounded w-32 animate-pulse"></div>
@@ -197,6 +210,29 @@ export default function WordListPage() {
       </AppLayout>
     );
   }
+
+  if (!list) {
+    return (
+      <AppLayout>
+        <button
+          onClick={() => router.push('/dictionary?tab=lists')}
+          className="mb-4 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
+        >
+          ← Назад к словарю
+        </button>
+        <div className="card p-8 text-center">
+          <p className="text-[var(--color-error)] mb-6">
+            Не удалось загрузить сборник. Проверьте соединение и попробуйте снова.
+          </p>
+          <button onClick={retryLoad} className="btn-primary">
+            Попробовать снова
+          </button>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const error = learnError || (listError ? 'Не удалось загрузить сборник. Проверьте соединение и попробуйте снова.' : '');
 
   return (
     <AppLayout>
@@ -216,7 +252,7 @@ export default function WordListPage() {
       {error && (
         <div className="mb-4 p-4 rounded-xl bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] flex items-center justify-between gap-4">
           <span>{error}</span>
-          <button onClick={() => loadList(page)} className="btn-secondary shrink-0">
+          <button onClick={retryLoad} className="btn-secondary shrink-0">
             Попробовать снова
           </button>
         </div>
@@ -231,7 +267,7 @@ export default function WordListPage() {
         </div>
         {list.description && <p className="text-[var(--color-slate)]">{list.description}</p>}
         <p className="text-sm text-[var(--color-slate)] mt-1">
-          {list.items.filter(i => i.inDictionary).length} из {list.items.length.toLocaleString('ru-RU')} на этой странице уже в вашем словаре
+          {items.filter(i => i.inDictionary).length} из {items.length.toLocaleString('ru-RU')} на этой странице уже в вашем словаре
         </p>
       </div>
 
@@ -335,7 +371,7 @@ export default function WordListPage() {
           <div>Уровень</div>
           <div className="text-right">Статус</div>
         </div>
-        {list.items.map((item, idx) => (
+        {items.map((item, idx) => (
           <div
             key={`${item.wordText}-${idx}`}
             onClick={() => toggleWord(item)}
@@ -377,7 +413,7 @@ export default function WordListPage() {
             </div>
           </div>
         ))}
-        {list.items.length === 0 && (
+        {items.length === 0 && (
           <div className="p-8 text-center text-[var(--color-slate)]">В этом сборнике пока пусто</div>
         )}
       </div>
@@ -386,8 +422,8 @@ export default function WordListPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">
           <button
-            onClick={() => loadList(page - 1)}
-            disabled={page <= 1 || isLoading}
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1 || listLoading}
             className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ← Назад
@@ -396,8 +432,8 @@ export default function WordListPage() {
             страница {page} из {totalPages}
           </span>
           <button
-            onClick={() => loadList(page + 1)}
-            disabled={page >= totalPages || isLoading}
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages || listLoading}
             className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Вперёд →

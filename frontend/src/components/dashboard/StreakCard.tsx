@@ -37,7 +37,7 @@ export default function StreakCard({ streak }: Props) {
   const progress = dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
 
   return (
-    <section className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-sm mb-8">
+    <section className="animate-rise-in bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-sm mb-8">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <p className="text-2xl font-bold text-[var(--color-ink)] leading-tight">

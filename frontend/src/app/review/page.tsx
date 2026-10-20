@@ -1,11 +1,13 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useTrack } from '@/app/lib/analytics';
 import { useSpeech } from '@/hooks/useSpeech';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
 
 interface Word {
   wordId: number;
@@ -15,6 +17,15 @@ interface Word {
     partOfSpeech?: string;
     example?: string;
   }[];
+  isNew?: boolean;
+  isLeech?: boolean;
+}
+
+interface ReviewTodayResponse {
+  totalCount?: number;
+  reviewCount?: number;
+  newCount?: number;
+  words?: Word[];
 }
 
 export default function ReviewPage() {
@@ -22,35 +33,34 @@ export default function ReviewPage() {
   const router = useRouter();
   const trackEvent = useTrack();
   const { speak } = useSpeech();
-  
+
+  // Сессия повторения: колода всегда запрашивается свежей (maxAgeMs: 0),
+  // но после первой загрузки работаем с локальным снимком — ответы и позиция
+  // не должны «мигать» из-за фонового обновления или перерисовок.
+  const { data, isLoading } = useApiQuery<ReviewTodayResponse>('/api/review/today', {
+    maxAgeMs: 0,
+    enabled: status === 'authenticated',
+  });
+
   const [words, setWords] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [nextHint, setNextHint] = useState('');
+  const [reviewCount, setReviewCount] = useState(0);
+  const [newCount, setNewCount] = useState(0);
 
-  const loadWords = useCallback(async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/review/today', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setWords(data.words);
-      setTotalCount(data.totalCount);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to load words:', error);
-      setIsLoading(false);
-    }
-  }, [session]);
-
+  // Один раз сохраняем загруженную колоду в state и дальше работаем с ней.
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadWords();
-    }
-  }, [status, loadWords]);
+    if (!data || sessionStarted) return;
+    setWords(data.words ?? []);
+    setTotalCount(data.totalCount ?? data.words?.length ?? 0);
+    setReviewCount(data.reviewCount ?? 0);
+    setNewCount(data.newCount ?? 0);
+  }, [data, sessionStarted]);
 
   // Авто-озвучка при показе нового слова
   useEffect(() => {
@@ -61,14 +71,27 @@ export default function ReviewPage() {
 
   const handleQuality = async (quality: number) => {
     const word = words[currentIndex];
-    
+    if (!word) return;
+
+    setSessionStarted(true);
+    setSaveError('');
+
     try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/review/${word.wordId}/quality/${quality}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const outcome = await apiMutate<{ interval: number; intervalMinutes: number }>(
+        `/api/review/${word.wordId}/quality/${quality}`,
+        {
+          token: session?.accessToken,
+          method: 'POST',
+          invalidate: ['/api/review/today', '/api/progress/streak'],
+        }
+      );
       trackEvent('word_reviewed', word.text);
+
+      setNextHint(
+        outcome?.intervalMinutes && outcome.intervalMinutes > 0
+          ? `Следующее повторение через ${outcome.intervalMinutes} мин — слово вернётся в этой сессии`
+          : `Следующее повторение через ${outcome?.interval ?? 1} дн.`
+      );
 
       if (currentIndex < words.length - 1) {
         setCurrentIndex(currentIndex + 1);
@@ -76,12 +99,13 @@ export default function ReviewPage() {
       } else {
         setIsFinished(true);
       }
-    } catch (error) {
-      console.error('Failed to review word:', error);
+    } catch {
+      setSaveError('Не удалось сохранить ответ. Проверьте соединение и попробуйте ещё раз.');
     }
   };
 
-  if (isLoading) {
+  // Скелетон/спиннер — только пока данных ещё нет
+  if (isLoading && data === undefined) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center py-12">
@@ -134,11 +158,24 @@ export default function ReviewPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
+        {saveError && (
+          <div
+            role="alert"
+            className="mb-4 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+          >
+            {saveError}
+          </div>
+        )}
+
         {/* Прогресс */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
             <span>Слово {currentIndex + 1} из {words.length}</span>
-            <span>Всего на сегодня: {totalCount}</span>
+            <span>
+              {reviewCount > 0 || newCount > 0
+                ? `${reviewCount} на повторение · ${newCount} новых`
+                : `Всего на сегодня: ${totalCount}`}
+            </span>
           </div>
           <div className="progress-bar">
             <div 
@@ -146,6 +183,9 @@ export default function ReviewPage() {
               style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
             />
           </div>
+          {nextHint && (
+            <p className="text-xs text-[var(--color-slate)] mt-2">{nextHint}</p>
+          )}
         </div>
 
         {/* Карточка */}
@@ -167,6 +207,14 @@ export default function ReviewPage() {
                 🔊
               </button>
             </div>
+            {currentWord.isNew && (
+              <span className="badge badge-primary text-xs mt-3 inline-block">Новое слово</span>
+            )}
+            {currentWord.isLeech && (
+              <span className="badge text-xs mt-3 ml-2 inline-block bg-[rgba(249,231,159,0.30)] text-[#7A3A00]">
+                Трудное слово
+              </span>
+            )}
             <p className="text-sm text-[var(--color-slate)] mt-2">Нажми для озвучки</p>
           </div>
 

@@ -5,7 +5,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { API_URL } from '@/app/lib/api-url';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate, cacheKey, peekCache } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
 import { useSpeech } from '@/hooks/useSpeech';
 
@@ -14,6 +15,12 @@ interface ListItem {
   cefrLevel: string;
   freqRank: number;
   inDictionary: boolean;
+}
+
+interface WordListPage {
+  items: ListItem[];
+  totalItems: number;
+  page?: number;
 }
 
 const FETCH_PAGE_SIZE = 200; // максимум, который принимает бэкенд
@@ -66,6 +73,7 @@ function PracticeContent() {
     .map(l => l.trim().toUpperCase())
     .filter(Boolean);
   const count = Math.min(50, Math.max(1, parseInt(searchParams.get('count') || '20', 10) || 20));
+  const levelsKey = levels.join(',');
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [batch, setBatch] = useState<ListItem[]>([]);
@@ -77,63 +85,110 @@ function PracticeContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
+  // Загрузка раунда: тянем страницы по 200 слов, пока не наберём достаточно
+  // (все страницы проходят через общий кэш, поэтому повторные раунды быстрее).
+  const [loadPage, setLoadPage] = useState<number | null>(null);
+  const [round, setRound] = useState(0);
+  const eligibleRef = useRef<ListItem[]>([]);
+  const processedPagesRef = useRef<Set<number>>(new Set());
+
   const translationCache = useRef<Map<string, string | null>>(new Map());
   const isLearningRef = useRef(false);
 
-  const loadBatch = useCallback(async () => {
-    if (!session?.accessToken || !listId) return;
-    setPhase('loading');
-    setLoadError(false);
+  const pagePath = listId && loadPage !== null
+    ? `/api/wordlists/${listId}?page=${loadPage}&pageSize=${FETCH_PAGE_SIZE}`
+    : null;
+
+  const { data: pageData, error: pageError } = useApiQuery<WordListPage>(pagePath, {
+    enabled: status === 'authenticated'
+  });
+
+  const finishBatchLoad = useCallback((eligible: ListItem[]) => {
+    translationCache.current.clear();
+    setUnknown([]);
+    setIndex(0);
+    setTranslation({ status: 'hidden' });
     setAddedCount(null);
     setLearnError(false);
-    try {
-      const token = session.accessToken;
-      const eligible: ListItem[] = [];
-      const target = count * 2; // с запасом, чтобы перемешивание было осмысленным
-      let page = 1;
-      let total = Infinity;
-      while (eligible.length < target && (page - 1) * FETCH_PAGE_SIZE < total && page <= 50) {
-        const res = await fetch(
-          `${API_URL}/api/wordlists/${listId}?page=${page}&pageSize=${FETCH_PAGE_SIZE}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (!res.ok) throw new Error('Failed to load list');
-        const data: { items: ListItem[]; totalItems: number } = await res.json();
-        total = data.totalItems ?? 0;
-        for (const item of data.items) {
-          if (!item.inDictionary && (levels.length === 0 || levels.includes(item.cefrLevel.toUpperCase()))) {
-            eligible.push(item);
-          }
-        }
-        if (data.items.length < FETCH_PAGE_SIZE) break;
-        page++;
-      }
+    setIsSaving(false);
+    setLoadPage(null);
 
-      translationCache.current.clear();
-      setUnknown([]);
-      setIndex(0);
-      setTranslation({ status: 'hidden' });
-
-      if (eligible.length === 0) {
-        setBatch([]);
-        setPhase('empty');
-      } else {
-        setBatch(shuffle(eligible).slice(0, Math.min(count, eligible.length)));
-        setPhase('card');
-      }
-    } catch {
-      setLoadError(true);
+    if (eligible.length === 0) {
+      setBatch([]);
       setPhase('empty');
+    } else {
+      setBatch(shuffle(eligible).slice(0, Math.min(count, eligible.length)));
+      setPhase('card');
     }
-  }, [session, listId, count, levels.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [count]);
+
+  const startRound = useCallback(() => {
+    if (!session?.accessToken || !listId) return;
+
+    eligibleRef.current = [];
+    processedPagesRef.current = new Set();
+    setPhase('loading');
+    setBatch([]);
+    setUnknown([]);
+    setIndex(0);
+    setTranslation({ status: 'hidden' });
+    setAddedCount(null);
+    setLearnError(false);
+    setLoadError(false);
+    setRound(value => value + 1);
+    setLoadPage(1);
+  }, [session?.accessToken, listId]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     } else if (status === 'authenticated') {
-      loadBatch();
+      startRound();
     }
-  }, [status, router, loadBatch]);
+  }, [status, router, startRound, count, levelsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Накопление слов из пришедшей страницы сборника
+  useEffect(() => {
+    if (!pageData || loadPage === null || !listId) return;
+    // Данные должны относиться именно к запрошенной странице
+    if (pageData.page !== undefined && pageData.page !== loadPage) return;
+
+    const requestPath = `/api/wordlists/${listId}?page=${loadPage}&pageSize=${FETCH_PAGE_SIZE}`;
+    // Если кэш страницы сброшен (например, после добавления слов), ждём сеть,
+    // а не используем устаревшие данные из состояния хука.
+    if (peekCache(cacheKey(requestPath, session?.accessToken)) === undefined) return;
+    if (processedPagesRef.current.has(loadPage)) return;
+    processedPagesRef.current.add(loadPage);
+
+    const pageItems = Array.isArray(pageData.items) ? pageData.items : [];
+    const total = pageData.totalItems ?? 0;
+    const fresh = pageItems.filter(
+      item => !item.inDictionary && (levels.length === 0 || levels.includes(item.cefrLevel.toUpperCase()))
+    );
+    const eligible = [...eligibleRef.current, ...fresh];
+    eligibleRef.current = eligible;
+
+    const target = count * 2; // с запасом, чтобы перемешивание было осмысленным
+    const isLastPage =
+      pageItems.length < FETCH_PAGE_SIZE ||
+      (loadPage - 1) * FETCH_PAGE_SIZE >= total ||
+      loadPage >= 50;
+
+    if (eligible.length >= target || isLastPage) {
+      finishBatchLoad(eligible);
+    } else {
+      setLoadPage(loadPage + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageData, round]);
+
+  useEffect(() => {
+    if (!pageError) return;
+    eligibleRef.current = [];
+    setLoadError(true);
+    setPhase('empty');
+    setLoadPage(null);
+  }, [pageError]);
 
   const currentWord = batch[index];
 
@@ -147,15 +202,11 @@ function PracticeContent() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/api/ai/translate`, {
+      const data = await apiMutate<{ translation?: string }>('/api/ai/translate', {
+        token: session?.accessToken,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`
-        },
-        body: JSON.stringify({ word, targetLanguage: 'ru' })
+        body: { word, targetLanguage: 'ru' }
       });
-      const data = res.ok ? await res.json().catch(() => null) : null;
       const text = data && typeof data.translation === 'string' ? data.translation.trim() : '';
       translationCache.current.set(word, text || null);
       setTranslation(text ? { status: 'ok', text } : { status: 'error' });
@@ -188,16 +239,13 @@ function PracticeContent() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/api/wordlists/${listId}/learn`, {
+      const data = await apiMutate<{ added: number; skipped: number }>(`/api/wordlists/${listId}/learn`, {
+        token: session?.accessToken,
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ words })
+        body: { words },
+        invalidate: ['/api/wordlists', '/api/dictionary']
       });
-      if (!res.ok) throw new Error('Failed to learn words');
-      const data: { added: number; skipped: number } = await res.json();
+      if (!data) throw new Error('Failed to learn words');
       setAddedCount(data.added);
       trackEvent('practice_finished', `added:${data.added}`);
     } catch {
@@ -225,7 +273,7 @@ function PracticeContent() {
           <div className="card p-8">
             <p className="text-[var(--color-error)] mb-6">Не удалось загрузить слова. Проверьте соединение и попробуйте снова.</p>
             <div className="flex justify-center gap-3">
-              <button onClick={loadBatch} className="btn-primary">Попробовать снова</button>
+              <button onClick={startRound} className="btn-primary">Попробовать снова</button>
               <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-secondary">
                 К сборнику
               </button>
@@ -305,7 +353,7 @@ function PracticeContent() {
             )}
 
             <div className="flex justify-center gap-3">
-              <button onClick={loadBatch} className="btn-primary">
+              <button onClick={startRound} className="btn-primary">
                 Ещё раунд
               </button>
               <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-secondary">

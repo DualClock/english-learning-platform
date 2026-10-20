@@ -20,6 +20,7 @@ public class AiController : ControllerBase
     [HttpPost("translate")]
     public async Task<IActionResult> Translate([FromBody] TranslateRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var hasContext = !string.IsNullOrWhiteSpace(request.Context);
         var targetLanguage = request.TargetLanguage ?? "ru";
 
@@ -34,7 +35,16 @@ public class AiController : ControllerBase
             }
         }
 
-        var result = await _aiService.TranslateWordAsync(request.Word, request.Context, targetLanguage);
+        TranslationResult? result = null;
+        try
+        {
+            result = await _aiService.TranslateWordAsync(request.Word, request.Context, targetLanguage, userId);
+        }
+        catch (AiUnavailableException)
+        {
+            // ИИ недоступен после всех ретраев — попробуем быстрый fallback ниже
+        }
+
         if (result != null)
         {
             return Ok(result);
@@ -51,7 +61,7 @@ public class AiController : ControllerBase
             }
         }
 
-        return BadRequest(new { message = "Translation failed" });
+        return StatusCode(503, new { error = "Не удалось перевести слово: сервис перевода временно недоступен. Попробуйте позже." });
     }
 }
 

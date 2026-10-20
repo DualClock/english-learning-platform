@@ -29,13 +29,13 @@ public class ReviewController : ControllerBase
     public async Task<ActionResult<object>> GetTodayReview()
     {
         var userId = GetUserId();
-        var words = await _srsService.GetWordsForReviewAsync(userId);
-        var count = await _srsService.GetReviewCountAsync(userId);
 
-        return Ok(new
-        {
-            totalCount = count,
-            words = words.Select(w => new
+        var user = await _context.Users.AsNoTracking().FirstAsync(u => u.Id == userId);
+        var queue = await _srsService.GetTodayQueueAsync(userId, user.DailyNewWords);
+
+        var words = queue.DueWords
+            .Concat(queue.NewWords)
+            .Select(w => new
             {
                 wordId = w.WordId,
                 text = w.Word.Text,
@@ -46,15 +46,36 @@ public class ReviewController : ControllerBase
                     example = d.Example
                 }),
                 interval = w.Interval,
+                intervalMinutes = w.IntervalMinutes,
                 easeFactor = w.EaseFactor,
-                repetitionCount = w.RepetitionCount
+                repetitionCount = w.RepetitionCount,
+                lapses = w.Lapses,
+                isLeech = w.IsLeech,
+                isNew = w.LastReviewedAt == null
             })
+            .ToList();
+
+        return Ok(new
+        {
+            // Сколько всего карточек на сегодня (с учётом лимита новых)
+            totalCount = queue.DueCount + Math.Min(queue.NewCount, queue.NewLimit),
+            reviewCount = queue.DueCount,
+            newCount = Math.Min(queue.NewCount, queue.NewLimit),
+            newWordsAvailable = queue.NewCount,
+            newLimit = queue.NewLimit,
+            reviewLimit = queue.ReviewLimit,
+            words
         });
     }
 
     [HttpPost("{wordId}/quality/{quality}")]
     public async Task<IActionResult> ReviewWord(int wordId, int quality)
     {
+        if (quality < 1 || quality > 5)
+        {
+            return BadRequest(new { message = "Оценка должна быть от 1 до 5" });
+        }
+
         var result = await _srsService.ReviewWordAsync(GetUserId(), wordId, quality);
         if (result == null) return NotFound();
 
@@ -62,9 +83,13 @@ public class ReviewController : ControllerBase
 
         return Ok(new
         {
-            interval = result.Interval,
+            interval = result.IntervalDays,
+            intervalMinutes = result.IntervalMinutes,
             easeFactor = result.EaseFactor,
-            nextReviewDate = result.NextReviewDate
+            nextReviewDate = result.NextReviewDate,
+            repetitions = result.RepetitionCount,
+            lapses = result.Lapses,
+            isLeech = result.IsLeech
         });
     }
 
@@ -88,7 +113,17 @@ public class ReviewController : ControllerBase
             .ToListAsync();
 
         if (words.Count < 4)
-            return BadRequest(new { message = "Нужно минимум 4 слова для теста" });
+        {
+            // Не ошибка, а «пока нечего тестировать»: фронтенд показывает
+            // дружелюбное пустое состояние вместо красного экрана.
+            return Ok(new
+            {
+                questions = Array.Empty<object>(),
+                reason = "not_enough_words",
+                requiredWords = 4,
+                currentWords = words.Count
+            });
+        }
 
         var quiz = words.Select(w => {
             var wrongAnswers = words

@@ -1,7 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import GreetingHeader from '@/components/dashboard/GreetingHeader';
 import StatsRow from '@/components/dashboard/StatsRow';
@@ -15,7 +15,10 @@ import StreakCard, { StreakData } from '@/components/dashboard/StreakCard';
 import RecommendedShelf, { RecommendedBook } from '@/components/dashboard/RecommendedShelf';
 import { EmptyBooks, ErrorState } from '@/components/dashboard/States';
 import { Book, pickContinueBook } from '@/components/dashboard/utils';
-import { API_URL } from '@/app/lib/api-url';
+import WelcomeBackModal from '@/components/WelcomeBackModal';
+import DailyPlan from '@/components/dashboard/DailyPlan';
+import LevelCard from '@/components/dashboard/LevelCard';
+import { useApiQuery } from '@/app/lib/use-api';
 
 interface Profile {
   email: string;
@@ -29,133 +32,72 @@ interface Profile {
   createdAt: string;
 }
 
+interface ReviewToday {
+  totalCount?: number;
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const [books, setBooks] = useState<Book[]>([]);
-  const [reviewCount, setReviewCount] = useState(0);
-  const [dictCount, setDictCount] = useState<number | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [streak, setStreak] = useState<StreakData | null>(null);
-  const [streakLoaded, setStreakLoaded] = useState(false);
-  const [recommended, setRecommended] = useState<RecommendedBook[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  // Все запросы идут параллельно и берутся из кэша при повторном заходе
+  const {
+    data: books,
+    error: booksError,
+    isLoading: booksLoading,
+    refresh: refreshBooks,
+  } = useApiQuery<Book[]>('/api/books');
+  const { data: profile } = useApiQuery<Profile>('/api/profile');
+  const { data: streak } = useApiQuery<StreakData>('/api/progress/streak');
+  const { data: reviewToday } = useApiQuery<ReviewToday>('/api/review/today');
+  const { data: dictionary } = useApiQuery<unknown[]>('/api/dictionary');
+  const recommendedPath = profile?.cefrLevel
+    ? `/api/books/recommended?level=${encodeURIComponent(profile.cefrLevel)}`
+    : null;
+  const { data: recommended } = useApiQuery<RecommendedBook[]>(recommendedPath);
 
   const trackEvent = useTrack();
 
   useEffect(() => {
-    if (!session) return;
     trackEvent('login');
-    loadDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, []);
 
-  const loadDashboardData = async () => {
-    setIsLoading(true);
-    setHasError(false);
-    try {
-      const token = session?.accessToken;
-      const headers = { Authorization: `Bearer ${token}` };
+  const bookList = useMemo(() => books ?? [], [books]);
+  const isLoading = booksLoading && books === undefined;
+  const hasError = Boolean(booksError);
+  const reviewCount = reviewToday?.totalCount ?? 0;
+  const dictCount = dictionary ? dictionary.length : null;
+  const streakLoaded = books !== undefined;
 
-      const booksRes = await fetch(`${API_URL}/api/books`, { headers });
-      if (!booksRes.ok) {
-        throw new Error(`Failed to load books: ${booksRes.status}`);
-      }
-      setBooks(await booksRes.json());
-
-      // Профиль — некритично, при сбое блоки уровня и рекомендаций скрываются
-      try {
-        const profileRes = await fetch(`${API_URL}/api/profile`, { headers });
-        if (profileRes.ok) {
-          const profileData: Profile = await profileRes.json();
-          setProfile(profileData);
-
-          if (profileData.cefrLevel) {
-            try {
-              const recRes = await fetch(
-                `${API_URL}/api/books/recommended?level=${encodeURIComponent(profileData.cefrLevel)}`,
-                { headers }
-              );
-              if (recRes.ok) {
-                setRecommended(await recRes.json());
-              } else {
-                setRecommended([]);
-              }
-            } catch (err) {
-              console.error('Failed to load recommended books:', err);
-              setRecommended([]);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load profile:', err);
-      }
-
-      // Стрик и XP — некритично, при сбое карточка скрывается
-      try {
-        const streakRes = await fetch(`${API_URL}/api/progress/streak`, { headers });
-        if (streakRes.ok) {
-          setStreak(await streakRes.json());
-        }
-      } catch (err) {
-        console.error('Failed to load streak:', err);
-      } finally {
-        setStreakLoaded(true);
-      }
-
-      // Слова на повторение — некритично, при сбое показываем 0
-      try {
-        const reviewRes = await fetch(`${API_URL}/api/review/today`, { headers });
-        if (reviewRes.ok) {
-          const reviewData = await reviewRes.json();
-          setReviewCount(reviewData.totalCount || 0);
-        }
-      } catch (err) {
-        console.error('Failed to load review count:', err);
-      }
-
-      // Размер словаря — некритично, при сбое карточка скрывается
-      try {
-        const dictRes = await fetch(`${API_URL}/api/dictionary`, { headers });
-        if (dictRes.ok) {
-          const dictData = await dictRes.json();
-          setDictCount(Array.isArray(dictData) ? dictData.length : null);
-        }
-      } catch (err) {
-        console.error('Failed to load dictionary:', err);
-      }
-    } catch (err) {
-      console.error('Failed to load dashboard data:', err);
-      setHasError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const userName = session?.user?.name || profile?.displayName || session?.user?.email?.split('@')[0];
+  const userName =
+    session?.user?.name || profile?.displayName || session?.user?.email?.split('@')[0] || profile?.email?.split('@')[0];
 
   return (
     <AppLayout>
+      <WelcomeBackModal />
       {isLoading ? (
         <DashboardSkeleton />
       ) : (
         <div className="animate-fade-in">
           <GreetingHeader name={userName} level={profile?.cefrLevel} />
 
+          <DailyPlan />
+
           {hasError ? (
-            <ErrorState onRetry={loadDashboardData} />
+            <ErrorState onRetry={refreshBooks} />
           ) : (
             <>
               <StatsRow
                 dictCount={dictCount}
                 reviewCount={reviewCount}
-                booksCount={books.length}
+                booksCount={bookList.length}
                 totalXp={streak?.totalXp ?? profile?.totalXp ?? null}
               />
 
-              {streakLoaded && <StreakCard streak={streak} />}
+              {streakLoaded && <StreakCard streak={streak ?? null} />}
 
-              {recommended !== null && profile?.cefrLevel && (
+              <LevelCard />
+
+              {recommended != null && profile?.cefrLevel && (
                 <RecommendedShelf
                   level={profile.cefrLevel}
                   books={recommended}
@@ -163,16 +105,13 @@ export default function DashboardPage() {
                 />
               )}
 
-              {books.length === 0 && dictCount === 0 && <FirstLesson />}
+              {bookList.length === 0 && dictCount === 0 && <FirstLesson />}
 
-              {books.length > 0 ? (
+              {bookList.length > 0 ? (
                 (() => {
-                  const hero = pickContinueBook(books)!;
+                  const hero = pickContinueBook(bookList)!;
                   return (
-                    <ContinueReading
-                      hero={hero}
-                      others={books.filter((b) => b.id !== hero.id)}
-                    />
+                    <ContinueReading hero={hero} others={bookList.filter((b) => b.id !== hero.id)} />
                   );
                 })()
               ) : (

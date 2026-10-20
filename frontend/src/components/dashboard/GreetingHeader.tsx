@@ -46,7 +46,7 @@ export default function GreetingHeader({ name, level }: Props) {
           </span>
         ) : (
           <Link
-            href="/onboarding"
+            href="/settings"
             className="shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full border-2 border-dashed border-[var(--color-primary-pressed)] text-[var(--color-primary)] hover:bg-[var(--color-tint-mint)] transition-colors"
           >
             Определить уровень

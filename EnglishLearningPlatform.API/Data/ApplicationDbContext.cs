@@ -29,6 +29,12 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<GrammarUnit> GrammarUnits => Set<GrammarUnit>();
     public DbSet<GrammarExercise> GrammarExercises => Set<GrammarExercise>();
     public DbSet<UserGrammarProgress> UserGrammarProgresses => Set<UserGrammarProgress>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<CategoryWord> CategoryWords => Set<CategoryWord>();
+    public DbSet<UserCategoryWordProgress> UserCategoryWordProgresses => Set<UserCategoryWordProgress>();
+    public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
+    public DbSet<ReviewLog> ReviewLogs => Set<ReviewLog>();
+    public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -49,6 +55,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .HasIndex(uw => new { uw.UserId, uw.WordId })
             .IsUnique();
 
+        // Очередь повторения (SrsService) фильтрует по пользователю и дате следующего показа
+        builder.Entity<UserWord>()
+            .HasIndex(uw => new { uw.UserId, uw.NextReviewDate });
+
         builder.Entity<UserWord>()
             .HasOne(uw => uw.User)
             .WithMany()
@@ -64,6 +74,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
         // Book конфигурация
         builder.Entity<Book>()
             .HasIndex(b => b.Title);
+
+        // Книги, загруженные пользователем (библиотека, достижения)
+        builder.Entity<Book>()
+            .HasIndex(b => b.UploadedByUserId);
 
         // Interaction конфигурация
         builder.Entity<Interaction>()
@@ -136,6 +150,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
         builder.Entity<AnalyticsEvent>()
             .HasIndex(ae => ae.Event);
 
+        // Аналитика по периодам: глобальные срезы по дате
+        builder.Entity<AnalyticsEvent>()
+            .HasIndex(ae => ae.CreatedAt);
+
         builder.Entity<AnalyticsEvent>()
             .HasOne(ae => ae.User)
             .WithMany()
@@ -167,5 +185,67 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .WithMany(gu => gu.UserProgresses)
             .HasForeignKey(ugp => ugp.UnitId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Category конфигурация
+        builder.Entity<Category>()
+            .HasIndex(c => c.Slug)
+            .IsUnique();
+
+        builder.Entity<CategoryWord>()
+            .HasIndex(cw => new { cw.CategoryId, cw.English })
+            .IsUnique();
+
+        builder.Entity<CategoryWord>()
+            .HasOne(cw => cw.Category)
+            .WithMany(c => c.Words)
+            .HasForeignKey(cw => cw.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<UserCategoryWordProgress>()
+            .HasIndex(p => new { p.UserId, p.CategoryWordId })
+            .IsUnique();
+
+        builder.Entity<UserCategoryWordProgress>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<UserCategoryWordProgress>()
+            .HasOne(p => p.CategoryWord)
+            .WithMany(cw => cw.UserProgresses)
+            .HasForeignKey(p => p.CategoryWordId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Достижения: один код на пользователя
+        builder.Entity<UserAchievement>()
+            .HasIndex(a => new { a.UserId, a.Code })
+            .IsUnique();
+
+        builder.Entity<UserAchievement>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // История повторений
+        builder.Entity<ReviewLog>()
+            .HasIndex(r => new { r.UserId, r.ReviewedAt });
+
+        builder.Entity<ReviewLog>()
+            .HasIndex(r => new { r.WordId, r.ReviewedAt });
+
+        builder.Entity<ReviewLog>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Журнал писем: ищем последнее напоминание пользователя
+        builder.Entity<EmailMessage>()
+            .HasIndex(m => new { m.UserId, m.Kind, m.CreatedAt });
+
+        builder.Entity<EmailMessage>()
+            .HasIndex(m => m.CreatedAt);
     }
 }

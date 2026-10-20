@@ -16,7 +16,7 @@ public class DictionaryService
 
     public static readonly HashSet<string> AllowedSources = new(StringComparer.OrdinalIgnoreCase)
     {
-        "manual", "reader", "key_word", "grammar", "list", "quiz"
+        "manual", "reader", "key_word", "grammar", "list", "quiz", "category"
     };
 
     public async Task<WordResponse?> AddWordAsync(string userId, AddWordRequest request, string source = "manual")
@@ -78,6 +78,76 @@ public class DictionaryService
         await _context.SaveChangesAsync();
 
         return MapToResponse(word);
+    }
+
+    // Батчевое добавление слов (FinishSession из читалки): раньше на каждое слово
+    // уходило до четырёх обращений к БД — поиск слова, поиск UserWord и два SaveChanges.
+    // Теперь три обращения на всю пачку; слова, уже есть у пользователя, пропускаются.
+    // Возвращает число реально добавленных слов.
+    public async Task<int> AddWordsAsync(
+        string userId,
+        IEnumerable<(string Text, string Definition)> items,
+        string source = "reader")
+    {
+        var normalized = items
+            .Where(i => !string.IsNullOrWhiteSpace(i.Text))
+            .Select(i => (Text: i.Text.Trim().ToLower(), Definition: i.Definition))
+            .GroupBy(i => i.Text)
+            .Select(g => g.First())
+            .ToList();
+
+        if (normalized.Count == 0) return 0;
+
+        var texts = normalized.Select(i => i.Text).ToList();
+
+        var existingWords = await _context.Words
+            .Include(w => w.Definitions)
+            .Where(w => texts.Contains(w.Text.ToLower()))
+            .ToListAsync();
+        var wordByText = existingWords.ToDictionary(w => w.Text.ToLower(), StringComparer.OrdinalIgnoreCase);
+
+        var ownedWordIds = await _context.UserWords
+            .Where(uw => uw.UserId == userId && texts.Contains(uw.Word.Text.ToLower()))
+            .Select(uw => uw.WordId)
+            .ToListAsync();
+        var ownedSet = ownedWordIds.ToHashSet();
+
+        var added = 0;
+        foreach (var (text, definition) in normalized)
+        {
+            if (wordByText.TryGetValue(text, out var word))
+            {
+                if (ownedSet.Contains(word.Id)) continue;
+            }
+            else
+            {
+                word = new Word { Text = text, Language = "en" };
+                word.Definitions.Add(new WordDefinition
+                {
+                    Definition = definition,
+                    DisplayOrder = 0
+                });
+                _context.Words.Add(word);
+            }
+
+            _context.UserWords.Add(new UserWord
+            {
+                UserId = userId,
+                Word = word,
+                NextReviewDate = DateTime.UtcNow,
+                Source = source
+            });
+            _context.Interactions.Add(new Interaction
+            {
+                UserId = userId,
+                Word = word,
+                Source = source
+            });
+            added++;
+        }
+
+        if (added > 0) await _context.SaveChangesAsync();
+        return added;
     }
 
     public async Task<List<WordResponse>> GetUserWordsAsync(string userId)
