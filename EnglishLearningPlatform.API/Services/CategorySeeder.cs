@@ -70,13 +70,34 @@ public class CategorySeeder
 
         var slugs = categories.Select(c => c.Slug).ToList();
         var existing = await _context.Categories
+            .Include(c => c.Words)
             .Where(c => slugs.Contains(c.Slug))
             .ToListAsync();
 
         foreach (var seed in categories)
         {
-            if (existing.Any(c => c.Slug == seed.Slug))
+            var current = existing.FirstOrDefault(c => c.Slug == seed.Slug);
+
+            if (current != null)
             {
+                // Категория уже есть: дописываем только новые слова, чтобы
+                // расширение сид-файла доезжало и до существующих баз
+                var known = current.Words
+                    .Select(w => w.English)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var word in seed.Words.Where(w => !known.Contains(w.English)))
+                {
+                    current.Words.Add(new CategoryWord
+                    {
+                        English = word.English,
+                        Translation = word.Translation,
+                        Transcription = word.Transcription,
+                        Example = word.Example
+                    });
+                    result.WordsCreated++;
+                }
+
                 continue;
             }
 
@@ -107,7 +128,7 @@ public class CategorySeeder
 
         await _context.SaveChangesAsync();
 
-        result.AlreadySeeded = result.CategoriesCreated == 0;
+        result.AlreadySeeded = result.CategoriesCreated == 0 && result.WordsCreated == 0;
         return result;
     }
 

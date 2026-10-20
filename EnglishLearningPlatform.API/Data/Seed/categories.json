@@ -7,18 +7,126 @@
       "color": "#F59E0B",
       "description": "Слова для описания чувств и эмоций",
       "words": [
-        { "english": "joy", "translation": "радость", "transcription": "[dʒɔɪ]", "example": "Her eyes were full of joy." },
-        { "english": "anger", "translation": "гнев", "transcription": "[ˈæŋɡə]", "example": "He could not hide his anger." },
-        { "english": "fear", "translation": "страх", "transcription": "[fɪə]", "example": "Fear of failure stopped him." },
-        { "english": "surprise", "translation": "удивление", "transcription": "[səˈpraɪz]", "example": "To my surprise, she agreed." },
-        { "english": "sadness", "translation": "грусть", "transcription": "[ˈsædnəs]", "example": "A wave of sadness came over her." },
-        { "english": "excitement", "translation": "волнение, азарт", "transcription": "[ɪkˈsaɪtmənt]", "example": "The children shouted with excitement." },
-        { "english": "anxiety", "translation": "тревога", "transcription": "[æŋˈzaɪəti]", "example": "He felt anxiety before the exam." },
-        { "english": "pride", "translation": "гордость", "transcription": "[praɪd]", "example": "She takes pride in her work." },
-        { "english": "shame", "translation": "стыд", "transcription": "[ʃeɪm]", "example": "He blushed with shame." },
-        { "english": "jealousy", "translation": "ревность, зависть", "transcription": "[ˈdʒeləsi]", "example": "Jealousy ruined their friendship." },
-        { "english": "relief", "translation": "облегчение", "transcription": "[rɪˈliːf]", "example": "She sighed with relief." },
-        { "english": "boredom", "translation": "скука", "transcription": "[ˈbɔːdəm]", "example": "He yawned out of boredom." }
+        {
+          "english": "joy",
+          "translation": "радость",
+          "transcription": "[dʒɔɪ]",
+          "example": "Her eyes were full of joy."
+        },
+        {
+          "english": "anger",
+          "translation": "гнев",
+          "transcription": "[ˈæŋɡə]",
+          "example": "He could not hide his anger."
+        },
+        {
+          "english": "fear",
+          "translation": "страх",
+          "transcription": "[fɪə]",
+          "example": "Fear of failure stopped him."
+        },
+        {
+          "english": "surprise",
+          "translation": "удивление",
+          "transcription": "[səˈpraɪz]",
+          "example": "To my surprise, she agreed."
+        },
+        {
+          "english": "sadness",
+          "translation": "грусть",
+          "transcription": "[ˈsædnəs]",
+          "example": "A wave of sadness came over her."
+        },
+        {
+          "english": "excitement",
+          "translation": "волнение, азарт",
+          "transcription": "[ɪkˈsaɪtmənt]",
+          "example": "The children shouted with excitement."
+        },
+        {
+          "english": "anxiety",
+          "translation": "тревога",
+          "transcription": "[æŋˈzaɪəti]",
+          "example": "He felt anxiety before the exam."
+        },
+        {
+          "english": "pride",
+          "translation": "гордость",
+          "transcription": "[praɪd]",
+          "example": "She takes pride in her work."
+        },
+        {
+          "english": "shame",
+          "translation": "стыд",
+          "transcription": "[ʃeɪm]",
+          "example": "He blushed with shame."
+        },
+        {
+          "english": "jealousy",
+          "translation": "ревность, зависть",
+          "transcription": "[ˈdʒeləsi]",
+          "example": "Jealousy ruined their friendship."
+        },
+        {
+          "english": "relief",
+          "translation": "облегчение",
+          "transcription": "[rɪˈliːf]",
+          "example": "She sighed with relief."
+        },
+        {
+          "english": "boredom",
+          "translation": "скука",
+          "transcription": "[ˈbɔːdəm]",
+          "example": "He yawned out of boredom."
+        },
+        {
+          "english": "hope",
+          "translation": "надежда",
+          "transcription": "[həʊp]",
+          "example": "I hope you feel better soon."
+        },
+        {
+          "english": "gratitude",
+          "translation": "благодарность",
+          "transcription": "[ˈɡrætɪtjuːd]",
+          "example": "She felt deep gratitude."
+        },
+        {
+          "english": "disgust",
+          "translation": "отвращение",
+          "transcription": "[dɪsˈɡʌst]",
+          "example": "He looked at it with disgust."
+        },
+        {
+          "english": "loneliness",
+          "translation": "одиночество",
+          "transcription": "[ˈləʊnlinəs]",
+          "example": "Loneliness is hard to admit."
+        },
+        {
+          "english": "confidence",
+          "translation": "уверенность",
+          "transcription": "[ˈkɒnfɪdəns]",
+          "example": "Practice builds confidence."
+        },
+        {
+          "english": "frustration",
+          "translation": "раздражение, досада",
+          "transcription": "[frʌˈstreɪʃn]",
+          "example": "He sighed in frustration."
+        },
+        {
+          "english": "nostalgia",
+          "translation": "ностальгия",
+          "transcription": "[nɒˈstældʒə]",
+          "example": "The song filled her with nostalgia."
+        },
+        {
+          "english": "trust",
+          "translation": "доверие",
+          "transcription": "[trʌst]",
+          "example": "Trust takes years to build."
+        }
       ]
     },
     {
@@ -28,18 +136,126 @@
       "color": "#EF4444",
       "description": "Еда, напитки и всё, что связано с кухней",
       "words": [
-        { "english": "appetite", "translation": "аппетит", "transcription": "[ˈæpɪtaɪt]", "example": "The walk gave me an appetite." },
-        { "english": "recipe", "translation": "рецепт", "transcription": "[ˈresɪpi]", "example": "This recipe is very simple." },
-        { "english": "ingredient", "translation": "ингредиент", "transcription": "[ɪnˈɡriːdiənt]", "example": "Mix all the ingredients." },
-        { "english": "delicious", "translation": "вкусный", "transcription": "[dɪˈlɪʃəs]", "example": "The soup is delicious." },
-        { "english": "hungry", "translation": "голодный", "transcription": "[ˈhʌŋɡri]", "example": "I'm starving hungry." },
-        { "english": "beverage", "translation": "напиток", "transcription": "[ˈbevərɪdʒ]", "example": "Tea is a popular beverage." },
-        { "english": "dessert", "translation": "десерт", "transcription": "[dɪˈzɜːt]", "example": "What would you like for dessert?" },
-        { "english": "spicy", "translation": "острый", "transcription": "[ˈspaɪsi]", "example": "I don't like spicy food." },
-        { "english": "meal", "translation": "приём пищи", "transcription": "[miːl]", "example": "We had a nice meal together." },
-        { "english": "snack", "translation": "перекус", "transcription": "[snæk]", "example": "I had a quick snack at noon." },
-        { "english": "flavor", "translation": "вкус, аромат", "transcription": "[ˈfleɪvə]", "example": "This ice cream has a rich flavor." },
-        { "english": "portion", "translation": "порция", "transcription": "[ˈpɔːʃn]", "example": "The portions here are huge." }
+        {
+          "english": "appetite",
+          "translation": "аппетит",
+          "transcription": "[ˈæpɪtaɪt]",
+          "example": "The walk gave me an appetite."
+        },
+        {
+          "english": "recipe",
+          "translation": "рецепт",
+          "transcription": "[ˈresɪpi]",
+          "example": "This recipe is very simple."
+        },
+        {
+          "english": "ingredient",
+          "translation": "ингредиент",
+          "transcription": "[ɪnˈɡriːdiənt]",
+          "example": "Mix all the ingredients."
+        },
+        {
+          "english": "delicious",
+          "translation": "вкусный",
+          "transcription": "[dɪˈlɪʃəs]",
+          "example": "The soup is delicious."
+        },
+        {
+          "english": "hungry",
+          "translation": "голодный",
+          "transcription": "[ˈhʌŋɡri]",
+          "example": "I'm starving hungry."
+        },
+        {
+          "english": "beverage",
+          "translation": "напиток",
+          "transcription": "[ˈbevərɪdʒ]",
+          "example": "Tea is a popular beverage."
+        },
+        {
+          "english": "dessert",
+          "translation": "десерт",
+          "transcription": "[dɪˈzɜːt]",
+          "example": "What would you like for dessert?"
+        },
+        {
+          "english": "spicy",
+          "translation": "острый",
+          "transcription": "[ˈspaɪsi]",
+          "example": "I don't like spicy food."
+        },
+        {
+          "english": "meal",
+          "translation": "приём пищи",
+          "transcription": "[miːl]",
+          "example": "We had a nice meal together."
+        },
+        {
+          "english": "snack",
+          "translation": "перекус",
+          "transcription": "[snæk]",
+          "example": "I had a quick snack at noon."
+        },
+        {
+          "english": "flavor",
+          "translation": "вкус, аромат",
+          "transcription": "[ˈfleɪvə]",
+          "example": "This ice cream has a rich flavor."
+        },
+        {
+          "english": "portion",
+          "translation": "порция",
+          "transcription": "[ˈpɔːʃn]",
+          "example": "The portions here are huge."
+        },
+        {
+          "english": "menu",
+          "translation": "меню",
+          "transcription": "[ˈmenjuː]",
+          "example": "Could we see the menu?"
+        },
+        {
+          "english": "waiter",
+          "translation": "официант",
+          "transcription": "[ˈweɪtə]",
+          "example": "The waiter brought the bill."
+        },
+        {
+          "english": "hunger",
+          "translation": "голод",
+          "transcription": "[ˈhʌŋɡə]",
+          "example": "He could not hide his hunger."
+        },
+        {
+          "english": "vegetarian",
+          "translation": "вегетарианец",
+          "transcription": "[ˌvedʒəˈteəriən]",
+          "example": "She has been a vegetarian for years."
+        },
+        {
+          "english": "salty",
+          "translation": "солёный",
+          "transcription": "[ˈsɔːlti]",
+          "example": "The soup is too salty."
+        },
+        {
+          "english": "fresh",
+          "translation": "свежий",
+          "transcription": "[freʃ]",
+          "example": "Buy fresh bread every morning."
+        },
+        {
+          "english": "frozen",
+          "translation": "замороженный",
+          "transcription": "[ˈfrəʊzn]",
+          "example": "We keep frozen vegetables in the freezer."
+        },
+        {
+          "english": "appetizer",
+          "translation": "закуска",
+          "transcription": "[ˈæpɪtaɪzə]",
+          "example": "We ordered a light appetizer."
+        }
       ]
     },
     {
@@ -49,18 +265,126 @@
       "color": "#3B82F6",
       "description": "Слова для поездок и приключений",
       "words": [
-        { "english": "journey", "translation": "путешествие", "transcription": "[ˈdʒɜːni]", "example": "The journey took three hours." },
-        { "english": "luggage", "translation": "багаж", "transcription": "[ˈlʌɡɪdʒ]", "example": "Where can I leave my luggage?" },
-        { "english": "destination", "translation": "пункт назначения", "transcription": "[ˌdestɪˈneɪʃn]", "example": "Paris is a popular destination." },
-        { "english": "passport", "translation": "паспорт", "transcription": "[ˈpɑːspɔːt]", "example": "Don't forget your passport." },
-        { "english": "flight", "translation": "рейс, полёт", "transcription": "[flaɪt]", "example": "Our flight was delayed." },
-        { "english": "accommodation", "translation": "жильё, размещение", "transcription": "[əˌkɒməˈdeɪʃn]", "example": "We booked accommodation in advance." },
-        { "english": "sightseeing", "translation": "осмотр достопримечательностей", "transcription": "[ˈsaɪtsiːɪŋ]", "example": "We spent the day sightseeing." },
-        { "english": "customs", "translation": "таможня", "transcription": "[ˈkʌstəmz]", "example": "It took an hour to pass customs." },
-        { "english": "itinerary", "translation": "маршрут", "transcription": "[aɪˈtɪnərəri]", "example": "Our itinerary includes three cities." },
-        { "english": "souvenir", "translation": "сувенир", "transcription": "[ˌsuːvəˈnɪə]", "example": "She bought a souvenir for her mom." },
-        { "english": "abroad", "translation": "за границей", "transcription": "[əˈbrɔːd]", "example": "He dreams of studying abroad." },
-        { "english": "departure", "translation": "отправление", "transcription": "[dɪˈpɑːtʃə]", "example": "Check the departure time." }
+        {
+          "english": "journey",
+          "translation": "путешествие",
+          "transcription": "[ˈdʒɜːni]",
+          "example": "The journey took three hours."
+        },
+        {
+          "english": "luggage",
+          "translation": "багаж",
+          "transcription": "[ˈlʌɡɪdʒ]",
+          "example": "Where can I leave my luggage?"
+        },
+        {
+          "english": "destination",
+          "translation": "пункт назначения",
+          "transcription": "[ˌdestɪˈneɪʃn]",
+          "example": "Paris is a popular destination."
+        },
+        {
+          "english": "passport",
+          "translation": "паспорт",
+          "transcription": "[ˈpɑːspɔːt]",
+          "example": "Don't forget your passport."
+        },
+        {
+          "english": "flight",
+          "translation": "рейс, полёт",
+          "transcription": "[flaɪt]",
+          "example": "Our flight was delayed."
+        },
+        {
+          "english": "accommodation",
+          "translation": "жильё, размещение",
+          "transcription": "[əˌkɒməˈdeɪʃn]",
+          "example": "We booked accommodation in advance."
+        },
+        {
+          "english": "sightseeing",
+          "translation": "осмотр достопримечательностей",
+          "transcription": "[ˈsaɪtsiːɪŋ]",
+          "example": "We spent the day sightseeing."
+        },
+        {
+          "english": "customs",
+          "translation": "таможня",
+          "transcription": "[ˈkʌstəmz]",
+          "example": "It took an hour to pass customs."
+        },
+        {
+          "english": "itinerary",
+          "translation": "маршрут",
+          "transcription": "[aɪˈtɪnərəri]",
+          "example": "Our itinerary includes three cities."
+        },
+        {
+          "english": "souvenir",
+          "translation": "сувенир",
+          "transcription": "[ˌsuːvəˈnɪə]",
+          "example": "She bought a souvenir for her mom."
+        },
+        {
+          "english": "abroad",
+          "translation": "за границей",
+          "transcription": "[əˈbrɔːd]",
+          "example": "He dreams of studying abroad."
+        },
+        {
+          "english": "departure",
+          "translation": "отправление",
+          "transcription": "[dɪˈpɑːtʃə]",
+          "example": "Check the departure time."
+        },
+        {
+          "english": "visa",
+          "translation": "виза",
+          "transcription": "[ˈviːzə]",
+          "example": "Do I need a visa for Spain?"
+        },
+        {
+          "english": "boarding pass",
+          "translation": "посадочный талон",
+          "transcription": "[ˈbɔːdɪŋ pɑːs]",
+          "example": "Show your boarding pass at the gate."
+        },
+        {
+          "english": "gate",
+          "translation": "выход на посадку",
+          "transcription": "[ɡeɪt]",
+          "example": "The flight leaves from gate seven."
+        },
+        {
+          "english": "hotel",
+          "translation": "отель",
+          "transcription": "[həʊˈtel]",
+          "example": "The hotel is near the beach."
+        },
+        {
+          "english": "guidebook",
+          "translation": "путеводитель",
+          "transcription": "[ˈɡaɪdbʊk]",
+          "example": "I bought a guidebook before the trip."
+        },
+        {
+          "english": "suitcase",
+          "translation": "чемодан",
+          "transcription": "[ˈsuːtkeɪs]",
+          "example": "My suitcase is too heavy."
+        },
+        {
+          "english": "check-in",
+          "translation": "регистрация",
+          "transcription": "[ˈtʃek ɪn]",
+          "example": "Check-in opens two hours before the flight."
+        },
+        {
+          "english": "resort",
+          "translation": "курорт",
+          "transcription": "[rɪˈzɔːt]",
+          "example": "They stayed at a seaside resort."
+        }
       ]
     },
     {
@@ -70,18 +394,126 @@
       "color": "#8B5CF6",
       "description": "Карьера, офис и деловое общение",
       "words": [
-        { "english": "colleague", "translation": "коллега", "transcription": "[ˈkɒliːɡ]", "example": "She is my favourite colleague." },
-        { "english": "deadline", "translation": "крайний срок", "transcription": "[ˈdedlaɪn]", "example": "We must meet the deadline." },
-        { "english": "salary", "translation": "зарплата", "transcription": "[ˈsæləri]", "example": "The salary is paid monthly." },
-        { "english": "interview", "translation": "собеседование", "transcription": "[ˈɪntəvjuː]", "example": "I have a job interview tomorrow." },
-        { "english": "promotion", "translation": "повышение", "transcription": "[prəˈməʊʃn]", "example": "He got a promotion last week." },
-        { "english": "responsibility", "translation": "ответственность", "transcription": "[rɪˌspɒnsəˈbɪləti]", "example": "This is your responsibility." },
-        { "english": "meeting", "translation": "встреча, совещание", "transcription": "[ˈmiːtɪŋ]", "example": "The meeting starts at ten." },
-        { "english": "employer", "translation": "работодатель", "transcription": "[ɪmˈplɔɪə]", "example": "Her employer offers good benefits." },
-        { "english": "experience", "translation": "опыт", "transcription": "[ɪkˈspɪəriəns]", "example": "She has five years of experience." },
-        { "english": "schedule", "translation": "расписание, график", "transcription": "[ˈʃedjuːl]", "example": "My schedule is very busy." },
-        { "english": "resign", "translation": "уволиться", "transcription": "[rɪˈzaɪn]", "example": "He decided to resign." },
-        { "english": "skill", "translation": "навык", "transcription": "[skɪl]", "example": "Communication is a key skill." }
+        {
+          "english": "colleague",
+          "translation": "коллега",
+          "transcription": "[ˈkɒliːɡ]",
+          "example": "She is my favourite colleague."
+        },
+        {
+          "english": "deadline",
+          "translation": "крайний срок",
+          "transcription": "[ˈdedlaɪn]",
+          "example": "We must meet the deadline."
+        },
+        {
+          "english": "salary",
+          "translation": "зарплата",
+          "transcription": "[ˈsæləri]",
+          "example": "The salary is paid monthly."
+        },
+        {
+          "english": "interview",
+          "translation": "собеседование",
+          "transcription": "[ˈɪntəvjuː]",
+          "example": "I have a job interview tomorrow."
+        },
+        {
+          "english": "promotion",
+          "translation": "повышение",
+          "transcription": "[prəˈməʊʃn]",
+          "example": "He got a promotion last week."
+        },
+        {
+          "english": "responsibility",
+          "translation": "ответственность",
+          "transcription": "[rɪˌspɒnsəˈbɪləti]",
+          "example": "This is your responsibility."
+        },
+        {
+          "english": "meeting",
+          "translation": "встреча, совещание",
+          "transcription": "[ˈmiːtɪŋ]",
+          "example": "The meeting starts at ten."
+        },
+        {
+          "english": "employer",
+          "translation": "работодатель",
+          "transcription": "[ɪmˈplɔɪə]",
+          "example": "Her employer offers good benefits."
+        },
+        {
+          "english": "experience",
+          "translation": "опыт",
+          "transcription": "[ɪkˈspɪəriəns]",
+          "example": "She has five years of experience."
+        },
+        {
+          "english": "schedule",
+          "translation": "расписание, график",
+          "transcription": "[ˈʃedjuːl]",
+          "example": "My schedule is very busy."
+        },
+        {
+          "english": "resign",
+          "translation": "уволиться",
+          "transcription": "[rɪˈzaɪn]",
+          "example": "He decided to resign."
+        },
+        {
+          "english": "skill",
+          "translation": "навык",
+          "transcription": "[skɪl]",
+          "example": "Communication is a key skill."
+        },
+        {
+          "english": "task",
+          "translation": "задача",
+          "transcription": "[tɑːsk]",
+          "example": "Finish this task before lunch."
+        },
+        {
+          "english": "contract",
+          "translation": "контракт",
+          "transcription": "[ˈkɒntrækt]",
+          "example": "She signed a one-year contract."
+        },
+        {
+          "english": "overtime",
+          "translation": "сверхурочные",
+          "transcription": "[ˈəʊvətaɪm]",
+          "example": "He works overtime every Friday."
+        },
+        {
+          "english": "client",
+          "translation": "клиент",
+          "transcription": "[ˈklaɪənt]",
+          "example": "The client approved the design."
+        },
+        {
+          "english": "department",
+          "translation": "отдел",
+          "transcription": "[dɪˈpɑːtmənt]",
+          "example": "I work in the sales department."
+        },
+        {
+          "english": "apply",
+          "translation": "подавать заявку",
+          "transcription": "[əˈplaɪ]",
+          "example": "I applied for three jobs."
+        },
+        {
+          "english": "qualified",
+          "translation": "квалифицированный",
+          "transcription": "[ˈkwɒlɪfaɪd]",
+          "example": "She is well qualified for the role."
+        },
+        {
+          "english": "teamwork",
+          "translation": "командная работа",
+          "transcription": "[ˈtiːmwɜːk]",
+          "example": "Teamwork makes projects faster."
+        }
       ]
     },
     {
@@ -91,18 +523,126 @@
       "color": "#10B981",
       "description": "Здоровье, спорт и самочувствие",
       "words": [
-        { "english": "headache", "translation": "головная боль", "transcription": "[ˈhedeɪk]", "example": "I have a terrible headache." },
-        { "english": "medicine", "translation": "лекарство", "transcription": "[ˈmedsn]", "example": "Take this medicine twice a day." },
-        { "english": "exercise", "translation": "упражнение, тренировка", "transcription": "[ˈeksəsaɪz]", "example": "Regular exercise keeps you fit." },
-        { "english": "appointment", "translation": "приём, запись", "transcription": "[əˈpɔɪntmənt]", "example": "I made a doctor's appointment." },
-        { "english": "symptom", "translation": "симптом", "transcription": "[ˈsɪmptəm]", "example": "Fever is a common symptom." },
-        { "english": "recovery", "translation": "выздоровление", "transcription": "[rɪˈkʌvəri]", "example": "Wishing you a speedy recovery." },
-        { "english": "diet", "translation": "диета, рацион", "transcription": "[ˈdaɪət]", "example": "A balanced diet is important." },
-        { "english": "allergy", "translation": "аллергия", "transcription": "[ˈælədʒi]", "example": "She has an allergy to nuts." },
-        { "english": "injury", "translation": "травма", "transcription": "[ˈɪndʒəri]", "example": "He suffered a knee injury." },
-        { "english": "vitamins", "translation": "витамины", "transcription": "[ˈvɪtəmɪnz]", "example": "Fresh fruit is full of vitamins." },
-        { "english": "prevention", "translation": "профилактика", "transcription": "[prɪˈvenʃn]", "example": "Prevention is better than cure." },
-        { "english": "stress", "translation": "стресс", "transcription": "[stres]", "example": "Too much stress harms your health." }
+        {
+          "english": "headache",
+          "translation": "головная боль",
+          "transcription": "[ˈhedeɪk]",
+          "example": "I have a terrible headache."
+        },
+        {
+          "english": "medicine",
+          "translation": "лекарство",
+          "transcription": "[ˈmedsn]",
+          "example": "Take this medicine twice a day."
+        },
+        {
+          "english": "exercise",
+          "translation": "упражнение, тренировка",
+          "transcription": "[ˈeksəsaɪz]",
+          "example": "Regular exercise keeps you fit."
+        },
+        {
+          "english": "appointment",
+          "translation": "приём, запись",
+          "transcription": "[əˈpɔɪntmənt]",
+          "example": "I made a doctor's appointment."
+        },
+        {
+          "english": "symptom",
+          "translation": "симптом",
+          "transcription": "[ˈsɪmptəm]",
+          "example": "Fever is a common symptom."
+        },
+        {
+          "english": "recovery",
+          "translation": "выздоровление",
+          "transcription": "[rɪˈkʌvəri]",
+          "example": "Wishing you a speedy recovery."
+        },
+        {
+          "english": "diet",
+          "translation": "диета, рацион",
+          "transcription": "[ˈdaɪət]",
+          "example": "A balanced diet is important."
+        },
+        {
+          "english": "allergy",
+          "translation": "аллергия",
+          "transcription": "[ˈælədʒi]",
+          "example": "She has an allergy to nuts."
+        },
+        {
+          "english": "injury",
+          "translation": "травма",
+          "transcription": "[ˈɪndʒəri]",
+          "example": "He suffered a knee injury."
+        },
+        {
+          "english": "vitamins",
+          "translation": "витамины",
+          "transcription": "[ˈvɪtəmɪnz]",
+          "example": "Fresh fruit is full of vitamins."
+        },
+        {
+          "english": "prevention",
+          "translation": "профилактика",
+          "transcription": "[prɪˈvenʃn]",
+          "example": "Prevention is better than cure."
+        },
+        {
+          "english": "stress",
+          "translation": "стресс",
+          "transcription": "[stres]",
+          "example": "Too much stress harms your health."
+        },
+        {
+          "english": "prescription",
+          "translation": "рецепт (медицинский)",
+          "transcription": "[prɪˈskrɪpʃn]",
+          "example": "The doctor gave me a prescription."
+        },
+        {
+          "english": "treatment",
+          "translation": "лечение",
+          "transcription": "[ˈtriːtmənt]",
+          "example": "The treatment lasted six weeks."
+        },
+        {
+          "english": "surgery",
+          "translation": "операция",
+          "transcription": "[ˈsɜːdʒəri]",
+          "example": "He needs surgery on his knee."
+        },
+        {
+          "english": "vaccination",
+          "translation": "вакцинация",
+          "transcription": "[ˌvæksɪˈneɪʃn]",
+          "example": "Vaccination protects children."
+        },
+        {
+          "english": "insomnia",
+          "translation": "бессонница",
+          "transcription": "[ɪnˈsɒmniə]",
+          "example": "Stress often causes insomnia."
+        },
+        {
+          "english": "hydration",
+          "translation": "питьевой режим",
+          "transcription": "[haɪˈdreɪʃn]",
+          "example": "Hydration matters during exercise."
+        },
+        {
+          "english": "clinic",
+          "translation": "клиника",
+          "transcription": "[ˈklɪnɪk]",
+          "example": "The clinic opens at eight."
+        },
+        {
+          "english": "immune",
+          "translation": "иммунный",
+          "transcription": "[ɪˈmjuːn]",
+          "example": "Sleep strengthens the immune system."
+        }
       ]
     },
     {
@@ -112,18 +652,2706 @@
       "color": "#22C55E",
       "description": "Природа, погода и окружающий мир",
       "words": [
-        { "english": "forest", "translation": "лес", "transcription": "[ˈfɒrɪst]", "example": "We walked through a dense forest." },
-        { "english": "river", "translation": "река", "transcription": "[ˈrɪvə]", "example": "The river flows to the sea." },
-        { "english": "mountain", "translation": "гора", "transcription": "[ˈmaʊntɪn]", "example": "They climbed the highest mountain." },
-        { "english": "weather", "translation": "погода", "transcription": "[ˈweðə]", "example": "The weather is nice today." },
-        { "english": "storm", "translation": "буря, шторм", "transcription": "[stɔːm]", "example": "A storm is coming." },
-        { "english": "sunrise", "translation": "рассвет", "transcription": "[ˈsʌnraɪz]", "example": "We woke up before sunrise." },
-        { "english": "wildlife", "translation": "дикая природа", "transcription": "[ˈwaɪldlaɪf]", "example": "The park protects local wildlife." },
-        { "english": "climate", "translation": "климат", "transcription": "[ˈklaɪmət]", "example": "The climate here is mild." },
-        { "english": "ocean", "translation": "океан", "transcription": "[ˈəʊʃn]", "example": "The ocean is deep and blue." },
-        { "english": "flower", "translation": "цветок", "transcription": "[ˈflaʊə]", "example": "This flower smells wonderful." },
-        { "english": "island", "translation": "остров", "transcription": "[ˈaɪlənd]", "example": "They live on a small island." },
-        { "english": "valley", "translation": "долина", "transcription": "[ˈvæli]", "example": "The village lies in a green valley." }
+        {
+          "english": "forest",
+          "translation": "лес",
+          "transcription": "[ˈfɒrɪst]",
+          "example": "We walked through a dense forest."
+        },
+        {
+          "english": "river",
+          "translation": "река",
+          "transcription": "[ˈrɪvə]",
+          "example": "The river flows to the sea."
+        },
+        {
+          "english": "mountain",
+          "translation": "гора",
+          "transcription": "[ˈmaʊntɪn]",
+          "example": "They climbed the highest mountain."
+        },
+        {
+          "english": "weather",
+          "translation": "погода",
+          "transcription": "[ˈweðə]",
+          "example": "The weather is nice today."
+        },
+        {
+          "english": "storm",
+          "translation": "буря, шторм",
+          "transcription": "[stɔːm]",
+          "example": "A storm is coming."
+        },
+        {
+          "english": "sunrise",
+          "translation": "рассвет",
+          "transcription": "[ˈsʌnraɪz]",
+          "example": "We woke up before sunrise."
+        },
+        {
+          "english": "wildlife",
+          "translation": "дикая природа",
+          "transcription": "[ˈwaɪldlaɪf]",
+          "example": "The park protects local wildlife."
+        },
+        {
+          "english": "climate",
+          "translation": "климат",
+          "transcription": "[ˈklaɪmət]",
+          "example": "The climate here is mild."
+        },
+        {
+          "english": "ocean",
+          "translation": "океан",
+          "transcription": "[ˈəʊʃn]",
+          "example": "The ocean is deep and blue."
+        },
+        {
+          "english": "flower",
+          "translation": "цветок",
+          "transcription": "[ˈflaʊə]",
+          "example": "This flower smells wonderful."
+        },
+        {
+          "english": "island",
+          "translation": "остров",
+          "transcription": "[ˈaɪlənd]",
+          "example": "They live on a small island."
+        },
+        {
+          "english": "valley",
+          "translation": "долина",
+          "transcription": "[ˈvæli]",
+          "example": "The village lies in a green valley."
+        },
+        {
+          "english": "waterfall",
+          "translation": "водопад",
+          "transcription": "[ˈwɔːtəfɔːl]",
+          "example": "The waterfall is fifty metres high."
+        },
+        {
+          "english": "desert",
+          "translation": "пустыня",
+          "transcription": "[ˈdezət]",
+          "example": "The desert is cold at night."
+        },
+        {
+          "english": "cave",
+          "translation": "пещера",
+          "transcription": "[keɪv]",
+          "example": "We explored a dark cave."
+        },
+        {
+          "english": "meadow",
+          "translation": "луг",
+          "transcription": "[ˈmedəʊ]",
+          "example": "Flowers covered the meadow."
+        },
+        {
+          "english": "glacier",
+          "translation": "ледник",
+          "transcription": "[ˈɡlæsiə]",
+          "example": "The glacier is melting fast."
+        },
+        {
+          "english": "shore",
+          "translation": "берег",
+          "transcription": "[ʃɔː]",
+          "example": "We walked along the shore."
+        },
+        {
+          "english": "pine",
+          "translation": "сосна",
+          "transcription": "[paɪn]",
+          "example": "A tall pine stood by the road."
+        },
+        {
+          "english": "soil",
+          "translation": "почва",
+          "transcription": "[sɔɪl]",
+          "example": "The soil here is very rich."
+        }
+      ]
+    },
+    {
+      "name": "Покупки",
+      "slug": "shopping",
+      "icon": "🛍️",
+      "color": "#EC4899",
+      "description": "Магазины, цены и всё о покупках",
+      "words": [
+        {
+          "english": "discount",
+          "translation": "скидка",
+          "transcription": "[ˈdɪskaʊnt]",
+          "example": "There is a big discount on shoes."
+        },
+        {
+          "english": "receipt",
+          "translation": "чек",
+          "transcription": "[rɪˈsiːt]",
+          "example": "Keep the receipt, please."
+        },
+        {
+          "english": "refund",
+          "translation": "возврат денег",
+          "transcription": "[ˈriːfʌnd]",
+          "example": "I asked for a refund."
+        },
+        {
+          "english": "bargain",
+          "translation": "выгодная покупка",
+          "transcription": "[ˈbɑːɡɪn]",
+          "example": "This coat was a real bargain."
+        },
+        {
+          "english": "price",
+          "translation": "цена",
+          "transcription": "[praɪs]",
+          "example": "The price is too high."
+        },
+        {
+          "english": "customer",
+          "translation": "покупатель",
+          "transcription": "[ˈkʌstəmə]",
+          "example": "The customer is always right."
+        },
+        {
+          "english": "cashier",
+          "translation": "кассир",
+          "transcription": "[kæˈʃɪə]",
+          "example": "Pay at the cashier, please."
+        },
+        {
+          "english": "queue",
+          "translation": "очередь",
+          "transcription": "[kjuː]",
+          "example": "There was a long queue at the till."
+        },
+        {
+          "english": "trolley",
+          "translation": "тележка",
+          "transcription": "[ˈtrɒli]",
+          "example": "He filled the trolley with groceries."
+        },
+        {
+          "english": "checkout",
+          "translation": "касса",
+          "transcription": "[ˈtʃekaʊt]",
+          "example": "Let's go to the checkout."
+        },
+        {
+          "english": "warranty",
+          "translation": "гарантия",
+          "transcription": "[ˈwɒrənti]",
+          "example": "The laptop comes with a two-year warranty."
+        },
+        {
+          "english": "sale",
+          "translation": "распродажа",
+          "transcription": "[seɪl]",
+          "example": "The winter sale starts on Monday."
+        },
+        {
+          "english": "size",
+          "translation": "размер",
+          "transcription": "[saɪz]",
+          "example": "Do you have this in a larger size?"
+        },
+        {
+          "english": "try on",
+          "translation": "примерять",
+          "transcription": "[ˈtraɪ ɒn]",
+          "example": "Can I try on these jeans?"
+        },
+        {
+          "english": "expensive",
+          "translation": "дорогой",
+          "transcription": "[ɪkˈspensɪv]",
+          "example": "That watch is too expensive."
+        },
+        {
+          "english": "cheap",
+          "translation": "дешёвый",
+          "transcription": "[tʃiːp]",
+          "example": "We found a cheap hotel."
+        },
+        {
+          "english": "delivery",
+          "translation": "доставка",
+          "transcription": "[dɪˈlɪvəri]",
+          "example": "Delivery takes two days."
+        },
+        {
+          "english": "return",
+          "translation": "вернуть",
+          "transcription": "[rɪˈtɜːn]",
+          "example": "You can return the item within a month."
+        },
+        {
+          "english": "brand",
+          "translation": "бренд",
+          "transcription": "[brænd]",
+          "example": "She only buys famous brands."
+        },
+        {
+          "english": "shopper",
+          "translation": "покупатель (в магазине)",
+          "transcription": "[ˈʃɒpə]",
+          "example": "The mall was full of shoppers."
+        }
+      ]
+    },
+    {
+      "name": "Транспорт",
+      "slug": "transport",
+      "icon": "🚌",
+      "color": "#0EA5E9",
+      "description": "Как добраться: транспорт, билеты, дорога",
+      "words": [
+        {
+          "english": "vehicle",
+          "translation": "транспортное средство",
+          "transcription": "[ˈviːəkl]",
+          "example": "The vehicle stopped at the lights."
+        },
+        {
+          "english": "subway",
+          "translation": "метро",
+          "transcription": "[ˈsʌbweɪ]",
+          "example": "Take the subway to the centre."
+        },
+        {
+          "english": "railway",
+          "translation": "железная дорога",
+          "transcription": "[ˈreɪlweɪ]",
+          "example": "The railway runs along the coast."
+        },
+        {
+          "english": "platform",
+          "translation": "платформа",
+          "transcription": "[ˈplætfɔːm]",
+          "example": "The train leaves from platform three."
+        },
+        {
+          "english": "ticket",
+          "translation": "билет",
+          "transcription": "[ˈtɪkɪt]",
+          "example": "I bought two tickets online."
+        },
+        {
+          "english": "driver",
+          "translation": "водитель",
+          "transcription": "[ˈdraɪvə]",
+          "example": "The driver was very polite."
+        },
+        {
+          "english": "traffic",
+          "translation": "пробки, движение",
+          "transcription": "[ˈtræfɪk]",
+          "example": "The traffic is terrible today."
+        },
+        {
+          "english": "route",
+          "translation": "маршрут",
+          "transcription": "[ruːt]",
+          "example": "This bus route goes to the airport."
+        },
+        {
+          "english": "fare",
+          "translation": "стоимость проезда",
+          "transcription": "[feə]",
+          "example": "The bus fare has gone up."
+        },
+        {
+          "english": "delay",
+          "translation": "задержка",
+          "transcription": "[dɪˈleɪ]",
+          "example": "There was a delay of twenty minutes."
+        },
+        {
+          "english": "passenger",
+          "translation": "пассажир",
+          "transcription": "[ˈpæsɪndʒə]",
+          "example": "Passengers must wear seat belts."
+        },
+        {
+          "english": "petrol",
+          "translation": "бензин",
+          "transcription": "[ˈpetrəl]",
+          "example": "We need to buy petrol."
+        },
+        {
+          "english": "parking",
+          "translation": "парковка",
+          "transcription": "[ˈpɑːkɪŋ]",
+          "example": "Parking is free for guests."
+        },
+        {
+          "english": "bicycle",
+          "translation": "велосипед",
+          "transcription": "[ˈbaɪsɪkl]",
+          "example": "He goes to work by bicycle."
+        },
+        {
+          "english": "harbour",
+          "translation": "гавань",
+          "transcription": "[ˈhɑːbə]",
+          "example": "The boats are in the harbour."
+        },
+        {
+          "english": "engine",
+          "translation": "двигатель",
+          "transcription": "[ˈendʒɪn]",
+          "example": "The engine won't start."
+        },
+        {
+          "english": "seatbelt",
+          "translation": "ремень безопасности",
+          "transcription": "[ˈsiːtbelt]",
+          "example": "Fasten your seatbelt, please."
+        },
+        {
+          "english": "crossing",
+          "translation": "переход",
+          "transcription": "[ˈkrɒsɪŋ]",
+          "example": "Use the crossing near the school."
+        },
+        {
+          "english": "commute",
+          "translation": "поездка на работу",
+          "transcription": "[kəˈmjuːt]",
+          "example": "My commute takes an hour."
+        },
+        {
+          "english": "speed",
+          "translation": "скорость",
+          "transcription": "[spiːd]",
+          "example": "He drove at high speed."
+        }
+      ]
+    },
+    {
+      "name": "Дом",
+      "slug": "home",
+      "icon": "🏠",
+      "color": "#F97316",
+      "description": "Дом, мебель и бытовые дела",
+      "words": [
+        {
+          "english": "furniture",
+          "translation": "мебель",
+          "transcription": "[ˈfɜːnɪtʃə]",
+          "example": "We bought new furniture for the living room."
+        },
+        {
+          "english": "curtains",
+          "translation": "шторы",
+          "transcription": "[ˈkɜːtnz]",
+          "example": "She closed the curtains."
+        },
+        {
+          "english": "cupboard",
+          "translation": "шкаф",
+          "transcription": "[ˈkʌbəd]",
+          "example": "The plates are in the cupboard."
+        },
+        {
+          "english": "blanket",
+          "translation": "одеяло",
+          "transcription": "[ˈblæŋkɪt]",
+          "example": "It's cold, take another blanket."
+        },
+        {
+          "english": "pillow",
+          "translation": "подушка",
+          "transcription": "[ˈpɪləʊ]",
+          "example": "This pillow is too soft."
+        },
+        {
+          "english": "shelf",
+          "translation": "полка",
+          "transcription": "[ʃelf]",
+          "example": "Put the books on the shelf."
+        },
+        {
+          "english": "mirror",
+          "translation": "зеркало",
+          "transcription": "[ˈmɪrə]",
+          "example": "There is a mirror in the hall."
+        },
+        {
+          "english": "carpet",
+          "translation": "ковёр",
+          "transcription": "[ˈkɑːpɪt]",
+          "example": "The carpet needs cleaning."
+        },
+        {
+          "english": "tap",
+          "translation": "кран",
+          "transcription": "[tæp]",
+          "example": "The tap is dripping."
+        },
+        {
+          "english": "oven",
+          "translation": "печь, духовка",
+          "transcription": "[ˈʌvn]",
+          "example": "Put the cake in the oven."
+        },
+        {
+          "english": "fridge",
+          "translation": "холодильник",
+          "transcription": "[frɪdʒ]",
+          "example": "The milk is in the fridge."
+        },
+        {
+          "english": "kettle",
+          "translation": "чайник",
+          "transcription": "[ˈketl]",
+          "example": "I'll boil the kettle."
+        },
+        {
+          "english": "rubbish",
+          "translation": "мусор",
+          "transcription": "[ˈrʌbɪʃ]",
+          "example": "Take out the rubbish, please."
+        },
+        {
+          "english": "neighbour",
+          "translation": "сосед",
+          "transcription": "[ˈneɪbə]",
+          "example": "Our neighbour has a dog."
+        },
+        {
+          "english": "rent",
+          "translation": "аренда",
+          "transcription": "[rent]",
+          "example": "The rent is due on Friday."
+        },
+        {
+          "english": "repair",
+          "translation": "ремонт, чинить",
+          "transcription": "[rɪˈpeə]",
+          "example": "The roof needs repair."
+        },
+        {
+          "english": "cosy",
+          "translation": "уютный",
+          "transcription": "[ˈkəʊzi]",
+          "example": "The room feels cosy in winter."
+        },
+        {
+          "english": "spacious",
+          "translation": "просторный",
+          "transcription": "[ˈspeɪʃəs]",
+          "example": "The flat is bright and spacious."
+        },
+        {
+          "english": "balcony",
+          "translation": "балкон",
+          "transcription": "[ˈbælkəni]",
+          "example": "We have coffee on the balcony."
+        },
+        {
+          "english": "basement",
+          "translation": "подвал",
+          "transcription": "[ˈbeɪsmənt]",
+          "example": "The washing machine is in the basement."
+        }
+      ]
+    },
+    {
+      "name": "Семья",
+      "slug": "family",
+      "icon": "👨‍👩‍👧",
+      "color": "#F43F5E",
+      "description": "Родственники, отношения и семейная жизнь",
+      "words": [
+        {
+          "english": "relative",
+          "translation": "родственник",
+          "transcription": "[ˈrelətɪv]",
+          "example": "All our relatives came to dinner."
+        },
+        {
+          "english": "cousin",
+          "translation": "двоюродный брат или сестра",
+          "transcription": "[ˈkʌzn]",
+          "example": "My cousin lives in Canada."
+        },
+        {
+          "english": "nephew",
+          "translation": "племянник",
+          "transcription": "[ˈnefjuː]",
+          "example": "My nephew just started school."
+        },
+        {
+          "english": "niece",
+          "translation": "племянница",
+          "transcription": "[niːs]",
+          "example": "His niece is a doctor."
+        },
+        {
+          "english": "grandparents",
+          "translation": "бабушка и дедушка",
+          "transcription": "[ˈɡrænpeərənts]",
+          "example": "We visit our grandparents every Sunday."
+        },
+        {
+          "english": "spouse",
+          "translation": "супруг или супруга",
+          "transcription": "[spaʊs]",
+          "example": "Please write your spouse's name."
+        },
+        {
+          "english": "engaged",
+          "translation": "помолвленный",
+          "transcription": "[ɪnˈɡeɪdʒd]",
+          "example": "They got engaged last month."
+        },
+        {
+          "english": "married",
+          "translation": "женатый, замужняя",
+          "transcription": "[ˈmærid]",
+          "example": "She has been married for ten years."
+        },
+        {
+          "english": "divorce",
+          "translation": "развод",
+          "transcription": "[dɪˈvɔːs]",
+          "example": "They filed for divorce."
+        },
+        {
+          "english": "twins",
+          "translation": "близнецы",
+          "transcription": "[twɪnz]",
+          "example": "The twins look identical."
+        },
+        {
+          "english": "childhood",
+          "translation": "детство",
+          "transcription": "[ˈtʃaɪldhʊd]",
+          "example": "He spent his childhood in the countryside."
+        },
+        {
+          "english": "generation",
+          "translation": "поколение",
+          "transcription": "[ˌdʒenəˈreɪʃn]",
+          "example": "This generation grows up online."
+        },
+        {
+          "english": "raise",
+          "translation": "воспитывать",
+          "transcription": "[reɪz]",
+          "example": "They raise three children."
+        },
+        {
+          "english": "adopt",
+          "translation": "усыновлять",
+          "transcription": "[əˈdɒpt]",
+          "example": "They decided to adopt a girl."
+        },
+        {
+          "english": "wedding",
+          "translation": "свадьба",
+          "transcription": "[ˈwedɪŋ]",
+          "example": "The wedding was in June."
+        },
+        {
+          "english": "household",
+          "translation": "домохозяйство",
+          "transcription": "[ˈhaʊshəʊld]",
+          "example": "The household has four members."
+        },
+        {
+          "english": "in-laws",
+          "translation": "родственники со стороны супруга",
+          "transcription": "[ˈɪn lɔːz]",
+          "example": "My in-laws live nearby."
+        },
+        {
+          "english": "sibling",
+          "translation": "брат или сестра",
+          "transcription": "[ˈsɪblɪŋ]",
+          "example": "Do you have any siblings?"
+        },
+        {
+          "english": "ancestor",
+          "translation": "предок",
+          "transcription": "[ˈænsestə]",
+          "example": "His ancestors came from Ireland."
+        },
+        {
+          "english": "guardian",
+          "translation": "опекун",
+          "transcription": "[ˈɡɑːdiən]",
+          "example": "Her aunt became her guardian."
+        }
+      ]
+    },
+    {
+      "name": "Одежда",
+      "slug": "clothes",
+      "icon": "👕",
+      "color": "#A855F7",
+      "description": "Одежда, обувь и внешний вид",
+      "words": [
+        {
+          "english": "jacket",
+          "translation": "куртка, пиджак",
+          "transcription": "[ˈdʒækɪt]",
+          "example": "Take a jacket, it's cold."
+        },
+        {
+          "english": "trousers",
+          "translation": "брюки",
+          "transcription": "[ˈtraʊzəz]",
+          "example": "These trousers are too tight."
+        },
+        {
+          "english": "sleeve",
+          "translation": "рукав",
+          "transcription": "[sliːv]",
+          "example": "The sleeves are too long."
+        },
+        {
+          "english": "collar",
+          "translation": "воротник",
+          "transcription": "[ˈkɒlə]",
+          "example": "He turned up his collar."
+        },
+        {
+          "english": "button",
+          "translation": "пуговица",
+          "transcription": "[ˈbʌtn]",
+          "example": "A button came off my shirt."
+        },
+        {
+          "english": "pocket",
+          "translation": "карман",
+          "transcription": "[ˈpɒkɪt]",
+          "example": "She put the keys in her pocket."
+        },
+        {
+          "english": "belt",
+          "translation": "ремень",
+          "transcription": "[belt]",
+          "example": "He wore a leather belt."
+        },
+        {
+          "english": "scarf",
+          "translation": "шарф",
+          "transcription": "[skɑːf]",
+          "example": "Wrap a scarf around your neck."
+        },
+        {
+          "english": "gloves",
+          "translation": "перчатки",
+          "transcription": "[ɡlʌvz]",
+          "example": "I lost one of my gloves."
+        },
+        {
+          "english": "boots",
+          "translation": "сапоги, ботинки",
+          "transcription": "[buːts]",
+          "example": "These boots are made for walking."
+        },
+        {
+          "english": "sandals",
+          "translation": "сандалии",
+          "transcription": "[ˈsændlz]",
+          "example": "She wears sandals in summer."
+        },
+        {
+          "english": "suit",
+          "translation": "костюм",
+          "transcription": "[suːt]",
+          "example": "He wore a dark suit to the interview."
+        },
+        {
+          "english": "uniform",
+          "translation": "форма",
+          "transcription": "[ˈjuːnɪfɔːm]",
+          "example": "Students wear a school uniform."
+        },
+        {
+          "english": "wool",
+          "translation": "шерсть",
+          "transcription": "[wʊl]",
+          "example": "This sweater is pure wool."
+        },
+        {
+          "english": "cotton",
+          "translation": "хлопок",
+          "transcription": "[ˈkɒtn]",
+          "example": "I prefer cotton shirts."
+        },
+        {
+          "english": "pattern",
+          "translation": "узор",
+          "transcription": "[ˈpætn]",
+          "example": "I like the pattern on that dress."
+        },
+        {
+          "english": "striped",
+          "translation": "полосатый",
+          "transcription": "[ˈstraɪpt]",
+          "example": "He wore a striped tie."
+        },
+        {
+          "english": "loose",
+          "translation": "свободный (об одежде)",
+          "transcription": "[luːs]",
+          "example": "The shirt is a bit loose."
+        },
+        {
+          "english": "tight",
+          "translation": "тесный",
+          "transcription": "[taɪt]",
+          "example": "These shoes are too tight."
+        },
+        {
+          "english": "fashion",
+          "translation": "мода",
+          "transcription": "[ˈfæʃn]",
+          "example": "She works in fashion."
+        }
+      ]
+    },
+    {
+      "name": "Деньги",
+      "slug": "money",
+      "icon": "💰",
+      "color": "#EAB308",
+      "description": "Деньги, банки и личные финансы",
+      "words": [
+        {
+          "english": "currency",
+          "translation": "валюта",
+          "transcription": "[ˈkʌrənsi]",
+          "example": "What currency do they use?"
+        },
+        {
+          "english": "budget",
+          "translation": "бюджет",
+          "transcription": "[ˈbʌdʒɪt]",
+          "example": "We have a tight budget this month."
+        },
+        {
+          "english": "loan",
+          "translation": "кредит, заём",
+          "transcription": "[ləʊn]",
+          "example": "He took a loan to buy a car."
+        },
+        {
+          "english": "debt",
+          "translation": "долг",
+          "transcription": "[det]",
+          "example": "She paid off all her debts."
+        },
+        {
+          "english": "savings",
+          "translation": "сбережения",
+          "transcription": "[ˈseɪvɪŋz]",
+          "example": "He spent all his savings."
+        },
+        {
+          "english": "income",
+          "translation": "доход",
+          "transcription": "[ˈɪnkʌm]",
+          "example": "Her income doubled last year."
+        },
+        {
+          "english": "expense",
+          "translation": "расход",
+          "transcription": "[ɪkˈspens]",
+          "example": "Rent is our biggest expense."
+        },
+        {
+          "english": "tax",
+          "translation": "налог",
+          "transcription": "[tæks]",
+          "example": "Income tax is paid monthly."
+        },
+        {
+          "english": "invest",
+          "translation": "инвестировать",
+          "transcription": "[ɪnˈvest]",
+          "example": "They invest in small companies."
+        },
+        {
+          "english": "profit",
+          "translation": "прибыль",
+          "transcription": "[ˈprɒfɪt]",
+          "example": "The company made a good profit."
+        },
+        {
+          "english": "bill",
+          "translation": "счёт",
+          "transcription": "[bɪl]",
+          "example": "Can we split the bill?"
+        },
+        {
+          "english": "coin",
+          "translation": "монета",
+          "transcription": "[kɔɪn]",
+          "example": "He dropped a coin on the floor."
+        },
+        {
+          "english": "cash",
+          "translation": "наличные",
+          "transcription": "[kæʃ]",
+          "example": "I paid in cash."
+        },
+        {
+          "english": "change",
+          "translation": "сдача",
+          "transcription": "[tʃeɪndʒ]",
+          "example": "Keep the change."
+        },
+        {
+          "english": "bank account",
+          "translation": "банковский счёт",
+          "transcription": "[bæŋk əˈkaʊnt]",
+          "example": "I opened a bank account online."
+        },
+        {
+          "english": "interest",
+          "translation": "проценты",
+          "transcription": "[ˈɪntrəst]",
+          "example": "The loan has low interest."
+        },
+        {
+          "english": "afford",
+          "translation": "позволить себе",
+          "transcription": "[əˈfɔːd]",
+          "example": "We can't afford a new car."
+        },
+        {
+          "english": "wealthy",
+          "translation": "богатый",
+          "transcription": "[ˈwelθi]",
+          "example": "He comes from a wealthy family."
+        },
+        {
+          "english": "poverty",
+          "translation": "бедность",
+          "transcription": "[ˈpɒvəti]",
+          "example": "The charity fights poverty."
+        },
+        {
+          "english": "transaction",
+          "translation": "транзакция",
+          "transcription": "[trænˈzækʃn]",
+          "example": "The transaction failed."
+        }
+      ]
+    },
+    {
+      "name": "Время",
+      "slug": "time",
+      "icon": "⏰",
+      "color": "#6366F1",
+      "description": "Время, даты и длительность",
+      "words": [
+        {
+          "english": "century",
+          "translation": "век",
+          "transcription": "[ˈsentʃəri]",
+          "example": "The castle is five centuries old."
+        },
+        {
+          "english": "decade",
+          "translation": "десятилетие",
+          "transcription": "[ˈdekeɪd]",
+          "example": "Prices rose over the last decade."
+        },
+        {
+          "english": "fortnight",
+          "translation": "две недели",
+          "transcription": "[ˈfɔːtnaɪt]",
+          "example": "We'll be away for a fortnight."
+        },
+        {
+          "english": "punctual",
+          "translation": "пунктуальный",
+          "transcription": "[ˈpʌŋktʃuəl]",
+          "example": "She is always punctual."
+        },
+        {
+          "english": "instant",
+          "translation": "мгновение",
+          "transcription": "[ˈɪnstənt]",
+          "example": "He answered in an instant."
+        },
+        {
+          "english": "annual",
+          "translation": "ежегодный",
+          "transcription": "[ˈænjuəl]",
+          "example": "The annual meeting is in May."
+        },
+        {
+          "english": "temporary",
+          "translation": "временный",
+          "transcription": "[ˈtemprəri]",
+          "example": "He found a temporary job."
+        },
+        {
+          "english": "permanent",
+          "translation": "постоянный",
+          "transcription": "[ˈpɜːmənənt]",
+          "example": "She got a permanent contract."
+        },
+        {
+          "english": "early",
+          "translation": "рано",
+          "transcription": "[ˈɜːli]",
+          "example": "I woke up early today."
+        },
+        {
+          "english": "late",
+          "translation": "поздно",
+          "transcription": "[leɪt]",
+          "example": "Sorry, I'm late."
+        },
+        {
+          "english": "soon",
+          "translation": "скоро",
+          "transcription": "[suːn]",
+          "example": "The train will arrive soon."
+        },
+        {
+          "english": "recently",
+          "translation": "недавно",
+          "transcription": "[ˈriːsntli]",
+          "example": "They recently moved house."
+        },
+        {
+          "english": "eventually",
+          "translation": "в конце концов",
+          "transcription": "[ɪˈventʃuəli]",
+          "example": "Eventually he agreed."
+        },
+        {
+          "english": "meanwhile",
+          "translation": "тем временем",
+          "transcription": "[ˈmiːnwaɪl]",
+          "example": "Meanwhile, she was waiting outside."
+        },
+        {
+          "english": "duration",
+          "translation": "длительность",
+          "transcription": "[djuˈreɪʃn]",
+          "example": "The duration of the flight is two hours."
+        },
+        {
+          "english": "calendar",
+          "translation": "календарь",
+          "transcription": "[ˈkælɪndə]",
+          "example": "Mark the date in your calendar."
+        },
+        {
+          "english": "overdue",
+          "translation": "просроченный",
+          "transcription": "[ˌəʊvəˈdjuː]",
+          "example": "The library books are overdue."
+        },
+        {
+          "english": "era",
+          "translation": "эпоха",
+          "transcription": "[ˈɪərə]",
+          "example": "We live in the digital era."
+        },
+        {
+          "english": "quarter",
+          "translation": "четверть",
+          "transcription": "[ˈkwɔːtə]",
+          "example": "It's a quarter past six."
+        },
+        {
+          "english": "sunset",
+          "translation": "закат",
+          "transcription": "[ˈsʌnset]",
+          "example": "We watched the sunset from the hill."
+        }
+      ]
+    },
+    {
+      "name": "Образование",
+      "slug": "education",
+      "icon": "🎓",
+      "color": "#14B8A6",
+      "description": "Учёба, школа и университет",
+      "words": [
+        {
+          "english": "degree",
+          "translation": "степень, диплом",
+          "transcription": "[dɪˈɡriː]",
+          "example": "She has a degree in physics."
+        },
+        {
+          "english": "lecture",
+          "translation": "лекция",
+          "transcription": "[ˈlektʃə]",
+          "example": "The lecture starts at nine."
+        },
+        {
+          "english": "assignment",
+          "translation": "задание",
+          "transcription": "[əˈsaɪnmənt]",
+          "example": "Submit the assignment by Friday."
+        },
+        {
+          "english": "essay",
+          "translation": "эссе",
+          "transcription": "[ˈeseɪ]",
+          "example": "I wrote an essay about climate."
+        },
+        {
+          "english": "tutor",
+          "translation": "репетитор",
+          "transcription": "[ˈtjuːtə]",
+          "example": "My tutor helps me with grammar."
+        },
+        {
+          "english": "graduate",
+          "translation": "выпускник; оканчивать",
+          "transcription": "[ˈɡrædʒuət]",
+          "example": "He graduated from university last year."
+        },
+        {
+          "english": "scholarship",
+          "translation": "стипендия",
+          "transcription": "[ˈskɒləʃɪp]",
+          "example": "She won a full scholarship."
+        },
+        {
+          "english": "curriculum",
+          "translation": "учебная программа",
+          "transcription": "[kəˈrɪkjələm]",
+          "example": "The curriculum includes two languages."
+        },
+        {
+          "english": "exam",
+          "translation": "экзамен",
+          "transcription": "[ɪɡˈzæm]",
+          "example": "The exam was difficult."
+        },
+        {
+          "english": "grade",
+          "translation": "оценка",
+          "transcription": "[ɡreɪd]",
+          "example": "He got the highest grade."
+        },
+        {
+          "english": "homework",
+          "translation": "домашнее задание",
+          "transcription": "[ˈhəʊmwɜːk]",
+          "example": "Have you done your homework?"
+        },
+        {
+          "english": "library",
+          "translation": "библиотека",
+          "transcription": "[ˈlaɪbrəri]",
+          "example": "I study in the library."
+        },
+        {
+          "english": "research",
+          "translation": "исследование",
+          "transcription": "[rɪˈsɜːtʃ]",
+          "example": "Her research focuses on memory."
+        },
+        {
+          "english": "knowledge",
+          "translation": "знания",
+          "transcription": "[ˈnɒlɪdʒ]",
+          "example": "Reading expands your knowledge."
+        },
+        {
+          "english": "semester",
+          "translation": "семестр",
+          "transcription": "[sɪˈmestə]",
+          "example": "The new semester begins in September."
+        },
+        {
+          "english": "tuition",
+          "translation": "плата за обучение",
+          "transcription": "[tjuˈɪʃn]",
+          "example": "Tuition fees are high."
+        },
+        {
+          "english": "principal",
+          "translation": "директор школы",
+          "transcription": "[ˈprɪnsəpl]",
+          "example": "The principal gave a short speech."
+        },
+        {
+          "english": "notebook",
+          "translation": "тетрадь",
+          "transcription": "[ˈnəʊtbʊk]",
+          "example": "Write it down in your notebook."
+        },
+        {
+          "english": "diploma",
+          "translation": "диплом",
+          "transcription": "[dɪˈpləʊmə]",
+          "example": "He framed his diploma."
+        },
+        {
+          "english": "attendance",
+          "translation": "посещаемость",
+          "transcription": "[əˈtendəns]",
+          "example": "Attendance is checked every lesson."
+        }
+      ]
+    },
+    {
+      "name": "Технологии",
+      "slug": "technology",
+      "icon": "💻",
+      "color": "#64748B",
+      "description": "Компьютеры, интернет и гаджеты",
+      "words": [
+        {
+          "english": "device",
+          "translation": "устройство",
+          "transcription": "[dɪˈvaɪs]",
+          "example": "This device runs on batteries."
+        },
+        {
+          "english": "software",
+          "translation": "программное обеспечение",
+          "transcription": "[ˈsɒftweə]",
+          "example": "The software needs an update."
+        },
+        {
+          "english": "password",
+          "translation": "пароль",
+          "transcription": "[ˈpɑːswɜːd]",
+          "example": "Choose a strong password."
+        },
+        {
+          "english": "download",
+          "translation": "скачивать",
+          "transcription": "[ˌdaʊnˈləʊd]",
+          "example": "Download the file before you leave."
+        },
+        {
+          "english": "upload",
+          "translation": "загружать",
+          "transcription": "[ˌʌpˈləʊd]",
+          "example": "Upload your photo here."
+        },
+        {
+          "english": "browser",
+          "translation": "браузер",
+          "transcription": "[ˈbraʊzə]",
+          "example": "Open the link in your browser."
+        },
+        {
+          "english": "network",
+          "translation": "сеть",
+          "transcription": "[ˈnetwɜːk]",
+          "example": "The network is down again."
+        },
+        {
+          "english": "wireless",
+          "translation": "беспроводной",
+          "transcription": "[ˈwaɪələs]",
+          "example": "The hotel has wireless internet."
+        },
+        {
+          "english": "charger",
+          "translation": "зарядное устройство",
+          "transcription": "[ˈtʃɑːdʒə]",
+          "example": "I forgot my phone charger."
+        },
+        {
+          "english": "screen",
+          "translation": "экран",
+          "transcription": "[skriːn]",
+          "example": "The screen is cracked."
+        },
+        {
+          "english": "keyboard",
+          "translation": "клавиатура",
+          "transcription": "[ˈkiːbɔːd]",
+          "example": "My keyboard stopped working."
+        },
+        {
+          "english": "storage",
+          "translation": "хранилище данных",
+          "transcription": "[ˈstɔːrɪdʒ]",
+          "example": "This plan gives you more storage."
+        },
+        {
+          "english": "update",
+          "translation": "обновление",
+          "transcription": "[ˈʌpdeɪt]",
+          "example": "Install the latest update."
+        },
+        {
+          "english": "backup",
+          "translation": "резервная копия",
+          "transcription": "[ˈbækʌp]",
+          "example": "Always keep a backup."
+        },
+        {
+          "english": "bug",
+          "translation": "ошибка в программе",
+          "transcription": "[bʌɡ]",
+          "example": "The developers fixed the bug."
+        },
+        {
+          "english": "artificial intelligence",
+          "translation": "искусственный интеллект",
+          "transcription": "[ˌɑːtɪˈfɪʃl ɪnˈtelɪdʒəns]",
+          "example": "Artificial intelligence changes how we work."
+        },
+        {
+          "english": "algorithm",
+          "translation": "алгоритм",
+          "transcription": "[ˈælɡərɪðəm]",
+          "example": "The algorithm suggests new videos."
+        },
+        {
+          "english": "gadget",
+          "translation": "гаджет",
+          "transcription": "[ˈɡædʒɪt]",
+          "example": "He loves buying new gadgets."
+        },
+        {
+          "english": "install",
+          "translation": "устанавливать",
+          "transcription": "[ɪnˈstɔːl]",
+          "example": "Install the app on your phone."
+        },
+        {
+          "english": "stream",
+          "translation": "смотреть потоком",
+          "transcription": "[striːm]",
+          "example": "We stream films every evening."
+        }
+      ]
+    },
+    {
+      "name": "Спорт",
+      "slug": "sport",
+      "icon": "⚽",
+      "color": "#16A34A",
+      "description": "Соревнования, тренировки и победы",
+      "words": [
+        {
+          "english": "coach",
+          "translation": "тренер",
+          "transcription": "[kəʊtʃ]",
+          "example": "Our coach is very strict."
+        },
+        {
+          "english": "team",
+          "translation": "команда",
+          "transcription": "[tiːm]",
+          "example": "The team won the final."
+        },
+        {
+          "english": "match",
+          "translation": "матч",
+          "transcription": "[mætʃ]",
+          "example": "The match starts at eight."
+        },
+        {
+          "english": "score",
+          "translation": "счёт",
+          "transcription": "[skɔː]",
+          "example": "What's the score?"
+        },
+        {
+          "english": "referee",
+          "translation": "судья",
+          "transcription": "[ˌrefəˈriː]",
+          "example": "The referee showed a red card."
+        },
+        {
+          "english": "championship",
+          "translation": "чемпионат",
+          "transcription": "[ˈtʃæmpiənʃɪp]",
+          "example": "They won the championship."
+        },
+        {
+          "english": "training",
+          "translation": "тренировка",
+          "transcription": "[ˈtreɪnɪŋ]",
+          "example": "Training is on Tuesday and Thursday."
+        },
+        {
+          "english": "stadium",
+          "translation": "стадион",
+          "transcription": "[ˈsteɪdiəm]",
+          "example": "The stadium was full."
+        },
+        {
+          "english": "athlete",
+          "translation": "спортсмен",
+          "transcription": "[ˈæθliːt]",
+          "example": "She is a professional athlete."
+        },
+        {
+          "english": "compete",
+          "translation": "соревноваться",
+          "transcription": "[kəmˈpiːt]",
+          "example": "Ten teams compete for the cup."
+        },
+        {
+          "english": "opponent",
+          "translation": "соперник",
+          "transcription": "[əˈpəʊnənt]",
+          "example": "His opponent was much taller."
+        },
+        {
+          "english": "defeat",
+          "translation": "поражение",
+          "transcription": "[dɪˈfiːt]",
+          "example": "It was their first defeat this season."
+        },
+        {
+          "english": "victory",
+          "translation": "победа",
+          "transcription": "[ˈvɪktəri]",
+          "example": "The victory was well deserved."
+        },
+        {
+          "english": "fitness",
+          "translation": "физическая форма",
+          "transcription": "[ˈfɪtnəs]",
+          "example": "Swimming improves fitness."
+        },
+        {
+          "english": "warm up",
+          "translation": "разминаться",
+          "transcription": "[wɔːm ʌp]",
+          "example": "Warm up before you run."
+        },
+        {
+          "english": "tactic",
+          "translation": "тактика",
+          "transcription": "[ˈtæktɪk]",
+          "example": "The coach changed tactics."
+        },
+        {
+          "english": "league",
+          "translation": "лига",
+          "transcription": "[liːɡ]",
+          "example": "They play in the national league."
+        },
+        {
+          "english": "spectator",
+          "translation": "зритель",
+          "transcription": "[spekˈteɪtə]",
+          "example": "Thousands of spectators filled the stands."
+        },
+        {
+          "english": "medal",
+          "translation": "медаль",
+          "transcription": "[ˈmedl]",
+          "example": "She won a gold medal."
+        },
+        {
+          "english": "endurance",
+          "translation": "выносливость",
+          "transcription": "[ɪnˈdjʊərəns]",
+          "example": "Running builds endurance."
+        }
+      ]
+    },
+    {
+      "name": "Музыка",
+      "slug": "music",
+      "icon": "🎵",
+      "color": "#D946EF",
+      "description": "Музыка, инструменты и концерты",
+      "words": [
+        {
+          "english": "melody",
+          "translation": "мелодия",
+          "transcription": "[ˈmelədi]",
+          "example": "The melody stuck in my head."
+        },
+        {
+          "english": "lyrics",
+          "translation": "текст песни",
+          "transcription": "[ˈlɪrɪks]",
+          "example": "I love the lyrics of this song."
+        },
+        {
+          "english": "orchestra",
+          "translation": "оркестр",
+          "transcription": "[ˈɔːkɪstrə]",
+          "example": "The orchestra played for an hour."
+        },
+        {
+          "english": "violin",
+          "translation": "скрипка",
+          "transcription": "[ˌvaɪəˈlɪn]",
+          "example": "She plays the violin beautifully."
+        },
+        {
+          "english": "concert",
+          "translation": "концерт",
+          "transcription": "[ˈkɒnsət]",
+          "example": "We went to a concert last night."
+        },
+        {
+          "english": "album",
+          "translation": "альбом",
+          "transcription": "[ˈælbəm]",
+          "example": "Their new album is out."
+        },
+        {
+          "english": "rhythm",
+          "translation": "ритм",
+          "transcription": "[ˈrɪðəm]",
+          "example": "The rhythm is easy to dance to."
+        },
+        {
+          "english": "tempo",
+          "translation": "темп",
+          "transcription": "[ˈtempəʊ]",
+          "example": "The song has a slow tempo."
+        },
+        {
+          "english": "rehearsal",
+          "translation": "репетиция",
+          "transcription": "[rɪˈhɜːsl]",
+          "example": "The rehearsal lasted three hours."
+        },
+        {
+          "english": "composer",
+          "translation": "композитор",
+          "transcription": "[kəmˈpəʊzə]",
+          "example": "Mozart was a famous composer."
+        },
+        {
+          "english": "audience",
+          "translation": "публика",
+          "transcription": "[ˈɔːdiəns]",
+          "example": "The audience clapped loudly."
+        },
+        {
+          "english": "tune",
+          "translation": "мотив",
+          "transcription": "[tjuːn]",
+          "example": "I can't get that tune out of my head."
+        },
+        {
+          "english": "instrument",
+          "translation": "инструмент",
+          "transcription": "[ˈɪnstrəmənt]",
+          "example": "Do you play any instrument?"
+        },
+        {
+          "english": "choir",
+          "translation": "хор",
+          "transcription": "[ˈkwaɪə]",
+          "example": "She sings in a church choir."
+        },
+        {
+          "english": "genre",
+          "translation": "жанр",
+          "transcription": "[ˈʒɒnrə]",
+          "example": "Jazz is my favourite genre."
+        },
+        {
+          "english": "perform",
+          "translation": "выступать",
+          "transcription": "[pəˈfɔːm]",
+          "example": "They performed in front of a thousand people."
+        },
+        {
+          "english": "record",
+          "translation": "записывать",
+          "transcription": "[rɪˈkɔːd]",
+          "example": "The band recorded a new single."
+        },
+        {
+          "english": "soundtrack",
+          "translation": "саундтрек",
+          "transcription": "[ˈsaʊndtræk]",
+          "example": "The soundtrack is better than the film."
+        },
+        {
+          "english": "volume",
+          "translation": "громкость",
+          "transcription": "[ˈvɒljuːm]",
+          "example": "Turn down the volume, please."
+        },
+        {
+          "english": "harmony",
+          "translation": "гармония",
+          "transcription": "[ˈhɑːməni]",
+          "example": "Their voices are in perfect harmony."
+        }
+      ]
+    },
+    {
+      "name": "Животные",
+      "slug": "animals",
+      "icon": "🐾",
+      "color": "#84CC16",
+      "description": "Животные, птицы и их повадки",
+      "words": [
+        {
+          "english": "species",
+          "translation": "вид",
+          "transcription": "[ˈspiːʃiːz]",
+          "example": "This species lives only here."
+        },
+        {
+          "english": "habitat",
+          "translation": "среда обитания",
+          "transcription": "[ˈhæbɪtæt]",
+          "example": "The forest is their natural habitat."
+        },
+        {
+          "english": "predator",
+          "translation": "хищник",
+          "transcription": "[ˈpredətə]",
+          "example": "The lion is a powerful predator."
+        },
+        {
+          "english": "prey",
+          "translation": "добыча",
+          "transcription": "[preɪ]",
+          "example": "Owls hunt their prey at night."
+        },
+        {
+          "english": "feather",
+          "translation": "перо",
+          "transcription": "[ˈfeðə]",
+          "example": "A white feather fell on the path."
+        },
+        {
+          "english": "fur",
+          "translation": "мех",
+          "transcription": "[fɜː]",
+          "example": "The cat has soft fur."
+        },
+        {
+          "english": "paw",
+          "translation": "лапа",
+          "transcription": "[pɔː]",
+          "example": "The dog hurt its paw."
+        },
+        {
+          "english": "whiskers",
+          "translation": "усы (у животного)",
+          "transcription": "[ˈwɪskəz]",
+          "example": "The cat's whiskers twitched."
+        },
+        {
+          "english": "nest",
+          "translation": "гнездо",
+          "transcription": "[nest]",
+          "example": "Birds built a nest in the tree."
+        },
+        {
+          "english": "flock",
+          "translation": "стая",
+          "transcription": "[flɒk]",
+          "example": "A flock of birds flew over the field."
+        },
+        {
+          "english": "herd",
+          "translation": "стадо",
+          "transcription": "[hɜːd]",
+          "example": "A herd of cows crossed the road."
+        },
+        {
+          "english": "zoo",
+          "translation": "зоопарк",
+          "transcription": "[zuː]",
+          "example": "The children love the zoo."
+        },
+        {
+          "english": "veterinarian",
+          "translation": "ветеринар",
+          "transcription": "[ˌvetərɪˈneəriən]",
+          "example": "Take the puppy to the veterinarian."
+        },
+        {
+          "english": "breed",
+          "translation": "порода",
+          "transcription": "[briːd]",
+          "example": "What breed is your dog?"
+        },
+        {
+          "english": "tame",
+          "translation": "ручной, приручённый",
+          "transcription": "[teɪm]",
+          "example": "The rabbit is completely tame."
+        },
+        {
+          "english": "extinct",
+          "translation": "вымерший",
+          "transcription": "[ɪkˈstɪŋkt]",
+          "example": "Dinosaurs became extinct long ago."
+        },
+        {
+          "english": "insect",
+          "translation": "насекомое",
+          "transcription": "[ˈɪnsekt]",
+          "example": "An insect landed on my arm."
+        },
+        {
+          "english": "mammal",
+          "translation": "млекопитающее",
+          "transcription": "[ˈmæml]",
+          "example": "A whale is a mammal, not a fish."
+        },
+        {
+          "english": "poisonous",
+          "translation": "ядовитый",
+          "transcription": "[ˈpɔɪzənəs]",
+          "example": "Some snakes are poisonous."
+        },
+        {
+          "english": "rescue",
+          "translation": "спасать",
+          "transcription": "[ˈreskjuː]",
+          "example": "They rescued a seal from the nets."
+        }
+      ]
+    },
+    {
+      "name": "Город",
+      "slug": "city",
+      "icon": "🏙️",
+      "color": "#475569",
+      "description": "Улицы, районы и городская жизнь",
+      "words": [
+        {
+          "english": "district",
+          "translation": "район",
+          "transcription": "[ˈdɪstrɪkt]",
+          "example": "The old district is full of cafés."
+        },
+        {
+          "english": "avenue",
+          "translation": "проспект",
+          "transcription": "[ˈævənjuː]",
+          "example": "The avenue leads to the square."
+        },
+        {
+          "english": "square",
+          "translation": "площадь",
+          "transcription": "[skweə]",
+          "example": "We met on the main square."
+        },
+        {
+          "english": "suburb",
+          "translation": "пригород",
+          "transcription": "[ˈsʌbɜːb]",
+          "example": "They moved to a quiet suburb."
+        },
+        {
+          "english": "crowded",
+          "translation": "многолюдный",
+          "transcription": "[ˈkraʊdɪd]",
+          "example": "The metro is crowded in the morning."
+        },
+        {
+          "english": "pedestrian",
+          "translation": "пешеход",
+          "transcription": "[pəˈdestriən]",
+          "example": "Pedestrians have the right of way."
+        },
+        {
+          "english": "crossroads",
+          "translation": "перекрёсток",
+          "transcription": "[ˈkrɒsrəʊdz]",
+          "example": "Turn left at the crossroads."
+        },
+        {
+          "english": "landmark",
+          "translation": "достопримечательность",
+          "transcription": "[ˈlændmɑːk]",
+          "example": "The tower is a famous landmark."
+        },
+        {
+          "english": "skyscraper",
+          "translation": "небоскрёб",
+          "transcription": "[ˈskaɪskreɪpə]",
+          "example": "A new skyscraper is being built."
+        },
+        {
+          "english": "council",
+          "translation": "муниципалитет",
+          "transcription": "[ˈkaʊnsl]",
+          "example": "The city council approved the plan."
+        },
+        {
+          "english": "traffic lights",
+          "translation": "светофор",
+          "transcription": "[ˈtræfɪk laɪts]",
+          "example": "Wait for the traffic lights."
+        },
+        {
+          "english": "pavement",
+          "translation": "тротуар",
+          "transcription": "[ˈpeɪvmənt]",
+          "example": "Bikes are not allowed on the pavement."
+        },
+        {
+          "english": "litter",
+          "translation": "мусор (на улице)",
+          "transcription": "[ˈlɪtə]",
+          "example": "There is litter everywhere."
+        },
+        {
+          "english": "noise",
+          "translation": "шум",
+          "transcription": "[nɔɪz]",
+          "example": "The noise from the road keeps me awake."
+        },
+        {
+          "english": "population",
+          "translation": "население",
+          "transcription": "[ˌpɒpjuˈleɪʃn]",
+          "example": "The population is growing fast."
+        },
+        {
+          "english": "architecture",
+          "translation": "архитектура",
+          "transcription": "[ˈɑːkɪtektʃə]",
+          "example": "I admire the city's architecture."
+        },
+        {
+          "english": "neighbourhood",
+          "translation": "район, округа",
+          "transcription": "[ˈneɪbəhʊd]",
+          "example": "It's a friendly neighbourhood."
+        },
+        {
+          "english": "facilities",
+          "translation": "инфраструктура",
+          "transcription": "[fəˈsɪlətiz]",
+          "example": "The area has good sports facilities."
+        },
+        {
+          "english": "resident",
+          "translation": "житель",
+          "transcription": "[ˈrezɪdənt]",
+          "example": "Residents complained about the noise."
+        },
+        {
+          "english": "urban",
+          "translation": "городской",
+          "transcription": "[ˈɜːbən]",
+          "example": "Urban life can be stressful."
+        }
+      ]
+    },
+    {
+      "name": "Вежливость",
+      "slug": "politeness",
+      "icon": "🙏",
+      "color": "#FB7185",
+      "description": "Вежливые фразы, просьбы и благодарность",
+      "words": [
+        {
+          "english": "please",
+          "translation": "пожалуйста",
+          "transcription": "[pliːz]",
+          "example": "Please close the door."
+        },
+        {
+          "english": "grateful",
+          "translation": "благодарный",
+          "transcription": "[ˈɡreɪtfl]",
+          "example": "I'm grateful for your help."
+        },
+        {
+          "english": "apologize",
+          "translation": "извиняться",
+          "transcription": "[əˈpɒlədʒaɪz]",
+          "example": "He apologized for being late."
+        },
+        {
+          "english": "excuse me",
+          "translation": "простите",
+          "transcription": "[ɪkˈskjuːz miː]",
+          "example": "Excuse me, is this seat free?"
+        },
+        {
+          "english": "permission",
+          "translation": "разрешение",
+          "transcription": "[pəˈmɪʃn]",
+          "example": "May I have permission to leave?"
+        },
+        {
+          "english": "invitation",
+          "translation": "приглашение",
+          "transcription": "[ˌɪnvɪˈteɪʃn]",
+          "example": "Thank you for the invitation."
+        },
+        {
+          "english": "compliment",
+          "translation": "комплимент",
+          "transcription": "[ˈkɒmplɪmənt]",
+          "example": "She paid me a nice compliment."
+        },
+        {
+          "english": "manners",
+          "translation": "манеры",
+          "transcription": "[ˈmænəz]",
+          "example": "He has good manners."
+        },
+        {
+          "english": "polite",
+          "translation": "вежливый",
+          "transcription": "[pəˈlaɪt]",
+          "example": "She is always polite to guests."
+        },
+        {
+          "english": "rude",
+          "translation": "грубый",
+          "transcription": "[ruːd]",
+          "example": "It was rude to interrupt."
+        },
+        {
+          "english": "respect",
+          "translation": "уважение",
+          "transcription": "[rɪˈspekt]",
+          "example": "We should respect each other."
+        },
+        {
+          "english": "greeting",
+          "translation": "приветствие",
+          "transcription": "[ˈɡriːtɪŋ]",
+          "example": "A smile is a friendly greeting."
+        },
+        {
+          "english": "introduce",
+          "translation": "представлять",
+          "transcription": "[ˌɪntrəˈdjuːs]",
+          "example": "Let me introduce my colleague."
+        },
+        {
+          "english": "complaint",
+          "translation": "жалоба",
+          "transcription": "[kəmˈpleɪnt]",
+          "example": "I'd like to make a complaint."
+        },
+        {
+          "english": "forgive",
+          "translation": "прощать",
+          "transcription": "[fəˈɡɪv]",
+          "example": "Please forgive my mistake."
+        },
+        {
+          "english": "congratulations",
+          "translation": "поздравления",
+          "transcription": "[kənˌɡrætʃuˈleɪʃnz]",
+          "example": "Congratulations on your new job!"
+        },
+        {
+          "english": "welcome",
+          "translation": "приветствовать",
+          "transcription": "[ˈwelkəm]",
+          "example": "Welcome to our home."
+        },
+        {
+          "english": "offer",
+          "translation": "предложение",
+          "transcription": "[ˈɒfə]",
+          "example": "It was a kind offer."
+        },
+        {
+          "english": "refuse",
+          "translation": "отказываться",
+          "transcription": "[rɪˈfjuːz]",
+          "example": "He politely refused the invitation."
+        },
+        {
+          "english": "kindness",
+          "translation": "доброта",
+          "transcription": "[ˈkaɪndnəs]",
+          "example": "Thank you for your kindness."
+        }
+      ]
+    },
+    {
+      "name": "Тело",
+      "slug": "body",
+      "icon": "🧠",
+      "color": "#06B6D4",
+      "description": "Части тела и то, как они работают",
+      "words": [
+        {
+          "english": "shoulder",
+          "translation": "плечо",
+          "transcription": "[ˈʃəʊldə]",
+          "example": "My shoulder hurts after training."
+        },
+        {
+          "english": "elbow",
+          "translation": "локоть",
+          "transcription": "[ˈelbəʊ]",
+          "example": "He hurt his elbow playing tennis."
+        },
+        {
+          "english": "wrist",
+          "translation": "запястье",
+          "transcription": "[rɪst]",
+          "example": "She wears a watch on her wrist."
+        },
+        {
+          "english": "thumb",
+          "translation": "большой палец руки",
+          "transcription": "[θʌm]",
+          "example": "He cut his thumb."
+        },
+        {
+          "english": "knee",
+          "translation": "колено",
+          "transcription": "[niː]",
+          "example": "My knees ache after the run."
+        },
+        {
+          "english": "ankle",
+          "translation": "лодыжка",
+          "transcription": "[ˈæŋkl]",
+          "example": "I twisted my ankle."
+        },
+        {
+          "english": "spine",
+          "translation": "позвоночник",
+          "transcription": "[spaɪn]",
+          "example": "Sit up and keep your spine straight."
+        },
+        {
+          "english": "muscle",
+          "translation": "мышца",
+          "transcription": "[ˈmʌsl]",
+          "example": "Stretching relaxes the muscles."
+        },
+        {
+          "english": "lung",
+          "translation": "лёгкое",
+          "transcription": "[lʌŋ]",
+          "example": "Smoking damages your lungs."
+        },
+        {
+          "english": "brain",
+          "translation": "мозг",
+          "transcription": "[breɪn]",
+          "example": "The brain needs rest."
+        },
+        {
+          "english": "skin",
+          "translation": "кожа",
+          "transcription": "[skɪn]",
+          "example": "Protect your skin from the sun."
+        },
+        {
+          "english": "bone",
+          "translation": "кость",
+          "transcription": "[bəʊn]",
+          "example": "He broke a bone in his arm."
+        },
+        {
+          "english": "blood",
+          "translation": "кровь",
+          "transcription": "[blʌd]",
+          "example": "She gave blood at the hospital."
+        },
+        {
+          "english": "heartbeat",
+          "translation": "сердцебиение",
+          "transcription": "[ˈhɑːtbiːt]",
+          "example": "I could hear my heartbeat."
+        },
+        {
+          "english": "breath",
+          "translation": "дыхание",
+          "transcription": "[breθ]",
+          "example": "Take a deep breath."
+        },
+        {
+          "english": "sweat",
+          "translation": "пот",
+          "transcription": "[swet]",
+          "example": "His shirt was wet with sweat."
+        },
+        {
+          "english": "posture",
+          "translation": "осанка",
+          "transcription": "[ˈpɒstʃə]",
+          "example": "Good posture prevents back pain."
+        },
+        {
+          "english": "sight",
+          "translation": "зрение",
+          "transcription": "[saɪt]",
+          "example": "His sight is getting worse."
+        },
+        {
+          "english": "hearing",
+          "translation": "слух",
+          "transcription": "[ˈhɪərɪŋ]",
+          "example": "Loud music can damage your hearing."
+        },
+        {
+          "english": "stomach",
+          "translation": "желудок, живот",
+          "transcription": "[ˈstʌmək]",
+          "example": "My stomach hurts."
+        }
+      ]
+    },
+    {
+      "name": "Характер",
+      "slug": "personality",
+      "icon": "🧩",
+      "color": "#7C3AED",
+      "description": "Черты характера и качества людей",
+      "words": [
+        {
+          "english": "confident",
+          "translation": "уверенный",
+          "transcription": "[ˈkɒnfɪdənt]",
+          "example": "She is confident in interviews."
+        },
+        {
+          "english": "shy",
+          "translation": "застенчивый",
+          "transcription": "[ʃaɪ]",
+          "example": "He was too shy to speak."
+        },
+        {
+          "english": "honest",
+          "translation": "честный",
+          "transcription": "[ˈɒnɪst]",
+          "example": "I appreciate an honest answer."
+        },
+        {
+          "english": "loyal",
+          "translation": "верный",
+          "transcription": "[ˈlɔɪəl]",
+          "example": "She is a loyal friend."
+        },
+        {
+          "english": "generous",
+          "translation": "щедрый",
+          "transcription": "[ˈdʒenərəs]",
+          "example": "He is generous with his time."
+        },
+        {
+          "english": "selfish",
+          "translation": "эгоистичный",
+          "transcription": "[ˈselfɪʃ]",
+          "example": "It was a selfish decision."
+        },
+        {
+          "english": "curious",
+          "translation": "любопытный",
+          "transcription": "[ˈkjʊəriəs]",
+          "example": "Children are naturally curious."
+        },
+        {
+          "english": "patient",
+          "translation": "терпеливый",
+          "transcription": "[ˈpeɪʃnt]",
+          "example": "You need to be patient with beginners."
+        },
+        {
+          "english": "ambitious",
+          "translation": "амбициозный",
+          "transcription": "[æmˈbɪʃəs]",
+          "example": "She is an ambitious young manager."
+        },
+        {
+          "english": "reliable",
+          "translation": "надёжный",
+          "transcription": "[rɪˈlaɪəbl]",
+          "example": "He is a reliable colleague."
+        },
+        {
+          "english": "stubborn",
+          "translation": "упрямый",
+          "transcription": "[ˈstʌbən]",
+          "example": "My brother is incredibly stubborn."
+        },
+        {
+          "english": "optimistic",
+          "translation": "оптимистичный",
+          "transcription": "[ˌɒptɪˈmɪstɪk]",
+          "example": "Try to stay optimistic."
+        },
+        {
+          "english": "anxious",
+          "translation": "тревожный",
+          "transcription": "[ˈæŋkʃəs]",
+          "example": "She gets anxious before flights."
+        },
+        {
+          "english": "sensible",
+          "translation": "разумный",
+          "transcription": "[ˈsensəbl]",
+          "example": "That was a sensible choice."
+        },
+        {
+          "english": "creative",
+          "translation": "творческий",
+          "transcription": "[kriˈeɪtɪv]",
+          "example": "He has a creative mind."
+        },
+        {
+          "english": "sociable",
+          "translation": "общительный",
+          "transcription": "[ˈsəʊʃəbl]",
+          "example": "She is sociable and easy to talk to."
+        },
+        {
+          "english": "modest",
+          "translation": "скромный",
+          "transcription": "[ˈmɒdɪst]",
+          "example": "He is modest about his success."
+        },
+        {
+          "english": "impulsive",
+          "translation": "импульсивный",
+          "transcription": "[ɪmˈpʌlsɪv]",
+          "example": "Buying that car was impulsive."
+        },
+        {
+          "english": "tolerant",
+          "translation": "терпимый",
+          "transcription": "[ˈtɒlərənt]",
+          "example": "We should be tolerant of differences."
+        },
+        {
+          "english": "determined",
+          "translation": "решительный",
+          "transcription": "[dɪˈtɜːmɪnd]",
+          "example": "She is determined to finish the course."
+        }
+      ]
+    },
+    {
+      "name": "Общение",
+      "slug": "communication",
+      "icon": "💬",
+      "color": "#0891B2",
+      "description": "Разговоры, просьбы и уточнения",
+      "words": [
+        {
+          "english": "conversation",
+          "translation": "разговор",
+          "transcription": "[ˌkɒnvəˈseɪʃn]",
+          "example": "We had a long conversation."
+        },
+        {
+          "english": "discuss",
+          "translation": "обсуждать",
+          "transcription": "[dɪˈskʌs]",
+          "example": "Let's discuss it tomorrow."
+        },
+        {
+          "english": "explain",
+          "translation": "объяснять",
+          "transcription": "[ɪkˈspleɪn]",
+          "example": "Can you explain the rule?"
+        },
+        {
+          "english": "argue",
+          "translation": "спорить",
+          "transcription": "[ˈɑːɡjuː]",
+          "example": "They often argue about money."
+        },
+        {
+          "english": "persuade",
+          "translation": "убеждать",
+          "transcription": "[pəˈsweɪd]",
+          "example": "He persuaded me to join."
+        },
+        {
+          "english": "negotiate",
+          "translation": "вести переговоры",
+          "transcription": "[nɪˈɡəʊʃieɪt]",
+          "example": "We negotiated a better price."
+        },
+        {
+          "english": "whisper",
+          "translation": "шептать",
+          "transcription": "[ˈwɪspə]",
+          "example": "She whispered something in his ear."
+        },
+        {
+          "english": "shout",
+          "translation": "кричать",
+          "transcription": "[ʃaʊt]",
+          "example": "Don't shout at me."
+        },
+        {
+          "english": "interrupt",
+          "translation": "перебивать",
+          "transcription": "[ˌɪntəˈrʌpt]",
+          "example": "Sorry to interrupt you."
+        },
+        {
+          "english": "announce",
+          "translation": "объявлять",
+          "transcription": "[əˈnaʊns]",
+          "example": "They announced the results."
+        },
+        {
+          "english": "confirm",
+          "translation": "подтверждать",
+          "transcription": "[kənˈfɜːm]",
+          "example": "Please confirm your booking."
+        },
+        {
+          "english": "complain",
+          "translation": "жаловаться",
+          "transcription": "[kəmˈpleɪn]",
+          "example": "He complained about the noise."
+        },
+        {
+          "english": "suggest",
+          "translation": "предлагать",
+          "transcription": "[səˈdʒest]",
+          "example": "May I suggest another option?"
+        },
+        {
+          "english": "reply",
+          "translation": "отвечать",
+          "transcription": "[rɪˈplaɪ]",
+          "example": "She replied within an hour."
+        },
+        {
+          "english": "mention",
+          "translation": "упоминать",
+          "transcription": "[ˈmenʃn]",
+          "example": "He mentioned your name."
+        },
+        {
+          "english": "translate",
+          "translation": "переводить",
+          "transcription": "[trænzˈleɪt]",
+          "example": "Can you translate this sentence?"
+        },
+        {
+          "english": "pronounce",
+          "translation": "произносить",
+          "transcription": "[prəˈnaʊns]",
+          "example": "How do you pronounce this word?"
+        },
+        {
+          "english": "misunderstand",
+          "translation": "неправильно понять",
+          "transcription": "[ˌmɪsʌndəˈstænd]",
+          "example": "I think you misunderstood me."
+        },
+        {
+          "english": "gesture",
+          "translation": "жест",
+          "transcription": "[ˈdʒestʃə]",
+          "example": "He made a gesture with his hand."
+        },
+        {
+          "english": "fluent",
+          "translation": "беглый",
+          "transcription": "[ˈfluːənt]",
+          "example": "She is fluent in three languages."
+        }
+      ]
+    },
+    {
+      "name": "Погода",
+      "slug": "weather",
+      "icon": "☀️",
+      "color": "#38BDF8",
+      "description": "Прогноз, осадки и времена года",
+      "words": [
+        {
+          "english": "forecast",
+          "translation": "прогноз",
+          "transcription": "[ˈfɔːkɑːst]",
+          "example": "The forecast says rain."
+        },
+        {
+          "english": "humidity",
+          "translation": "влажность",
+          "transcription": "[hjuːˈmɪdəti]",
+          "example": "The humidity is unbearable."
+        },
+        {
+          "english": "thunder",
+          "translation": "гром",
+          "transcription": "[ˈθʌndə]",
+          "example": "The thunder woke me up."
+        },
+        {
+          "english": "lightning",
+          "translation": "молния",
+          "transcription": "[ˈlaɪtnɪŋ]",
+          "example": "Lightning struck a tree."
+        },
+        {
+          "english": "foggy",
+          "translation": "туманный",
+          "transcription": "[ˈfɒɡi]",
+          "example": "It was foggy this morning."
+        },
+        {
+          "english": "breeze",
+          "translation": "лёгкий ветер",
+          "transcription": "[briːz]",
+          "example": "A cool breeze came from the sea."
+        },
+        {
+          "english": "freezing",
+          "translation": "очень холодный",
+          "transcription": "[ˈfriːzɪŋ]",
+          "example": "It's freezing outside."
+        },
+        {
+          "english": "mild",
+          "translation": "мягкий (о погоде)",
+          "transcription": "[maɪld]",
+          "example": "We had a mild winter."
+        },
+        {
+          "english": "drought",
+          "translation": "засуха",
+          "transcription": "[draʊt]",
+          "example": "The drought destroyed the crops."
+        },
+        {
+          "english": "flood",
+          "translation": "наводнение",
+          "transcription": "[flʌd]",
+          "example": "The flood damaged many houses."
+        },
+        {
+          "english": "shower",
+          "translation": "кратковременный дождь",
+          "transcription": "[ˈʃaʊə]",
+          "example": "There will be light showers later."
+        },
+        {
+          "english": "chilly",
+          "translation": "прохладный",
+          "transcription": "[ˈtʃɪli]",
+          "example": "The evening turned chilly."
+        },
+        {
+          "english": "sunshine",
+          "translation": "солнечный свет",
+          "transcription": "[ˈsʌnʃaɪn]",
+          "example": "We had two days of sunshine."
+        },
+        {
+          "english": "temperature",
+          "translation": "температура",
+          "transcription": "[ˈtemprətʃə]",
+          "example": "The temperature dropped to zero."
+        },
+        {
+          "english": "cloudy",
+          "translation": "облачный",
+          "transcription": "[ˈklaʊdi]",
+          "example": "It's cloudy but warm."
+        },
+        {
+          "english": "windy",
+          "translation": "ветреный",
+          "transcription": "[ˈwɪndi]",
+          "example": "It's too windy to cycle."
+        },
+        {
+          "english": "hail",
+          "translation": "град",
+          "transcription": "[heɪl]",
+          "example": "Hail damaged the car."
+        },
+        {
+          "english": "melt",
+          "translation": "таять",
+          "transcription": "[melt]",
+          "example": "The snow is starting to melt."
+        },
+        {
+          "english": "heatwave",
+          "translation": "жара",
+          "transcription": "[ˈhiːtweɪv]",
+          "example": "A heatwave hit the city."
+        },
+        {
+          "english": "drizzle",
+          "translation": "моросить",
+          "transcription": "[ˈdrɪzl]",
+          "example": "It started to drizzle."
+        }
+      ]
+    },
+    {
+      "name": "Кухня",
+      "slug": "kitchen",
+      "icon": "🍳",
+      "color": "#EA580C",
+      "description": "Готовка, посуда и кухонные действия",
+      "words": [
+        {
+          "english": "utensils",
+          "translation": "посуда, утварь",
+          "transcription": "[juːˈtenslz]",
+          "example": "Wash the utensils after dinner."
+        },
+        {
+          "english": "saucepan",
+          "translation": "кастрюля",
+          "transcription": "[ˈsɔːspən]",
+          "example": "Boil the water in a saucepan."
+        },
+        {
+          "english": "frying pan",
+          "translation": "сковорода",
+          "transcription": "[ˈfraɪɪŋ pæn]",
+          "example": "Heat the oil in a frying pan."
+        },
+        {
+          "english": "chop",
+          "translation": "нарезать",
+          "transcription": "[tʃɒp]",
+          "example": "Chop the onions finely."
+        },
+        {
+          "english": "stir",
+          "translation": "перемешивать",
+          "transcription": "[stɜː]",
+          "example": "Stir the soup slowly."
+        },
+        {
+          "english": "boil",
+          "translation": "кипятить",
+          "transcription": "[bɔɪl]",
+          "example": "Boil the eggs for five minutes."
+        },
+        {
+          "english": "bake",
+          "translation": "печь",
+          "transcription": "[beɪk]",
+          "example": "She baked a cake for his birthday."
+        },
+        {
+          "english": "roast",
+          "translation": "жарить в духовке",
+          "transcription": "[rəʊst]",
+          "example": "We roast vegetables on Sundays."
+        },
+        {
+          "english": "fry",
+          "translation": "жарить",
+          "transcription": "[fraɪ]",
+          "example": "Fry the fish until golden."
+        },
+        {
+          "english": "peel",
+          "translation": "чистить",
+          "transcription": "[piːl]",
+          "example": "Peel the potatoes, please."
+        },
+        {
+          "english": "slice",
+          "translation": "ломтик; нарезать",
+          "transcription": "[slaɪs]",
+          "example": "Cut the bread into thin slices."
+        },
+        {
+          "english": "taste",
+          "translation": "пробовать на вкус",
+          "transcription": "[teɪst]",
+          "example": "Taste it and add some salt."
+        },
+        {
+          "english": "season",
+          "translation": "приправлять",
+          "transcription": "[ˈsiːzn]",
+          "example": "Season the meat with pepper."
+        },
+        {
+          "english": "pour",
+          "translation": "наливать",
+          "transcription": "[pɔː]",
+          "example": "Pour the milk into the bowl."
+        },
+        {
+          "english": "mix",
+          "translation": "смешивать",
+          "transcription": "[mɪks]",
+          "example": "Mix the flour and sugar."
+        },
+        {
+          "english": "measure",
+          "translation": "отмерять",
+          "transcription": "[ˈmeʒə]",
+          "example": "Measure two cups of water."
+        },
+        {
+          "english": "leftovers",
+          "translation": "остатки еды",
+          "transcription": "[ˈleftəʊvəz]",
+          "example": "We ate the leftovers for lunch."
+        },
+        {
+          "english": "dishwasher",
+          "translation": "посудомоечная машина",
+          "transcription": "[ˈdɪʃwɒʃə]",
+          "example": "Put the plates in the dishwasher."
+        },
+        {
+          "english": "grill",
+          "translation": "гриль",
+          "transcription": "[ɡrɪl]",
+          "example": "Grill the chicken for twenty minutes."
+        },
+        {
+          "english": "napkin",
+          "translation": "салфетка",
+          "transcription": "[ˈnæpkɪn]",
+          "example": "Take a napkin, please."
+        }
+      ]
+    },
+    {
+      "name": "Ориентация",
+      "slug": "directions",
+      "icon": "🧭",
+      "color": "#78716C",
+      "description": "Как объяснить и понять дорогу",
+      "words": [
+        {
+          "english": "left",
+          "translation": "налево",
+          "transcription": "[left]",
+          "example": "Turn left at the corner."
+        },
+        {
+          "english": "right",
+          "translation": "направо",
+          "transcription": "[raɪt]",
+          "example": "The bank is on your right."
+        },
+        {
+          "english": "straight",
+          "translation": "прямо",
+          "transcription": "[streɪt]",
+          "example": "Go straight for two blocks."
+        },
+        {
+          "english": "opposite",
+          "translation": "напротив",
+          "transcription": "[ˈɒpəzɪt]",
+          "example": "The pharmacy is opposite the park."
+        },
+        {
+          "english": "behind",
+          "translation": "позади",
+          "transcription": "[bɪˈhaɪnd]",
+          "example": "The car park is behind the building."
+        },
+        {
+          "english": "between",
+          "translation": "между",
+          "transcription": "[bɪˈtwiːn]",
+          "example": "The café is between the bank and the shop."
+        },
+        {
+          "english": "corner",
+          "translation": "угол",
+          "transcription": "[ˈkɔːnə]",
+          "example": "Turn at the next corner."
+        },
+        {
+          "english": "roundabout",
+          "translation": "круговое движение",
+          "transcription": "[ˈraʊndəbaʊt]",
+          "example": "Take the second exit at the roundabout."
+        },
+        {
+          "english": "junction",
+          "translation": "развилка",
+          "transcription": "[ˈdʒʌŋkʃn]",
+          "example": "Turn left at the junction."
+        },
+        {
+          "english": "entrance",
+          "translation": "вход",
+          "transcription": "[ˈentrəns]",
+          "example": "The entrance is around the back."
+        },
+        {
+          "english": "exit",
+          "translation": "выход",
+          "transcription": "[ˈeksɪt]",
+          "example": "Take the emergency exit."
+        },
+        {
+          "english": "signpost",
+          "translation": "указатель",
+          "transcription": "[ˈsaɪnpəʊst]",
+          "example": "Follow the signpost to the museum."
+        },
+        {
+          "english": "distance",
+          "translation": "расстояние",
+          "transcription": "[ˈdɪstəns]",
+          "example": "The distance is about two kilometres."
+        },
+        {
+          "english": "nearby",
+          "translation": "поблизости",
+          "transcription": "[ˌnɪəˈbaɪ]",
+          "example": "There is a bakery nearby."
+        },
+        {
+          "english": "map",
+          "translation": "карта",
+          "transcription": "[mæp]",
+          "example": "Open the map on your phone."
+        },
+        {
+          "english": "north",
+          "translation": "север",
+          "transcription": "[nɔːθ]",
+          "example": "The wind blows from the north."
+        },
+        {
+          "english": "south",
+          "translation": "юг",
+          "transcription": "[saʊθ]",
+          "example": "We drove south for an hour."
+        },
+        {
+          "english": "upstairs",
+          "translation": "наверху",
+          "transcription": "[ˌʌpˈsteəz]",
+          "example": "The bathroom is upstairs."
+        },
+        {
+          "english": "towards",
+          "translation": "по направлению к",
+          "transcription": "[təˈwɔːdz]",
+          "example": "Walk towards the river."
+        },
+        {
+          "english": "cross",
+          "translation": "пересекать",
+          "transcription": "[krɒs]",
+          "example": "Cross the street carefully."
+        }
       ]
     }
   ]
