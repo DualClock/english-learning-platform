@@ -84,13 +84,16 @@ public class BooksController : ControllerBase
         }
     }
 
-    // GET: api/books
+    // GET: api/books?page=1&pageSize=20
     [HttpGet]
-    public async Task<IActionResult> GetBooks()
+    public async Task<IActionResult> GetBooks([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var books = await _bookService.GetUserBooksAsync(GetUserId());
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
 
-        return Ok(books.Select(b =>
+        var (books, totalCount) = await _bookService.GetUserBooksAsync(GetUserId(), page, pageSize);
+
+        var items = books.Select(b =>
         {
             // Старые данные могли хранить прогресс в 0..1 — нормализуем к процентам
             var progress = b.Progress;
@@ -115,7 +118,16 @@ public class BooksController : ControllerBase
                 totalPages = b.TotalPages,
                 cefrLevel = b.CefrLevel
             };
-        }));
+        }).ToList();
+
+        return Ok(new
+        {
+            items,
+            page,
+            pageSize,
+            totalCount,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
     }
 
     // GET: api/books/popular — каталог с обложками (кэш 24ч, Open Library)

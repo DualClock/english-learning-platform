@@ -21,10 +21,21 @@ public class DictionaryController : ControllerBase
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
     [HttpGet]
-    public async Task<ActionResult<List<WordResponse>>> GetWords()
+    public async Task<ActionResult<object>> GetWords([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var words = await _dictionaryService.GetUserWordsAsync(GetUserId());
-        return Ok(words);
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 200);
+
+        var (items, totalCount) = await _dictionaryService.GetUserWordsAsync(GetUserId(), page, pageSize);
+
+        return Ok(new
+        {
+            items,
+            page,
+            pageSize,
+            totalCount,
+            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        });
     }
 
     [HttpGet("search")]

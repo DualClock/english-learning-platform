@@ -6,9 +6,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import WordListsSection from '@/components/dictionary/WordListsSection';
+import Pager from '@/components/Pager';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
+import { isPaged, type Paged } from '@/app/lib/paged';
 
 interface Word {
   id: number;
@@ -64,21 +66,29 @@ function DictionaryContent() {
   const [searchQuery, setSearchQuery] = useState('');
   // Применённый поиск: пустая строка — показываем весь словарь
   const [appliedQuery, setAppliedQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [actionError, setActionError] = useState('');
 
   const wordsPath = appliedQuery
     ? `/api/dictionary/search?query=${encodeURIComponent(appliedQuery)}`
-    : '/api/dictionary';
+    : `/api/dictionary?page=${page}&pageSize=50`;
 
-  // Словарь берётся из общего кэша: повторный заход на вкладку рисуется сразу
+  // Словарь берётся из общего кэша: повторный заход на вкладку рисуется сразу.
+  // Основной список приходит пагинированным конвертом, поиск — плоским массивом.
   const {
     data: wordsData,
     error: wordsError,
     isLoading: wordsLoading,
     refresh: refreshWords
-  } = useApiQuery<Word[]>(wordsPath, { enabled: status === 'authenticated' });
+  } = useApiQuery<Paged<Word> | Word[]>(
+    wordsPath,
+    { enabled: status === 'authenticated' }
+  );
 
-  const words = wordsData ?? [];
+  const paged = isPaged<Word>(wordsData) ? wordsData : null;
+  const words: Word[] = paged ? paged.items : Array.isArray(wordsData) ? wordsData : [];
+  const totalCount = paged ? paged.totalCount : words.length;
+  const totalPages = paged ? paged.totalPages : 1;
   const isInitialLoading = wordsLoading && wordsData === undefined;
   const error = actionError || (wordsError ? (appliedQuery ? 'Ошибка поиска' : 'Ошибка загрузки слов') : '');
 
@@ -93,6 +103,7 @@ function DictionaryContent() {
 
     if (!nextQuery) {
       setAppliedQuery('');
+      setPage(1);
       // Повторный клик без запроса — принудительно обновляем словарь
       if (!appliedQuery) refreshWords();
       return;
@@ -103,6 +114,7 @@ function DictionaryContent() {
       return;
     }
 
+    setPage(1);
     setAppliedQuery(nextQuery);
   };
 
@@ -155,7 +167,7 @@ function DictionaryContent() {
     <AppLayout>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Словарь</h1>
-        <p className="text-[var(--color-slate)]">{words.length} слов сохранено</p>
+        <p className="text-[var(--color-slate)]">{totalCount} слов сохранено</p>
       </div>
 
       <Suspense fallback={null}>
@@ -259,6 +271,17 @@ function DictionaryContent() {
             </div>
           ))}
         </div>
+      )}
+
+      {!appliedQuery && (
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(next) => {
+            setPage(next);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
     </AppLayout>
   );

@@ -98,12 +98,15 @@ public class ReviewController : ControllerBase
     {
         var userId = GetUserId();
 
+        // Кламп: без него ?count=100000 тянул бы из базы всю таблицу UserWords
+        var take = Math.Clamp(count, 1, 50);
+
         var words = await _context.UserWords
             .Where(uw => uw.UserId == userId)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
             .OrderBy(x => Guid.NewGuid())
-            .Take(count)
+            .Take(take)
             .Select(uw => new
             {
                 wordId = uw.WordId,

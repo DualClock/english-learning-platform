@@ -150,25 +150,38 @@ public class DictionaryService
         return added;
     }
 
-    public async Task<List<WordResponse>> GetUserWordsAsync(string userId)
+    public async Task<(List<WordResponse> Items, int TotalCount)> GetUserWordsAsync(string userId, int page, int pageSize)
     {
-        var words = await _context.UserWords
+        var query = _context.UserWords
             .Where(uw => uw.UserId == userId)
             .Include(uw => uw.Word)
-                .ThenInclude(w => w.Definitions)
+                .ThenInclude(w => w.Definitions);
+
+        var totalCount = await query.CountAsync();
+
+        var words = await query
+            .OrderByDescending(uw => uw.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(uw => uw.Word)
             .ToListAsync();
 
-        return words.Select(MapToResponse).ToList();
+        return (words.Select(MapToResponse).ToList(), totalCount);
     }
 
     public async Task<List<WordResponse>> SearchWordsAsync(string userId, string query)
     {
+        // Ограничиваем длину поискового запроса и число результатов:
+        // поиск — дорогая ILIKE-операция, нельзя отдавать тонну строк
+        var trimmed = query.Trim().Length > 100 ? query.Trim()[..100] : query.Trim();
+
         var words = await _context.UserWords
             .Where(uw => uw.UserId == userId)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
-            .Where(uw => EF.Functions.ILike(uw.Word.Text, $"%{query}%"))
+            .Where(uw => EF.Functions.ILike(uw.Word.Text, $"%{trimmed}%"))
+            .OrderBy(uw => uw.Word.Text)
+            .Take(50)
             .Select(uw => uw.Word)
             .ToListAsync();
 

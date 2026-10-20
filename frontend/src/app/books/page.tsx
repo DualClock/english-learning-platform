@@ -11,6 +11,8 @@ import LevelChip, { normalizeLevel } from '@/components/library/LevelChip';
 import MyBookCard, { type UserBook } from '@/components/library/MyBookCard';
 import StoryCard, { type Story } from '@/components/library/StoryCard';
 import ClassicCard, { type PopularBook } from '@/components/library/ClassicCard';
+import Pager from '@/components/Pager';
+import type { Paged } from '@/app/lib/paged';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
 
@@ -43,17 +45,21 @@ export default function BooksPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  const [page, setPage] = useState(1);
+
   const {
     data: booksData,
     error: booksError,
     isLoading: booksLoading,
     refresh: refreshBooks,
-  } = useApiQuery<UserBook[]>('/api/books');
+  } = useApiQuery<Paged<UserBook>>(`/api/books?page=${page}&pageSize=100`);
   const { data: popularData } = useApiQuery<PopularBook[]>('/api/books/popular');
   const { data: storiesData } = useApiQuery<Story[]>('/api/books/stories');
   const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
 
-  const books = useMemo(() => booksData ?? [], [booksData]);
+  const books = useMemo(() => booksData?.items ?? [], [booksData]);
+  const totalCount = booksData?.totalCount ?? 0;
+  const totalPages = booksData?.totalPages ?? 1;
   const popular = useMemo(() => popularData ?? [], [popularData]);
   const stories = useMemo(() => storiesData ?? [], [storiesData]);
   const profileLevel = profileData?.cefrLevel ?? '';
@@ -88,7 +94,7 @@ export default function BooksPage() {
   // Если у каких-то книг нет обложки — просим бэкенд подтянуть их (один раз за сессию страницы)
   useEffect(() => {
     if (status !== 'authenticated' || booksData === undefined) return;
-    if (coverRefreshRef.current || !booksData.some((b) => !b.coverUrl)) return;
+    if (coverRefreshRef.current || !books.some((b) => !b.coverUrl)) return;
     coverRefreshRef.current = true;
 
     const refreshCovers = async () => {
@@ -106,7 +112,7 @@ export default function BooksPage() {
       }
     };
     void refreshCovers();
-  }, [status, booksData, authHeaders, reloadBooks]);
+  }, [status, books, authHeaders, reloadBooks]);
 
   const userLevel = normalizeLevel(profileLevel);
 
@@ -231,7 +237,7 @@ export default function BooksPage() {
           <p className="mt-1 text-[var(--color-slate)]">Читайте то, что по силам — и чуть сложнее</p>
         </div>
         <div className="flex items-center gap-3">
-          {!isLoading && <span className="text-sm text-[var(--color-slate)]">{pluralBooks(books.length)}</span>}
+          {!isLoading && <span className="text-sm text-[var(--color-slate)]">{pluralBooks(totalCount)}</span>}
           <label className="btn-secondary flex cursor-pointer items-center gap-2 px-4 py-2 text-sm">
             {uploading ? (
               <>
@@ -308,6 +314,14 @@ export default function BooksPage() {
                   />
                 ))}
               </div>
+              <Pager
+                page={page}
+                totalPages={totalPages}
+                onPageChange={(next) => {
+                  setPage(next);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             </section>
           )}
 

@@ -15,6 +15,7 @@ import StreakCard, { StreakData } from '@/components/dashboard/StreakCard';
 import RecommendedShelf, { RecommendedBook } from '@/components/dashboard/RecommendedShelf';
 import { EmptyBooks, ErrorState } from '@/components/dashboard/States';
 import { Book, pickContinueBook } from '@/components/dashboard/utils';
+import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
 import DailyPlan from '@/components/dashboard/DailyPlan';
 import LevelCard from '@/components/dashboard/LevelCard';
@@ -44,11 +45,12 @@ export default function DashboardPage() {
     error: booksError,
     isLoading: booksLoading,
     refresh: refreshBooks,
-  } = useApiQuery<Book[]>('/api/books');
+  } = useApiQuery<Paged<Book>>('/api/books');
   const { data: profile } = useApiQuery<Profile>('/api/profile');
   const { data: streak } = useApiQuery<StreakData>('/api/progress/streak');
   const { data: reviewToday } = useApiQuery<ReviewToday>('/api/review/today');
-  const { data: dictionary } = useApiQuery<unknown[]>('/api/dictionary');
+  // Для дашборда достаточно счётчика: просим одну строку и читаем totalCount
+  const { data: dictionary } = useApiQuery<Paged<unknown>>('/api/dictionary?pageSize=1');
   const recommendedPath = profile?.cefrLevel
     ? `/api/books/recommended?level=${encodeURIComponent(profile.cefrLevel)}`
     : null;
@@ -61,11 +63,12 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const bookList = useMemo(() => books ?? [], [books]);
+  const bookList = useMemo(() => books?.items ?? [], [books]);
   const isLoading = booksLoading && books === undefined;
   const hasError = Boolean(booksError);
   const reviewCount = reviewToday?.totalCount ?? 0;
-  const dictCount = dictionary ? dictionary.length : null;
+  const dictCount = dictionary ? dictionary.totalCount : null;
+  const booksCount = books ? books.totalCount : null;
   const streakLoaded = books !== undefined;
 
   const userName =
@@ -89,7 +92,7 @@ export default function DashboardPage() {
               <StatsRow
                 dictCount={dictCount}
                 reviewCount={reviewCount}
-                booksCount={bookList.length}
+                booksCount={booksCount ?? bookList.length}
                 totalXp={streak?.totalXp ?? profile?.totalXp ?? null}
               />
 

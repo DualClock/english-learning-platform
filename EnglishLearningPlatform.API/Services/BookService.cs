@@ -98,12 +98,20 @@ public class BookService
         return newBook;
     }
 
-    public async Task<List<Book>> GetUserBooksAsync(string userId)
+    public async Task<(List<Book> Items, int TotalCount)> GetUserBooksAsync(string userId, int page, int pageSize)
     {
-        return await _context.Books
+        var query = _context.Books
             .Where(b => b.UploadedByUserId == userId)
-            .OrderByDescending(b => b.CreatedAt)
+            .OrderByDescending(b => b.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<Book?> GetBookAsync(string userId, int bookId)
