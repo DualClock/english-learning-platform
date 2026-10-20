@@ -47,3 +47,7 @@ EnglishLearningPlatform.API/appsettings.Development.json
 
 # Пользовательские загрузки (аватары)
 EnglishLearningPlatform.API/uploads/
+
+# Инструменты и временные файлы
+.kimi/
+.tmp/
