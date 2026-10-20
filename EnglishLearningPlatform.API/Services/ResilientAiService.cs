@@ -304,6 +304,16 @@ public class ResilientAiService
                 return new AttemptOutcome(new GeminiCallResult(responseJson, false), false, false, null);
             }
 
+            // Гео-блок Gemini: прокси в неподдерживаемой стране. Ретраи бессмысленны,
+            // но причина должна быть видна в логе — иначе выглядит как «ИИ недоступен»
+            if (responseJson.Contains("User location is not supported", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "Gemini rejected the request by location (model={Model}) — прокси из Gemini:ProxyUrl находится в неподдерживаемом регионе",
+                    model);
+                return new AttemptOutcome(null, false, false, "location not supported by Gemini");
+            }
+
             var modelNotFound = response.StatusCode == HttpStatusCode.NotFound ||
                                 responseJson.Contains("not found", StringComparison.OrdinalIgnoreCase);
             if (modelNotFound)
@@ -599,23 +609,15 @@ public class ResilientAiService
         var proxyUrl = _configuration["Gemini:ProxyUrl"];
         var handler = new HttpClientHandler();
 
-        if (!string.IsNullOrEmpty(proxyUrl))
+        if (!string.IsNullOrWhiteSpace(proxyUrl))
         {
-            var uri = new Uri(proxyUrl);
-            var proxy = new WebProxy
+            var proxy = TryCreateProxy(proxyUrl.Trim());
+            if (proxy != null)
             {
-                Address = new Uri($"{uri.Scheme}://{uri.Host}:{uri.Port}"),
-                BypassProxyOnLocal = false,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(
-                    uri.UserInfo.Split(':')[0],
-                    uri.UserInfo.Split(':')[1]
-                )
-            };
-
-            handler.Proxy = proxy;
-            handler.UseProxy = true;
-            handler.PreAuthenticate = true;
+                handler.Proxy = proxy;
+                handler.UseProxy = true;
+                handler.PreAuthenticate = true;
+            }
         }
 
         // Таймаут управляется per-attempt CancellationToken, а не HttpClient.Timeout
@@ -623,5 +625,70 @@ public class ResilientAiService
         {
             Timeout = Timeout.InfiniteTimeSpan
         };
+    }
+
+    // Прокси из конфига: поддерживаем http(s) и socks4/socks5 (в т.ч. запись
+    // socks5h:// — у curl так помечается remote DNS, для .NET это тот же socks5).
+    // Ошибка в строке не должна ломать весь AI-слой: логируем и идём напрямую.
+    private WebProxy? TryCreateProxy(string proxyUrl)
+    {
+        try
+        {
+            var uri = new Uri(proxyUrl);
+
+            var scheme = uri.Scheme.ToLowerInvariant() switch
+            {
+                "socks5h" or "socks5" => "socks5",
+                "socks4a" or "socks4" => "socks4",
+                "http" => "http",
+                "https" => "https",
+                _ => null
+            };
+
+            if (scheme == null)
+            {
+                _logger.LogWarning(
+                    "Gemini:ProxyUrl uses unsupported scheme '{Scheme}', calling Gemini directly",
+                    uri.Scheme);
+                return null;
+            }
+
+            var port = uri.IsDefaultPort || uri.Port <= 0
+                ? (scheme is "socks5" or "socks4" ? 1080 : 8080)
+                : uri.Port;
+
+            var proxy = new WebProxy
+            {
+                Address = new Uri($"{scheme}://{uri.Host}:{port}"),
+                BypassProxyOnLocal = false,
+                UseDefaultCredentials = false
+            };
+
+            // Учётные данные необязательны: бывают открытые прокси и IP-авторизация
+            if (!string.IsNullOrEmpty(uri.UserInfo))
+            {
+                var separator = uri.UserInfo.IndexOf(':');
+                var user = separator >= 0 ? uri.UserInfo[..separator] : uri.UserInfo;
+                var password = separator >= 0 ? uri.UserInfo[(separator + 1)..] : string.Empty;
+
+                if (user.Length > 0)
+                {
+                    proxy.Credentials = new NetworkCredential(
+                        Uri.UnescapeDataString(user),
+                        Uri.UnescapeDataString(password));
+                }
+            }
+
+            // Пароль в лог не попадает — только схема, хост и порт
+            _logger.LogInformation("Gemini proxy: {Scheme}://{Host}:{Port} (auth: {HasAuth})",
+                scheme, uri.Host, port, proxy.Credentials != null ? "yes" : "no");
+
+            return proxy;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Invalid Gemini:ProxyUrl, calling Gemini directly");
+            return null;
+        }
     }
 }
