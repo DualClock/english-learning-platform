@@ -122,6 +122,17 @@ public class PracticeController : ControllerBase
         });
     }
 
+    // POST: api/practice/writing/submitted — отметка письменной практики (XP)
+    [HttpPost("writing/submitted")]
+    public async Task<IActionResult> SubmitWriting([FromBody] WritingSubmitRequest? request)
+    {
+        var wordCount = Math.Clamp(request?.WordCount ?? 0, 0, 5000);
+
+        await _activityService.TrackAsync(GetUserId(), "writing_submitted", 1);
+
+        return Ok(new { tracked = true, wordCount });
+    }
+
     // GET: api/practice/minimal-pairs — статический набор пар для тренировки слуха
     [HttpGet("minimal-pairs")]
     public IActionResult GetMinimalPairs()
@@ -176,4 +187,9 @@ public class DictationResultItem
 {
     public int WordId { get; set; }
     public bool Correct { get; set; }
+}
+
+public class WritingSubmitRequest
+{
+    public int WordCount { get; set; }
 }

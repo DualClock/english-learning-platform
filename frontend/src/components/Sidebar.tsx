@@ -17,6 +17,9 @@ const ROUTE_PREFETCH: Record<string, string[]> = {
   '/progress': ['/api/progress/achievements', '/api/progress/streak'],
   '/grammar': ['/api/grammar/units'],
   '/translator': ['/api/profile'],
+  '/writing': ['/api/profile'],
+  '/practice/dictation': ['/api/practice/dictation?count=5'],
+  '/practice/pronunciation': ['/api/practice/minimal-pairs'],
   '/settings': ['/api/profile'],
 };
 
@@ -29,6 +32,9 @@ const navigation: { name: string; href: string; icon: ReactNode }[] = [
   { name: 'Прогресс', href: '/progress', icon: '📈' },
   { name: 'Грамматика', href: '/grammar', icon: <GrammarIcon /> },
   { name: 'Тест', href: '/quiz', icon: '✓' },
+  { name: 'Аудирование', href: '/practice/dictation', icon: '🎧' },
+  { name: 'Произношение', href: '/practice/pronunciation', icon: '🗣️' },
+  { name: 'Письмо', href: '/writing', icon: '✍️' },
   { name: 'AI Собеседник', href: '/translator', icon: '🤖' },
 ];
 
