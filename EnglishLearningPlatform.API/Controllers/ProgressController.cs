@@ -130,6 +130,113 @@ public class ProgressController : ControllerBase
         });
     }
 
+    // GET: api/progress/leaderboard — лига недели: сумма XP за текущую неделю
+    // (с понедельника UTC) по всем пользователям, топ-20 + своя позиция
+    [HttpGet("leaderboard")]
+    public async Task<IActionResult> GetLeaderboard()
+    {
+        var userId = GetUserId();
+        var today = DateTime.UtcNow.Date;
+        // Понедельник = 0: DayOfWeek начинается с воскресенья
+        var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+
+        var totals = await _context.XpEvents.AsNoTracking()
+            .Where(e => e.CreatedAt >= weekStart && e.Xp > 0)
+            .GroupBy(e => e.UserId)
+            .Select(g => new { UserId = g.Key, Xp = g.Sum(x => x.Xp) })
+            .ToListAsync();
+
+        var ranked = totals
+            .OrderByDescending(t => t.Xp)
+            .ThenBy(t => t.UserId, StringComparer.Ordinal)
+            .ToList();
+
+        // Имена нужны только тем, кто попал в топ-20, и самому вызывающему
+        var topIds = ranked.Take(LeaderboardTopSize).Select(t => t.UserId).ToList();
+        if (!topIds.Contains(userId))
+        {
+            topIds.Add(userId);
+        }
+
+        var users = await _context.Users.AsNoTracking()
+            .Where(u => topIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.DisplayName, u.Email, u.TotalXp, u.CefrLevel })
+            .ToListAsync();
+
+        var userById = users.ToDictionary(u => u.Id);
+
+        var entries = ranked
+            .Take(LeaderboardTopSize)
+            .Select((row, index) =>
+            {
+                userById.TryGetValue(row.UserId, out var user);
+                var (league, _) = LeagueCatalog.Resolve(row.Xp);
+                var (level, _) = XpLevels.Resolve(user?.TotalXp ?? 0);
+
+                return new
+                {
+                    rank = index + 1,
+                    name = DisplayNameOf(user?.DisplayName, user?.Email),
+                    weeklyXp = row.Xp,
+                    league = league.Code,
+                    leagueTitle = league.Title,
+                    level = level.Level,
+                    levelTitle = level.Title,
+                    cefrLevel = user?.CefrLevel,
+                    isMe = row.UserId == userId
+                };
+            })
+            .ToList();
+
+        var myIndex = ranked.FindIndex(t => t.UserId == userId);
+        var myWeeklyXp = myIndex >= 0 ? ranked[myIndex].Xp : 0;
+        var (myLeague, nextLeague) = LeagueCatalog.Resolve(myWeeklyXp);
+
+        userById.TryGetValue(userId, out var me);
+        var (myLevel, _) = XpLevels.Resolve(me?.TotalXp ?? 0);
+
+        return Ok(new
+        {
+            weekStart = weekStart.ToString("yyyy-MM-dd"),
+            weekEnd = weekStart.AddDays(6).ToString("yyyy-MM-dd"),
+            participants = ranked.Count,
+            leagues = LeagueCatalog.All.Select(l => new
+            {
+                code = l.Code,
+                title = l.Title,
+                minXp = l.MinXp
+            }),
+            me = new
+            {
+                // Позиция не определена, пока за неделю нет XP
+                rank = myIndex >= 0 ? myIndex + 1 : (int?)null,
+                weeklyXp = myWeeklyXp,
+                league = myLeague.Code,
+                leagueTitle = myLeague.Title,
+                nextLeagueXp = nextLeague?.MinXp,
+                nextLeagueTitle = nextLeague?.Title,
+                xpToNextLeague = nextLeague == null ? (int?)null : nextLeague.MinXp - myWeeklyXp,
+                level = myLevel.Level,
+                levelTitle = myLevel.Title,
+                inTop = myIndex >= 0 && myIndex < LeaderboardTopSize
+            },
+            entries
+        });
+    }
+
+    // Имя в публичном рейтинге: displayName, иначе префикс почты —
+    // полный адрес других пользователей не показываем
+    private static string DisplayNameOf(string? displayName, string? email)
+    {
+        if (!string.IsNullOrWhiteSpace(displayName)) return displayName.Trim();
+        if (string.IsNullOrWhiteSpace(email)) return "Ученик";
+
+        var at = email.IndexOf('@');
+        return at > 0 ? email[..at] : email;
+    }
+
+    private const int LeaderboardTopSize = 20;
+
     // GET: api/progress/streak
     [HttpGet("streak")]
     public async Task<IActionResult> GetStreak()

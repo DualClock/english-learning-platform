@@ -4,6 +4,7 @@ import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useApiQuery } from '@/app/lib/use-api';
+import WeeklyLeague from '@/components/progress/WeeklyLeague';
 
 interface Achievement {
   code: string;
@@ -236,6 +237,9 @@ export default function ProgressPage() {
             )}
           </section>
         )}
+
+        {/* Лига недели */}
+        <WeeklyLeague />
 
         {/* Достижения */}
         <section>
