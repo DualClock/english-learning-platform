@@ -122,6 +122,21 @@ public class PracticeController : ControllerBase
         });
     }
 
+    // GET: api/practice/minimal-pairs — статический набор пар для тренировки слуха
+    [HttpGet("minimal-pairs")]
+    public IActionResult GetMinimalPairs()
+    {
+        var pairs = MinimalPairCatalog.Pairs.Select(p => new
+        {
+            id = p.Id,
+            a = new { word = p.WordA, ipa = p.IpaA, translation = p.RuA },
+            b = new { word = p.WordB, ipa = p.IpaB, translation = p.RuB },
+            tip = p.Tip
+        });
+
+        return Ok(new { pairs, total = MinimalPairCatalog.Pairs.Count });
+    }
+
     // Пример из словаря — лучший материал для диктанта. Если его нет,
     // собираем нейтральную фразу по части речи: она всегда на английском
     // и не тащит в аудио русский перевод.
