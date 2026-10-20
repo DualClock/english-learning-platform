@@ -75,8 +75,8 @@ public class ResilientAiService
         // 429 без сетевых вызовов. Системные вызовы (userId == null) не квотируются.
         if (userId != null)
         {
-            var quota = await ResolveQuotaServiceAsync();
-            if (quota != null && !await quota.IsWithinQuotaAsync(userId))
+            await using var session = await OpenQuotaSessionAsync();
+            if (session != null && !await session.Service.IsWithinQuotaAsync(userId))
             {
                 _logger.LogWarning("AI quota exceeded (requestType={RequestType}, userId={UserId})",
                     requestType, userId);
@@ -159,24 +159,54 @@ public class ResilientAiService
     }
 
     // AiQuotaService scoped (DbContext), а ResilientAiService — singleton:
-    // достаём его из свежего скоупа на каждый вызов
-    private async Task<AiQuotaService?> ResolveQuotaServiceAsync()
+    // на каждый вызов открываем свой скоуп. Скоуп обязан жить до конца
+    // операции — иначе DbContext внутри сервиса уже освобождён и первое
+    // же обращение к базе падает с ObjectDisposedException.
+    private async Task<QuotaSession?> OpenQuotaSessionAsync()
     {
         if (_scopeFactory == null)
         {
             return null;
         }
 
+        AsyncServiceScope? scope = null;
         try
         {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            return scope.ServiceProvider.GetService<AiQuotaService>();
+            scope = _scopeFactory.CreateAsyncScope();
+            var service = scope.Value.ServiceProvider.GetService<AiQuotaService>();
+            if (service == null)
+            {
+                await scope.Value.DisposeAsync();
+                return null;
+            }
+
+            return new QuotaSession(scope.Value, service);
         }
         catch (Exception ex)
         {
+            if (scope != null)
+            {
+                await scope.Value.DisposeAsync();
+            }
+
             _logger.LogWarning(ex, "Failed to resolve AiQuotaService");
             return null;
         }
+    }
+
+    private sealed class QuotaSession : IAsyncDisposable
+    {
+        private readonly AsyncServiceScope _scope;
+
+        public QuotaSession(AsyncServiceScope scope, AiQuotaService service)
+        {
+            _scope = scope;
+            Service = service;
+        }
+
+        public AiQuotaService Service { get; }
+
+        public ValueTask DisposeAsync() => _scope.DisposeAsync();
     }
 
     // Учёт одной AI-операции: парсим usageMetadata из ответа провайдера и пишем лог.
@@ -193,14 +223,17 @@ public class ResilientAiService
             return;
         }
 
-        var quota = await ResolveQuotaServiceAsync();
-        if (quota == null)
+        var session = await OpenQuotaSessionAsync();
+        if (session == null)
         {
             return;
         }
 
-        var (promptTokens, completionTokens) = TryParseUsage(responseJson);
-        await quota.LogUsageAsync(userId, requestType, model, promptTokens, completionTokens, success);
+        await using (session)
+        {
+            var (promptTokens, completionTokens) = TryParseUsage(responseJson);
+            await session.Service.LogUsageAsync(userId, requestType, model, promptTokens, completionTokens, success);
+        }
     }
 
     private static (int Prompt, int Completion) TryParseUsage(string? responseJson)
