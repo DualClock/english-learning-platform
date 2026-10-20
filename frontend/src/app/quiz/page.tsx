@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useApiQuery } from '@/app/lib/use-api';
+import { useTts } from '@/hooks/useTts';
 
 interface Question {
   wordId: number;
@@ -16,6 +17,8 @@ interface Question {
 interface QuizResponse {
   questions?: Question[];
 }
+
+type QuizMode = 'reading' | 'listening';
 
 export default function QuizPage() {
   const { status } = useSession();
@@ -38,6 +41,9 @@ export default function QuizPage() {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [deckLocked, setDeckLocked] = useState(false);
+  const [mode, setMode] = useState<QuizMode>('reading');
+
+  const { play, isLoading: audioLoading } = useTts();
 
   // Один раз сохраняем загруженную колоду в state и работаем с ней: фоновое
   // обновление не должно подменять вопросы посреди прохождения.
@@ -81,11 +87,18 @@ export default function QuizPage() {
     refreshQuiz();
   };
 
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
-  };
+  // Режим аудирования: слово не показываем — звучит озвучка, варианты остаются
+  // переводами. Переозвучиваем при переходе к следующему вопросу.
+  useEffect(() => {
+    if (mode !== 'listening' || isFinished) return;
+    const question = deck[currentIndex];
+    if (!question) return;
+    const timer = window.setTimeout(() => {
+      void play(question.text);
+    }, 250);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, currentIndex, isFinished, deck.length]);
 
   // Спиннер — только пока данных ещё нет
   if (isLoading && data === undefined) {
@@ -178,6 +191,28 @@ export default function QuizPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
+        {/* Режим: чтение или аудирование */}
+        <div className="flex justify-center gap-2 mb-6" role="tablist" aria-label="Режим теста">
+          {([
+            { id: 'reading', label: '📖 Чтение' },
+            { id: 'listening', label: '🎧 Аудирование' },
+          ] as const).map((option) => (
+            <button
+              key={option.id}
+              role="tab"
+              aria-selected={mode === option.id}
+              onClick={() => setMode(option.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                mode === option.id
+                  ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
+                  : 'bg-white text-[var(--color-slate)] border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
         {/* Прогресс */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
@@ -194,17 +229,49 @@ export default function QuizPage() {
 
         {/* Вопрос */}
         <div className="card p-8">
-          <p className="text-center text-[var(--color-slate)] mb-4">Выбери правильный перевод:</p>
-          
-          <button
-            onClick={() => speak(currentQuestion.text)}
-            className="text-3xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center gap-3 mx-auto mb-8"
-          >
-            {currentQuestion.text}
-            <svg className="w-6 h-6 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            </svg>
-          </button>
+          <p className="text-center text-[var(--color-slate)] mb-4">
+            {mode === 'listening'
+              ? 'Выбери перевод того, что слышишь:'
+              : 'Выбери правильный перевод:'}
+          </p>
+
+          {mode === 'listening' ? (
+            <div className="flex flex-col items-center mb-8">
+              <button
+                onClick={() => play(currentQuestion.text)}
+                disabled={audioLoading}
+                aria-label="Прослушать слово"
+                className="w-24 h-24 rounded-full bg-[var(--color-primary)] text-white text-4xl flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                {audioLoading ? (
+                  <span className="w-7 h-7 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  '🔊'
+                )}
+              </button>
+              <button
+                onClick={() => play(currentQuestion.text)}
+                className="mt-3 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
+              >
+                Прослушать ещё раз
+              </button>
+              {showResult && (
+                <p className="mt-4 text-2xl font-bold text-[var(--color-ink)]">
+                  {currentQuestion.text}
+                </p>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => play(currentQuestion.text)}
+              className="text-3xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center gap-3 mx-auto mb-8"
+            >
+              {currentQuestion.text}
+              <svg className="w-6 h-6 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            </button>
+          )}
 
           {/* Варианты ответов */}
           <div className="space-y-3">

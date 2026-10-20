@@ -181,6 +181,7 @@ builder.Services.AddScoped<DictionaryService>();
 builder.Services.AddScoped<SrsService>();
 builder.Services.AddScoped<AiService>();
 builder.Services.AddScoped<AssistantService>();
+builder.Services.AddScoped<SpeechService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
 builder.Services.AddScoped<ActivityService>();
