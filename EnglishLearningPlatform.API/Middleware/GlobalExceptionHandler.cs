@@ -1,5 +1,7 @@
+using System.Net.Sockets;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Diagnostics;
+using Npgsql;
 
 namespace EnglishLearningPlatform.API.Middleware;
 
@@ -9,6 +11,10 @@ namespace EnglishLearningPlatform.API.Middleware;
 // В Development добавляем detail, чтобы локально было видно причину.
 public class GlobalExceptionHandler : IExceptionHandler
 {
+    private const string DatabaseUnavailableMessage =
+        "Сервис временно не может подключиться к базе данных. " +
+        "Проверьте, что Postgres запущен: docker start english_platform_db.";
+
     private readonly ILogger<GlobalExceptionHandler> _logger;
     private readonly IHostEnvironment _environment;
 
@@ -34,6 +40,26 @@ public class GlobalExceptionHandler : IExceptionHandler
             return true;
         }
 
+        // Упавший Postgres/Docker — не «ошибка кода», а недоступность зависимости:
+        // 503 с подсказкой, что именно проверить, вместо сырого 500
+        if (IsDatabaseUnavailable(exception))
+        {
+            _logger.LogError(
+                exception,
+                "База данных недоступна в {Method} {Path}",
+                httpContext.Request.Method,
+                httpContext.Request.Path);
+
+            await Results.Problem(
+                statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "База данных недоступна",
+                detail: _environment.IsDevelopment()
+                    ? $"{DatabaseUnavailableMessage} ({exception.GetBaseException().Message})"
+                    : DatabaseUnavailableMessage
+            ).ExecuteAsync(httpContext);
+            return true;
+        }
+
         _logger.LogError(
             exception,
             "Необработанное исключение в {Method} {Path}",
@@ -52,5 +78,27 @@ public class GlobalExceptionHandler : IExceptionHandler
         ).ExecuteAsync(httpContext);
 
         return true;
+    }
+
+    // Отличаем обрыв соединения от ошибки SQL: PostgresException (неверный запрос,
+    // нарушение ограничения) — это баг в коде, а не недоступность базы.
+    private static bool IsDatabaseUnavailable(Exception exception)
+    {
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            switch (current)
+            {
+                case PostgresException:
+                    return false;
+
+                case SocketException:
+                    return true;
+
+                case NpgsqlException { IsTransient: true }:
+                    return true;
+            }
+        }
+
+        return false;
     }
 }
