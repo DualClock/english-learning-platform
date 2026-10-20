@@ -1,9 +1,9 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useApiQuery } from '@/app/lib/use-api';
 import { useTts } from '@/hooks/useTts';
 
@@ -16,18 +16,40 @@ interface Question {
 
 interface QuizResponse {
   questions?: Question[];
+  // Поля чекпоинта: обычный quiz их не присылает
+  level?: string;
+  reason?: string;
+  passScore?: number;
+  totalQuestions?: number;
+  matchedWords?: number;
+  dictionaryWords?: number;
 }
 
 type QuizMode = 'reading' | 'listening';
 
-export default function QuizPage() {
+const LEVEL_LABELS: Record<string, string> = {
+  a1: 'A1',
+  a2: 'A2',
+  b1: 'B1',
+  b2: 'B2',
+};
+
+function QuizContent() {
   const { status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // ?checkpoint=b1 переключает страницу в режим чекпоинт-теста уровня:
+  // те же вопросы quiz, но отобранные по CEFR-уровню слов пользователя
+  const checkpointLevel = (searchParams.get('checkpoint') ?? '').trim().toLowerCase() || null;
+  const levelLabel = checkpointLevel ? LEVEL_LABELS[checkpointLevel] ?? checkpointLevel.toUpperCase() : null;
 
   // Колода теста всегда запрашивается свежей: maxAgeMs: 0. Ответы нигде
   // не сохраняются, поэтому между заходами вопросы не «залипают».
   const { data, error, isLoading, refresh: refreshQuiz } = useApiQuery<QuizResponse>(
-    '/api/review/quiz?count=10',
+    checkpointLevel
+      ? `/api/practice/checkpoint?level=${encodeURIComponent(checkpointLevel)}`
+      : '/api/review/quiz?count=10',
     {
       maxAgeMs: 0,
       enabled: status === 'authenticated',
@@ -136,10 +158,22 @@ export default function QuizPage() {
     return (
       <AppLayout>
         <div className="max-w-md mx-auto card p-8 text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Пока нечего тестировать</h1>
-          <p className="text-[var(--color-slate)] mb-6">
-            Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">
+            {checkpointLevel ? `Чекпоинт ${levelLabel} пока недоступен` : 'Пока нечего тестировать'}
+          </h1>
+          <p className="text-[var(--color-slate)] mb-4">
+            {checkpointLevel
+              ? 'Для чекпоинта нужно хотя бы 4 слова с переводами в словаре — иначе не собрать варианты ответов.'
+              : 'Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.'}
           </p>
+          {checkpointLevel && data && (
+            <p className="text-sm text-[var(--color-slate)] mb-6">
+              Слов в словаре: <strong className="text-[var(--color-ink)]">{data.dictionaryWords ?? 0}</strong>
+              {data.matchedWords != null && (
+                <> · из них уровня {levelLabel}: <strong className="text-[var(--color-ink)]">{data.matchedWords}</strong></>
+              )}
+            </p>
+          )}
           <div className="flex flex-wrap gap-3 justify-center">
             <button onClick={() => router.push('/dictionary?tab=lists')} className="btn-primary">
               Открыть сборники
@@ -155,24 +189,35 @@ export default function QuizPage() {
 
   if (isFinished) {
     const percentage = Math.round((score / deck.length) * 100);
+    const passed = checkpointLevel ? score >= (data?.passScore ?? Math.ceil(deck.length * 0.8)) : percentage >= 80;
+    const passScore = data?.passScore ?? Math.ceil(deck.length * 0.8);
 
     return (
       <AppLayout>
         <div className="max-w-md mx-auto text-center py-12">
           <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${
-            percentage >= 80 ? 'bg-[rgba(14,124,123,0.10)]' : percentage >= 50 ? 'bg-[rgba(249,231,159,0.20)]' : 'bg-[rgba(217,45,32,0.10)]'
+            passed ? 'bg-[rgba(14,124,123,0.10)]' : percentage >= 50 ? 'bg-[rgba(249,231,159,0.20)]' : 'bg-[rgba(217,45,32,0.10)]'
           }`}>
             <svg className={`w-8 h-8 ${
-              percentage >= 80 ? 'text-[var(--color-primary)]' : percentage >= 50 ? 'text-[#7A3A00]' : 'text-[var(--color-error)]'
+              passed ? 'text-[var(--color-primary)]' : percentage >= 50 ? 'text-[#7A3A00]' : 'text-[var(--color-error)]'
             }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Тест завершён</h1>
+          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">
+            {checkpointLevel ? `Чекпоинт ${levelLabel}: ${passed ? 'сдан' : 'не сдан'}` : 'Тест завершён'}
+          </h1>
           <p className="text-4xl font-bold text-[var(--color-primary)] my-4">{percentage}%</p>
-          <p className="text-[var(--color-slate)] mb-8">
+          <p className="text-[var(--color-slate)] mb-2">
             Правильно {score} из {deck.length}
           </p>
+          {checkpointLevel && (
+            <p className="text-sm text-[var(--color-slate)] mb-8">
+              {passed
+                ? `Порог ${passScore} пройден — уровень ${levelLabel} можно подтверждать дальше.`
+                : `Для зачёта нужно ${passScore} верных ответов из ${deck.length}. Повторите слова уровня и попробуйте снова.`}
+            </p>
+          )}
           <div className="flex gap-4 justify-center">
             <button onClick={restartQuiz} className="btn-primary">
               Ещё раз
@@ -191,6 +236,27 @@ export default function QuizPage() {
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
+        {checkpointLevel && (
+          <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-[var(--color-slate)]">Чекпоинт-тест</p>
+              <p className="text-lg font-semibold text-[var(--color-ink)]">
+                Уровень {levelLabel} · {deck.length} вопросов
+              </p>
+            </div>
+            <div className="text-right text-sm text-[var(--color-slate)]">
+              <p>
+                Порог: <strong className="text-[var(--color-ink)]">{data?.passScore ?? Math.ceil(deck.length * 0.8)}</strong> верных
+              </p>
+              {data?.matchedWords != null && (
+                <p>
+                  Слов {levelLabel} в словаре: <strong className="text-[var(--color-ink)]">{data.matchedWords}</strong>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Режим: чтение или аудирование */}
         <div className="flex justify-center gap-2 mb-6" role="tablist" aria-label="Режим теста">
           {([
@@ -320,5 +386,22 @@ export default function QuizPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+// useSearchParams требует Suspense-границы при статическом рендере
+export default function QuizPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
+          </div>
+        </AppLayout>
+      }
+    >
+      <QuizContent />
+    </Suspense>
   );
 }

@@ -19,6 +19,7 @@ import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
 import DailyPlan from '@/components/dashboard/DailyPlan';
 import LevelCard from '@/components/dashboard/LevelCard';
+import CheckpointCard from '@/components/dashboard/CheckpointCard';
 import { useApiQuery } from '@/app/lib/use-api';
 
 interface Profile {
@@ -99,6 +100,8 @@ export default function DashboardPage() {
               {streakLoaded && <StreakCard streak={streak ?? null} />}
 
               <LevelCard />
+
+              <CheckpointCard level={profile?.cefrLevel} />
 
               {recommended != null && profile?.cefrLevel && (
                 <RecommendedShelf

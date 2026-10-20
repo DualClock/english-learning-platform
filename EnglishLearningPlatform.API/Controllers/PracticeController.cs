@@ -14,6 +14,11 @@ namespace EnglishLearningPlatform.API.Controllers;
 public class PracticeController : ControllerBase
 {
     private const int MaxDictationCount = 10;
+    private const int CheckpointQuestionCount = 15;
+    private const int MinCheckpointWords = 4; // 3 дистрактора + правильный ответ
+
+    // Уровни, которые реально есть в справочнике WordLevels
+    private static readonly string[] CheckpointLevels = { "a1", "a2", "b1", "b2" };
 
     private readonly ApplicationDbContext _context;
     private readonly ActivityService _activityService;
@@ -132,6 +137,197 @@ public class PracticeController : ControllerBase
 
         return Ok(new { tracked = true, wordCount });
     }
+
+    // GET: api/practice/checkpoint?level=b1
+    // Чекпоинт-тест уровня: 15 вопросов в формате quiz, собранных из слов
+    // пользователя, чей CEFR-уровень в справочнике WordLevels совпадает
+    // с запрошенным. Если слов нужного уровня не хватает — добираем любыми
+    // другими: частичный тест полезнее пустого экрана.
+    [HttpGet("checkpoint")]
+    public async Task<IActionResult> GetCheckpoint([FromQuery] string? level, [FromQuery] bool preview = false)
+    {
+        var userId = GetUserId();
+
+        var normalized = (level ?? string.Empty).Trim().ToLowerInvariant();
+        if (normalized.Length == 0)
+        {
+            // Уровень не передали — берём целевой уровень из профиля
+            normalized = (await _context.Users.AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => u.CefrLevel)
+                .FirstOrDefaultAsync() ?? "b1").ToLowerInvariant();
+        }
+
+        if (!CheckpointLevels.Contains(normalized))
+        {
+            return BadRequest(new
+            {
+                error = $"Неизвестный уровень «{normalized}».",
+                supportedLevels = CheckpointLevels
+            });
+        }
+
+        var userWords = await _context.UserWords.AsNoTracking()
+            .Where(uw => uw.UserId == userId)
+            .Include(uw => uw.Word)
+                .ThenInclude(w => w.Definitions)
+            .ToListAsync();
+
+        // Уровни тянем одним запросом по текстам слов — тот же справочник,
+        // что использует BookAnalyzerService
+        var texts = userWords
+            .Select(uw => uw.Word.Text)
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var levelRows = texts.Count == 0
+            ? new List<WordLevel>()
+            : await _context.WordLevels.AsNoTracking()
+                .Where(wl => texts.Contains(wl.Text))
+                .ToListAsync();
+
+        var levelByText = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in levelRows)
+        {
+            levelByText[row.Text] = row.CefrLevel;
+        }
+
+        var pool = userWords
+            .Select(uw => new CheckpointCandidate(
+                uw.WordId,
+                uw.Word.Text,
+                uw.Word.Definitions
+                    .OrderBy(d => d.DisplayOrder)
+                    .Select(d => d.Definition)
+                    .FirstOrDefault() ?? string.Empty,
+                levelByText.TryGetValue(uw.Word.Text, out var lv) ? lv : null))
+            .Where(c => !string.IsNullOrWhiteSpace(c.Text) && !string.IsNullOrWhiteSpace(c.Definition))
+            .GroupBy(c => c.WordId)
+            .Select(g => g.First())
+            .ToList();
+
+        var ofLevel = pool
+            .Where(c => string.Equals(c.Level, normalized, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(_ => Guid.NewGuid())
+            .ToList();
+
+        var selected = ofLevel.Take(CheckpointQuestionCount).ToList();
+
+        // Дашборду нужны только счётчики: генерировать 15 вопросов ради
+        // карточки «Чекпоинт B1» незачем
+        if (preview)
+        {
+            return Ok(new
+            {
+                level = normalized,
+                matchedWords = ofLevel.Count,
+                dictionaryWords = pool.Count,
+                requiredWords = MinCheckpointWords,
+                available = pool.Count >= MinCheckpointWords,
+                questionCapacity = Math.Min(CheckpointQuestionCount, pool.Count)
+            });
+        }
+
+        if (selected.Count < CheckpointQuestionCount)
+        {
+            // Добор словами других уровней — без повторов уже выбранных
+            var selectedIds = selected.Select(c => c.WordId).ToHashSet();
+            var filler = pool
+                .Where(c => !selectedIds.Contains(c.WordId))
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(CheckpointQuestionCount - selected.Count);
+
+            selected.AddRange(filler);
+        }
+
+        var distinctDefinitions = pool
+            .Select(c => c.Definition)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+        // Для дистракторов нужно минимум 4 разных перевода — иначе вопрос
+        // не собрать. Пустой ответ здесь не ошибка, а «пока нечего тестировать».
+        if (selected.Count < MinCheckpointWords || distinctDefinitions < MinCheckpointWords)
+        {
+            return Ok(new
+            {
+                level = normalized,
+                questions = Array.Empty<object>(),
+                reason = "not_enough_words",
+                requiredWords = MinCheckpointWords,
+                currentWords = selected.Count,
+                matchedWords = ofLevel.Count,
+                dictionaryWords = pool.Count
+            });
+        }
+
+        var questions = new List<object>();
+
+        foreach (var candidate in selected)
+        {
+            var distractors = new List<string>();
+            var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { candidate.Definition };
+
+            // Сначала берём дистракторы того же уровня — так тест проверяет
+            // именно целевой пласт лексики, а не случайные простые слова
+            foreach (var source in new[] { ofLevel, pool })
+            {
+                foreach (var other in source.OrderBy(_ => Guid.NewGuid()))
+                {
+                    if (distractors.Count >= 3) break;
+                    if (!used.Add(other.Definition)) continue;
+                    distractors.Add(other.Definition);
+                }
+
+                if (distractors.Count >= 3) break;
+            }
+
+            if (distractors.Count < 3) continue;
+
+            var options = distractors
+                .Append(candidate.Definition)
+                .OrderBy(_ => Guid.NewGuid())
+                .ToList();
+
+            questions.Add(new
+            {
+                wordId = candidate.WordId,
+                text = candidate.Text,
+                level = candidate.Level ?? "unknown",
+                options,
+                correctIndex = options.IndexOf(candidate.Definition)
+            });
+        }
+
+        if (questions.Count == 0)
+        {
+            return Ok(new
+            {
+                level = normalized,
+                questions = Array.Empty<object>(),
+                reason = "not_enough_words",
+                requiredWords = MinCheckpointWords,
+                currentWords = selected.Count,
+                matchedWords = ofLevel.Count,
+                dictionaryWords = pool.Count
+            });
+        }
+
+        return Ok(new
+        {
+            level = normalized,
+            requested = CheckpointQuestionCount,
+            totalQuestions = questions.Count,
+            matchedWords = ofLevel.Count,
+            dictionaryWords = pool.Count,
+            // Зачёт с 80% верных ответов
+            passScore = (int)Math.Ceiling(questions.Count * 0.8),
+            questions
+        });
+    }
+
+    private sealed record CheckpointCandidate(int WordId, string Text, string Definition, string? Level);
 
     // GET: api/practice/minimal-pairs — статический набор пар для тренировки слуха
     [HttpGet("minimal-pairs")]
