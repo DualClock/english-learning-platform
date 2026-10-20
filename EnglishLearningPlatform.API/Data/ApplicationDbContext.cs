@@ -36,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<ReviewLog> ReviewLogs => Set<ReviewLog>();
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
     public DbSet<AiUsageLog> AiUsageLogs => Set<AiUsageLog>();
+    public DbSet<UserErrorBankEntry> UserErrorBankEntries => Set<UserErrorBankEntry>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -252,5 +253,15 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         builder.Entity<EmailMessage>()
             .HasIndex(m => m.CreatedAt);
+
+        // Банк ошибок: выборка нерешённых записей пользователя
+        builder.Entity<UserErrorBankEntry>()
+            .HasIndex(e => new { e.UserId, e.ResolvedAt });
+
+        builder.Entity<UserErrorBankEntry>()
+            .HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

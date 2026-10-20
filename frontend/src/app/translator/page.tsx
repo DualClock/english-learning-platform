@@ -8,6 +8,9 @@ import AnalysisCard, {
 import WelcomeScreen from '@/components/assistant/WelcomeScreen';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
+import { useSpeech } from '@/hooks/useSpeech';
+import { useRecorder } from '@/hooks/useRecorder';
+import { blobToWavBase64 } from '@/app/lib/wav';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 
@@ -15,6 +18,21 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
   failed?: boolean;
+}
+
+interface ErrorBankEntry {
+  id: number;
+  original: string;
+  suggestion: string;
+  type: string;
+  explanation?: string | null;
+  createdAt: string;
+  resolved: boolean;
+}
+
+interface ErrorBankResponse {
+  items: ErrorBankEntry[];
+  unresolvedCount: number;
 }
 
 const SUGGESTION_CHIPS = [
@@ -40,6 +58,22 @@ export default function TranslatorPage() {
 
   const [userLevel, setUserLevel] = useState<string | null>(null);
 
+  // Голос: озвучка ответов Alex и голосовой ввод с микрофона
+  const { speak, stop: stopSpeaking } = useSpeech();
+  const recorder = useRecorder();
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [micError, setMicError] = useState('');
+
+  // Банк типичных ошибок
+  const [showErrors, setShowErrors] = useState(false);
+  const {
+    data: errorBank,
+    refresh: refreshErrors,
+  } = useApiQuery<ErrorBankResponse>('/api/assistant/errors', {
+    enabled: phase === 'chat',
+  });
+
   const greetedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -47,6 +81,7 @@ export default function TranslatorPage() {
   useEffect(() => {
     const seen = localStorage.getItem('assistant_seen');
     setPhase(seen ? 'chat' : 'welcome');
+    setAutoSpeak(localStorage.getItem('assistant_autospeak') === '1');
   }, []);
 
   useEffect(() => {
@@ -88,10 +123,12 @@ export default function TranslatorPage() {
     setSending(true);
     setError('');
     const { reply, error: chatError } = await requestChat([]);
-    if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-    else if (chatError) setError(chatError);
+    if (reply) {
+      setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+      if (autoSpeak) speak(reply);
+    } else if (chatError) setError(chatError);
     setSending(false);
-  }, [requestChat]);
+  }, [autoSpeak, requestChat, speak]);
 
   useEffect(() => {
     if (phase !== 'chat' || greetedRef.current || sending) return;
@@ -113,6 +150,7 @@ export default function TranslatorPage() {
     setSending(false);
     if (reply) {
       setMessages([...history, { role: 'assistant', text: reply }]);
+      if (autoSpeak) speak(reply);
     } else {
       setMessages(
         history.map((m, i) =>
@@ -155,6 +193,8 @@ export default function TranslatorPage() {
         body: { text: messages[idx].text, userLevel: userLevel || undefined },
       });
       setAnalyses((prev) => ({ ...prev, [idx]: data }));
+      // Разбор пополняет банк ошибок — обновляем счётчик
+      refreshErrors();
     } catch {
       setAnalysisFailed((prev) => ({ ...prev, [idx]: true }));
     } finally {
@@ -162,12 +202,67 @@ export default function TranslatorPage() {
     }
   };
 
-  const speak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    window.speechSynthesis.speak(utterance);
+  // Микрофон: запись -> распознавание -> текст в поле ввода.
+  // Alex отвечает голосом, но ввод остаётся обычным текстом — его можно поправить.
+  const toggleMic = async () => {
+    setMicError('');
+    stopSpeaking();
+
+    if (recorder.isRecording) {
+      const blob = await recorder.stop();
+      if (!blob) return;
+
+      setTranscribing(true);
+      try {
+        const audioBase64 = await blobToWavBase64(blob);
+        const result = await apiMutate<{ transcribed?: string }>('/api/pronunciation/transcribe', {
+          token: session?.accessToken,
+          method: 'POST',
+          body: { audioBase64, mimeType: 'audio/wav' },
+        });
+
+        const text = result?.transcribed?.trim();
+        if (text) {
+          setInput((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
+          textareaRef.current?.focus();
+        } else {
+          setMicError('Не расслышали. Попробуйте сказать чуть громче.');
+        }
+      } catch (err) {
+        setMicError(
+          err instanceof ApiError
+            ? err.message
+            : 'Не удалось распознать речь. Попробуйте ещё раз.'
+        );
+      } finally {
+        setTranscribing(false);
+      }
+      return;
+    }
+
+    await recorder.start();
+  };
+
+  const toggleAutoSpeak = () => {
+    setAutoSpeak((value) => {
+      const next = !value;
+      localStorage.setItem('assistant_autospeak', next ? '1' : '0');
+      if (!next) stopSpeaking();
+      return next;
+    });
+  };
+
+  const resolveError = async (id: number) => {
+    try {
+      await apiMutate(`/api/assistant/errors/${id}/resolve`, {
+        token: session?.accessToken,
+        method: 'POST',
+        invalidate: ['/api/assistant/errors'],
+      });
+      refreshErrors();
+    } catch {
+      // не критично: панель обновится при следующем заходе
+    }
   };
 
   const startNewConversation = () => {
@@ -220,12 +315,65 @@ export default function TranslatorPage() {
               </p>
             </div>
             <button
+              onClick={toggleAutoSpeak}
+              aria-pressed={autoSpeak}
+              title={autoSpeak ? 'Озвучка ответов включена' : 'Озвучка ответов выключена'}
+              className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                autoSpeak
+                  ? 'text-[var(--color-primary)] bg-[var(--color-tint-mint)]'
+                  : 'text-[var(--color-slate)] hover:text-[var(--color-ink)] hover:bg-[var(--color-tint-mint)]'
+              }`}
+            >
+              {autoSpeak ? '🔈 Голос' : '🔇 Голос'}
+            </button>
+            <button
               onClick={startNewConversation}
               className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)] px-3 py-1.5 rounded-lg hover:bg-[var(--color-tint-mint)] transition-colors"
             >
               🔄 Новый разговор
             </button>
           </div>
+
+          {/* Банк типичных ошибок */}
+          {errorBank && errorBank.unresolvedCount > 0 && (
+            <div className="py-2 border-b border-[var(--color-hairline-strong)]">
+              <button
+                onClick={() => setShowErrors((value) => !value)}
+                aria-expanded={showErrors}
+                className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors"
+              >
+                📌 Мои типичные ошибки ({errorBank.unresolvedCount}) {showErrors ? '▲' : '▼'}
+              </button>
+
+              {showErrors && (
+                <ul className="mt-2 space-y-2 max-h-56 overflow-y-auto">
+                  {errorBank.items.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="bg-white border border-[var(--color-hairline-strong)] rounded-lg p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm text-[var(--color-ink)] leading-snug">
+                          <span className="line-through text-[var(--color-error)]">{entry.original}</span>
+                          <span className="mx-1.5 text-[var(--color-slate)]">→</span>
+                          <span className="text-[var(--color-success)]">{entry.suggestion}</span>
+                        </p>
+                        <button
+                          onClick={() => resolveError(entry.id)}
+                          className="shrink-0 text-xs px-2 py-1 rounded-md border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
+                        >
+                          Отработал
+                        </button>
+                      </div>
+                      {entry.explanation && (
+                        <p className="text-xs text-[var(--color-slate)] mt-1">{entry.explanation}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Лента сообщений */}
           <div className="flex-1 overflow-y-auto py-4 space-y-4">
@@ -337,7 +485,33 @@ export default function TranslatorPage() {
           </div>
 
           {/* Поле ввода */}
+          {(micError || recorder.error || recorder.isRecording) && (
+            <p className={`text-xs pb-1 ${micError || recorder.error ? 'text-[var(--color-error)]' : 'text-[var(--color-slate)]'}`}>
+              {micError || recorder.error
+                ? micError || recorder.error
+                : `Идёт запись · ${recorder.seconds} с из ${recorder.maxSeconds} — нажмите ⏹, чтобы закончить`}
+            </p>
+          )}
           <div className="flex items-end gap-2 pb-4 pt-1">
+            <button
+              onClick={toggleMic}
+              disabled={transcribing}
+              title={recorder.isRecording ? 'Остановить запись' : 'Сказать голосом'}
+              aria-label={recorder.isRecording ? 'Остановить запись' : 'Голосовой ввод'}
+              className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg transition-colors disabled:opacity-60 ${
+                recorder.isRecording
+                  ? 'bg-[var(--color-error)] text-white animate-pulse'
+                  : 'bg-white border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
+              }`}
+            >
+              {transcribing ? (
+                <span className="w-4 h-4 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin" />
+              ) : recorder.isRecording ? (
+                '⏹'
+              ) : (
+                '🎙'
+              )}
+            </button>
             <textarea
               ref={textareaRef}
               value={input}

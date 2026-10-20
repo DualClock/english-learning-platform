@@ -717,6 +717,50 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("UserCategoryWordProgresses");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserErrorBankEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Original")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Suggestion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ResolvedAt");
+
+                    b.ToTable("UserErrorBankEntries");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserGrammarProgress", b =>
                 {
                     b.Property<int>("Id")
@@ -1242,6 +1286,17 @@ namespace EnglishLearningPlatform.API.Migrations
                         .IsRequired();
 
                     b.Navigation("CategoryWord");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.UserErrorBankEntry", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

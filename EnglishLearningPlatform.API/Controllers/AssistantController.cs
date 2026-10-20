@@ -1,7 +1,9 @@
 using System.Security.Claims;
+using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EnglishLearningPlatform.API.Controllers;
 
@@ -16,11 +18,15 @@ public class AssistantController : ControllerBase
         "Не удалось разобрать сообщение: сервис временно недоступен. Попробуйте позже.";
 
     private readonly AssistantService _assistantService;
+    private readonly ApplicationDbContext _context;
 
-    public AssistantController(AssistantService assistantService)
+    public AssistantController(AssistantService assistantService, ApplicationDbContext context)
     {
         _assistantService = assistantService;
+        _context = context;
     }
+
+    private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
     [HttpPost("chat")]
     public async Task<IActionResult> Chat([FromBody] AssistantChatRequest request)
@@ -86,6 +92,64 @@ public class AssistantController : ControllerBase
         {
             return StatusCode(503, new { error = ex.Message });
         }
+    }
+
+    // GET: api/assistant/errors — банк типичных ошибок пользователя
+    [HttpGet("errors")]
+    public async Task<IActionResult> GetErrors([FromQuery] bool includeResolved = false)
+    {
+        var userId = GetUserId();
+
+        var query = _context.UserErrorBankEntries.AsNoTracking()
+            .Where(e => e.UserId == userId);
+
+        if (!includeResolved)
+        {
+            query = query.Where(e => e.ResolvedAt == null);
+        }
+
+        var items = await query
+            .OrderByDescending(e => e.CreatedAt)
+            .Take(100)
+            .Select(e => new
+            {
+                id = e.Id,
+                original = e.Original,
+                suggestion = e.Suggestion,
+                type = e.Type,
+                explanation = e.Explanation,
+                createdAt = e.CreatedAt,
+                resolved = e.ResolvedAt != null
+            })
+            .ToListAsync();
+
+        var unresolvedCount = await _context.UserErrorBankEntries
+            .CountAsync(e => e.UserId == userId && e.ResolvedAt == null);
+
+        return Ok(new { items, unresolvedCount });
+    }
+
+    // POST: api/assistant/errors/{id}/resolve — отметить ошибку отработанной
+    [HttpPost("errors/{id:int}/resolve")]
+    public async Task<IActionResult> ResolveError(int id)
+    {
+        var userId = GetUserId();
+
+        var entry = await _context.UserErrorBankEntries
+            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
+
+        if (entry == null)
+        {
+            return NotFound(new { error = "Запись не найдена." });
+        }
+
+        if (entry.ResolvedAt == null)
+        {
+            entry.ResolvedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        return Ok(new { id = entry.Id, resolvedAt = entry.ResolvedAt });
     }
 }
 

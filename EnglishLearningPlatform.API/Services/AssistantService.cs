@@ -2,6 +2,9 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using EnglishLearningPlatform.API.Data;
+using EnglishLearningPlatform.API.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace EnglishLearningPlatform.API.Services;
@@ -30,17 +33,20 @@ public class AssistantService
     private readonly IMemoryCache _cache;
     private readonly ILogger<AssistantService> _logger;
     private readonly ResilientAiService _resilient;
+    private readonly ApplicationDbContext _context;
 
     public AssistantService(
         IConfiguration configuration,
         IMemoryCache cache,
         ILogger<AssistantService> logger,
-        ResilientAiService resilient)
+        ResilientAiService resilient,
+        ApplicationDbContext context)
     {
         _configuration = configuration;
         _cache = cache;
         _logger = logger;
         _resilient = resilient;
+        _context = context;
     }
 
     public async Task<string?> ChatAsync(List<AssistantChatMessage>? messages, string? userLevel, string? userId = null)
@@ -134,6 +140,9 @@ public class AssistantService
             SHA256.HashData(Encoding.UTF8.GetBytes($"{level}|{text.Trim()}")))[..32];
         if (_cache.TryGetValue(cacheKey, out AssistantAnalysis? cached) && cached != null)
         {
+            // Разбор мог быть получен другим запросом — в банк ошибок всё равно
+            // пишем: дедупликация не даст задвоить записи
+            await SaveIssuesAsync(userId, cached.Issues);
             return cached;
         }
 
@@ -177,7 +186,73 @@ public class AssistantService
         }
 
         _cache.Set(cacheKey, result, AnalyzeCacheTtl);
+
+        await SaveIssuesAsync(userId, result.Issues);
+
         return result;
+    }
+
+    /// <summary>
+    /// Складывает разобранные ошибки в банк пользователя. Дубликатом считается
+    /// пара original+suggestion среди нерешённых — повторный разбор того же
+    /// сообщения не плодит записи.
+    /// </summary>
+    private async Task SaveIssuesAsync(string? userId, List<AssistantIssue>? issues)
+    {
+        if (string.IsNullOrEmpty(userId) || issues == null || issues.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var existing = await _context.UserErrorBankEntries
+                .Where(e => e.UserId == userId && e.ResolvedAt == null)
+                .Select(e => new { e.Original, e.Suggestion })
+                .ToListAsync();
+
+            var seen = existing
+                .Select(e => (e.Original.ToLowerInvariant(), e.Suggestion.ToLowerInvariant()))
+                .ToHashSet();
+
+            foreach (var issue in issues.Take(10))
+            {
+                var original = Cut(issue.Original, 500);
+                var suggestion = Cut(issue.Suggestion, 500);
+
+                if (original.Length == 0 || suggestion.Length == 0)
+                {
+                    continue;
+                }
+
+                if (!seen.Add((original.ToLowerInvariant(), suggestion.ToLowerInvariant())))
+                {
+                    continue;
+                }
+
+                _context.UserErrorBankEntries.Add(new UserErrorBankEntry
+                {
+                    UserId = userId,
+                    Original = original,
+                    Suggestion = suggestion,
+                    Type = Cut(issue.Type, 30) is { Length: > 0 } type ? type : "grammar",
+                    Explanation = Cut(issue.Explanation, 1000)
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Банк ошибок — побочный эффект разбора: его сбой не должен ломать ответ
+            _logger.LogWarning(ex, "Failed to save error bank entries");
+        }
+    }
+
+    private static string Cut(string? value, int maxLength)
+    {
+        var trimmed = value?.Trim() ?? string.Empty;
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
     }
 
     private async Task<string?> CallGeminiAsync(
