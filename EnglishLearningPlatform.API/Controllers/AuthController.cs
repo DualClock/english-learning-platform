@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -254,16 +255,24 @@ public class AuthController : ControllerBase
 
 // DTOs
 public record RegisterDto(
-    string Email,
-    string Password,
-    string? DisplayName,
-    string? CefrLevel,
-    string? StudyGoal,
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(128)] string Password,
+    [property: MaxLength(100)] string? DisplayName,
+    [property: MaxLength(10)] string? CefrLevel,
+    [property: MaxLength(200)] string? StudyGoal,
     int? DailyGoalMinutes,
-    string? TimeZoneId = null,
+    [property: MaxLength(64)] string? TimeZoneId = null,
     bool? NotifyEnabled = null,
     int? ReminderHour = null);
-public record LoginDto(string Email, string Password);
-public record ForgotPasswordDto(string Email);
-public record ResetPasswordDto(string Email, string ResetToken, string NewPassword);
-public record ConfirmEmailDto(string Email, string Token);
+public record LoginDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(128)] string Password);
+public record ForgotPasswordDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email);
+public record ResetPasswordDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(200)] string ResetToken,
+    [property: Required, MaxLength(128)] string NewPassword);
+public record ConfirmEmailDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(200)] string Token);

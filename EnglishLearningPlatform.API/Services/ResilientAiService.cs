@@ -13,6 +13,13 @@ public class AiUnavailableException : Exception
 
 public record GeminiCallResult(string? Json, bool ModelNotFound);
 
+// Квота пользователя на AI-вызовы исчерпана. Обрабатывается глобально —
+// GlobalExceptionHandler возвращает 429 с понятным сообщением.
+public class AiQuotaExceededException : Exception
+{
+    public AiQuotaExceededException() : base(AiQuotaService.QuotaExceededMessage) { }
+}
+
 // Единый слой вызовов Gemini: таймаут из конфига ("Ai:TimeoutSeconds"),
 // retry с экспоненциальной задержкой (429, 5xx, сеть, таймаут, пустой/битый ответ),
 // опциональный fallback-провайдер ("Ai:FallbackApiKey"/"Ai:FallbackModel").
@@ -33,6 +40,7 @@ public class ResilientAiService
     private readonly ILogger<ResilientAiService> _logger;
     private readonly HttpClient? _httpClient;
     private readonly TimeSpan[] _retryDelays;
+    private readonly IServiceScopeFactory? _scopeFactory;
 
     private readonly object _clientLock = new();
     private HttpClient? _defaultClient;
@@ -42,12 +50,14 @@ public class ResilientAiService
         IConfiguration configuration,
         ILogger<ResilientAiService> logger,
         HttpClient? httpClient = null,
-        TimeSpan[]? retryDelays = null)
+        TimeSpan[]? retryDelays = null,
+        IServiceScopeFactory? scopeFactory = null)
     {
         _configuration = configuration;
         _logger = logger;
         _httpClient = httpClient;
         _retryDelays = retryDelays ?? DefaultRetryDelays;
+        _scopeFactory = scopeFactory;
     }
 
     // Отправляет запрос в Gemini с ретраями. При 404 ("model not found") ретраи
@@ -61,6 +71,19 @@ public class ResilientAiService
         string? userId = null,
         CancellationToken cancellationToken = default)
     {
+        // Квота проверяется до обращения к провайдеру: исчерпанный лимит —
+        // 429 без сетевых вызовов. Системные вызовы (userId == null) не квотируются.
+        if (userId != null)
+        {
+            var quota = await ResolveQuotaServiceAsync();
+            if (quota != null && !await quota.IsWithinQuotaAsync(userId))
+            {
+                _logger.LogWarning("AI quota exceeded (requestType={RequestType}, userId={UserId})",
+                    requestType, userId);
+                throw new AiQuotaExceededException();
+            }
+        }
+
         var maxAttempts = Math.Max(1, _configuration.GetValue("Ai:MaxRetries", 3));
         var timeoutSeconds = Math.Max(1, _configuration.GetValue("Ai:TimeoutSeconds", 20));
 
@@ -72,6 +95,7 @@ public class ResilientAiService
 
             if (outcome.Result != null)
             {
+                await LogAiUsageAsync(userId, requestType, model, outcome.Result.Json, success: true);
                 return outcome.Result;
             }
 
@@ -102,10 +126,13 @@ public class ResilientAiService
             "Gemini call failed after {MaxAttempts} attempts (requestType={RequestType}, userId={UserId}): {Error}",
             maxAttempts, requestType, userId ?? "-", lastError);
 
+        await LogAiUsageAsync(userId, requestType, model, responseJson: null, success: false);
+
         var fallbackJson = await TryFallbackProviderAsync(
             requestBody, requestType, userId, timeoutSeconds, cancellationToken);
         if (fallbackJson != null)
         {
+            await LogAiUsageAsync(userId, requestType, "fallback:" + model, fallbackJson, success: true);
             return new GeminiCallResult(fallbackJson, false);
         }
 
@@ -120,12 +147,92 @@ public class ResilientAiService
                     requestBody, requestType, userId, timeoutSeconds, cancellationToken);
                 if (pollinationsJson != null)
                 {
+                    await LogAiUsageAsync(userId, requestType, "pollinations", pollinationsJson, success: true);
                     return new GeminiCallResult(pollinationsJson, false);
                 }
             }
         }
 
+        await LogAiUsageAsync(userId, requestType, "none", responseJson: null, success: false);
+
         throw new AiUnavailableException(UserErrorMessage);
+    }
+
+    // AiQuotaService scoped (DbContext), а ResilientAiService — singleton:
+    // достаём его из свежего скоупа на каждый вызов
+    private async Task<AiQuotaService?> ResolveQuotaServiceAsync()
+    {
+        if (_scopeFactory == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            return scope.ServiceProvider.GetService<AiQuotaService>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to resolve AiQuotaService");
+            return null;
+        }
+    }
+
+    // Учёт одной AI-операции: парсим usageMetadata из ответа провайдера и пишем лог.
+    // Ошибки учёта глушатся внутри AiQuotaService.
+    private async Task LogAiUsageAsync(
+        string? userId,
+        string requestType,
+        string model,
+        string? responseJson,
+        bool success)
+    {
+        if (userId == null)
+        {
+            return;
+        }
+
+        var quota = await ResolveQuotaServiceAsync();
+        if (quota == null)
+        {
+            return;
+        }
+
+        var (promptTokens, completionTokens) = TryParseUsage(responseJson);
+        await quota.LogUsageAsync(userId, requestType, model, promptTokens, completionTokens, success);
+    }
+
+    private static (int Prompt, int Completion) TryParseUsage(string? responseJson)
+    {
+        if (string.IsNullOrWhiteSpace(responseJson))
+        {
+            return (0, 0);
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(responseJson);
+            if (doc.RootElement.TryGetProperty("usageMetadata", out var usage) &&
+                usage.ValueKind == JsonValueKind.Object)
+            {
+                var prompt = usage.TryGetProperty("promptTokenCount", out var p) &&
+                             p.ValueKind == JsonValueKind.Number
+                    ? p.GetInt32()
+                    : 0;
+                var completion = usage.TryGetProperty("candidatesTokenCount", out var c) &&
+                                 c.ValueKind == JsonValueKind.Number
+                    ? c.GetInt32()
+                    : 0;
+                return (prompt, completion);
+            }
+        }
+        catch (JsonException)
+        {
+            // нет usage — нули
+        }
+
+        return (0, 0);
     }
 
     private sealed record AttemptOutcome(

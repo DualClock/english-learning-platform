@@ -4,11 +4,11 @@ namespace EnglishLearningPlatform.API.Models.DTOs;
 
 // Запрос на добавление слова
 public record AddWordRequest(
-    [Required] string Text,
-    [Required] string Definition,
-    string? PartOfSpeech,
-    string? Example,
-    [MaxLength(20)] string? Source
+    [property: Required, MaxLength(100)] string Text,
+    [property: Required, MaxLength(2000)] string Definition,
+    [property: MaxLength(50)] string? PartOfSpeech,
+    [property: MaxLength(1000)] string? Example,
+    [property: MaxLength(20)] string? Source
 );
 
 // Ответ со словом
@@ -29,8 +29,8 @@ public record DefinitionResponse(
 
 // Запрос на обновление
 public record UpdateWordRequest(
-    string? Text,
-    string? Definition,
-    string? PartOfSpeech,
-    string? Example
+    [property: MaxLength(100)] string? Text,
+    [property: MaxLength(2000)] string? Definition,
+    [property: MaxLength(50)] string? PartOfSpeech,
+    [property: MaxLength(1000)] string? Example
 );

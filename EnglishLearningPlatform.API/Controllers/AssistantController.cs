@@ -25,11 +25,23 @@ public class AssistantController : ControllerBase
     [HttpPost("chat")]
     public async Task<IActionResult> Chat([FromBody] AssistantChatRequest request)
     {
+        // Лимиты входа: без них один запрос мог бы утащить всю историю чата в промпт
+        var messages = request.Messages ?? new List<AssistantChatMessage>();
+        if (messages.Count > 30)
+        {
+            return BadRequest(new { error = "Слишком длинная история переписки." });
+        }
+
+        if (messages.Any(m => (m.Text?.Length ?? 0) > 4000))
+        {
+            return BadRequest(new { error = "Сообщение слишком длинное (максимум 4000 символов)." });
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         try
         {
-            var reply = await _assistantService.ChatAsync(request.Messages, request.UserLevel, userId);
+            var reply = await _assistantService.ChatAsync(messages, request.UserLevel, userId);
 
             if (reply == null)
             {
@@ -47,6 +59,16 @@ public class AssistantController : ControllerBase
     [HttpPost("analyze")]
     public async Task<IActionResult> Analyze([FromBody] AssistantAnalyzeRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Text))
+        {
+            return BadRequest(new { error = "Пустой текст." });
+        }
+
+        if (request.Text.Length > 4000)
+        {
+            return BadRequest(new { error = "Текст слишком длинный (максимум 4000 символов)." });
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         try

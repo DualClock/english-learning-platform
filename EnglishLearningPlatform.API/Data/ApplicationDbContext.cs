@@ -35,10 +35,15 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
     public DbSet<ReviewLog> ReviewLogs => Set<ReviewLog>();
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
+    public DbSet<AiUsageLog> AiUsageLogs => Set<AiUsageLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // Квоты и учёт токенов: выборка usage за день по пользователю
+        builder.Entity<AiUsageLog>()
+            .HasIndex(l => new { l.UserId, l.CreatedAt });
 
         // User конфигурация
         builder.Entity<User>()

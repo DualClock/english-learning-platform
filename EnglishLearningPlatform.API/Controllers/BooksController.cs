@@ -373,7 +373,9 @@ public class BooksController : ControllerBase
     [HttpGet("{id}/parallel")]
     public async Task<IActionResult> GetParallelPage(int id, [FromQuery] int page = 1)
     {
-        var book = await _bookService.GetBookAsync(GetUserId(), id);
+        var userId = GetUserId();
+
+        var book = await _bookService.GetBookAsync(userId, id);
         if (book == null) return NotFound();
 
         var cacheKey = $"parallel:{id}:{page}";
@@ -386,7 +388,7 @@ public class BooksController : ControllerBase
         if (pages == null || pages.Count == 0) return NotFound();
         if (page < 1 || page > pages.Count) return NotFound();
 
-        var chunks = await TranslateChunksAsync(BuildTranslationChunks(pages[page - 1]));
+        var chunks = await TranslateChunksAsync(BuildTranslationChunks(pages[page - 1]), userId);
 
         _cache.Set(cacheKey, chunks, ParallelPageCacheTtl);
 
@@ -396,7 +398,7 @@ public class BooksController : ControllerBase
     // Один литературный вызов на страницу: чанки EN склеиваются через "\n\n",
     // ответ разбивается по "\n\n" обратно. Если модель вернула другое число
     // сегментов или упала — переводим каждый чанк через gtx по отдельности.
-    private async Task<List<ParallelChunk>> TranslateChunksAsync(List<ParallelChunk> chunks)
+    private async Task<List<ParallelChunk>> TranslateChunksAsync(List<ParallelChunk> chunks, string? userId = null)
     {
         if (chunks.Count == 0)
         {
@@ -404,7 +406,7 @@ public class BooksController : ControllerBase
         }
 
         var joined = string.Join("\n\n", chunks.Select(c => c.En));
-        var literary = await _aiService.TranslateLiteraryAsync(joined);
+        var literary = await _aiService.TranslateLiteraryAsync(joined, userId);
 
         if (literary != null)
         {

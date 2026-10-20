@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -66,7 +67,7 @@ public class AiController : ControllerBase
 }
 
 public record TranslateRequest(
-    string Word,
-    string? Context,
-    string? TargetLanguage
+    [property: Required, MaxLength(200)] string Word,
+    [property: MaxLength(1000)] string? Context,
+    [property: MaxLength(10)] string? TargetLanguage
 );

@@ -177,7 +177,7 @@ public class AiService
 
     // Литературный перевод страницы en→ru через Gemini (с прокси и fallback-моделями),
     // при ошибке — fallback на gtx-перевод TranslateTextAsync. Кэш 24ч, ключ от SHA256 текста.
-    public async Task<string?> TranslateLiteraryAsync(string text)
+    public async Task<string?> TranslateLiteraryAsync(string text, string? userId = null)
     {
         var normalized = text.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
@@ -206,7 +206,7 @@ public class AiService
             try
             {
                 responseJson = await CallGeminiAsync(prompt, apiKey, temperature: 0.3, maxOutputTokens: 2048,
-                    requestType: "translate_literary");
+                    requestType: "translate_literary", userId: userId);
             }
             catch (AiUnavailableException ex)
             {

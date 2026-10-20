@@ -17,6 +17,8 @@ public class BookService
 
     private static readonly TimeSpan PagesCacheTtl = TimeSpan.FromHours(1);
 
+    private const long MaxUploadBytes = 50 * 1024 * 1024;
+
     public BookService(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
@@ -32,6 +34,10 @@ public class BookService
     public async Task<Book?> UploadBookAsync(string userId, IFormFile file)
     {
         if (file.Length == 0)
+            return null;
+
+        // Защита от гигантских загрузок: EPUB больше 50 МБ не принимаем
+        if (file.Length > MaxUploadBytes)
             return null;
 
         var extension = Path.GetExtension(file.FileName).ToLower();

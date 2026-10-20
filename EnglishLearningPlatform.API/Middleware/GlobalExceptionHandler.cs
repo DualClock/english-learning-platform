@@ -1,3 +1,4 @@
+using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace EnglishLearningPlatform.API.Middleware;
@@ -22,6 +23,17 @@ public class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
+        // Исчерпанная квота — ожидаемая ситуация, не ошибка сервера
+        if (exception is AiQuotaExceededException)
+        {
+            await Results.Problem(
+                statusCode: StatusCodes.Status429TooManyRequests,
+                title: "Дневной лимит ИИ-запросов исчерпан",
+                detail: AiQuotaService.QuotaExceededMessage
+            ).ExecuteAsync(httpContext);
+            return true;
+        }
+
         _logger.LogError(
             exception,
             "Необработанное исключение в {Method} {Path}",

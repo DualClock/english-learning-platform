@@ -172,9 +172,11 @@ builder.Services.AddAuthorization();
 
 // Наши сервисы
 builder.Services.AddMemoryCache();
+builder.Services.AddScoped<AiQuotaService>();
 builder.Services.AddSingleton(sp => new ResilientAiService(
     sp.GetRequiredService<IConfiguration>(),
-    sp.GetRequiredService<ILogger<ResilientAiService>>()));
+    sp.GetRequiredService<ILogger<ResilientAiService>>(),
+    scopeFactory: sp.GetRequiredService<IServiceScopeFactory>()));
 builder.Services.AddScoped<DictionaryService>();
 builder.Services.AddScoped<SrsService>();
 builder.Services.AddScoped<AiService>();
