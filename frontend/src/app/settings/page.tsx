@@ -8,8 +8,9 @@ import LoadingState from '@/components/ui/LoadingState';
 import { Tag } from '@/components/ui/Badge';
 import { useTheme } from '@/components/ThemeProvider';
 import { THEME_MODES } from '@/lib/theme';
-import { AlertIcon, CheckIcon } from '@/components/ui/icons';
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { CheckIcon } from '@/components/ui/icons';
+import Notice from '@/components/ui/Notice';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
@@ -42,25 +43,6 @@ const LEVEL_LABELS: Record<string, string> = {
 
 const labelCls = 'mb-2 block text-body-sm font-medium text-ink';
 const hintCls = 'mt-2 max-w-measure text-caption text-slate';
-
-/** Ответ сервиса: одно и то же сообщение об успехе/ошибке на весь экран. */
-function Notice({ tone = 'ok', children }: { tone?: 'ok' | 'error'; children: ReactNode }) {
-  return (
-    <div
-      role={tone === 'ok' ? 'status' : 'alert'}
-      className={`flex items-start gap-2 rounded-md p-3 text-body-sm ${
-        tone === 'ok' ? 'bg-surface-success text-on-success' : 'bg-surface-danger text-on-danger'
-      }`}
-    >
-      {tone === 'ok' ? (
-        <CheckIcon size={16} className="mt-0.5 shrink-0" />
-      ) : (
-        <AlertIcon size={16} className="mt-0.5 shrink-0" />
-      )}
-      <div className="space-y-1">{children}</div>
-    </div>
-  );
-}
 
 /** Группа кнопок-переключателей: один выбор из нескольких. */
 function ChoiceRow<T extends string | number>({
@@ -529,7 +511,7 @@ export default function SettingsPage() {
             </div>
 
             {profileToast && <Notice>{profileToast}</Notice>}
-            {profileError && <Notice tone="error">{profileError}</Notice>}
+            {profileError && <Notice tone="danger">{profileError}</Notice>}
 
             <Button onClick={saveProfile} disabled={isSavingProfile}>
               {isSavingProfile ? 'Сохраняем…' : 'Сохранить'}
@@ -595,7 +577,7 @@ export default function SettingsPage() {
 
             {passwordSuccess && <Notice>{passwordSuccess}</Notice>}
             {passwordErrors.length > 0 && (
-              <Notice tone="error">
+              <Notice tone="danger">
                 {passwordErrors.map((err, i) => (
                   <p key={i}>{err}</p>
                 ))}

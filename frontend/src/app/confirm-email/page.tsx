@@ -1,10 +1,12 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { API_URL } from '@/app/lib/api-url';
 import AuthLayout from '@/app/auth-layout';
+import Button from '@/components/ui/Button';
+import LoadingState from '@/components/ui/LoadingState';
+import { CheckIcon } from '@/components/ui/icons';
 
 type Status = 'checking' | 'ok' | 'already' | 'error';
 
@@ -58,9 +60,9 @@ function ConfirmEmailInner() {
   if (status === 'checking') {
     return (
       <div className="card p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(201,205,212,0.40)] animate-pulse" />
-        <h1 className="text-2xl font-semibold text-ink mb-2">Подтверждаем email…</h1>
-        <p className="text-slate">Это займёт пару секунд.</p>
+        <div className="state-orb animate-pulse bg-surface-sunken" aria-hidden="true" />
+        <h1 className="mb-2 text-h2 text-ink">Подтверждаем email…</h1>
+        <p className="text-body text-slate">Это займёт пару секунд.</p>
       </div>
     );
   }
@@ -68,42 +70,34 @@ function ConfirmEmailInner() {
   if (status === 'error') {
     return (
       <div className="card p-8 text-center">
-        <h1 className="text-2xl font-semibold text-ink mb-2">Не получилось подтвердить</h1>
-        <p className="text-slate mb-6">{message}</p>
-        <p className="text-sm text-slate mb-6">
+        <h1 className="mb-2 text-h2 text-ink">Не получилось подтвердить</h1>
+        <p className="mb-2 text-body text-slate">{message}</p>
+        <p className="mb-6 text-body-sm text-slate">
           Войдите в аккаунт и запросите письмо заново в настройках — мы пришлём новую ссылку.
         </p>
-        <Link href="/login" className="btn-primary inline-block w-full py-3">
+        <Button href="/login" className="w-full">
           Ко входу
-        </Link>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="card p-8 text-center">
-      <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
-        <svg
-          className="w-8 h-8 text-[var(--color-primary)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
+      <div className="state-orb bg-surface-accent text-on-accent">
+        <CheckIcon size={24} />
       </div>
-      <h1 className="text-2xl font-semibold text-ink mb-2">
+      <h1 className="mb-2 text-h2 text-ink">
         {status === 'already' ? 'Email уже подтверждён' : 'Email подтверждён'}
       </h1>
-      <p className="text-slate mb-6">
+      <p className="mb-6 text-body text-slate">
         {status === 'already'
           ? 'Всё в порядке — адрес уже был подтверждён ранее.'
           : 'Спасибо! Теперь мы сможем присылать напоминания и восстановить пароль, если он забудется.'}
       </p>
-      <Link href="/dashboard" className="btn-primary inline-block w-full py-3">
+      <Button href="/dashboard" className="w-full">
         Перейти к занятиям
-      </Link>
+      </Button>
     </div>
   );
 }
@@ -112,7 +106,7 @@ export default function ConfirmEmailPage() {
   return (
     <AuthLayout>
       {/* useSearchParams требует границу Suspense при статической отрисовке */}
-      <Suspense fallback={<div className="card p-8 h-64 animate-pulse bg-white" />}>
+      <Suspense fallback={<LoadingState rows={3} label="Загрузка страницы" />}>
         <ConfirmEmailInner />
       </Suspense>
     </AuthLayout>

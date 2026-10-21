@@ -7,6 +7,9 @@ import { API_URL } from '@/app/lib/api-url';
 import AuthLayout from '@/app/auth-layout';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import LoadingState from '@/components/ui/LoadingState';
+import Notice from '@/components/ui/Notice';
+import { CheckIcon } from '@/components/ui/icons';
 
 // Форма нового пароля. Email и токен приходят в ссылке из письма
 // (/reset-password?email=…&token=…), поэтому вводить их вручную не нужно.
@@ -66,19 +69,11 @@ function ResetPasswordForm() {
   if (success) {
     return (
       <div className="card p-8 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-[var(--color-primary)]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+        <div className="state-orb bg-surface-accent text-on-accent">
+          <CheckIcon size={24} />
         </div>
-        <h1 className="text-2xl font-semibold text-ink mb-2">Пароль изменён</h1>
-        <p className="text-slate">Сейчас перенаправим на страницу входа…</p>
+        <h1 className="mb-2 text-h2 text-ink">Пароль изменён</h1>
+        <p className="text-body text-slate">Сейчас перенаправим на страницу входа…</p>
       </div>
     );
   }
@@ -86,21 +81,21 @@ function ResetPasswordForm() {
   if (!linkIsValid) {
     return (
       <div className="card p-8 text-center">
-        <h1 className="text-2xl font-semibold text-ink mb-2">Ссылка неполная</h1>
-        <p className="text-slate mb-6">
+        <h1 className="mb-2 text-h2 text-ink">Ссылка неполная</h1>
+        <p className="mb-6 text-body text-slate">
           В ссылке нет email или токена. Запросите письмо заново — оно придёт с новой ссылкой.
         </p>
-        <Link href="/forgot-password" className="btn-primary inline-block w-full py-3">
+        <Button href="/forgot-password" className="w-full">
           Запросить письмо заново
-        </Link>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="card p-8">
-      <h1 className="text-2xl font-semibold text-ink text-center mb-2">Придумайте новый пароль</h1>
-      <p className="text-slate text-center mb-6 break-all">Для аккаунта {email}</p>
+      <h1 className="mb-2 text-center text-h2 text-ink">Придумайте новый пароль</h1>
+      <p className="mb-6 break-all text-center text-body text-slate">Для аккаунта {email}</p>
 
       <form onSubmit={submit} className="space-y-4">
         <Input
@@ -126,14 +121,7 @@ function ResetPasswordForm() {
           minLength={6}
         />
 
-        {error && (
-          <div
-            className="p-3 rounded-md bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm"
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
+        {error && <Notice tone="danger">{error}</Notice>}
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? 'Сохраняем…' : 'Сменить пароль'}
@@ -147,12 +135,12 @@ export default function ResetPasswordPage() {
   return (
     <AuthLayout>
       {/* useSearchParams требует границу Suspense при статической отрисовке */}
-      <Suspense fallback={<div className="card p-8 h-64 animate-pulse bg-white" />}>
+      <Suspense fallback={<LoadingState rows={3} label="Загрузка формы" />}>
         <ResetPasswordForm />
       </Suspense>
 
-      <p className="text-sm text-slate mt-8 text-center">
-        <Link href="/login" className="text-link font-medium hover:underline">
+      <p className="mt-8 text-center text-body-sm text-slate">
+        <Link href="/login" className="font-medium text-link hover:underline">
           ← Вернуться ко входу
         </Link>
       </p>

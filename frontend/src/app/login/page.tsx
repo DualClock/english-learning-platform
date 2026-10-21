@@ -7,6 +7,7 @@ import Link from 'next/link';
 import AuthLayout from '@/app/auth-layout';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Notice from '@/components/ui/Notice';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -61,14 +62,11 @@ export default function LoginPage() {
     return 'Неверный email или пароль';
   };
 
-  return (    <AuthLayout>
-      <div className="card p-8 animate-pop-in">
-        <h1 className="text-2xl font-semibold text-ink text-center mb-2">
-          С возвращением 👋
-        </h1>
-        <p className="text-slate text-center mb-8">
-          Продолжим читать?
-        </p>
+  return (
+    <AuthLayout>
+      <div className="card animate-pop-in p-8">
+        <h1 className="mb-2 text-center text-h2 text-ink">С возвращением</h1>
+        <p className="mb-8 text-center text-body text-slate">Продолжим читать?</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -93,26 +91,22 @@ export default function LoginPage() {
             required
           />
 
-          {error && (
-            <div className="p-3 rounded-md bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm" role="alert">
-              {error}
-            </div>
-          )}
+          {error && <Notice tone="danger">{error}</Notice>}
 
           <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Вход...' : 'Войти'}
+            {isLoading ? 'Вход…' : 'Войти'}
           </Button>
         </form>
 
         <div className="mt-4 text-center">
-          <Link href="/forgot-password" className="text-sm text-link hover:underline">
+          <Link href="/forgot-password" className="text-body-sm text-link hover:underline">
             Забыли пароль?
           </Link>
         </div>
 
-        <div className="mt-6 text-center">
-          <span className="text-slate">Нет аккаунта? </span>
-          <Link href="/onboarding" className="text-link font-medium hover:underline">
+        <div className="mt-6 text-center text-body text-slate">
+          <span>Нет аккаунта? </span>
+          <Link href="/onboarding" className="font-medium text-link hover:underline">
             Зарегистрироваться
           </Link>
         </div>

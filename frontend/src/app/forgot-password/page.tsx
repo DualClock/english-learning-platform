@@ -6,6 +6,8 @@ import { API_URL } from '@/app/lib/api-url';
 import AuthLayout from '@/app/auth-layout';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Notice from '@/components/ui/Notice';
+import { MailIcon } from '@/components/ui/icons';
 
 // Запрос письма со ссылкой на сброс пароля.
 // Токен приходит письмом (страница /reset-password), в ответе API его больше нет.
@@ -49,37 +51,22 @@ export default function ForgotPasswordPage() {
       <div className="card p-8">
         {sent ? (
           <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-[var(--color-primary)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
+            <div className="state-orb bg-surface-accent text-on-accent">
+              <MailIcon size={24} />
             </div>
-            <h1 className="text-2xl font-semibold text-ink mb-2">Проверьте почту</h1>
-            <p className="text-slate">
+            <h1 className="mb-2 text-h2 text-ink">Проверьте почту</h1>
+            <p className="text-body text-slate">
               Если аккаунт с адресом <span className="font-medium text-ink">{email}</span> существует,
               мы отправили письмо со ссылкой для сброса пароля. Ссылка действует 24 часа.
             </p>
-            <p className="text-sm text-slate mt-4">
+            <p className="mt-4 text-body-sm text-slate">
               Письма нет? Проверьте «Спам» или запросите ещё раз через пару минут.
             </p>
           </div>
         ) : (
           <>
-            <h1 className="text-2xl font-semibold text-ink text-center mb-2">
-              Восстановление пароля
-            </h1>
-            <p className="text-slate text-center mb-8">
+            <h1 className="mb-2 text-center text-h2 text-ink">Восстановление пароля</h1>
+            <p className="mb-8 text-center text-body text-slate">
               Введите email — пришлём ссылку для нового пароля
             </p>
 
@@ -95,14 +82,7 @@ export default function ForgotPasswordPage() {
                 required
               />
 
-              {error && (
-                <div
-                  className="p-3 rounded-md bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm"
-                  role="alert"
-                >
-                  {error}
-                </div>
-              )}
+              {error && <Notice tone="danger">{error}</Notice>}
 
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? 'Отправляем…' : 'Отправить ссылку'}
@@ -112,8 +92,8 @@ export default function ForgotPasswordPage() {
         )}
       </div>
 
-      <p className="text-sm text-slate mt-8 text-center">
-        <Link href="/login" className="text-link font-medium hover:underline">
+      <p className="mt-8 text-center text-body-sm text-slate">
+        <Link href="/login" className="font-medium text-link hover:underline">
           ← Вернуться ко входу
         </Link>
       </p>

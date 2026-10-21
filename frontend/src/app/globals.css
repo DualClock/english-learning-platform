@@ -551,6 +551,11 @@
            transition-[background-color,color,transform] duration-fast ease-soft active:scale-97;
   }
 
+  /* Маркер завершённого действия: письмо отправлено, пароль сменён */
+  .state-orb {
+    @apply mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full;
+  }
+
   /* Табы */
   .pill-tab {
     @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium text-slate

@@ -222,3 +222,11 @@ export const HeartIcon = (p: P) => (
 export const ChipIcon = (p: P) => (
   <Icon {...p}><rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" rx="1" /><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2" /></Icon>
 );
+
+/* Почта и письмо подтверждения */
+export const MailIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" />
+    <path d="m3.5 7 8.5 6 8.5-6" />
+  </Icon>
+);
