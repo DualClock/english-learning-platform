@@ -14,12 +14,11 @@ import { pluralWords } from '@/lib/plural';
 import { formatNumber } from '@/lib/format';
 import { slideVariants, variants } from '@/lib/motion';
 import Button from '@/components/ui/Button';
-import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { Tag } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/LoadingState';
-import { AlertIcon, InboxIcon, VolumeIcon } from '@/components/ui/icons';
+import { AlertIcon, VolumeIcon } from '@/components/ui/icons';
 
 interface Word {
   wordId: number;
@@ -162,14 +161,14 @@ export default function ReviewPage() {
   if (words.length === 0) {
     return (
       <AppLayout>
-        <EmptyState
-          icon={<InboxIcon size={24} />}
-          title="На сегодня слов нет"
-          description="Расписание пустое: все сохранённые слова уже повторены. Добавьте новые — из читалки или вручную."
-          action={
-            <Button href="/dictionary/add">Добавить слово</Button>
-          }
-        />
+        <div className="mx-auto max-w-md py-12 text-center">
+          <LexiMascot pose="sleep" className="mx-auto mb-2 w-36" />
+          <h1 className="mb-2 text-h1 text-ink">На сегодня слов нет</h1>
+          <p className="mb-8 text-body-lg text-slate">
+            Расписание пустое: все сохранённые слова уже повторены. Добавьте новые — из читалки или вручную.
+          </p>
+          <Button href="/dictionary/add">Добавить слово</Button>
+        </div>
       </AppLayout>
     );
   }
