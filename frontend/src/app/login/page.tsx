@@ -9,6 +9,14 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Notice from '@/components/ui/Notice';
 
+// Имя СУБД и команда запуска — только для локальной разработки: там это
+// экономит минуту на поиске причины. Пользователю на боевом стенде показываем
+// нейтральное сообщение.
+const DEV_OPS_HINT =
+  process.env.NODE_ENV === 'development'
+    ? ' Проверьте, что база запущена: docker start english_platform_db.'
+    : '';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +61,7 @@ export default function LoginPage() {
       });
       const status = await res.json();
       if (!status?.ok) {
-        return 'Сервис временно недоступен: нет связи с базой данных. Запустите Postgres (docker start english_platform_db) и попробуйте снова.';
+        return `Сервис временно недоступен: нет связи с сервером.${DEV_OPS_HINT}`;
       }
     } catch {
       // проверка не удалась — считаем, что дело в пароле
