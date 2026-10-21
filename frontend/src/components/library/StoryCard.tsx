@@ -1,7 +1,7 @@
 'use client';
 
 import BookCover from './BookCover';
-import LevelChip from './LevelChip';
+import LevelChip from '@/components/ui/LevelChip';
 
 export interface Story {
   index: number;

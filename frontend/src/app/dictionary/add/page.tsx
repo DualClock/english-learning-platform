@@ -2,10 +2,15 @@
 
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import Button from '@/components/ui/Button';
+import { AlertIcon, ArrowLeftIcon, CheckIcon, SpinnerIcon, UserIcon } from '@/components/ui/icons';
+import { variants } from '@/lib/motion';
 
 interface WordResponse {
   id: number;
@@ -25,7 +30,6 @@ const PARTS_OF_SPEECH = [
 const ENGLISH_RE = /^[a-zA-Z\s'-]+$/;
 
 export default function AddWordPage() {
-  const router = useRouter();
   const { data: session, status } = useSession();
 
   const [text, setText] = useState('');
@@ -95,54 +99,70 @@ export default function AddWordPage() {
   if (status === 'unauthenticated') {
     return (
       <AppLayout>
-        <div className="card p-8 text-center">
-          <p className="text-[var(--color-slate)] mb-4">Чтобы добавлять слова, войдите в аккаунт.</p>
-          <Link href="/login" className="btn-primary">
-            Войти
-          </Link>
-        </div>
+        <EmptyState
+          icon={<UserIcon size={24} />}
+          title="Нужен аккаунт"
+          description="Чтобы добавлять слова в словарь, войдите — словарь привязан к профилю."
+          action={
+            <Button href="/login" variant="primary">
+              Войти
+            </Button>
+          }
+        />
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <Link href="/dictionary" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)]">
-            ← К словарю
-          </Link>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mt-3 mb-1">Добавить слово</h1>
-          <p className="text-[var(--color-slate)]">
-            Слово сразу попадёт в словарь и в расписание повторений
-          </p>
-        </div>
+      <div className="mx-auto max-w-2xl">
+        <Button href="/dictionary" variant="ghost" className="mb-3">
+          <ArrowLeftIcon size={16} />
+          К словарю
+        </Button>
+        <PageHeader
+          title="Добавить слово"
+          subtitle="Слово сразу попадёт в словарь и в расписание повторений"
+        />
 
-        {success && (
-          <div
-            role="status"
-            className="mb-6 p-4 rounded-lg bg-[rgba(34,197,94,0.10)] border border-[var(--color-primary)] text-[var(--color-ink)] flex items-center justify-between gap-4"
-          >
-            <span>{success}</span>
-            <Link href="/dictionary" className="text-sm font-medium text-[var(--color-primary)] hover:underline shrink-0">
-              Открыть словарь
-            </Link>
-          </div>
-        )}
+        {/* Живая область смонтирована заранее: появляющийся вместе с текстом
+            region экранные читатели обычно не объявляют. */}
+        <div role="status" aria-live="polite">
+          <AnimatePresence initial={false}>
+            {success && (
+              <motion.div
+                variants={variants.enter}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface-success px-4 py-3 text-body-sm text-on-success"
+              >
+                <span className="flex items-center gap-2">
+                  <CheckIcon size={20} />
+                  {success}
+                </span>
+                <Link href="/dictionary" className="font-medium text-primary hover:underline">
+                  Открыть словарь
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {error && (
           <div
             role="alert"
-            className="mb-6 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+            className="mb-6 flex items-center gap-2 rounded-lg border border-semantic-error bg-surface-danger px-4 py-3 text-body-sm text-on-danger"
           >
+            <AlertIcon size={20} />
             {error}
           </div>
         )}
 
-        <form onSubmit={submit} className="card p-6 space-y-5">
+        <form onSubmit={submit} className="card space-y-5 p-6">
           <div>
-            <label htmlFor="word-text" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
-              Слово или фраза <span className="text-[var(--color-error)]">*</span>
+            <label htmlFor="word-text" className="mb-1.5 block text-body-sm font-medium text-ink">
+              Слово или фраза <span className="text-semantic-error">*</span>
             </label>
             <input
               id="word-text"
@@ -159,8 +179,8 @@ export default function AddWordPage() {
           </div>
 
           <div>
-            <label htmlFor="word-definition" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
-              Перевод <span className="text-[var(--color-error)]">*</span>
+            <label htmlFor="word-definition" className="mb-1.5 block text-body-sm font-medium text-ink">
+              Перевод <span className="text-semantic-error">*</span>
             </label>
             <input
               id="word-definition"
@@ -175,7 +195,7 @@ export default function AddWordPage() {
           </div>
 
           <div>
-            <label htmlFor="word-pos" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+            <label htmlFor="word-pos" className="mb-1.5 block text-body-sm font-medium text-ink">
               Часть речи
             </label>
             <select
@@ -193,7 +213,7 @@ export default function AddWordPage() {
           </div>
 
           <div>
-            <label htmlFor="word-example" className="block text-sm font-medium text-[var(--color-ink)] mb-1.5">
+            <label htmlFor="word-example" className="mb-1.5 block text-body-sm font-medium text-ink">
               Пример употребления
             </label>
             <textarea
@@ -203,26 +223,27 @@ export default function AddWordPage() {
               placeholder="She showed great resilience after the failure."
               maxLength={500}
               rows={2}
-              className="input resize-none"
+              className="input h-auto min-h-20 py-2.5 leading-relaxed resize-none"
             />
           </div>
 
           <div className="flex flex-wrap gap-3 pt-1">
-            <button type="submit" className="btn-primary" disabled={saving}>
+            <Button type="submit" disabled={saving}>
+              {saving ? <SpinnerIcon size={16} /> : null}
               {saving ? 'Сохраняем…' : 'Добавить слово'}
-            </button>
-            <Link href="/dictionary" className="btn-secondary">
+            </Button>
+            <Button href="/dictionary" variant="secondary">
               Отмена
-            </Link>
+            </Button>
           </div>
         </form>
 
-        <p className="text-sm text-[var(--color-slate)] mt-6">
+        <p className="mt-6 max-w-measure text-caption text-slate">
           Слова из книг можно добавлять прямо в читалке — нажмите на незнакомое слово и «В словарь».
           Готовые подборки есть в{' '}
-          <button type="button" onClick={() => router.push('/dictionary?tab=lists')} className="text-[var(--color-primary)] hover:underline">
+          <Link href="/dictionary?tab=lists" className="text-primary hover:underline">
             сборниках
-          </button>
+          </Link>
           .
         </p>
       </div>

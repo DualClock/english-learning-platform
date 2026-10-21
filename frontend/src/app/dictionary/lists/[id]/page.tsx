@@ -4,9 +4,27 @@ import AppLayout from '@/components/AppLayout';
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { useSpeech } from '@/hooks/useSpeech';
+import Pager from '@/components/Pager';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import { Skeleton } from '@/components/ui/LoadingState';
+import LevelChip from '@/components/ui/LevelChip';
+import Button from '@/components/ui/Button';
+import { Tag } from '@/components/ui/Badge';
+import {
+  ArrowLeftIcon,
+  BookOpenIcon,
+  CheckIcon,
+  SpinnerIcon,
+  VolumeIcon,
+} from '@/components/ui/icons';
+import { pluralWords } from '@/lib/plural';
+import { variants } from '@/lib/motion';
 
 interface ListItem {
   wordText: string;
@@ -31,21 +49,13 @@ const PAGE_SIZE = 50;
 
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
-const cefrStyles: Record<string, string> = {
-  A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
-  A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
-  B1: 'bg-[rgba(249,231,159,0.15)] text-[#7A3A00]',
-  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A3A00]',
-  C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
-  C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
-};
-
-function LevelChip({ level }: { level: string }) {
-  const cls = cefrStyles[level] || cefrStyles.A1;
+/** Возврат к сборникам — это навигация, поэтому ссылка, а не обработчик клика. */
+function BackToDictionary() {
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>
-      {level}
-    </span>
+    <Button href="/dictionary?tab=lists" variant="ghost" className="mb-4">
+      <ArrowLeftIcon size={16} />
+      Назад к словарю
+    </Button>
   );
 }
 
@@ -164,7 +174,7 @@ export default function WordListPage() {
 
   const learnWords = async (words: string[]) => {
     if (words.length === 0 || isLearning) return;
-    if (words.length > 200 && !window.confirm(`Вы уверены, что хотите выучить ${words.length} слов за раз? Лучше небольшими порциями 🔥`)) {
+    if (words.length > 200 && !window.confirm(`Вы уверены, что хотите выучить ${words.length} ${pluralWords(words.length)} за раз? Лучше небольшими порциями.`)) {
       return;
     }
     setIsLearning(true);
@@ -196,17 +206,22 @@ export default function WordListPage() {
   if (status === 'loading' || (listLoading && !list)) {
     return (
       <AppLayout>
-        <div className="mb-6 h-4 bg-[rgba(201,205,212,0.40)] rounded w-32 animate-pulse"></div>
-        <div className="h-8 bg-[rgba(201,205,212,0.40)] rounded w-64 mb-2 animate-pulse"></div>
-        <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-96 mb-6 animate-pulse"></div>
-        <div className="card p-4 mb-3 animate-pulse" >
-          <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-1/3"></div>
-        </div>
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="card p-4 mb-3 animate-pulse">
-            <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-1/4"></div>
+        <div role="status" aria-busy="true" className="animate-page-in">
+          <span className="sr-only">Загрузка сборника</span>
+          <Skeleton className="mb-4 h-4 w-40" />
+          <Skeleton className="mb-2 h-8 w-64" />
+          <Skeleton className="mb-6 h-4 w-96" />
+          <Skeleton className="mb-6 h-24 w-full rounded-lg" />
+          <div className="card space-y-2 p-4">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div key={i} className="flex items-center gap-3 py-2">
+                <Skeleton className="h-4 w-4 shrink-0" />
+                <Skeleton className={`h-4 ${i % 2 === 0 ? 'w-32' : 'w-24'}`} />
+                <Skeleton className="ml-auto h-5 w-10 rounded-full" />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </AppLayout>
     );
   }
@@ -214,20 +229,12 @@ export default function WordListPage() {
   if (!list) {
     return (
       <AppLayout>
-        <button
-          onClick={() => router.push('/dictionary?tab=lists')}
-          className="mb-4 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
-        >
-          ← Назад к словарю
-        </button>
-        <div className="card p-8 text-center">
-          <p className="text-[var(--color-error)] mb-6">
-            Не удалось загрузить сборник. Проверьте соединение и попробуйте снова.
-          </p>
-          <button onClick={retryLoad} className="btn-primary">
-            Попробовать снова
-          </button>
-        </div>
+        <BackToDictionary />
+        <ErrorState
+          title="Сборник не загрузился"
+          description="Список слов не пришёл с сервера. Проверьте соединение и попробуйте снова."
+          onRetry={retryLoad}
+        />
       </AppLayout>
     );
   }
@@ -236,54 +243,63 @@ export default function WordListPage() {
 
   return (
     <AppLayout>
-      <button
-        onClick={() => router.push('/dictionary?tab=lists')}
-        className="mb-4 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
-      >
-        ← Назад к словарю
-      </button>
+      <BackToDictionary />
 
-      {notice && (
-        <div className="mb-4 p-4 rounded-xl bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)]">
-          ✅ Добавлено {notice.added} слов{notice.skipped > 0 ? `, пропущено ${notice.skipped}` : ''}
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-4 rounded-xl bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] flex items-center justify-between gap-4">
-          <span>{error}</span>
-          <button onClick={retryLoad} className="btn-secondary shrink-0">
-            Попробовать снова
-          </button>
-        </div>
-      )}
-
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)]">{list.name}</h1>
-          {list.cefrFrom && list.cefrTo && (
-            <span className="badge badge-primary">{list.cefrFrom}–{list.cefrTo}</span>
+      {/* Живая область смонтирована заранее: появляющийся вместе с текстом
+          region экранные читатели обычно не объявляют. */}
+      <div role="status" aria-live="polite">
+        <AnimatePresence initial={false}>
+          {notice && (
+            <motion.div
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="mb-4 flex items-center gap-2 rounded-lg bg-surface-success px-4 py-3 text-body-sm text-on-success"
+            >
+              <CheckIcon size={20} />
+              <span>
+                Добавлено {notice.added.toLocaleString('ru-RU')} {pluralWords(notice.added)}
+                {notice.skipped > 0 ? `, пропущено ${notice.skipped.toLocaleString('ru-RU')}` : ''}
+              </span>
+            </motion.div>
           )}
-        </div>
-        {list.description && <p className="text-[var(--color-slate)]">{list.description}</p>}
-        <p className="text-sm text-[var(--color-slate)] mt-1">
-          {items.filter(i => i.inDictionary).length} из {items.length.toLocaleString('ru-RU')} на этой странице уже в вашем словаре
-        </p>
+        </AnimatePresence>
       </div>
 
+      {error && (
+        <div
+          role="alert"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-semantic-error bg-surface-danger px-4 py-3 text-body-sm text-on-danger"
+        >
+          <span>{error}</span>
+          <Button variant="secondary" onClick={retryLoad}>
+            Попробовать снова
+          </Button>
+        </div>
+      )}
+
+      <PageHeader
+        title={list.name}
+        subtitle={list.description}
+        actions={
+          list.cefrFrom && list.cefrTo ? (
+            <LevelChip level={list.cefrFrom} className="border border-hairline-strong px-3 py-1">
+              {list.cefrFrom}–{list.cefrTo}
+            </LevelChip>
+          ) : null
+        }
+      />
       {/* Практика */}
-      <div className="card p-4 sm:p-5 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 flex-wrap">
-          <div className="flex-1 min-w-[260px]">
-            <h2 className="text-sm font-semibold text-[var(--color-ink)] mb-2">Практика</h2>
-            <div className="flex flex-wrap items-center gap-2 mb-3">
+      <div className="card mb-6 p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:gap-6">
+          <div className="min-w-64 flex-1">
+            <h2 className="mb-2 text-body-sm font-semibold text-ink">Практика</h2>
+            <div role="group" aria-label="Уровни для повторения" className="mb-3 flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setPracticeLevels(new Set())}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                  practiceLevels.size === 0
-                    ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
-                    : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
-                }`}
+                aria-pressed={practiceLevels.size === 0}
+                className={practiceLevels.size === 0 ? 'icon-chip-active' : 'icon-chip'}
               >
                 Все уровни
               </button>
@@ -293,153 +309,155 @@ export default function WordListPage() {
                   <button
                     key={level}
                     onClick={() => togglePracticeLevel(level)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                      active
-                        ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
-                        : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
-                    }`}
+                    aria-pressed={active}
+                    className={active ? 'icon-chip-active' : 'icon-chip'}
                   >
                     {level}
                   </button>
                 );
               })}
             </div>
-            <div className="inline-flex rounded-xl border border-[var(--color-hairline-strong)] overflow-hidden">
+            <div role="group" aria-label="Количество слов" className="inline-flex overflow-hidden rounded-lg border border-hairline-strong">
               {[10, 20, 50].map(n => (
                 <button
                   key={n}
                   onClick={() => setPracticeCount(n)}
-                  className={`px-4 py-1.5 text-xs font-semibold transition-colors ${
+                  aria-pressed={practiceCount === n}
+                  className={`px-4 py-2 text-body-sm font-medium transition-[background-color,color] duration-fast ease-soft ${
                     practiceCount === n
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'bg-white text-[var(--color-slate)] hover:bg-[var(--color-surface)]'
+                      ? 'bg-surface-highlight text-ink'
+                      : 'bg-canvas text-slate hover:bg-surface hover:text-ink'
                   }`}
                 >
-                  {n} слов
+                  {n} {pluralWords(n)}
                 </button>
               ))}
             </div>
           </div>
-          <div className="sm:border-l sm:border-[var(--color-hairline-strong)] sm:pl-6">
-            <p className="text-xs text-[var(--color-slate)] mb-2 max-w-[220px]">
+          <div className="sm:ml-auto">
+            <p className="mb-2 max-w-measure-sm text-caption text-slate">
               Повторите слова, а незнакомые автоматически попадут в ваш словарь.
             </p>
-            <button onClick={startPractice} className="btn-primary">
+            <Button onClick={startPractice} variant="primary">
               Начать повторение
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Панель действий */}
-      <div className="card p-4 mb-6 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-[var(--color-slate)]">
-          Выбрано <span className="font-semibold text-[var(--color-ink)]">{selected.size}</span> слов
+      <div className="card mb-6 flex flex-wrap items-center gap-3 p-4">
+        <span className="text-body-sm text-slate">
+          Выбрано <span className="font-semibold tabular-nums text-ink">{selected.size}</span>{' '}
+          {pluralWords(selected.size)}
+          <span className="text-slate">
+            {' · '}{items.filter(i => i.inDictionary).length} на этой странице уже в словаре
+          </span>
         </span>
-        <div className="flex gap-2 ml-auto">
-          <button
+        <div className="ml-auto flex w-full gap-2 sm:w-auto">
+          <Button
             onClick={learnSelected}
             disabled={selected.size === 0 || isLearning}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
+            className="flex-1 sm:flex-none"
           >
+            {isLearning ? <SpinnerIcon size={16} /> : null}
             Выучить выбранные
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={learnAll}
             disabled={selectable.length === 0 || isLearning}
-            className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            className="flex-1 sm:flex-none"
           >
             Выучить все
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Таблица слов */}
-      <div className="card overflow-hidden mb-4">
-        <div className="hidden sm:grid grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 border-b border-[var(--color-hairline-strong)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-slate)] uppercase tracking-wide">
+      <div className="card mb-4 overflow-hidden p-0">
+        <div className="hidden grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 border-b border-hairline-strong bg-surface px-4 py-3 text-caption font-semibold uppercase tracking-wide text-slate sm:grid">
           <div>
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
               disabled={selectable.length === 0}
-              className="accent-[var(--color-primary)]"
-              aria-label="Выбрать все"
+              className="h-4 w-4 accent-primary"
+              aria-label="Выбрать все слова на странице"
             />
           </div>
           <div>Слово</div>
           <div>Уровень</div>
           <div className="text-right">Статус</div>
         </div>
-        {items.map((item, idx) => (
-          <div
-            key={`${item.wordText}-${idx}`}
-            onClick={() => toggleWord(item)}
-            className={`grid grid-cols-[2.5rem_1fr_auto] sm:grid-cols-[2.5rem_1fr_6rem_8rem] gap-3 px-4 py-3 items-center border-b border-[rgba(201,205,212,0.60)] last:border-0 transition-colors ${
-              item.inDictionary ? 'opacity-70 cursor-default' : 'cursor-pointer hover:bg-[var(--color-surface)]'
-            }`}
-          >
-            <div onClick={(e) => e.stopPropagation()}>
-              <input
-                type="checkbox"
-                checked={selected.has(item.wordText)}
-                disabled={item.inDictionary}
-                onChange={() => toggleWord(item)}
-                className="accent-[var(--color-primary)]"
-                aria-label={`Выбрать ${item.wordText}`}
-              />
-            </div>
-            <div className="font-medium text-[var(--color-ink)] flex items-center gap-2 min-w-0">
-              <span className="truncate">{item.wordText}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  speak(item.wordText);
-                }}
-                className="p-1 text-sm rounded-full hover:bg-[var(--color-tint-mint)] transition-colors shrink-0"
-                title="Произнести"
-                aria-label={`Произнести ${item.wordText}`}
-              >
-                🔊
-              </button>
-            </div>
-            <div><LevelChip level={item.cefrLevel} /></div>
-            <div className="text-right">
-              {item.inDictionary && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]">
-                  ✅ В словаре
-                </span>
-              )}
-            </div>
+        {items.length === 0 ? (
+          <EmptyState
+            variant="inline"
+            icon={<BookOpenIcon size={24} />}
+            title="В сборнике пока пусто"
+            description="Слова этого сборника ещё не загружены — начните с другой страницы или сборника."
+          />
+        ) : (
+          <div className="stagger">
+            {items.map((item, idx) => {
+              const isSelected = selected.has(item.wordText);
+              return (
+                <div
+                  key={`${item.wordText}-${idx}`}
+                  onClick={() => toggleWord(item)}
+                  className={`grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 border-b border-hairline px-4 py-3 transition-colors duration-fast last:border-0 sm:grid-cols-[2.5rem_1fr_6rem_8rem] ${
+                    item.inDictionary
+                      ? 'cursor-default bg-surface-soft text-slate'
+                      : isSelected
+                        ? 'cursor-pointer bg-surface-highlight'
+                        : 'cursor-pointer hover:bg-surface'
+                  }`}
+                >
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      disabled={item.inDictionary}
+                      onChange={() => toggleWord(item)}
+                      className="h-4 w-4 accent-primary"
+                      aria-label={`Выбрать ${item.wordText}`}
+                    />
+                  </div>
+                  <div className="flex min-w-0 items-center gap-2 font-medium text-ink">
+                    <span className="truncate">{item.wordText}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        speak(item.wordText);
+                      }}
+                      className="icon-chip -my-1 h-8 min-w-8 border-transparent bg-transparent px-1.5 hover:bg-surface"
+                      title="Произнести"
+                      aria-label={`Произнести ${item.wordText}`}
+                    >
+                      <VolumeIcon size={16} />
+                    </button>
+                  </div>
+                  <div><LevelChip level={item.cefrLevel} /></div>
+                  <div className="text-right">
+                    {item.inDictionary && <Tag tone="success">В словаре</Tag>}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
-        {items.length === 0 && (
-          <div className="p-8 text-center text-[var(--color-slate)]">В этом сборнике пока пусто</div>
         )}
       </div>
 
-      {/* Пагинация */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={() => goToPage(page - 1)}
-            disabled={page <= 1 || listLoading}
-            className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Назад
-          </button>
-          <span className="text-sm text-[var(--color-slate)]">
-            страница {page} из {totalPages}
-          </span>
-          <button
-            onClick={() => goToPage(page + 1)}
-            disabled={page >= totalPages || listLoading}
-            className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Вперёд →
-          </button>
-        </div>
-      )}
+      <Pager
+        page={page}
+        totalPages={totalPages}
+        onPageChange={(next) => {
+          goToPage(next);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
     </AppLayout>
   );
 }

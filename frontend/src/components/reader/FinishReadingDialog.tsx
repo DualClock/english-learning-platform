@@ -7,6 +7,7 @@ import ProgressBar from '@/components/ui/ProgressBar';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { ArrowRightIcon, CheckIcon, CloseIcon, TrophyIcon } from '@/components/ui/icons';
 import { slideVariants, transition, variants } from '@/lib/motion';
+import { pluralWords } from '@/lib/plural';
 import type { FinishResult, QuizQuestion } from './types';
 
 interface Props {
@@ -20,15 +21,6 @@ interface Props {
   onNext: () => void;
   onClose: () => void;
   onGoToDictionary: () => void;
-}
-
-/** «1 слово / 2 слова / 5 слов» — форма зависит от последней цифры, а не от падежа вопроса. */
-function pluralWords(n: number): string {
-  const last = n % 10;
-  const lastTwo = n % 100;
-  if (last === 1 && lastTwo !== 11) return 'слово';
-  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return 'слова';
-  return 'слов';
 }
 
 const optionBase =

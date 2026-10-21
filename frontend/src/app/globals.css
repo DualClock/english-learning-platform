@@ -402,7 +402,7 @@
   }
 
   .badge-tag {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-caption font-semibold;
+    @apply inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded-md text-caption font-semibold;
   }
 
   .badge-tag-green  { @apply badge-tag bg-surface-success text-on-success; }

@@ -5,10 +5,27 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate, cacheKey, peekCache } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
 import { useSpeech } from '@/hooks/useSpeech';
+import EmptyState from '@/components/ui/EmptyState';import ErrorState from '@/components/ui/ErrorState';
+import { Skeleton } from '@/components/ui/LoadingState';
+import Button from '@/components/ui/Button';
+import ProgressBar from '@/components/ui/ProgressBar';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import LevelChip from '@/components/ui/LevelChip';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  CloseIcon,
+  InboxIcon,
+  SpinnerIcon,
+  VolumeIcon,
+} from '@/components/ui/icons';
+import { slideVariants, variants } from '@/lib/motion';
+import { pluralWords } from '@/lib/plural';
 
 interface ListItem {
   wordText: string;
@@ -24,24 +41,6 @@ interface WordListPage {
 }
 
 const FETCH_PAGE_SIZE = 200; // максимум, который принимает бэкенд
-
-const cefrStyles: Record<string, string> = {
-  A1: 'bg-[rgba(93,100,112,0.10)] text-[var(--color-slate)]',
-  A2: 'bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]',
-  B1: 'bg-[rgba(249,231,159,0.15)] text-[#7A3A00]',
-  B2: 'bg-[rgba(249,231,159,0.25)] text-[#7A3A00]',
-  C1: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]',
-  C2: 'bg-[rgba(14,124,123,0.20)] text-[var(--color-primary)]'
-};
-
-function LevelChip({ level }: { level: string }) {
-  const cls = cefrStyles[level] || cefrStyles.A1;
-  return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>
-      {level}
-    </span>
-  );
-}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -259,9 +258,7 @@ function PracticeContent() {
   if (status === 'loading' || phase === 'loading') {
     return (
       <AppLayout>
-        <div className="max-w-lg mx-auto flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <PracticeSkeleton />
       </AppLayout>
     );
   }
@@ -269,16 +266,17 @@ function PracticeContent() {
   if (loadError) {
     return (
       <AppLayout>
-        <div className="max-w-lg mx-auto text-center py-16">
-          <div className="card p-8">
-            <p className="text-[var(--color-error)] mb-6">Не удалось загрузить слова. Проверьте соединение и попробуйте снова.</p>
-            <div className="flex justify-center gap-3">
-              <button onClick={startRound} className="btn-primary">Попробовать снова</button>
-              <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-secondary">
+        <div className="mx-auto max-w-lg">
+          <ErrorState
+            title="Слова не загрузились"
+            description="Список сборника не пришёл с сервера. Проверьте соединение и попробуйте снова."
+            onRetry={startRound}
+            action={
+              <Button variant="secondary" onClick={() => router.push(`/dictionary/lists/${listId}`)}>
                 К сборнику
-              </button>
-            </div>
-          </div>
+              </Button>
+            }
+          />
         </div>
       </AppLayout>
     );
@@ -287,21 +285,19 @@ function PracticeContent() {
   if (phase === 'empty') {
     return (
       <AppLayout>
-        <div className="max-w-lg mx-auto text-center py-16">
-          <div className="card p-8">
-            <div className="text-4xl mb-4">🎉</div>
-            <h1 className="text-xl font-bold text-[var(--color-ink)] mb-2">
-              Все слова этого уровня уже у вас в словаре
-            </h1>
-            <p className="text-[var(--color-slate)] mb-8">
-              {levels.length > 0
-                ? `Для уровней ${levels.join(', ')} в этом сборнике не осталось новых слов.`
-                : 'В этом сборнике не осталось новых слов.'}
-            </p>
-            <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-primary">
-              К сборнику
-            </button>
-          </div>
+        <div className="mx-auto max-w-lg">
+          <EmptyState
+            icon={<InboxIcon size={24} />}
+            title="Все слова этого уровня уже у вас в словаре"
+            description={levels.length > 0
+              ? `Для уровней ${levels.join(', ')} в этом сборнике не осталось новых слов.`
+              : 'В этом сборнике не осталось новых слов.'}
+            action={
+              <Button variant="primary" onClick={() => router.push(`/dictionary/lists/${listId}`)}>
+                К сборнику
+              </Button>
+            }
+          />
         </div>
       </AppLayout>
     );
@@ -311,56 +307,53 @@ function PracticeContent() {
     const knownCount = batch.length - unknown.length;
     return (
       <AppLayout>
-        <div className="max-w-lg mx-auto text-center py-12">
-          <div className="card p-8">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
-              <svg className="w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+        <div className="mx-auto max-w-lg">
+          <motion.div variants={variants.enter} initial="hidden" animate="visible" className="card p-8 text-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-lg bg-surface-accent text-on-accent">
+              <CheckIcon size={24} />
             </div>
-            <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Раунд завершён</h1>
-            <p className="text-[var(--color-slate)] mb-6">
-              Знали: <span className="font-semibold text-[var(--color-primary)]">{knownCount}</span>
-              {' · '}
-              Добавлено в словарь:{' '}
-              <span className="font-semibold text-[var(--color-primary)]">
-                {isSaving ? '…' : learnError ? '—' : addedCount ?? 0}
+            <h1 className="mb-3 text-h1 text-ink">Раунд завершён</h1>
+            <p className="mb-6 text-body-lg text-slate">
+              Знаете {knownCount} {pluralWords(knownCount)}
+              {' · '}в словарь добавлено{' '}
+              <span className="font-semibold tabular-nums text-primary">
+                {isSaving ? '…' : learnError ? '—' : <AnimatedNumber value={addedCount ?? 0} />}
               </span>
             </p>
 
             {learnError && (
-              <p className="text-sm text-[var(--color-error)] mb-6">
+              <p className="mb-6 text-body-sm text-semantic-error">
                 Не удалось добавить незнакомые слова. Попробуйте ещё раз позже.
               </p>
             )}
 
             {unknown.length > 0 && (
               <div className="mb-8 text-left">
-                <p className="text-sm font-semibold text-[var(--color-ink)] mb-2">
-                  Слова, отправленные в словарь ({unknown.length}):
-                </p>
-                <div className="flex flex-wrap gap-2">
+                <h2 className="mb-2 text-body-sm font-semibold text-ink">
+                  Слова, отправленные в словарь ({unknown.length})
+                </h2>
+                <ul className="flex flex-wrap gap-2">
                   {unknown.map(word => (
-                    <span
+                    <li
                       key={word}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-surface)] border border-[var(--color-hairline-strong)] text-[var(--color-ink)]"
+                      className="rounded-full border border-hairline bg-surface px-2.5 py-1 text-caption text-ink"
                     >
                       {word}
-                    </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
-            <div className="flex justify-center gap-3">
-              <button onClick={startRound} className="btn-primary">
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button onClick={startRound} variant="primary">
                 Ещё раунд
-              </button>
-              <button onClick={() => router.push(`/dictionary/lists/${listId}`)} className="btn-secondary">
+              </Button>
+              <Button onClick={() => router.push(`/dictionary/lists/${listId}`)} variant="secondary">
                 К сборнику
-              </button>
+              </Button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </AppLayout>
     );
@@ -368,92 +361,121 @@ function PracticeContent() {
 
   return (
     <AppLayout>
-      <div className="max-w-lg mx-auto">
+      <div className="mx-auto max-w-lg">
         {/* Прогресс */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
-            <span>Слово {index + 1} из {batch.length}</span>
-            <span>Не знаю: {unknown.length}</span>
+          <div className="mb-2 flex justify-between text-body-sm text-slate">
+            <span className="tabular-nums">Слово {index + 1} из {batch.length}</span>
+            <span className="tabular-nums">Не знаю: {unknown.length}</span>
           </div>
-          <div className="progress-bar">
-            <div
-              className="progress-fill transition-all duration-300"
-              style={{ width: `${((index + 1) / batch.length) * 100}%` }}
-            />
-          </div>
+          <ProgressBar value={((index + 1) / batch.length) * 100} label="Прогресс раунда" />
         </div>
 
-        {/* Карточка */}
-        <div className="card p-8 mb-6">
-          <div className="text-center mb-8">
-            <LevelChip level={currentWord.cefrLevel} />
-            <div className="flex items-center justify-center gap-3 mt-4 mb-1">
-              <h1 className="text-4xl font-bold text-[var(--color-ink)] break-words">{currentWord.wordText}</h1>
-              <button
-                onClick={() => speak(currentWord.wordText)}
-                className="p-2 text-xl rounded-full hover:bg-[var(--color-tint-mint)] transition-colors shrink-0"
-                title="Произнести"
-                aria-label="Произнести слово"
-              >
-                🔊
-              </button>
-            </div>
-
-            <div className="mt-8 min-h-[3rem] flex items-center justify-center">
-              {translation.status === 'hidden' && (
-                <button
-                  onClick={revealTranslation}
-                  className="text-sm font-medium text-[var(--color-primary)] hover:underline transition-colors"
-                >
-                  Показать перевод
-                </button>
-              )}
-              {translation.status === 'loading' && (
-                <div className="w-5 h-5 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-              )}
-              {translation.status === 'ok' && (
-                <p className="text-lg text-[var(--color-slate)]">{translation.text}</p>
-              )}
-              {translation.status === 'error' && (
-                <div className="text-center">
-                  <p className="text-sm text-[var(--color-error)] mb-2">Перевод недоступен</p>
-                  <button
-                    onClick={revealTranslation}
-                    className="text-sm text-[var(--color-primary)] hover:underline transition-colors"
-                  >
-                    Попробовать снова
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => answer(true)}
-              className="py-3 rounded-lg font-semibold bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-pressed)] transition-colors"
-            >
-              Знаю ✓
-            </button>
-            <button
-              onClick={() => answer(false)}
-              className="py-3 rounded-lg font-semibold bg-[var(--color-error)] text-white hover:bg-[#B42318] transition-colors"
-            >
-              Не знаю ✗
-            </button>
-          </div>
-        </div>
-
-        <div className="text-center">
-          <button
-            onClick={() => router.push(`/dictionary/lists/${listId}`)}
-            className="text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
+        {/* Карточка: каждая следующая приходит со стороны движения вперёд */}
+        <AnimatePresence mode="wait" custom={1}>
+          <motion.div
+            key={`${currentWord.wordText}-${index}`}
+            variants={slideVariants(1)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="card mb-6 p-8"
           >
-            ← К сборнику
-          </button>
-        </div>
+            <div className="mb-8 text-center">
+              <LevelChip level={currentWord.cefrLevel} />
+              <div className="mb-1 mt-4 flex flex-wrap items-center justify-center gap-3">
+                <h1 className="break-words text-h1 text-ink">{currentWord.wordText}</h1>
+                <button
+                  onClick={() => speak(currentWord.wordText)}
+                  className="icon-chip shrink-0 border-transparent bg-transparent hover:bg-surface"
+                  title="Произнести"
+                  aria-label="Произнести слово"
+                >
+                  <VolumeIcon size={20} />
+                </button>
+              </div>
+
+              <div className="mt-8 flex min-h-12 items-center justify-center">
+                <AnimatePresence mode="wait">
+                  {translation.status === 'hidden' && (
+                    <motion.div key="hidden" variants={variants.fadeOnly} initial="hidden" animate="visible" exit="exit">
+                      <Button variant="secondary" onClick={revealTranslation}>
+                        Показать перевод
+                      </Button>
+                    </motion.div>
+                  )}
+                  {translation.status === 'loading' && (
+                    <motion.div key="loading" variants={variants.fadeOnly} initial="hidden" animate="visible" exit="exit">
+                      <SpinnerIcon size={20} className="animate-spin text-primary" label="Загрузка перевода" />
+                    </motion.div>
+                  )}
+                  {translation.status === 'ok' && (
+                    <motion.p
+                      key="ok"
+                      variants={variants.fadeOnly}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="text-body-lg text-charcoal"
+                    >
+                      {translation.text}
+                    </motion.p>
+                  )}
+                  {translation.status === 'error' && (
+                    <motion.div key="error" variants={variants.fadeOnly} initial="hidden" animate="visible" exit="exit" className="text-center">
+                      <p className="mb-2 text-body-sm text-semantic-error">Перевод недоступен</p>
+                      <Button variant="secondary" onClick={revealTranslation}>
+                        Попробовать снова
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button onClick={() => answer(true)} variant="primary" className="h-12">
+                <CheckIcon size={20} />
+                Знаю
+              </Button>
+              <Button onClick={() => answer(false)} variant="danger" className="h-12">
+                <CloseIcon size={20} />
+                Не знаю
+              </Button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <Button
+          variant="ghost"
+          onClick={() => router.push(`/dictionary/lists/${listId}`)}
+          className="mx-auto flex"
+        >
+          <ArrowLeftIcon size={16} />
+          К сборнику
+        </Button>
       </div>
     </AppLayout>
+  );
+}
+
+/** Загрузка раунда повторяет карточку: та же колонка, тот же ритм отступов. */
+function PracticeSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mx-auto max-w-lg py-6">
+      <span className="sr-only">Загрузка слов для повторения</span>
+      <Skeleton className="mb-2 h-4 w-40" />
+      <Skeleton className="mb-6 h-2 w-full rounded-full" />
+      <div className="card p-8 text-center">
+        <Skeleton className="mx-auto mb-4 h-5 w-10 rounded-full" />
+        <Skeleton className="mx-auto mb-3 h-9 w-52" />
+        <Skeleton className="mx-auto mb-8 h-5 w-32" />
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-12" />
+          <Skeleton className="h-12" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -462,9 +484,7 @@ export default function PracticePage() {
     <Suspense
       fallback={
         <AppLayout>
-          <div className="max-w-lg mx-auto flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-          </div>
+          <PracticeSkeleton />
         </AppLayout>
       }
     >

@@ -5,12 +5,29 @@ import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import WordListsSection from '@/components/dictionary/WordListsSection';
+import DictionarySkeleton from '@/components/dictionary/DictionarySkeleton';
 import Pager from '@/components/Pager';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { isPaged, type Paged } from '@/app/lib/paged';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import {
+  AlertIcon,
+  LibraryIcon,
+  PlusIcon,
+  SearchIcon,
+  TrashIcon,
+  VolumeIcon,
+} from '@/components/ui/icons';
+import { transition } from '@/lib/motion';
+import { pluralWords } from '@/lib/plural';
 
 interface Word {
   id: number;
@@ -26,7 +43,6 @@ interface Word {
 }
 
 function DictionaryTabs() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
@@ -36,24 +52,24 @@ function DictionaryTabs() {
   ];
 
   return (
-    <div className="flex gap-6 border-b border-[var(--color-hairline-strong)] mb-6">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => router.push(tab.key === 'my' ? '/dictionary' : '/dictionary?tab=lists')}
-          className={`pb-3 px-1 text-sm font-medium transition-colors relative ${
-            activeTab === tab.key
-              ? 'text-[var(--color-primary)]'
-              : 'text-[var(--color-slate)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          {tab.label}
-          {activeTab === tab.key && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[var(--color-primary)]"></span>
-          )}
-        </button>
-      ))}
-    </div>
+    <nav aria-label="Разделы словаря" className="mb-6 flex gap-6">
+      {tabs.map((tab) => {
+        const active = activeTab === tab.key;
+        return (
+          <Link
+            key={tab.key}
+            href={tab.key === 'my' ? '/dictionary' : '/dictionary?tab=lists'}
+            aria-current={active ? 'page' : undefined}
+            className={`relative px-1 pb-2.5 text-body-sm font-medium transition-colors duration-fast ${
+              active ? 'text-primary' : 'text-slate hover:text-ink'
+            }`}
+          >
+            {tab.label}
+            {active && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -90,7 +106,10 @@ function DictionaryContent() {
   const totalCount = paged ? paged.totalCount : words.length;
   const totalPages = paged ? paged.totalPages : 1;
   const isInitialLoading = wordsLoading && wordsData === undefined;
-  const error = actionError || (wordsError ? (appliedQuery ? 'Ошибка поиска' : 'Ошибка загрузки слов') : '');
+  const loadError = wordsError ? (appliedQuery ? 'Ошибка поиска' : 'Ошибка загрузки слов') : '';
+  // Ошибка загрузки показывается баннером только если слова на экране остались:
+  // пустой список с той же ошибкой — это уже состояние ErrorState.
+  const bannerError = actionError || (words.length > 0 ? loadError : '');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -141,9 +160,7 @@ function DictionaryContent() {
   if (status === 'loading' || (activeTab === 'my' && isInitialLoading)) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <DictionarySkeleton />
       </AppLayout>
     );
   }
@@ -151,10 +168,7 @@ function DictionaryContent() {
   if (activeTab === 'lists') {
     return (
       <AppLayout>
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Словарь</h1>
-          <p className="text-[var(--color-slate)]">Готовые сборники слов по уровням и темам</p>
-        </div>
+        <PageHeader title="Словарь" subtitle="Готовые сборники слов по уровням и темам" />
         <Suspense fallback={null}>
           <DictionaryTabs />
         </Suspense>
@@ -165,112 +179,147 @@ function DictionaryContent() {
 
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Словарь</h1>
-        <p className="text-[var(--color-slate)]">{totalCount} слов сохранено</p>
-      </div>
+      <PageHeader
+        title="Словарь"
+        subtitle={`${totalCount.toLocaleString('ru-RU')} ${pluralWords(totalCount)} сохранено`}
+        actions={
+          <Button href="/dictionary/add" variant="primary">
+            <PlusIcon size={16} />
+            Добавить слово
+          </Button>
+        }
+      />
 
       <Suspense fallback={null}>
         <DictionaryTabs />
       </Suspense>
 
       {/* Поиск и добавление */}
-      <div className="card p-6 mb-6">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
+      <div className="card mb-6 p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <label htmlFor="dictionary-search" className="sr-only">
+              Поиск слов в словаре
+            </label>
+            <SearchIcon
+              size={20}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate"
+            />
             <input
-              type="text"
+              id="dictionary-search"
+              type="search"
               placeholder="Поиск слов..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchWords()}
+              onKeyDown={(e) => e.key === 'Enter' && searchWords()}
               className="input pl-10"
             />
-            <svg className="absolute left-3 top-3.5 w-5 h-5 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
           </div>
-          <button
-            onClick={searchWords}
-            className="btn-secondary"
-          >
-            Найти
-          </button>
-          <Link
-            href="/dictionary/add"
-            className="btn-primary"
-          >
-            + Добавить
-          </Link>
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={searchWords} className="flex-1 sm:flex-none">
+              Найти
+            </Button>
+          </div>
         </div>
       </div>
 
-      {error && (
+      {bannerError && (
         <div
           role="alert"
-          className="mb-6 flex flex-wrap items-center justify-between gap-3 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-semantic-error bg-surface-danger p-4 text-body-sm text-on-danger"
         >
-          <span>{error}</span>
-          <button
-            onClick={() => {
-              setActionError('');
-              refreshWords();
-            }}
-            className="btn-secondary shrink-0"
-          >
+          <span className="flex items-center gap-2">
+            <AlertIcon size={20} />
+            {bannerError}
+          </span>
+          <Button variant="secondary" onClick={() => { setActionError(''); refreshWords(); }}>
             Попробовать снова
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Список слов */}
-      {words.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-[var(--color-slate)] mb-4">Словарь пуст</p>
-          <Link href="/dictionary/add" className="btn-primary">
-            Добавить первое слово
-          </Link>
-        </div>
+      {loadError && words.length === 0 ? (
+        <ErrorState
+          title="Словарь не загрузился"
+          description={appliedQuery
+            ? 'Поиск не выполнился: сервер не ответил. Попробуйте ещё раз.'
+            : 'Сохранённые слова не пришли с сервера. Проверьте соединение и повторите.'}
+          onRetry={refreshWords}
+        />
+      ) : words.length === 0 ? (
+        <EmptyState
+          icon={appliedQuery ? <SearchIcon size={24} /> : <LibraryIcon size={24} />}
+          title={appliedQuery ? 'Ничего не нашлось' : 'В словаре пока пусто'}
+          description={appliedQuery
+            ? `Слова «${appliedQuery}» в вашем словаре нет.`
+            : 'Слова появляются здесь из читалки или вручную — добавьте первое.'}
+          action={
+            appliedQuery ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearchQuery('');
+                  setAppliedQuery('');
+                  setPage(1);
+                }}
+              >
+                Сбросить поиск
+              </Button>
+            ) : (
+              <Button href="/dictionary/add" variant="primary">
+                <PlusIcon size={16} />
+                Добавить первое слово
+              </Button>
+            )
+          }
+        />
       ) : (
-        <div className="space-y-3 stagger">
-          {words.map((word) => (
-            <div key={word.id} className="card p-4 flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="text-xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors"
-                  >
-                    {word.text}
-                  </button>
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="p-1.5 text-base rounded-full hover:bg-[var(--color-tint-mint)] transition-colors"
-                    title="Произнести"
-                    aria-label={`Произнести ${word.text}`}
-                  >
-                    🔊
-                  </button>
-                  {word.definitions[0]?.partOfSpeech && (
-                    <span className="badge badge-primary">{word.definitions[0].partOfSpeech}</span>
+        <motion.ul className="stagger space-y-3" initial={false}>
+          <AnimatePresence initial={false}>
+            {words.map((word) => (
+              <motion.li
+                key={word.id}
+                exit={{ opacity: 0, x: -12, transition: transition.fast }}
+                className="card flex items-center justify-between gap-4 p-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => speak(word.text)}
+                      className="text-body-lg font-semibold text-ink transition-colors duration-fast hover:text-primary"
+                    >
+                      {word.text}
+                    </button>
+                    <button
+                      onClick={() => speak(word.text)}
+                      className="icon-chip h-8 min-w-8 px-2"
+                      title="Произнести"
+                      aria-label={`Произнести ${word.text}`}
+                    >
+                      <VolumeIcon size={16} />
+                    </button>
+                    {word.definitions[0]?.partOfSpeech && (
+                      <Badge tone="neutral">{word.definitions[0].partOfSpeech}</Badge>
+                    )}
+                  </div>
+                  <p className="mt-1 text-body-sm text-slate">{word.definitions[0]?.definition}</p>
+                  {word.definitions[0]?.example && (
+                    <p className="mt-1 text-body-sm italic text-slate">«{word.definitions[0].example}»</p>
                   )}
                 </div>
-                <p className="text-[var(--color-slate)] mt-1">{word.definitions[0]?.definition}</p>
-                {word.definitions[0]?.example && (
-                  <p className="text-[var(--color-slate)] text-sm mt-1 italic">«{word.definitions[0].example}»</p>
-                )}
-              </div>
-              <button
-                onClick={() => deleteWord(word.id)}
-                className="ml-4 p-2 text-[var(--color-error)] hover:bg-[rgba(217,45,32,0.10)] rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
+                <button
+                  onClick={() => deleteWord(word.id)}
+                  className="icon-chip h-10 w-10 shrink-0 border-transparent bg-transparent text-semantic-error hover:bg-surface-danger"
+                  title="Удалить слово"
+                  aria-label={`Удалить ${word.text}`}
+                >
+                  <TrashIcon size={20} />
+                </button>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </motion.ul>
       )}
 
       {!appliedQuery && (
@@ -291,9 +340,7 @@ export default function DictionaryPage() {
   return (
     <Suspense fallback={
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <DictionarySkeleton />
       </AppLayout>
     }>
       <DictionaryContent />

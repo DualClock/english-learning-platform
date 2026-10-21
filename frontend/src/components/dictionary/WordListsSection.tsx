@@ -3,6 +3,13 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useApiQuery } from '@/app/lib/use-api';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Button from '@/components/ui/Button';
+import LevelChip from '@/components/ui/LevelChip';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { ArrowRightIcon, FoldersIcon } from '@/components/ui/icons';
 
 interface WordList {
   id: number;
@@ -26,32 +33,28 @@ export default function WordListsSection() {
   } = useApiQuery<WordList[]>('/api/wordlists', { enabled: Boolean(session) });
 
   const lists = listsData === undefined ? undefined : Array.isArray(listsData) ? listsData : [];
-  const error = lists === undefined && listsError && !listsLoading
-    ? 'Не удалось загрузить сборники. Попробуйте обновить страницу.'
-    : '';
-
-  if (error) {
-    return (
-      <div className="card p-12 text-center">
-        <p className="text-[var(--color-slate)] mb-4">{error}</p>
-        <button onClick={refreshLists} className="btn-secondary">
-          Попробовать снова
-        </button>
-      </div>
-    );
-  }
 
   if (lists === undefined) {
+    if (listsError && !listsLoading) {
+      return (
+        <ErrorState
+          title="Сборники не загрузились"
+          description="Список готовых сборников не пришёл с сервера. Попробуйте обновить."
+          onRetry={refreshLists}
+        />
+      );
+    }
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div role="status" aria-busy="true" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <span className="sr-only">Загрузка сборников</span>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="card p-6 animate-pulse">
-            <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-2/3 mb-3"></div>
-            <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-full mb-2"></div>
-            <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-4/5 mb-4"></div>
-            <div className="h-6 bg-[rgba(201,205,212,0.40)] rounded w-1/3 mb-4"></div>
-            <div className="h-2 bg-[rgba(201,205,212,0.40)] rounded w-full mb-2"></div>
-            <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-1/2"></div>
+          <div key={i} className="card flex flex-col p-6">
+            <Skeleton className="mb-3 h-5 w-2/3" />
+            <Skeleton className="mb-2 h-4 w-full" />
+            <Skeleton className="mb-4 h-4 w-4/5" />
+            <Skeleton className="mb-4 h-6 w-20" />
+            <Skeleton className="mb-2 h-2 w-full rounded-full" />
+            <Skeleton className="h-10 w-full" />
           </div>
         ))}
       </div>
@@ -60,38 +63,48 @@ export default function WordListsSection() {
 
   if (lists.length === 0) {
     return (
-      <div className="card p-12 text-center">
-        <p className="text-[var(--color-slate)]">Сборники скоро появятся</p>
-      </div>
+      <EmptyState
+        icon={<FoldersIcon size={24} />}
+        title="Сборников пока нет"
+        description="Готовые списки слов по уровням и темам появятся здесь. А пока можно собирать словарь самому — из читалки или вручную."
+        action={
+          <Button href="/dictionary/add" variant="secondary">
+            Добавить своё слово
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="stagger grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {lists.map((list) => {
         const percent = list.itemCount > 0 ? Math.round((list.learnedCount / list.itemCount) * 100) : 0;
         return (
-          <div key={list.id} className="card p-6 flex flex-col hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-bold text-[var(--color-ink)] mb-2">{list.name}</h3>
+          <Link key={list.id} href={`/dictionary/lists/${list.id}`} className="card-interactive flex flex-col p-6">
+            <h3 className="mb-2 text-h3 text-ink">{list.name}</h3>
             {list.description && (
-              <p className="text-sm text-[var(--color-slate)] mb-3 line-clamp-3">{list.description}</p>
+              <p className="mb-4 line-clamp-3 text-body text-slate">{list.description}</p>
             )}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="badge badge-primary">{list.cefrFrom}–{list.cefrTo}</span>
-            </div>
+            {list.cefrFrom && list.cefrTo && (
+              <div className="mb-4">
+                <LevelChip level={list.cefrFrom}>{list.cefrFrom}–{list.cefrTo}</LevelChip>
+              </div>
+            )}
             <div className="mt-auto">
-              <div className="flex items-center justify-between text-sm text-[var(--color-slate)] mb-1">
-                <span>{list.learnedCount.toLocaleString('ru-RU')} / {list.itemCount.toLocaleString('ru-RU')} изучено</span>
-                <span>{percent}%</span>
+              <div className="mb-1.5 flex items-center justify-between text-caption text-slate">
+                <span className="tabular-nums">
+                  {list.learnedCount.toLocaleString('ru-RU')} / {list.itemCount.toLocaleString('ru-RU')} изучено
+                </span>
+                <span className="font-semibold tabular-nums text-primary">{percent}%</span>
               </div>
-              <div className="h-2 rounded-full bg-[rgba(201,205,212,0.40)] overflow-hidden mb-4">
-                <div className="h-full rounded-full bg-[var(--color-primary)] transition-all" style={{ width: `${percent}%` }}></div>
-              </div>
-              <Link href={`/dictionary/lists/${list.id}`} className="btn-primary w-full text-center">
+              <ProgressBar value={percent} label={`Изучено из сборника «${list.name}»`} className="mb-4" />
+              <span className="inline-flex items-center gap-1.5 text-body-sm font-medium text-primary">
                 Открыть
-              </Link>
+                <ArrowRightIcon size={16} />
+              </span>
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>

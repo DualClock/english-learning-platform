@@ -7,7 +7,7 @@ import { useApiQuery } from '@/app/lib/use-api';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import LevelChip, { normalizeLevel } from '@/components/library/LevelChip';
+import LevelChip, { normalizeLevel } from '@/components/ui/LevelChip';
 import MyBookCard, { type UserBook } from '@/components/library/MyBookCard';
 import StoryCard, { type Story } from '@/components/library/StoryCard';
 import ClassicCard, { type PopularBook } from '@/components/library/ClassicCard';
