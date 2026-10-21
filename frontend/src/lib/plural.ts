@@ -30,3 +30,7 @@ export function pluralUnits(n: number): string {
 export function pluralBooks(n: number): string {
   return plural(n, ['книга', 'книги', 'книг']);
 }
+
+export function pluralDays(n: number): string {
+  return plural(n, ['день', 'дня', 'дней']);
+}

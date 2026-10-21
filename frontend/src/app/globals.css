@@ -234,22 +234,6 @@
     }
   }
 
-  /* Экран «С возвращением!» — поочерёдное появление (stagger через animation-delay) */
-  @keyframes welcome-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  .animate-welcome-in {
-    animation: welcome-in 0.35s ease-out both;
-  }
-
   /* Появление блока снизу вверх — общий вход блоков и карточек */
   @keyframes rise-in {
     from {
@@ -776,8 +760,7 @@
   .hero-word-invite,
   .hero-ripple,
   .hero-dot,
-  .hero-caret,
-  .animate-welcome-in {
+  .hero-caret {
     animation: none !important;
   }
 }
@@ -909,7 +892,6 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-rise-in,
   .animate-pop-in,
-  .animate-welcome-in,
   .animate-page-in,
   .stagger > *,
   .progress-fill {
