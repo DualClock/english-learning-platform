@@ -1,13 +1,29 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { useTts } from '@/hooks/useTts';
 import { accuracyPercent, compareWords } from '@/app/lib/text-compare';
+import { pluralSentences } from '@/lib/plural';
+import { slideVariants, variants } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import ProgressBar from '@/components/ui/ProgressBar';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import { Skeleton } from '@/components/ui/LoadingState';
+import {
+  CheckCircleIcon,
+  InboxIcon,
+  PlayIcon,
+  RepeatIcon,
+  SpinnerIcon,
+  VolumeIcon,
+} from '@/components/ui/icons';
 
 interface DictationItem {
   wordId: number;
@@ -48,7 +64,6 @@ export default function DictationPage() {
   const [finished, setFinished] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Колода фиксируется один раз: фоновое обновление не подменит предложение
   // посреди диктанта
@@ -70,9 +85,14 @@ export default function DictationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.wordId, checked]);
 
-  useEffect(() => {
-    if (current && !checked) inputRef.current?.focus();
-  }, [current, checked]);
+  // Карточка перемонтируется на каждом предложении (AnimatePresence), поэтому
+  // фокус ловим в момент установки ref, а не в эффекте по индексу.
+  const attachInput = useCallback(
+    (node: HTMLInputElement | null) => {
+      if (node && !checked) node.focus();
+    },
+    [checked]
+  );
 
   const preview = useMemo(
     () => (checked && current ? compareWords(current.sentence, answer) : []),
@@ -138,9 +158,7 @@ export default function DictationPage() {
   if (status === 'loading' || (loadingDeck && data === undefined)) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin" />
-        </div>
+        <DictationSkeleton />
       </AppLayout>
     );
   }
@@ -148,10 +166,13 @@ export default function DictationPage() {
   if (error && data === undefined) {
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto card p-8 text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Диктант не загрузился</h1>
-          <p className="text-[var(--color-slate)] mb-6">{error}</p>
-          <button onClick={refresh} className="btn-primary">Попробовать снова</button>
+        <div className="mx-auto max-w-md">
+          <ErrorState
+            title="Диктант не загрузился"
+            description={error}
+            onRetry={refresh}
+            action={<Button variant="ghost" href="/dashboard">На главную</Button>}
+          />
         </div>
       </AppLayout>
     );
@@ -160,15 +181,18 @@ export default function DictationPage() {
   if (items.length === 0) {
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto card p-8 text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Пока нечего диктовать</h1>
-          <p className="text-[var(--color-slate)] mb-6">
-            Диктант собирается из ваших слов. Добавьте хотя бы одно слово в словарь — и возвращайтесь.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/dictionary" className="btn-primary">В словарь</Link>
-            <Link href="/books" className="btn-secondary">К книгам</Link>
-          </div>
+        <div className="mx-auto max-w-md">
+          <EmptyState
+            icon={<InboxIcon size={24} />}
+            title="Пока нечего диктовать"
+            description="Диктант собирается из ваших слов. Добавьте хотя бы одно слово в словарь — и возвращайтесь."
+            action={
+              <>
+                <Button href="/dictionary">В словарь</Button>
+                <Button variant="secondary" href="/books">К книгам</Button>
+              </>
+            }
+          />
         </div>
       </AppLayout>
     );
@@ -177,137 +201,180 @@ export default function DictationPage() {
   if (finished) {
     const correct = results.filter((r) => r.correct).length;
     const percent = results.length ? Math.round((correct / results.length) * 100) : 0;
+    const tone =
+      percent >= 80
+        ? 'bg-surface-accent text-on-accent'
+        : percent >= 50
+          ? 'bg-surface-warning text-on-warning'
+          : 'bg-surface-danger text-on-danger';
+    const numberTone =
+      percent >= 80 ? 'text-primary' : percent >= 50 ? 'text-semantic-warning' : 'text-semantic-error';
 
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className="text-5xl mb-4">{percent >= 80 ? '🎧' : percent >= 50 ? '👍' : '💪'}</div>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Диктант завершён</h1>
-          <p className="text-4xl font-bold text-[var(--color-primary)] my-4">{percent}%</p>
-          <p className="text-[var(--color-slate)] mb-2">
-            Точно на слух: {correct} из {results.length}
+        <motion.div
+          variants={variants.enter}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto max-w-md py-12 text-center"
+        >
+          <div className={`mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg ${tone}`}>
+            {percent >= 80 ? <CheckCircleIcon size={24} /> : <RepeatIcon size={24} />}
+          </div>
+          <h1 className="mb-2 text-h1 text-ink">Диктант завершён</h1>
+          <p className={`my-4 text-h1 tabular-nums ${numberTone}`}>
+            <AnimatedNumber value={percent} />%
           </p>
-          <p className="text-sm text-[var(--color-slate)] mb-8">
+          <p className="mb-2 text-body-lg text-slate">
+            Точно на слух: {correct} из {results.length} {pluralSentences(results.length)}
+          </p>
+          <p className="mb-8 text-body-sm text-slate">
             {submitting ? 'Сохраняем результат…' : submitError || 'Результат сохранён'}
           </p>
-          <div className="flex gap-4 justify-center">
-            <button onClick={restart} className="btn-primary">Ещё диктант</button>
-            <Link href="/dashboard" className="btn-secondary">На главную</Link>
+          <div className="flex justify-center gap-3">
+            <Button onClick={restart}>Ещё диктант</Button>
+            <Button variant="secondary" href="/dashboard">
+              На главную
+            </Button>
           </div>
-        </div>
+        </motion.div>
       </AppLayout>
     );
   }
 
+  const progress = ((index + (checked ? 1 : 0)) / items.length) * 100;
+  const matchPercent = accuracyPercent(current.sentence, answer);
+  const scored = results[index]?.correct ?? false;
+
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
-            <span>Предложение {index + 1} из {items.length}</span>
-            <span>Верно: {results.filter((r) => r.correct).length}</span>
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-6">
+          <div className="mb-2 flex justify-between text-body-sm text-slate">
+            <span>
+              Предложение {index + 1} из {items.length}
+            </span>
+            <span className="tabular-nums">Верно: {results.filter((r) => r.correct).length}</span>
           </div>
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${((index + (checked ? 1 : 0)) / items.length) * 100}%` }}
-            />
-          </div>
+          <ProgressBar value={progress} label={`Пройдено ${index + 1} из ${items.length}`} />
         </div>
 
-        <div className="card p-8">
-          <p className="text-center text-[var(--color-slate)] mb-6">
-            Прослушайте и запишите предложение
-          </p>
+        <AnimatePresence mode="wait" custom={1}>
+          <motion.div
+            key={`${current.wordId}-${index}`}
+            variants={slideVariants(1)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="card p-8"
+          >
+            <h1 className="mb-6 text-center text-body text-slate">Прослушайте и запишите предложение</h1>
 
-          <div className="flex flex-col items-center gap-3 mb-8">
-            <button
-              onClick={() => play(current.sentence)}
-              className="w-20 h-20 rounded-full bg-[var(--color-primary)] text-white text-3xl flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-60"
-              disabled={isLoading}
-              aria-label="Прослушать предложение"
-            >
-              {isLoading ? (
-                <span className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              ) : isPlaying ? '🔊' : '▶'}
-            </button>
-            <button
-              onClick={() => play(current.sentence)}
-              className="text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
-            >
-              Прослушать ещё раз
-            </button>
-            {current.translation && (
-              <p className="text-xs text-[var(--color-slate)] text-center max-w-sm">
-                Подсказка: {current.translation}
-              </p>
-            )}
-          </div>
-
-          <input
-            ref={inputRef}
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (checked) handleNext();
-                else handleCheck();
-              }
-            }}
-            disabled={checked}
-            placeholder="Напишите то, что услышали…"
-            className="input w-full mb-4"
-            autoComplete="off"
-            spellCheck={false}
-          />
-
-          {!checked ? (
-            <button
-              onClick={handleCheck}
-              disabled={!answer.trim()}
-              className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Проверить
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-[var(--color-tint-mint)] border border-[var(--color-hairline-strong)]">
-                <p className="text-xs uppercase tracking-wide text-[var(--color-slate)] mb-2">
-                  Правильный вариант
-                </p>
-                <p className="text-lg text-[var(--color-ink)] leading-relaxed">
-                  {preview.map((match, i) => (
-                    <span
-                      key={i}
-                      className={
-                        match.ok
-                          ? 'text-[var(--color-success)]'
-                          : 'text-[var(--color-error)] underline decoration-wavy decoration-[var(--color-error)]'
-                      }
-                    >
-                      {match.word}{' '}
-                    </span>
-                  ))}
-                </p>
-              </div>
-
-              <p className="text-sm text-[var(--color-slate)]">
-                Совпадение: {accuracyPercent(current.sentence, answer)}%
-                {results[index] && results[index].correct ? ' · засчитано' : ' · пока неточно'}
-              </p>
-
-              <button onClick={handleNext} className="btn-primary w-full">
-                {index < items.length - 1 ? 'Следующее предложение' : 'Завершить диктант'}
+            <div className="mb-8 flex flex-col items-center gap-3">
+              <button
+                onClick={() => play(current.sentence)}
+                disabled={isLoading}
+                aria-label="Прослушать предложение"
+                className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-on-primary transition-transform duration-fast ease-soft hover:bg-primary-pressed active:scale-97 disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <SpinnerIcon size={24} className="animate-spin" label="Загрузка озвучки" />
+                ) : isPlaying ? (
+                  <VolumeIcon size={24} />
+                ) : (
+                  <PlayIcon size={24} />
+                )}
               </button>
+              <button
+                onClick={() => play(current.sentence)}
+                className="text-body-sm text-slate transition-colors duration-fast hover:text-primary"
+              >
+                Прослушать ещё раз
+              </button>
+              {current.translation && (
+                <p className="max-w-sm text-center text-caption text-slate">
+                  Подсказка: {current.translation}
+                </p>
+              )}
             </div>
-          )}
-        </div>
 
-        <p className="text-center text-xs text-[var(--color-slate)] mt-6">
+            <input
+              ref={attachInput}
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (checked) handleNext();
+                  else handleCheck();
+                }
+              }}
+              disabled={checked}
+              placeholder="Напишите то, что услышали…"
+              className="input mb-4 w-full"
+              autoComplete="off"
+              spellCheck={false}
+            />
+
+            {!checked ? (
+              <Button onClick={handleCheck} disabled={!answer.trim()} className="w-full">
+                Проверить
+              </Button>
+            ) : (
+              <motion.div variants={variants.enter} initial="hidden" animate="visible" className="space-y-4">
+                <div className="rounded-lg border border-hairline bg-surface-accent p-4">
+                  <p className="mb-2 text-caption uppercase tracking-wide text-on-accent">Правильный вариант</p>
+                  <p className="text-body-lg leading-relaxed text-ink">
+                    {preview.map((match, i) => (
+                      <span
+                        key={i}
+                        className={
+                          match.ok
+                            ? 'text-semantic-success'
+                            : 'text-semantic-error underline decoration-wavy decoration-semantic-error'
+                        }
+                      >
+                        {match.word}{' '}
+                      </span>
+                    ))}
+                  </p>
+                </div>
+
+                <p className="text-body-sm text-slate">
+                  Совпадение: <strong className="font-semibold tabular-nums text-ink">{matchPercent}%</strong>
+                  {scored ? ' · засчитано' : ' · пока неточно'}
+                </p>
+
+                <Button onClick={handleNext} className="w-full">
+                  {index < items.length - 1 ? 'Следующее предложение' : 'Завершить диктант'}
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        <p className="mx-auto mt-6 max-w-measure-sm text-center text-caption text-slate">
           Слова берутся из вашего словаря. За каждое предложение — опыт.
         </p>
       </div>
     </AppLayout>
+  );
+}
+
+/** Скелет повторяет карточку диктанта: круг озвучки, поле ответа и кнопка. */
+function DictationSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mx-auto max-w-2xl animate-page-in">
+      <span className="sr-only">Загрузка предложений для диктанта</span>
+      <Skeleton className="mb-2 h-4 w-40" />
+      <Skeleton className="mb-8 h-2 w-full rounded-full" />
+      <div className="card p-8">
+        <Skeleton className="mx-auto mb-6 h-4 w-64" />
+        <Skeleton className="mx-auto mb-3 h-20 w-20 rounded-full" />
+        <Skeleton className="mx-auto mb-8 h-4 w-36" />
+        <Skeleton className="mb-4 h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+      </div>
+    </div>
   );
 }
