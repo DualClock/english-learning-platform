@@ -13,6 +13,7 @@ import {
   type IconProps,
   type IconSize,
 } from '@/components/ui/icons';
+import { plural } from '@/lib/plural';
 
 interface LeagueEntry {
   rank: number;
@@ -69,14 +70,6 @@ function formatRange(start: string, end: string): string {
   const to = new Date(`${end}T00:00:00`);
   if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return '';
   return `${from.toLocaleDateString('ru-RU', options)} — ${to.toLocaleDateString('ru-RU', options)}`;
-}
-
-function plural(n: number, forms: [string, string, string]): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return forms[0];
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
-  return forms[2];
 }
 
 /**
