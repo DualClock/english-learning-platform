@@ -1,205 +1,144 @@
 import Link from 'next/link';
+import HeroStatement from '@/components/HeroStatement';
 import HeroTranslationDemo from '@/components/HeroTranslationDemo';
+import { ArrowRightIcon } from '@/components/ui/icons';
+
+const STEPS = [
+  {
+    title: 'Выбери книгу',
+    desc: 'Классика в public domain или загрузи свою EPUB. От Алисы в Стране чудес до Моби Дика.',
+    start: 'md:col-start-1',
+  },
+  {
+    title: 'Читай и нажимай',
+    desc: 'Не знаешь слово — просто нажми на него. AI переведёт с учётом контекста и добавит примеры.',
+    start: 'md:col-start-4',
+  },
+  {
+    title: 'Повторяй умно',
+    desc: 'Алгоритм SM-2 подстроит интервалы повторений под твою память. Забыл — вернёт. Помнишь — отложит.',
+    start: 'md:col-start-7',
+  },
+];
+
+const BOOKS = [
+  { title: 'Pride and Prejudice', author: 'Jane Austen', level: 'B2' },
+  { title: 'Alice in Wonderland', author: 'Lewis Carroll', level: 'A2' },
+  { title: 'Sherlock Holmes', author: 'Conan Doyle', level: 'B1' },
+  { title: 'Frankenstein', author: 'Mary Shelley', level: 'B2' },
+];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Навигация */}
-      <nav className="sticky top-0 z-40 bg-canvas border-b border-hairline">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-xl font-semibold text-ink font-heading">
-            Lexicon
+    <div className="min-h-screen bg-canvas text-ink">
+      {/* Верхняя строка: слово и два перехода. Отдельной панели с линией нет. */}
+      <header className="mx-auto flex max-w-6xl items-baseline justify-between px-4 py-6 sm:px-6">
+        <Link href="/" className="text-body-sm font-semibold text-ink font-heading">
+          Lexicon
+        </Link>
+        <div className="flex items-baseline gap-6">
+          <Link
+            href="/login"
+            className="text-body-sm text-slate hover:text-ink transition-colors duration-fast ease-soft"
+          >
+            Войти
           </Link>
-          <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/login" className="text-sm text-slate hover:text-ink transition-colors">
-              Войти
-            </Link>
-            <Link href="/onboarding" className="btn-primary">
-              Начать бесплатно
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero — тёмный бэнд с живым демо */}
-      <section className="bg-navy text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 mb-6">
-                <span className="w-2 h-2 rounded-full bg-primary"></span>
-                <span className="text-sm font-medium text-on-dark-muted">
-                  Для взрослых, которые читают
-                </span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white leading-tight mb-6">
-                Учи английский<br />
-                через <span className="text-[#5EEAD4]">книги</span>,<br />
-                а не учебники
-              </h1>
-
-              <p className="text-lg text-on-dark-muted mb-8 max-w-md">
-                Читай настоящую литературу, нажимай на незнакомые слова —
-                ИИ переведёт их с учётом контекста, а система сама подстроит
-                повторения под твою память.
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                <Link href="/onboarding" className="btn-primary">
-                  Начать читать
-                </Link>
-                <Link href="/login" className="btn-secondary-on-dark">
-                  У меня есть аккаунт
-                </Link>
-              </div>
-
-              {/* Социальное доказательство — не числа, а атмосфера */}
-              <div className="mt-12 flex items-center gap-4 text-sm text-on-dark-muted">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-navy-deep border-2 border-navy flex items-center justify-center text-xs font-medium text-on-dark-muted">
-                      {['А', 'М', 'К'][i-1]}
-                    </div>
-                  ))}
-                </div>
-                <span>Читают вместе с нами</span>
-              </div>
-            </div>
-
-            {/* Визуал — живое демо ИИ-перевода */}
-            <div className="relative">
-              <div className="bg-canvas rounded-lg shadow-modal overflow-hidden">
-                <HeroTranslationDemo />
-              </div>
-
-              {/* Декоративный элемент — закладка */}
-              <div className="absolute -right-4 top-8 w-8 h-24 bg-primary rounded-r-lg hidden md:block" aria-hidden="true"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Как это работает — не 3 карточки, а процесс */}
-      <section className="py-16 md:py-24 bg-canvas">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h2 className="section-title text-center">Как это работает</h2>
-          <p className="section-subtitle text-center">Три шага к свободному чтению</p>
-
-          <div className="grid md:grid-cols-3 gap-8 mt-12">
-            {[
-              {
-                step: '01',
-                title: 'Выбери книгу',
-                desc: 'Классика в public domain или загрузи свою EPUB. От Алисы в Стране чудес до Моби Дика.'
-              },
-              {
-                step: '02',
-                title: 'Читай и нажимай',
-                desc: 'Не знаешь слово — просто нажми на него. AI переведёт с учётом контекста и добавит примеры.'
-              },
-              {
-                step: '03',
-                title: 'Повторяй умно',
-                desc: 'Алгоритм SM-2 подстроит интервалы повторений под твою память. Забыл — вернёт. Помнишь — отложит.'
-              }
-            ].map((item) => (
-              <div key={item.step} className="relative">
-                <span className="text-6xl font-semibold text-hairline-soft absolute -top-4 -left-2" aria-hidden="true">
-                  {item.step}
-                </span>
-                <div className="relative pt-8">
-                  <h3 className="text-xl font-semibold text-ink mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Библиотека — показываем реальные книги */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <h2 className="section-title">Начни с классики</h2>
-              <p className="text-slate">Бесплатно, легально, без рекламы</p>
-            </div>
-            <Link href="/books" className="btn-ghost hidden md:inline-flex">
-              Вся библиотека →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { title: 'Pride and Prejudice', author: 'Jane Austen', level: 'B2' },
-              { title: 'Alice in Wonderland', author: 'Lewis Carroll', level: 'A2' },
-              { title: 'Sherlock Holmes', author: 'Conan Doyle', level: 'B1' },
-              { title: 'Frankenstein', author: 'Mary Shelley', level: 'B2' },
-            ].map((book) => (
-              <div key={book.title} className="card-interactive p-4">
-                {/* Обложка-заглушка */}
-                <div className="aspect-[3/4] rounded-md mb-3 flex items-center justify-center text-4xl font-semibold text-primary bg-gradient-to-br from-tint-sky to-tint-lavender">
-                  {book.title.charAt(0)}
-                </div>
-                <h3 className="font-semibold text-ink text-sm mb-1 truncate">
-                  {book.title}
-                </h3>
-                <p className="text-xs text-steel mb-2">{book.author}</p>
-                <span className="badge-tag-green">{book.level}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center md:hidden">
-            <Link href="/books" className="btn-secondary">
-              Вся библиотека
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA — спокойный, но ясный */}
-      <section className="py-16 md:py-24 bg-primary-deep text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
-            Первая книга — бесплатно
-          </h2>
-          <p className="text-on-dark-muted text-lg mb-8 max-w-xl mx-auto">
-            Не нужна карта. Не нужен опыт. Просто открой первую главу
-            и начни читать как на русском.
-          </p>
           <Link
             href="/onboarding"
-            className="btn-on-dark px-8 py-3.5 text-base font-semibold"
+            className="text-body-sm text-ink underline decoration-hairline-strong underline-offset-4 hover:decoration-primary transition-colors duration-fast ease-soft"
           >
-            Создать аккаунт
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
+            Начать бесплатно
+          </Link>
+        </div>
+      </header>
+
+      {/* Заявление и живое демо читалки — единственная «фотография» страницы */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-6 md:pt-16">
+        <HeroStatement />
+        <div data-ui className="animate-rise-in mt-20 rounded-lg bg-surface p-6 sm:p-10">
+          <HeroTranslationDemo />
+        </div>
+      </section>
+
+      {/* Порядок шагов: лесенка строк, каждая начинается правее предыдущей */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-28">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <h2 className="text-h1 text-ink">Как это работает</h2>
+          <p className="text-body-sm text-slate">Три шага к свободному чтению</p>
+        </div>
+
+        <div className="stagger mt-14 grid grid-cols-1 gap-14 md:grid-cols-12">
+          {STEPS.map((step) => (
+            <div key={step.title} className={`md:col-span-5 ${step.start}`}>
+              <h3 className="text-h1 text-ink">{step.title}</h3>
+              <p className="mt-3 max-w-measure text-body text-charcoal">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Библиотека: список названий крупным кеглем, без рисованных обложек */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-28">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <h2 className="text-h1 text-ink">Начни с классики</h2>
+          <p className="text-body-sm text-slate">Бесплатно, легально, без рекламы</p>
+        </div>
+
+        <div className="stagger mt-12">
+          {BOOKS.map((book) => (
+            <Link
+              key={book.title}
+              href="/books"
+              className="group grid grid-cols-1 items-baseline gap-x-8 gap-y-1 py-3 md:grid-cols-12"
+            >
+              <span className="text-h2 text-ink transition-colors duration-fast ease-soft group-hover:text-primary md:col-span-7">
+                {book.title}
+              </span>
+              <span className="text-body-sm text-slate md:col-span-3">{book.author}</span>
+              <span className="text-body-sm text-slate md:col-span-2 md:text-right">
+                {book.level}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-10">
+          <Link href="/books" className="btn-secondary">
+            Вся библиотека
+            <ArrowRightIcon size={16} />
           </Link>
         </div>
       </section>
 
-      {/* Футер — минималистичный */}
-      <footer className="py-12 bg-canvas border-t border-hairline">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <span className="text-steel text-sm">
-              © 2026 Lexicon. Читай. Учи. Помни.
-            </span>
+      {/* Закрытие: тот же переворот цвета, что открывает страницу */}
+      <section className="mt-20 bg-navy text-on-dark">
+        <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 md:py-32">
+          <h2 className="max-w-measure text-display">Первая книга — бесплатно</h2>
+          <div className="mt-16 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+            <p className="max-w-measure text-body-lg text-on-dark-muted">
+              Не нужна карта. Не нужен опыт. Просто открой первую главу
+              и начни читать как на русском.
+            </p>
+            <Link href="/onboarding" className="btn-primary shrink-0 self-start md:self-auto">
+              Создать аккаунт
+              <ArrowRightIcon size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <footer className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-8">
+          <div>
+            <p className="text-h1 font-heading text-ink">Lexicon</p>
             <a
               href="mailto:hello@lexicon.app"
-              className="text-sm text-steel hover:text-ink transition-colors"
+              className="mt-4 inline-block text-body-sm text-slate underline decoration-hairline-strong underline-offset-4 hover:text-ink hover:decoration-primary transition-colors duration-fast ease-soft"
             >
               hello@lexicon.app
             </a>
           </div>
+          <p className="text-caption text-slate">© 2026 Lexicon. Читай. Учи. Помни.</p>
         </div>
       </footer>
     </div>

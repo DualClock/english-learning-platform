@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { CheckIcon, PlusIcon } from './ui/icons';
 
 type Phase =
   | 'idle'
@@ -143,6 +144,7 @@ export default function HeroTranslationDemo() {
     phase === 'hold';
 
   const cursorVisible = phase === 'approach' || phase === 'click';
+  const showRest = phase === 'idle' || phase === 'approach' || phase === 'click';
   const showThinking = phase === 'thinking';
   const showCard =
     phase === 'typing' || phase === 'save' || phase === 'saved' || phase === 'hold';
@@ -161,102 +163,107 @@ export default function HeroTranslationDemo() {
 
   const caret = (index: number) =>
     phase === 'typing' && activeSegment === index && typed > STARTS[index] ? (
-      <span className="hero-caret text-[var(--color-primary)]">▎</span>
+      <span className="hero-caret text-primary">▎</span>
     ) : null;
 
   return (
     <div>
       <div
         ref={cardRef}
-        className={`relative bg-white rounded-xl border border-[var(--color-hairline)] p-8 shadow-sm transition-opacity duration-700 ${
+        className={`relative bg-canvas rounded-lg p-6 transition-opacity duration-slow ease-soft sm:p-10 ${
           phase === 'fade' ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        {/* Бар мини-окна читалки */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[var(--color-error)]"></div>
-            <div className="w-3 h-3 rounded-full bg-[var(--color-tint-yellow-bold)]"></div>
-            <div className="w-3 h-3 rounded-full bg-[var(--color-success)]"></div>
-          </div>
-          <span className="text-xs text-[var(--color-slate)] bg-[var(--color-surface)] border border-[var(--color-hairline)] rounded-full px-3 py-1">
-            «1984» · Глава 1
-          </span>
+        {/* Шапка фрагмента читалки: книга и глава */}
+        <div className="mb-5">
+          <span className="text-caption text-slate">«1984» · Глава 1</span>
         </div>
 
         {/* Текст цитаты */}
-        <div className="space-y-3 font-serif text-[var(--color-ink)]">
-          <p className="text-lg leading-relaxed">
+        <div className="space-y-3">
+          <p className="font-reading text-body-lg text-ink">
             It was a bright cold day in April, and the clocks were striking{' '}
             <span
               ref={wordRef}
-              className={`px-1 rounded cursor-pointer transition-colors duration-300 ${
+              className={`rounded px-1 transition-colors duration-base ease-soft ${
                 wordActive
-                  ? 'bg-[var(--color-tint-yellow-bold)] shadow-[0_0_0_3px_rgba(14,124,123,0.25)]'
-                  : 'hero-word-invite'
+                  ? 'bg-tint-yellow-bold text-ink'
+                  : 'hero-word-invite text-ink'
               }`}
             >
               thirteen
             </span>
             .
           </p>
-          <p className="text-sm text-[var(--color-slate)] italic">— George Orwell, «1984»</p>
+          <p className="text-body-sm text-slate italic">— George Orwell, «1984»</p>
         </div>
 
         {/* Зона перевода: фиксированная высота, чтобы карточка не прыгала */}
-        <div className="relative h-[172px] mt-5">
+        <div className="relative mt-5 h-44">
+          {/* Покой до клика: зона не должна выглядеть пустой дырой */}
+          <div
+            className={`absolute inset-0 flex items-center rounded-lg border border-dashed border-hairline-strong p-4 transition-opacity duration-slow ease-soft ${
+              showRest ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <span className="text-body-sm text-slate">
+              Здесь появится перевод слова с учётом контекста
+            </span>
+          </div>
+
           {/* ИИ думает */}
           <div
-            className={`absolute inset-0 transition-opacity duration-500 ${
+            className={`absolute inset-0 transition-opacity duration-slow ease-soft ${
               showThinking ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
-            <div className="h-full p-4 bg-[var(--color-tint-mint)] rounded-lg flex items-center gap-3">
+            <div className="h-full rounded-lg bg-surface-success p-4 flex items-center gap-3">
               <span className="flex items-center gap-1.5">
-                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
-                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
-                <span className="hero-dot w-2 h-2 rounded-full bg-[var(--color-primary)]"></span>
+                <span className="hero-dot h-2 w-2 rounded-full bg-primary"></span>
+                <span className="hero-dot h-2 w-2 rounded-full bg-primary"></span>
+                <span className="hero-dot h-2 w-2 rounded-full bg-primary"></span>
               </span>
-              <span className="text-sm text-[var(--color-slate)]">ИИ анализирует контекст…</span>
+              <span className="text-body-sm text-on-success">ИИ анализирует контекст…</span>
             </div>
           </div>
 
           {/* Карточка перевода */}
           <div
-            className={`absolute inset-0 p-4 bg-[var(--color-tint-mint)] rounded-lg transition-opacity duration-500 ${
+            className={`absolute inset-0 rounded-lg bg-surface-success p-4 transition-opacity duration-slow ease-soft ${
               showCard ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="font-semibold text-[var(--color-ink)]">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-h3 text-ink">
                 {typedSlice(0, typed)}
                 {caret(0)}
               </span>
-              <span className="text-xs text-[var(--color-slate)]">
+              <span className="text-caption text-on-success">
                 {typedSlice(1, typed)}
                 {caret(1)}
               </span>
             </div>
-            <p className="text-[var(--color-primary)] font-medium">
+            <p className="text-body text-primary font-medium">
               {typedSlice(2, typed)}
               {caret(2)}
             </p>
-            <p className="mt-1.5 text-xs text-[var(--color-slate)] leading-snug">
+            <p className="mt-1.5 text-caption text-on-success leading-snug">
               {typedSlice(3, typed)}
               {caret(3)}
             </p>
             <button
               type="button"
               tabIndex={-1}
-              className={`mt-2.5 inline-flex items-center gap-1.5 text-sm font-medium rounded-md px-3 py-1.5 transition-all duration-300 ${
-                pressed ? 'scale-95' : 'scale-100'
+              className={`mt-2.5 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-body-sm font-medium transition-[background-color,color,transform] duration-base ease-soft ${
+                pressed ? 'scale-97' : 'scale-100'
               } ${
                 saved
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-white/70 text-[var(--color-primary)] border border-[rgba(14,124,123,0.3)]'
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-canvas text-primary'
               }`}
             >
-              {saved ? '✓ В словаре' : '+ В словарь'}
+              {saved ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
+              {saved ? 'В словаре' : 'В словарь'}
             </button>
           </div>
         </div>
@@ -264,7 +271,7 @@ export default function HeroTranslationDemo() {
         {/* Ripple по клику */}
         {phase === 'click' && target && (
           <span
-            className="hero-ripple absolute z-10 rounded-full border-2 border-[var(--color-primary)] pointer-events-none"
+            className="hero-ripple absolute z-10 rounded-full border-2 border-primary pointer-events-none"
             style={{
               left: target.x,
               top: target.y,
@@ -287,7 +294,7 @@ export default function HeroTranslationDemo() {
             }}
           >
             <div
-              className={`-translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[rgba(14,124,123,0.25)] border-2 border-[var(--color-primary)] transition-transform duration-150 ${
+              className={`-translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-surface-accent border-2 border-primary transition-transform duration-fast ease-soft ${
                 phase === 'click' ? 'scale-75' : 'scale-100'
               }`}
             />
@@ -296,7 +303,7 @@ export default function HeroTranslationDemo() {
       </div>
 
       {/* Продающая подпись под карточкой */}
-      <p className="mt-5 text-sm text-[var(--color-slate)] leading-relaxed">
+      <p className="mt-5 max-w-measure text-body-sm text-slate">
         Нажмите на любое слово в книге — ИИ переведёт его с учётом контекста
         и бережно сохранит в ваш личный словарь.
       </p>
