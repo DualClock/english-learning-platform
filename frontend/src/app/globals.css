@@ -93,7 +93,7 @@
  * собранный на классах primary, navy, canvas, surface, ink, tint и
  * surface-подповерхностей, переключается без правок в компонентах.
  */
-:root.dark {
+:root[data-theme='dark'] {
   /* Brand */
   --color-primary: #2FB0A8;
   --color-primary-pressed: #46C2BB;

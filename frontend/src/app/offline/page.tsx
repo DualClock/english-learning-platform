@@ -9,7 +9,7 @@ export const metadata: Metadata = {
  * Страницу отдаёт service worker прямо из кэша, поэтому она не зависит ни от
  * чанков, ни от JS: стили лежат инлайном, цвета берутся из токенов с фолбэком
  * на то же значение, что в globals.css. Тёмная тема — через prefers-color-scheme:
- * класс .dark навешивает скрипт в root layout, а сюда он может не дойти.
+ * признак темы навешивает скрипт в root layout, а сюда он может не дойти.
  */
 const shellCss = `
 .offline-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--color-surface,#F6F7F9);color:var(--color-ink,#1A1D23);font-family:var(--font-inter),Inter,system-ui,-apple-system,sans-serif}

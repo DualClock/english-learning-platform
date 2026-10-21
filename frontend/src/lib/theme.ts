@@ -33,11 +33,15 @@ export function writeTheme(mode: ThemeMode) {
 }
 
 /**
- * Тема — один класс на <html>: все поверхности в globals.css описаны токенами,
- * поэтому компонентам не нужны dark:-варианты.
+ * Тема — один признак на <html>: все поверхности в globals.css описаны
+ * токенами, поэтому компонентам не нужны dark:-варианты.
+ *
+ * data-theme, а не класс: React при гидрации сверяет className, а скрипт
+ * до первой отрисовки всегда успевает поменять <html> — на классе каждый
+ * экран давал «Prop className did not match».
  */
 export function applyTheme(mode: ThemeMode) {
-  document.documentElement.classList.toggle('dark', isDark(mode));
+  document.documentElement.dataset.theme = isDark(mode) ? 'dark' : 'light';
 }
 
 /**
@@ -47,4 +51,4 @@ export function applyTheme(mode: ThemeMode) {
 export const THEME_PREPAINT_SCRIPT =
   `try{var m=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})||'system';` +
   `var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);` +
-  `document.documentElement.classList.toggle('dark',d);}catch(e){}`;
+  `document.documentElement.dataset.theme=d?'dark':'light';}catch(e){}`;

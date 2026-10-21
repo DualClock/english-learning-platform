@@ -43,7 +43,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru" className={`${manrope.variable} ${inter.variable}`}>
+    <html
+      lang="ru"
+      className={`${manrope.variable} ${inter.variable}`}
+      // Скрипт до первой отрисовки ставит на <html> data-theme, которого React
+      // на сервере не знает. Это единственный узел, где такое расхождение
+      // намеренное, поэтому предупреждение гидрации глушим здесь, а не в токенах.
+      suppressHydrationWarning
+    >
       <head>
         {/*
           Тема применяется до первой отрисовки: без этого шага тёмный режим
