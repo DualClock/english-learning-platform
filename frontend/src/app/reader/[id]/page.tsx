@@ -1,7 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, useCallback, useMemo, useRef, Fragment } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type {
   KeyboardEvent as ReactKeyboardEvent,
   TouchEvent as ReactTouchEvent,
@@ -10,161 +10,45 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
-
-interface Book {
-  id: number;
-  title: string;
-  author?: string;
-  language?: string;
-}
-
-interface KeyWord {
-  wordText: string;
-  cefrLevel?: string;
-}
-
-interface BookContent {
-  text: string;
-  currentPage: number;
-  totalPages: number;
-  totalWords: number;
-  wordsRead: number;
-  progress: number;
-  keyWords?: KeyWord[];
-}
-
-interface TranslationResult {
-  translation: string;
-  alternatives?: string[];
-  partOfSpeech?: string;
-  source?: string;
-  examples?: { english: string; translation: string }[];
-}
-
-interface WordToken {
-  word: string;
-  start: number;
-  end: number;
-}
-
-interface TooltipData {
-  word: string;
-  cefrLevel?: string;
-  translationRu?: string;
-  freqRank?: number;
-  translation?: string;
-}
-
-interface CollectedWord {
-  text: string;
-  page: number;
-  sentence: string;
-}
-
-interface QuizQuestion {
-  wordText: string;
-  options: string[];
-  correctIndex: number;
-}
-
-interface FinishResult {
-  added: number;
-  minutes: number;
-  quiz?: { questions: QuizQuestion[] };
-}
-
-interface ParallelChunk {
-  en: string;
-  ru: string | null;
-}
-
-interface TocItem {
-  title: string;
-  page: number;
-  level: number;
-}
-
-interface PageDifficulty {
-  page: number;
-  totalWords: number;
-  known: number;
-  learning: number;
-  newWords: number;
-  knownPercent: number;
-  learningPercent: number;
-  newPercent: number;
-}
-
-interface BookDifficulty {
-  pages: PageDifficulty[];
-  average: PageDifficulty;
-  totalWords: number;
-  knownWordCount: number;
-  learningWordCount: number;
-}
-
-interface Bookmark {
-  id: number;
-  page: number;
-  note?: string | null;
-  createdAt: string;
-}
-
-const SENTENCE_ENDINGS = '.!?…';
-
-function getSentenceContext(text: string, start: number, end: number): string {
-  let s = start - 1;
-  while (s >= 0 && !SENTENCE_ENDINGS.includes(text[s])) s--;
-  let e = end;
-  while (e < text.length && !SENTENCE_ENDINGS.includes(text[e])) e++;
-  if (e < text.length) e++;
-  return text.slice(s + 1, e).trim();
-}
-
-const TOOLTIP_DELAY = 250;
-
-const TUTORIAL_STORAGE_KEY = 'reader_tutorial_seen';
-const AI_MODE_STORAGE_KEY = 'reader_ai_mode';
-const FONT_SIZE_STORAGE_KEY = 'reader_font_size';
-const LINE_WIDTH_STORAGE_KEY = 'reader_line_width';
-
-const MIN_FONT_SIZE = 16;
-const MAX_FONT_SIZE = 28;
-const DEFAULT_FONT_SIZE = 20;
-const MIN_LINE_WIDTH = 45;
-const MAX_LINE_WIDTH = 90;
-const DEFAULT_LINE_WIDTH = 65;
-
-// Свайп должен быть заметно горизонтальным, иначе это скролл или тап по слову
-const SWIPE_MIN_DISTANCE = 60;
-const SWIPE_DIRECTION_RATIO = 1.5;
-
-const TUTORIAL_STEPS: {
-  text: string;
-  circle: { top: string; left: string; size: number };
-  card: { top: string; left: string };
-}[] = [
-  {
-    text: 'Кликните на любое слово — получите мгновенный перевод',
-    circle: { top: '48%', left: '40%', size: 110 },
-    card: { top: '62%', left: '40%' },
-  },
-  {
-    text: 'Слова с ✦ — маркеры: кликните, чтобы собрать в конспект. В конце чтения — мини-тест',
-    circle: { top: '56%', left: '44%', size: 110 },
-    card: { top: '70%', left: '44%' },
-  },
-  {
-    text: 'Включите RU — увидите параллельный перевод страницы',
-    circle: { top: '13%', left: '76%', size: 90 },
-    card: { top: '22%', left: '70%' },
-  },
-  {
-    text: 'Здесь ваш конспект. Завершите чтение — и получите тест + новые слова в словарь',
-    circle: { top: '13%', left: '86%', size: 90 },
-    card: { top: '22%', left: '80%' },
-  },
-];
+import ReaderDrawer from '@/components/reader/ReaderDrawer';
+import ReaderText from '@/components/reader/ReaderText';
+import ReaderTutorial from '@/components/reader/ReaderTutorial';
+import ReaderToolbar from '@/components/reader/ReaderToolbar';
+import FinishReadingDialog from '@/components/reader/FinishReadingDialog';
+import NotesPopover from '@/components/reader/NotesPopover';
+import Pagination from '@/components/reader/Pagination';
+import ParallelText from '@/components/reader/ParallelText';
+import TranslationPanel from '@/components/reader/TranslationPanel';
+import {
+  AI_MODE_STORAGE_KEY,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_LINE_WIDTH,
+  FONT_SIZE_STORAGE_KEY,
+  LINE_WIDTH_STORAGE_KEY,
+  MAX_FONT_SIZE,
+  MAX_LINE_WIDTH,
+  MIN_FONT_SIZE,
+  MIN_LINE_WIDTH,
+  SWIPE_DIRECTION_RATIO,
+  SWIPE_MIN_DISTANCE,
+  TOOLTIP_DELAY,
+  TUTORIAL_STEPS,
+  TUTORIAL_STORAGE_KEY,
+  getSentenceContext,
+} from '@/components/reader/types';
+import type {
+  Book,
+  BookContent,
+  BookDifficulty,
+  Bookmark,
+  CollectedWord,
+  FinishResult,
+  ParallelChunk,
+  TocItem,
+  TooltipData,
+  TranslationResult,
+  WordToken,
+} from '@/components/reader/types';
 
 export default function ReaderPage() {
   const { data: session } = useSession();
@@ -1058,198 +942,6 @@ export default function ReaderPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const renderTooltip = (idx: number) => {
-    if (!tooltip || tooltip.idx !== idx) return null;
-    const t = tooltip.data;
-    const translationText = t ? (t.translationRu ?? t.translation) : null;
-    const isCollected = collectedRef.current.has(tooltip.word.toLowerCase());
-
-    return (
-      <div
-        data-word-tooltip
-        // На телефоне карточка прижата к низу экрана — так она не уезжает за край
-        className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3 shadow-lg md:absolute md:inset-x-auto md:left-0 md:w-[240px] ${
-          tooltip.below
-            ? 'md:top-full md:mt-1 md:bottom-auto'
-            : 'md:bottom-full md:mb-1 md:top-auto'
-        }`}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="text-sm font-semibold break-words text-[var(--color-ink)]">
-              {t?.word ?? tooltip.word}
-            </span>
-            {t?.cefrLevel && (
-              <span className="px-1.5 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-[10px] rounded-full shrink-0">
-                {t.cefrLevel}
-              </span>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setTooltip(null)}
-            aria-label="Закрыть подсказку"
-            className="-mr-1 -mt-1 shrink-0 p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
-          >
-            ×
-          </button>
-        </div>
-
-        {tooltip.loading || !t ? (
-          <div className="space-y-2 animate-pulse mt-2">
-            <div className="h-3 w-2/3 bg-[var(--color-tint-mint)] rounded"></div>
-            <div className="h-3 w-1/3 bg-[var(--color-tint-mint)] rounded"></div>
-            <div className="h-3 w-1/2 bg-[var(--color-tint-mint)] rounded"></div>
-          </div>
-        ) : (
-          <>
-            {translationText ? (
-              <p className="mt-1 text-sm text-[var(--color-ink)]">{translationText}</p>
-            ) : (
-              <p className="mt-1 text-sm text-[var(--color-slate)] italic">перевод появится позже</p>
-            )}
-            {readingSessionId && (
-              <button
-                type="button"
-                onClick={() => toggleCollected(tooltip.word, wordTokens[tooltip.idx])}
-                className={`mt-2 w-full rounded-lg py-1.5 text-xs font-medium transition-colors ${
-                  isCollected
-                    ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]'
-                    : 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
-                }`}
-              >
-                {isCollected ? '✓ В конспекте' : '+ В конспект'}
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    );
-  };
-
-  const renderText = () => {
-    if (!content?.text) return null;
-
-    return (
-      <div>
-        {wordTokens.map((token, idx) => {
-          const cleanWord = token.word.replace(/[^a-zA-Z']/g, '');
-          const lower = cleanWord.toLowerCase();
-          const isClickable = cleanWord.length >= 2;
-          const isSelected = idx === selectedWordIndex;
-          const isMarker = isClickable && keyWordsSet.has(lower);
-          const isCollected = collectedRef.current.has(lower);
-
-          if (isMarker) {
-            return (
-              <span
-                key={idx}
-                data-marker-word
-                className="relative inline-block mr-1"
-                onMouseEnter={() => handleMarkerEnter(idx, lower)}
-                onMouseLeave={handleMarkerLeave}
-                onBlur={(e) => {
-                  // Фокус ушёл за пределы слова и карточки — закрываем подсказку
-                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                    setTooltip(null);
-                  }
-                }}
-              >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${lower}: перевод и добавление в конспект`}
-                  aria-expanded={tooltip?.idx === idx}
-                  onClick={() => handleMarkerClick(idx, lower, token)}
-                  onKeyDown={(e) => handleMarkerKeyDown(e, lower, token)}
-                  onFocus={() => showTooltip(idx, lower)}
-                  className={`inline-block rounded px-0.5 border-b border-dashed border-[var(--color-primary-pressed)] cursor-pointer transition-colors hover:bg-[rgba(249,231,159,0.20)] ${
-                    isCollected ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]' : ''
-                  }`}
-                >
-                  {token.word}
-                  <span className="text-[var(--color-primary-pressed)] text-xs ml-0.5 select-none">
-                    {isCollected ? '✓' : '✦'}
-                  </span>
-                </span>
-                {renderTooltip(idx)}
-              </span>
-            );
-          }
-
-          return (
-            <span
-              key={idx}
-              onClick={() => isClickable && handleWordClick(idx)}
-              className={`inline-block mr-1 rounded px-0.5 transition-colors ${
-                isSelected
-                  ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
-                  : isClickable
-                    ? 'cursor-pointer hover:bg-[rgba(249,231,159,0.20)]'
-                    : 'text-[var(--color-slate)]'
-              }`}
-            >
-              {token.word}
-            </span>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderParallelText = () => {
-    if (parallelLoading) {
-      return (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
-          {[95, 88, 92, 70].map((w, i) => (
-            <Fragment key={i}>
-              <div className="h-5 rounded bg-[var(--color-tint-mint)] animate-pulse" style={{ width: `${w}%` }}></div>
-              <div
-                className="h-4 mt-1 rounded bg-[rgba(217,243,225,0.60)] animate-pulse"
-                style={{ width: `${Math.max(40, w - 25)}%` }}
-              ></div>
-            </Fragment>
-          ))}
-        </div>
-      );
-    }
-
-    if (parallelError) {
-      return (
-        <div className="text-center py-10">
-          <p className="text-sm text-[var(--color-error)] mb-4">Не удалось загрузить перевод</p>
-          <button
-            onClick={() => loadParallel(currentPage, true)}
-            className="btn-secondary text-sm py-2 px-4"
-          >
-            Повторить
-          </button>
-        </div>
-      );
-    }
-
-    const chunks = parallelPages[currentPage] ?? [];
-
-    return (
-      <div>
-        {showParallelHint && (
-          <p className="text-xs text-[var(--color-slate)] italic mb-4">
-            Кликайте по словам в обычном режиме EN
-          </p>
-        )}
-        {/* Две колонки: слева EN, справа RU; на узких экранах складываются в одну */}
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
-          {chunks.map((chunk, i) => (
-            <Fragment key={i}>
-              <p className="text-[var(--color-ink)]">{chunk.en}</p>
-              <p className="text-base leading-relaxed text-[var(--color-slate)]">{chunk.ru ?? ''}</p>
-            </Fragment>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   if (isLoading) {
     return (
       <AppLayout width="full">
@@ -1283,98 +975,6 @@ export default function ReaderPage() {
   const quizQuestions = finishResult?.quiz?.questions ?? [];
   const quizCurrent = quizQuestions[quizIndex];
 
-  const renderFinishModal = () => {
-    if (!finishResult) return null;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(26,29,35,0.50)] p-4">
-        <div className="card max-w-md w-full p-8 text-center max-h-[90vh] overflow-y-auto">
-          <h2 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Отличная работа! 🎉</h2>
-          <p className="text-[var(--color-slate)] mb-1">Добавлено {finishResult.added} слов в словарь</p>
-          <p className="text-[var(--color-slate)] mb-6">Время чтения: {finishResult.minutes} мин</p>
-
-          {quizQuestions.length > 0 && !quizDone && quizCurrent ? (
-            <div className="text-left">
-              <p className="text-xs text-[var(--color-slate)] mb-3 text-center">
-                Вопрос {quizIndex + 1} из {quizQuestions.length}
-              </p>
-              <p className="text-3xl font-bold text-[var(--color-ink)] text-center mb-6 break-words">
-                {quizCurrent.wordText}
-              </p>
-              <div className="space-y-2 mb-4">
-                {quizCurrent.options.map((opt, i) => {
-                  let cls = 'bg-white border-[var(--color-hairline-strong)] hover:bg-[var(--color-tint-mint)]';
-                  if (quizAnswer !== null) {
-                    if (i === quizCurrent.correctIndex) {
-                      cls = 'bg-[var(--color-tint-mint)] border-[var(--color-primary)] text-[var(--color-primary)]';
-                    } else if (i === quizAnswer) {
-                      cls = 'bg-[rgba(217,45,32,0.10)] border-[var(--color-error)] text-[var(--color-error)]';
-                    } else {
-                      cls = 'bg-white border-[var(--color-hairline-strong)] opacity-60';
-                    }
-                  }
-                  return (
-                    <button
-                      key={i}
-                      disabled={quizAnswer !== null}
-                      onClick={() => {
-                        setQuizAnswer(i);
-                        if (i === quizCurrent.correctIndex) setQuizScore(s => s + 1);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${cls}`}
-                    >
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-              {quizAnswer !== null && (
-                <button
-                  onClick={() => {
-                    if (quizIndex + 1 < quizQuestions.length) {
-                      setQuizIndex(i => i + 1);
-                      setQuizAnswer(null);
-                    } else {
-                      setQuizDone(true);
-                    }
-                  }}
-                  className="w-full btn-primary"
-                >
-                  {quizIndex + 1 < quizQuestions.length ? 'Далее' : 'Показать результат'}
-                </button>
-              )}
-            </div>
-          ) : quizQuestions.length > 0 && quizDone ? (
-            <div>
-              <p className="text-xl font-semibold text-[var(--color-primary)] mb-2">
-                Результат: {quizScore} из {quizQuestions.length}
-              </p>
-              <p className="text-sm text-[var(--color-slate)] mb-6">
-                Слова уже в вашем словаре — система подстроит повторения
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button onClick={() => setFinishResult(null)} className="btn-primary">
-                  Читать дальше
-                </button>
-                <button onClick={() => router.push('/dictionary')} className="btn-secondary">
-                  К словарю
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-3 justify-center">
-              <button onClick={() => setFinishResult(null)} className="btn-primary">
-                Читать дальше
-              </button>
-              <button onClick={() => router.push('/dictionary')} className="btn-secondary">
-                К словарю
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <AppLayout width="full">
       {/* Шапка книги */}
@@ -1386,365 +986,67 @@ export default function ReaderPage() {
           </div>
 
           {content && (
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <div className="w-full sm:w-48">
-                <div className="flex justify-between text-xs text-[var(--color-slate)] mb-1">
-                  <span>{content.progress}%</span>
-                  <span>{content.wordsRead.toLocaleString()} / {content.totalWords.toLocaleString()}</span>
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${content.progress}%` }}></div>
-                </div>
-              </div>
-              <span className="text-sm tabular-nums text-[var(--color-slate)]">
-                {content.currentPage} / {content.totalPages}
-              </span>
-
-              {/* Доля знакомых слов на текущей странице */}
-              {currentPageDifficulty && (
-                <span
-                  className="inline-flex h-10 items-center gap-1 rounded-full border border-[var(--color-hairline-strong)] bg-white px-3 text-sm text-[var(--color-slate)] shadow-md"
-                  title={`Знакомых: ${currentPageDifficulty.knownPercent}% · изучаемых: ${currentPageDifficulty.learningPercent}% · новых: ${currentPageDifficulty.newPercent}%`}
-                >
-                  <span className="font-semibold text-[var(--color-primary)]">
-                    {Math.round(currentPageDifficulty.knownPercent)}%
-                  </span>
-                  <span className="hidden sm:inline">знакомых</span>
-                </span>
-              )}
-
-              {/* Оглавление и закладки */}
-              <button
-                type="button"
-                onClick={() => {
-                  setDrawerTab('toc');
-                  setDrawerOpen(true);
-                }}
-                title="Оглавление"
-                aria-label="Оглавление"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)]"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h10" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                onClick={toggleBookmark}
-                title={currentBookmark ? 'Убрать закладку' : 'Поставить закладку'}
-                aria-label={currentBookmark ? 'Убрать закладку' : 'Поставить закладку'}
-                aria-pressed={Boolean(currentBookmark)}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border text-lg shadow-md transition-colors ${
-                  currentBookmark
-                    ? 'border-transparent bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
-                    : 'border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-                }`}
-              >
-                <span aria-hidden="true">{currentBookmark ? '★' : '☆'}</span>
-              </button>
-
-              {/* Настройки текста: кегль и ширина строки */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setShowTextSettings(v => !v)}
-                  aria-label="Настройки текста"
-                  aria-expanded={showTextSettings}
-                  title="Настройки текста"
-                  className="h-10 w-10 rounded-full border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)]"
-                >
-                  Aa
-                </button>
-
-                {showTextSettings && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowTextSettings(false)}
-                      aria-hidden="true"
-                    />
-                    <div className="card fixed left-4 right-4 top-24 z-50 p-4 shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72">
-                      <div className="mb-3 flex items-center justify-between">
-                        <h2 className="text-sm font-semibold text-[var(--color-ink)]">Текст</h2>
-                        <button
-                          type="button"
-                          onClick={() => setShowTextSettings(false)}
-                          aria-label="Закрыть настройки текста"
-                          className="p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
-                        >
-                          ×
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm text-[var(--color-slate)]">Размер</span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => changeFontSize(-1)}
-                            disabled={fontSize <= MIN_FONT_SIZE}
-                            aria-label="Уменьшить текст"
-                            className="h-8 w-8 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold transition-colors hover:bg-[var(--color-tint-mint)] disabled:opacity-40"
-                          >
-                            A−
-                          </button>
-                          <span className="w-8 text-center text-sm tabular-nums">{fontSize}</span>
-                          <button
-                            type="button"
-                            onClick={() => changeFontSize(1)}
-                            disabled={fontSize >= MAX_FONT_SIZE}
-                            aria-label="Увеличить текст"
-                            className="h-8 w-8 rounded-lg border border-[var(--color-hairline-strong)] bg-white text-sm font-semibold transition-colors hover:bg-[var(--color-tint-mint)] disabled:opacity-40"
-                          >
-                            A+
-                          </button>
-                        </div>
-                      </div>
-
-                      <label className="mt-4 block">
-                        <span className="mb-1 flex items-center justify-between text-sm text-[var(--color-slate)]">
-                          <span>Ширина строки</span>
-                          <span className="tabular-nums">{lineWidth}</span>
-                        </span>
-                        <input
-                          type="range"
-                          min={MIN_LINE_WIDTH}
-                          max={MAX_LINE_WIDTH}
-                          value={lineWidth}
-                          onChange={(e) => changeLineWidth(Number(e.target.value))}
-                          className="w-full accent-[var(--color-primary)]"
-                        />
-                      </label>
-
-                      <button
-                        type="button"
-                        onClick={resetTextSettings}
-                        className="mt-3 text-xs text-[var(--color-slate)] underline decoration-[var(--color-hairline-strong)] underline-offset-2 transition-colors hover:text-[var(--color-ink)]"
-                      >
-                        Сбросить
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <button
-                onClick={toggleParallelMode}
-                title="Параллельный перевод"
-                aria-pressed={parallelMode}
-                className={`h-10 px-3.5 rounded-full text-sm font-semibold shadow-md transition-colors ${
-                  parallelMode
-                    ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] hover:bg-[#E3BF5F]'
-                    : 'bg-white border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-                }`}
-              >
-                {parallelMode ? 'RU ⇄' : 'EN'}
-              </button>
-
-              {/* Свернуть/развернуть панель перевода — только на десктопе */}
-              {!parallelMode && (
-                <button
-                  type="button"
-                  onClick={() => setPanelOpen(v => !v)}
-                  title={panelOpen ? 'Свернуть перевод' : 'Показать перевод'}
-                  aria-label={panelOpen ? 'Свернуть панель перевода' : 'Показать панель перевода'}
-                  aria-expanded={panelOpen}
-                  className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)] md:inline-flex"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={panelOpen ? 'M9 5l7 7-7 7' : 'M15 5l-7 7 7 7'} />
-                  </svg>
-                </button>
-              )}
-
-              {readingSessionId && (
-                <button
-                  onClick={() => setShowNotes(v => !v)}
-                  className="relative h-10 min-w-10 rounded-full bg-[var(--color-tint-yellow-bold)] px-2 text-[var(--color-ink)] font-semibold shadow-md hover:shadow-lg transition-shadow"
-                  title="Конспект"
-                  aria-label={`Конспект, слов: ${collectedKeys.length}`}
-                  aria-expanded={showNotes}
-                >
-                  ✦ {collectedKeys.length}
-                </button>
-              )}
-            </div>
+            <ReaderToolbar
+              content={content}
+              pageDifficulty={currentPageDifficulty}
+              hasBookmark={Boolean(currentBookmark)}
+              parallelMode={parallelMode}
+              panelOpen={panelOpen}
+              notesVisible={showNotes}
+              notesCount={collectedKeys.length}
+              canCollect={Boolean(readingSessionId)}
+              textSettings={{
+                open: showTextSettings,
+                onToggle: () => setShowTextSettings((v) => !v),
+                fontSize,
+                lineWidth,
+                onFontSizeChange: changeFontSize,
+                onLineWidthChange: changeLineWidth,
+                onReset: resetTextSettings,
+              }}
+              onOpenDrawer={() => {
+                setDrawerTab('toc');
+                setDrawerOpen(true);
+              }}
+              onToggleBookmark={() => void toggleBookmark()}
+              onToggleParallel={toggleParallelMode}
+              onTogglePanel={() => setPanelOpen((v) => !v)}
+              onToggleNotes={() => setShowNotes((v) => !v)}
+            />
           )}
         </div>
       </div>
 
       {/* Поповер конспекта */}
       {showNotes && readingSessionId && (
-        <div className="card fixed inset-x-4 top-20 z-40 flex max-h-[70vh] flex-col p-4 shadow-xl sm:absolute sm:inset-x-auto sm:right-8 sm:top-32 sm:w-80">
-          <h3 className="font-semibold text-[var(--color-ink)] mb-3">Конспект ✦ {collectedKeys.length}</h3>
-          <div className="overflow-y-auto space-y-2 mb-3 flex-1">
-            {collectedKeys.length === 0 ? (
-              <p className="text-sm text-[var(--color-slate)]">Нажимайте на маркерные слова (✦), чтобы собрать их в конспект.</p>
-            ) : (
-              collectedKeys.map(key => {
-                const item = collectedRef.current.get(key)!;
-                return (
-                  <div key={key} className="p-2 bg-[var(--color-surface)] rounded-lg border border-[var(--color-hairline-strong)] flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[var(--color-ink)] break-words">{item.text}</p>
-                      {item.sentence && (
-                        <p className="text-xs text-[var(--color-slate)] mt-0.5 line-clamp-2 break-words">{item.sentence}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeCollected(key)}
-                      className="text-[var(--color-error)] hover:text-[#8F4343] text-lg leading-none shrink-0"
-                      title="Удалить"
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-          <button
-            onClick={finishReading}
-            disabled={isFinishing}
-            className="w-full btn-primary disabled:opacity-50"
-          >
-            {isFinishing ? 'Завершаем…' : 'Завершить чтение'}
-          </button>
-        </div>
+        <NotesPopover
+          items={collectedKeys.map((key) => collectedRef.current.get(key)!)}
+          isFinishing={isFinishing}
+          onRemove={(word) => void removeCollected(word)}
+          onFinish={() => void finishReading()}
+        />
       )}
 
       {/* Drawer: оглавление и закладки */}
       {drawerOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-[rgba(11,37,69,0.35)]"
-            onClick={() => setDrawerOpen(false)}
-            aria-hidden="true"
-          />
-          <aside
-            role="dialog"
-            aria-modal="true"
-            aria-label="Оглавление и закладки"
-            className="fixed right-0 top-0 z-50 flex h-full w-80 max-w-[85vw] flex-col bg-white shadow-xl"
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') setDrawerOpen(false);
-            }}
-          >
-            <div className="flex items-center justify-between gap-2 border-b border-[var(--color-hairline-strong)] px-3 py-3">
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDrawerTab('toc')}
-                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
-                    drawerTab === 'toc'
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-                  }`}
-                >
-                  Оглавление
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDrawerTab('bookmarks')}
-                  className={`rounded-full px-3 py-1.5 text-sm transition-colors ${
-                    drawerTab === 'bookmarks'
-                      ? 'bg-[var(--color-primary)] text-white'
-                      : 'text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-                  }`}
-                >
-                  Закладки ({bookmarks.length})
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Закрыть"
-                className="p-1 text-xl leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-2">
-              {drawerTab === 'toc' ? (
-                tocLoading ? (
-                  <p className="p-3 text-sm text-[var(--color-slate)]">Загружаем оглавление…</p>
-                ) : tocItems.length === 0 ? (
-                  <p className="p-3 text-sm text-[var(--color-slate)]">
-                    В этой книге нет оглавления — листайте страницы стрелками.
-                  </p>
-                ) : (
-                  <ul>
-                    {tocItems.map((item, index) => (
-                      <li key={`${item.page}-${index}`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            goToPage(item.page);
-                            setDrawerOpen(false);
-                          }}
-                          className="flex w-full items-center justify-between gap-2 rounded-lg py-2 pr-2 text-left text-sm text-[var(--color-ink)] transition-colors hover:bg-[var(--color-tint-mint)]"
-                          style={{ paddingLeft: `${0.5 + item.level * 0.75}rem` }}
-                        >
-                          <span className="truncate">{item.title}</span>
-                          <span className="shrink-0 text-xs tabular-nums text-[var(--color-slate)]">
-                            {item.page}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )
-              ) : bookmarks.length === 0 ? (
-                <p className="p-3 text-sm text-[var(--color-slate)]">
-                  Пока нет закладок. Нажмите ☆ в шапке, чтобы отметить страницу.
-                </p>
-              ) : (
-                <ul className="space-y-1">
-                  {bookmarks.map((bookmark) => (
-                    <li
-                      key={bookmark.id}
-                      className="flex items-center gap-2 rounded-lg p-1 hover:bg-[var(--color-surface)]"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          goToPage(bookmark.page);
-                          setDrawerOpen(false);
-                        }}
-                        className="min-w-0 flex-1 px-2 py-1.5 text-left text-sm text-[var(--color-ink)]"
-                      >
-                        Страница {bookmark.page}
-                        {bookmark.note && (
-                          <span className="mt-0.5 block truncate text-xs text-[var(--color-slate)]">
-                            {bookmark.note}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Удалить закладку на странице ${bookmark.page}`}
-                        onClick={async () => {
-                          const token = session?.accessToken;
-                          if (!token) return;
-                          await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${bookmark.id}`, {
-                            method: 'DELETE',
-                            headers: { Authorization: `Bearer ${token}` },
-                          });
-                          await refreshBookmarks();
-                        }}
-                        className="shrink-0 px-2 text-lg leading-none text-[var(--color-error)] hover:text-[#8F4343]"
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </aside>
-        </>
+        <ReaderDrawer
+          tab={drawerTab}
+          onTabChange={setDrawerTab}
+          onClose={() => setDrawerOpen(false)}
+          tocItems={tocItems}
+          tocLoading={tocLoading}
+          bookmarks={bookmarks}
+          onPage={goToPage}
+          onDeleteBookmark={async (id) => {
+            const token = session?.accessToken;
+            if (!token) return;
+            await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            await refreshBookmarks();
+          }}
+        />
       )}
 
       <div className="flex flex-col gap-4 md:flex-row">
@@ -1762,64 +1064,38 @@ export default function ReaderPage() {
               className="animate-page-in mx-auto font-serif text-[var(--color-ink)]"
               style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, maxWidth: `${lineWidth}ch` }}
             >
-              {parallelMode ? renderParallelText() : renderText()}
+              {parallelMode ? (
+                <ParallelText
+                  chunks={parallelPages[currentPage] ?? []}
+                  loading={parallelLoading}
+                  error={parallelError}
+                  showHint={showParallelHint}
+                  onRetry={() => void loadParallel(currentPage, true)}
+                />
+              ) : (
+                <ReaderText
+                  tokens={wordTokens}
+                  keyWords={keyWordsSet}
+                  selectedWordIndex={selectedWordIndex}
+                  tooltip={tooltip}
+                  readingSessionId={readingSessionId}
+                  isCollected={(word) => collectedRef.current.has(word)}
+                  onWordClick={(idx) => void handleWordClick(idx)}
+                  onMarkerEnter={handleMarkerEnter}
+                  onMarkerLeave={handleMarkerLeave}
+                  onMarkerFocus={showTooltip}
+                  onMarkerClick={(idx, word, token) => handleMarkerClick(idx, word, token)}
+                  onMarkerKeyDown={handleMarkerKeyDown}
+                  onCloseTooltip={() => setTooltip(null)}
+                  onCollect={(word, token) => void toggleCollected(word, token)}
+                />
+              )}
             </div>
           </div>
 
           {/* Пагинация */}
           {content && content.totalPages > 1 && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                aria-label="Предыдущая страница"
-                className="btn-secondary"
-              >
-                <span className="hidden sm:inline">← Назад</span>
-                <span aria-hidden="true" className="sm:hidden">←</span>
-              </button>
-
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {Array.from({ length: Math.min(5, content.totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (content.totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= content.totalPages - 2) {
-                    pageNum = content.totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      aria-label={`Страница ${pageNum}`}
-                      aria-current={pageNum === currentPage ? 'page' : undefined}
-                      className={`h-9 w-9 rounded-lg text-sm transition-colors sm:h-10 sm:w-10 ${
-                        pageNum === currentPage
-                          ? 'bg-[var(--color-primary)] text-white'
-                          : 'bg-white border border-[var(--color-hairline-strong)] hover:bg-[var(--color-tint-mint)]'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === content.totalPages}
-                aria-label="Следующая страница"
-                className="btn-secondary"
-              >
-                <span className="hidden sm:inline">Вперёд →</span>
-                <span aria-hidden="true" className="sm:hidden">→</span>
-              </button>
-            </div>
+            <Pagination page={currentPage} total={content.totalPages} onPage={goToPage} />
           )}
 
           {content && content.totalPages > 1 && (
@@ -1832,274 +1108,70 @@ export default function ReaderPage() {
         {/* Панель перевода — скрыта в режиме параллельного перевода.
             На телефоне это bottom-sheet, на десктопе — сворачиваемая колонка. */}
         {!parallelMode && (
-        <>
-          {/* Затемнение под bottom-sheet, только мобильные */}
-          <div
-            className={`fixed inset-0 z-40 bg-[rgba(11,37,69,0.35)] transition-opacity duration-300 md:hidden ${
-              panelOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-            }`}
-            onClick={() => setPanelOpen(false)}
-            aria-hidden="true"
+          <TranslationPanel
+            open={panelOpen}
+            word={selectedWord}
+            translation={translation}
+            displayed={displayedTranslation}
+            isTyping={isTyping}
+            isLoading={isTranslating}
+            hasError={translationError}
+            aiMode={aiMode}
+            addedToDictionary={addedToDict}
+            isKnown={knownWords.has(selectedWord.trim().toLowerCase())}
+            knownBusy={knownBusy}
+            isInNotes={collectedRef.current.has(selectedWord)}
+            notesAvailable={Boolean(readingSessionId)}
+            onCollapse={() => setPanelOpen(false)}
+            onRetry={() => {
+              if (selectedWordIndex !== null) void handleWordClick(selectedWordIndex);
+            }}
+            onSpeak={speak}
+            onAddToDictionary={() => void addToDictionary()}
+            onToggleKnown={() => void toggleKnownWord()}
+            onToggleAiMode={toggleAiMode}
+            onCollect={(word) => void toggleCollected(word)}
           />
-
-          <div
-            data-translation-panel
-            className={`fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 md:static md:z-auto md:w-72 md:shrink-0 md:translate-y-0 ${
-              panelOpen ? 'translate-y-0' : 'translate-y-full md:hidden'
-            }`}
-          >
-            <div className="card max-h-[72vh] overflow-y-auto rounded-b-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:sticky md:top-8 md:max-h-none md:rounded-b-lg md:p-5">
-              {/* Ручка bottom-sheet и заголовок панели */}
-              <div className="mb-3">
-                <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[var(--color-hairline-strong)] md:hidden" />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-slate)]">
-                    Перевод
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setPanelOpen(false)}
-                    aria-label="Свернуть панель перевода"
-                    className="rounded p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)] md:text-base"
-                  >
-                    <span aria-hidden="true" className="md:hidden">×</span>
-                    <span aria-hidden="true" className="hidden md:inline">→</span>
-                  </button>
-                </div>
-              </div>
-
-            {selectedWord ? (
-              <>
-                <div className="flex items-start justify-between mb-4 pb-3 border-b border-[var(--color-hairline-strong)]">
-                  <div className="min-w-0">
-                    <h2 className="text-2xl font-bold text-[var(--color-ink)] break-words">{selectedWord}</h2>
-                    {translation?.partOfSpeech && (
-                      <span className="inline-block mt-1 px-2 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-xs rounded-full">
-                        {translation.partOfSpeech}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => speak(selectedWord)}
-                    className="p-2 text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors shrink-0"
-                    title="Произнести"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    </svg>
-                  </button>
-                </div>
-
-                {isTranslating ? (
-                  <div className="flex flex-col items-center justify-center py-8 gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '200ms' }}></span>
-                      <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" style={{ animationDelay: '400ms' }}></span>
-                    </div>
-                    {aiMode && (
-                      <p className="text-sm text-[var(--color-slate)]">ИИ анализирует контекст…</p>
-                    )}
-                  </div>
-                ) : translationError ? (
-                  <div className="text-center py-6">
-                    <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[rgba(217,45,32,0.10)] flex items-center justify-center">
-                      <svg className="w-5 h-5 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 21a9 9 0 100-18 9 9 000 18z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-[var(--color-error)] mb-4">Не удалось перевести.<br />Попробуйте ещё раз</p>
-                    <button
-                      onClick={() => selectedWordIndex !== null && handleWordClick(selectedWordIndex)}
-                      className="btn-secondary text-sm py-2 px-4"
-                    >
-                      Повторить
-                    </button>
-                  </div>
-                ) : translation ? (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-xl text-[var(--color-primary)] font-medium min-h-[2rem]">
-                        {displayedTranslation}
-                        {isTyping && (
-                          <span className="inline-block w-0.5 h-5 bg-[var(--color-primary)] ml-1 typing-cursor align-middle"></span>
-                        )}
-                      </p>
-                      {!isTyping && translation.source && (
-                        <span className="mt-1 inline-block text-[10px] uppercase tracking-wide text-[var(--color-slate)]">
-                          {translation.source}
-                        </span>
-                      )}
-                    </div>
-
-                    {!isTyping && translation.alternatives && translation.alternatives.length > 0 && (
-                      <div>
-                        <h3 className="text-xs font-medium text-[var(--color-slate)] mb-2">Варианты</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {translation.alternatives.map((alt, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-[var(--color-tint-mint)] text-[var(--color-ink)] text-xs rounded-lg">
-                              {alt}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {!isTyping && translation.examples && translation.examples.length > 0 && (
-                      <div>
-                        <h3 className="text-xs font-medium text-[var(--color-slate)] mb-2">Примеры</h3>
-                        <div className="space-y-2">
-                          {translation.examples.slice(0, 2).map((ex, idx) => (
-                            <div key={idx} className="p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-hairline-strong)]">
-                              <button
-                                onClick={() => speak(ex.english)}
-                                className="text-left w-full group"
-                              >
-                                <p className="text-sm text-[var(--color-ink)] group-hover:text-[var(--color-primary)] font-medium">
-                                  {ex.english}
-                                </p>
-                                <p className="text-xs text-[var(--color-slate)] mt-1">{ex.translation}</p>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={addToDictionary}
-                      disabled={isTyping || addedToDict}
-                      className={`w-full text-sm py-2 rounded-lg transition-colors ${
-                        addedToDict
-                          ? 'bg-[var(--color-tint-mint)] text-[var(--color-primary)] cursor-default'
-                          : 'btn-primary'
-                      }`}
-                    >
-                      {addedToDict ? '✓ Добавлено' : '+ В словарь'}
-                    </button>
-
-                    <button
-                      onClick={toggleKnownWord}
-                      disabled={isTyping || knownBusy}
-                      title="Слово не попадёт в «новые» при подсчёте сложности"
-                      className={`w-full text-sm py-2 rounded-lg transition-colors disabled:opacity-60 ${
-                        knownWords.has(selectedWord.trim().toLowerCase())
-                          ? 'bg-[rgba(26,156,60,0.10)] text-[var(--color-success)]'
-                          : 'btn-secondary'
-                      }`}
-                    >
-                      {knownWords.has(selectedWord.trim().toLowerCase())
-                        ? '★ Знакомое слово'
-                        : '☆ Уже знаю'}
-                    </button>
-
-                    {readingSessionId && (
-                      <button
-                        onClick={() => toggleCollected(selectedWord)}
-                        disabled={isTyping || collectedRef.current.has(selectedWord)}
-                        className={`w-full text-sm py-2 rounded-lg transition-colors ${
-                          collectedRef.current.has(selectedWord)
-                            ? 'bg-[rgba(249,231,159,0.40)] text-[var(--color-ink)] cursor-default'
-                            : 'btn-secondary'
-                        }`}
-                      >
-                        {collectedRef.current.has(selectedWord) ? '✓ В конспекте' : '✎ В конспект'}
-                      </button>
-                    )}
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                  </svg>
-                </div>
-                <p className="text-sm text-[var(--color-slate)]">Нажми на слово<br />для перевода</p>
-              </div>
-            )}
-
-            {/* Переключатель ИИ-перевода с контекстом */}
-            <label className="mt-4 flex cursor-pointer items-start gap-2 border-t border-[var(--color-hairline-strong)] pt-3">
-              <input
-                type="checkbox"
-                checked={aiMode}
-                onChange={(e) => toggleAiMode(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-primary)]"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-[var(--color-ink)]">✨ ИИ-перевод с контекстом</span>
-                <span className="block text-xs text-[var(--color-slate)]">Медленнее, но понимает смысл в контексте</span>
-              </span>
-            </label>
-            </div>
-          </div>
-        </>
         )}
       </div>
 
       {/* Туториал для новичка */}
-      {tutorialStep !== null && TUTORIAL_STEPS[tutorialStep] && (
-        <div className="fixed inset-0 z-[60]">
-          {(() => {
-            const step = TUTORIAL_STEPS[tutorialStep];
-            const isLast = tutorialStep === TUTORIAL_STEPS.length - 1;
-            return (
-              <>
-                {/* «Прожектор» — круглое отверстие в тёмном оверлее */}
-                <div
-                  className="absolute rounded-full transition-opacity duration-300"
-                  style={{
-                    top: step.circle.top,
-                    left: step.circle.left,
-                    width: step.circle.size,
-                    height: step.circle.size,
-                    transform: 'translate(-50%, -50%)',
-                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.6)',
-                    opacity: tutorialVisible ? 1 : 0,
-                  }}
-                />
-                {/* Карточка с текстом шага */}
-                <div
-                  className="absolute w-80 max-w-[90vw] bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-2xl transition-all duration-200"
-                  style={{
-                    top: step.card.top,
-                    left: step.card.left,
-                    transform: `translateX(-50%) scale(${tutorialVisible ? 1 : 0.95})`,
-                    opacity: tutorialVisible ? 1 : 0,
-                  }}
-                >
-                  <p className="text-xs font-semibold text-[var(--color-primary)] mb-2">
-                    Шаг {tutorialStep + 1} из {TUTORIAL_STEPS.length}
-                  </p>
-                  <p className="text-sm text-[var(--color-ink)] leading-relaxed mb-4">{step.text}</p>
-                  <div className="flex items-center justify-between gap-3">
-                    <button
-                      onClick={finishTutorial}
-                      className="text-xs text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors"
-                    >
-                      Пропустить
-                    </button>
-                    <button
-                      onClick={() =>
-                        isLast
-                          ? finishTutorial()
-                          : setTutorialStep(s => (s === null ? null : s + 1))
-                      }
-                      className="btn-primary text-sm py-2 px-5"
-                    >
-                      {isLast ? 'Начать читать' : 'Далее'}
-                    </button>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
+      {tutorialStep !== null && (
+        <ReaderTutorial
+          step={tutorialStep}
+          visible={tutorialVisible}
+          onAdvance={() => {
+            if (tutorialStep === TUTORIAL_STEPS.length - 1) finishTutorial();
+            else setTutorialStep((s) => (s === null ? null : s + 1));
+          }}
+          onSkip={finishTutorial}
+        />
       )}
 
-      {renderFinishModal()}
+      {finishResult && (
+        <FinishReadingDialog
+          result={finishResult}
+          questions={quizQuestions}
+          index={quizIndex}
+          answer={quizAnswer}
+          score={quizScore}
+          done={quizDone}
+          onAnswer={(choice) => {
+            setQuizAnswer(choice);
+            if (choice === quizCurrent?.correctIndex) setQuizScore((s) => s + 1);
+          }}
+          onNext={() => {
+            if (quizIndex + 1 < quizQuestions.length) {
+              setQuizIndex((i) => i + 1);
+              setQuizAnswer(null);
+            } else {
+              setQuizDone(true);
+            }
+          }}
+          onClose={() => setFinishResult(null)}
+          onGoToDictionary={() => router.push('/dictionary')}
+        />
+      )}
     </AppLayout>
   );
 }
