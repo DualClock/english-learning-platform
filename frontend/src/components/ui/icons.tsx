@@ -149,6 +149,7 @@ export const UserIcon = (p: P) => (
 );
 export const PlayIcon = (p: P) => <Icon {...p}><path d="M6 4l14 8-14 8z" fill="currentColor" /></Icon>;
 export const PauseIcon = (p: P) => <Icon {...p}><path d="M7 4v16M17 4v16" /></Icon>;
+export const StopIcon = (p: P) => <Icon {...p}><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></Icon>;
 
 /* Звук */
 export const VolumeIcon = (p: P) => (
