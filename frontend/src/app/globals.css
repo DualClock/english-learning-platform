@@ -316,8 +316,10 @@
     }
   }
 
+  /* backwards, а не both: заполненный forwards transform делает обёртку
+     containing block, и fixed-элементы внутри (bottom-sheet читалки) считаются от неё */
   .animate-page-in {
-    animation: page-in var(--duration-page) var(--ease-out-soft) both;
+    animation: page-in var(--duration-page) var(--ease-out-soft) backwards;
   }
 
   /* Кнопки */

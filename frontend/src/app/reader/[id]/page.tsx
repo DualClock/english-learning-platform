@@ -25,6 +25,9 @@ import NotesPopover from '@/components/reader/NotesPopover';
 import Pagination from '@/components/reader/Pagination';
 import ParallelText from '@/components/reader/ParallelText';
 import TranslationPanel from '@/components/reader/TranslationPanel';
+import { useReaderBook } from '@/hooks/useReaderBook';
+import { useWordTooltip } from '@/hooks/useWordTooltip';
+import { useReaderShortcuts } from '@/hooks/useReaderShortcuts';
 import {
   AI_MODE_STORAGE_KEY,
   DEFAULT_FONT_SIZE,
@@ -37,21 +40,14 @@ import {
   MIN_LINE_WIDTH,
   SWIPE_DIRECTION_RATIO,
   SWIPE_MIN_DISTANCE,
-  TOOLTIP_DELAY,
   TUTORIAL_STEPS,
   TUTORIAL_STORAGE_KEY,
   getSentenceContext,
 } from '@/components/reader/types';
 import type {
-  Book,
-  BookContent,
-  BookDifficulty,
-  Bookmark,
   CollectedWord,
   FinishResult,
   ParallelChunk,
-  TocItem,
-  TooltipData,
   TranslationResult,
   WordToken,
 } from '@/components/reader/types';
@@ -63,11 +59,29 @@ export default function ReaderPage() {
   const bookId = params.id as string;
   const trackEvent = useTrack();
 
-  const [book, setBook] = useState<Book | null>(null);
-  const [content, setContent] = useState<BookContent | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const {
+    book,
+    content,
+    currentPage,
+    isLoading,
+    error,
+    tocItems,
+    tocLoading,
+    bookmarks,
+    knownWords,
+    knownBusy,
+    currentPageDifficulty,
+    currentBookmark,
+    loadBook,
+    refreshBookmarks,
+    toggleBookmark,
+    toggleKnownWord,
+    goToPage,
+  } = useReaderBook({
+    bookId,
+    token: session?.accessToken,
+    onBookOpened: (title) => trackEvent('book_opened', title),
+  });
 
   // Перевод
   const [selectedWord, setSelectedWord] = useState('');
@@ -90,8 +104,10 @@ export default function ReaderPage() {
   const [panelOpen, setPanelOpen] = useState(true);
 
   const requestIdRef = useRef(0);
-  const pageRequestRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const { tooltip, showTooltip, hideTooltip, handleMarkerEnter, handleMarkerLeave } =
+    useWordTooltip({ bookId, token: session?.accessToken });
 
   // Маркерные слова текущей страницы (lower-case)
   const keyWordsSet = useMemo(() => {
@@ -104,11 +120,6 @@ export default function ReaderPage() {
   const [readingSessionId, setReadingSessionId] = useState<string | null>(null);
   const collectedRef = useRef<Map<string, CollectedWord>>(new Map());
   const [collectedKeys, setCollectedKeys] = useState<string[]>([]);
-
-  // Тултип
-  const tooltipCacheRef = useRef<Map<string, TooltipData | Promise<TooltipData | null>>>(new Map());
-  const [tooltip, setTooltip] = useState<{ idx: number; word: string; data: TooltipData | null; loading: boolean; below: boolean } | null>(null);
-  const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Поповер конспекта и завершение
   const [showNotes, setShowNotes] = useState(false);
@@ -133,16 +144,9 @@ export default function ReaderPage() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const tutorialCheckRef = useRef(false);
 
-  // Reader 2.0: оглавление, закладки, доля знакомых слов
-  const [tocItems, setTocItems] = useState<TocItem[]>([]);
-  const [tocLoading, setTocLoading] = useState(false);
+  // Reader 2.0: оглавление и закладки
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<'toc' | 'bookmarks'>('toc');
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [difficulty, setDifficulty] = useState<BookDifficulty | null>(null);
-  const [knownWords, setKnownWords] = useState<Set<string>>(new Set());
-  const [knownBusy, setKnownBusy] = useState(false);
-  const readerDataLoadedRef = useRef(false);
 
   // Восстановление ИИ-режима перевода слов
   useEffect(() => {
@@ -211,202 +215,6 @@ export default function ReaderPage() {
     }
   }, []);
 
-  const loadBook = useCallback(async () => {
-    try {
-      const token = session?.accessToken;
-      if (!token) return; // ждём готовности сессии — useEffect перезапустится сам
-      const res = await fetch(`${API_URL}/api/books/${bookId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Book load error:', res.status, errorText);
-        throw new Error(`Ошибка загрузки книги: ${res.status}`);
-      }
-
-      const data = await res.json();
-      setBook(data);
-      setError('');
-      setIsLoading(false);
-      trackEvent('book_opened', data?.title);
-    } catch (err) {
-      console.error('Load book error:', err);
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки книги');
-      setIsLoading(false);
-    }
-  }, [session, bookId]);
-
-  const loadPage = useCallback(async (page: number) => {
-    // Защита от гонки: при быстром перелистывании применяем только последний ответ
-    const requestId = ++pageRequestRef.current;
-    try {
-      const token = session?.accessToken;
-      if (!token) return;
-      const res = await fetch(`${API_URL}/api/books/${bookId}/content?page=${page}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Page load error:', res.status, errorText);
-        throw new Error(`Ошибка загрузки страницы: ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (requestId !== pageRequestRef.current) return;
-      setContent(data);
-      setError('');
-    } catch (err) {
-      if (requestId !== pageRequestRef.current) return;
-      console.error('Load page error:', err);
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки страницы');
-    }
-  }, [session, bookId]);
-
-  useEffect(() => {
-    loadBook();
-  }, [loadBook]);
-
-  // Оглавление, закладки и доля знакомых слов — одним пакетом при открытии книги.
-  // Любая из этих частей может не прийти: читалка всё равно должна работать.
-  useEffect(() => {
-    const token = session?.accessToken;
-    if (!token || !book || readerDataLoadedRef.current) return;
-    readerDataLoadedRef.current = true;
-
-    let cancelled = false;
-    const headers = { Authorization: `Bearer ${token}` };
-
-    (async () => {
-      setTocLoading(true);
-      try {
-        const [tocRes, diffRes, bookmarkRes, knownRes] = await Promise.all([
-          fetch(`${API_URL}/api/books/${bookId}/toc`, { headers }),
-          fetch(`${API_URL}/api/books/${bookId}/difficulty`, { headers }),
-          fetch(`${API_URL}/api/books/${bookId}/bookmarks`, { headers }),
-          fetch(`${API_URL}/api/known-words`, { headers }),
-        ]);
-
-        if (cancelled) return;
-
-        if (tocRes.ok) {
-          const data = await tocRes.json();
-          setTocItems(Array.isArray(data?.items) ? data.items : []);
-        }
-
-        if (diffRes.ok) {
-          setDifficulty(await diffRes.json());
-        }
-
-        if (bookmarkRes.ok) {
-          const data = await bookmarkRes.json();
-          setBookmarks(Array.isArray(data?.items) ? data.items : []);
-        }
-
-        if (knownRes.ok) {
-          const data = await knownRes.json();
-          const texts: string[] = (data?.items ?? []).map((item: { text: string }) => item.text);
-          setKnownWords(new Set(texts.map(text => text.toLowerCase())));
-        }
-      } catch {
-        // без оглавления и бейджа читалка остаётся рабочей
-      } finally {
-        if (!cancelled) setTocLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [book, bookId, session?.accessToken]);
-
-  const currentPageDifficulty = useMemo(
-    () => difficulty?.pages.find(page => page.page === content?.currentPage) ?? null,
-    [difficulty, content?.currentPage]
-  );
-
-  const currentBookmark = useMemo(
-    () => bookmarks.find(item => item.page === currentPage) ?? null,
-    [bookmarks, currentPage]
-  );
-
-  const refreshBookmarks = useCallback(async () => {
-    const token = session?.accessToken;
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${API_URL}/api/books/${bookId}/bookmarks`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setBookmarks(Array.isArray(data?.items) ? data.items : []);
-      }
-    } catch {
-      // список обновится при следующем заходе
-    }
-  }, [bookId, session?.accessToken]);
-
-  const toggleBookmark = useCallback(async () => {
-    const token = session?.accessToken;
-    if (!token) return;
-
-    try {
-      if (currentBookmark) {
-        await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${currentBookmark.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        await fetch(`${API_URL}/api/books/${bookId}/bookmarks`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page: currentPage }),
-        });
-      }
-
-      await refreshBookmarks();
-    } catch {
-      // закладка не сохранилась — не блокируем чтение
-    }
-  }, [bookId, currentBookmark, currentPage, refreshBookmarks, session?.accessToken]);
-
-  const toggleKnownWord = useCallback(async () => {
-    const token = session?.accessToken;
-    const word = selectedWord.trim().toLowerCase();
-    if (!token || !word || knownBusy) return;
-
-    setKnownBusy(true);
-    try {
-      const res = await fetch(`${API_URL}/api/known-words/toggle`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: word }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setKnownWords(prev => {
-          const next = new Set(prev);
-          if (data?.known) next.add(word);
-          else next.delete(word);
-          return next;
-        });
-
-        // Сервер сбросил кэш сложности — пересчитываем бейдж
-        const diffRes = await fetch(`${API_URL}/api/books/${bookId}/difficulty`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (diffRes.ok) setDifficulty(await diffRes.json());
-      }
-    } catch {
-      // отметка не сохранилась — слово останется «новым»
-    } finally {
-      setKnownBusy(false);
-    }
-  }, [bookId, knownBusy, selectedWord, session?.accessToken]);
-
   // Туториал — только при первом заходе в читалку
   useEffect(() => {
     if (!book || tutorialCheckRef.current) return;
@@ -437,72 +245,17 @@ export default function ReaderPage() {
     setTutorialStep(null);
   }, []);
 
-  // Deep-link (например, из «С возвращением!»): /reader/{id}?page=N открывает книгу сразу на нужной странице
-  useEffect(() => {
-    const page = Number(new URLSearchParams(window.location.search).get('page'));
-    if (Number.isInteger(page) && page > 1) {
-      setCurrentPage(page);
-    }
-  }, []);
+  const closeTransientLayers = useCallback(() => {
+    setShowTextSettings(false);
+    hideTooltip();
+  }, [hideTooltip]);
 
-  useEffect(() => {
-    if (book) {
-      loadPage(currentPage);
-    }
-  }, [currentPage, book, loadPage]);
-
-  const goToPage = useCallback((page: number) => {
-    const total = content?.totalPages ?? 1;
-    const next = Math.min(total, Math.max(1, page));
-    setCurrentPage(prev => (prev === next ? prev : next));
-  }, [content?.totalPages]);
-
-  // Стрелки ←/→ листают страницы; в полях ввода и модалках не перехватываем
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT' ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        if (showTextSettings) setShowTextSettings(false);
-        if (tooltip) setTooltip(null);
-        return;
-      }
-
-      if (
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        showTextSettings ||
-        showNotes ||
-        finishResult ||
-        tutorialStep !== null
-      ) {
-        return;
-      }
-
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        goToPage(currentPage - 1);
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        goToPage(currentPage + 1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, goToPage, finishResult, showNotes, showTextSettings, tutorialStep, tooltip]);
+  useReaderShortcuts({
+    currentPage,
+    onPage: goToPage,
+    blocked: Boolean(showTextSettings || showNotes || finishResult || tutorialStep !== null),
+    onEscape: closeTransientLayers,
+  });
 
   // Свайп влево — следующая страница, вправо — предыдущая
   const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
@@ -574,12 +327,12 @@ export default function ReaderPage() {
     setIsTranslating(false);
     setTranslationError(false);
     setAddedToDict(false);
-    setTooltip(null);
+    hideTooltip();
     // На телефоне смена страницы закрывает bottom-sheet, чтобы не закрывать текст
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
       setPanelOpen(false);
     }
-  }, [currentPage]);
+  }, [currentPage, hideTooltip]);
 
   // Эффект печатания перевода: cleanup отменяет таймер при смене перевода
   useEffect(() => {
@@ -678,7 +431,7 @@ export default function ReaderPage() {
     setSelectedWordIndex(wordIndex);
     setPanelOpen(true);
     setShowTextSettings(false);
-    setTooltip(null);
+    hideTooltip();
     setIsTranslating(true);
     setTranslation(null);
     setDisplayedTranslation('');
@@ -720,7 +473,7 @@ export default function ReaderPage() {
         setIsTranslating(false);
       }
     }
-  }, [session, content, wordTokens, aiMode]);
+  }, [session, content, wordTokens, aiMode, hideTooltip]);
 
   const addToDictionary = async () => {
     if (!translation || !selectedWord || addedToDict) return;
@@ -812,60 +565,6 @@ export default function ReaderPage() {
 
   // ---- Тултип ----
 
-  const fetchTooltip = useCallback((word: string): Promise<TooltipData | null> => {
-    const cached = tooltipCacheRef.current.get(word);
-    if (cached) {
-      if (cached instanceof Promise) return cached;
-      return Promise.resolve(cached);
-    }
-    const token = session?.accessToken;
-    const promise = fetch(
-      `${API_URL}/api/books/${bookId}/word-tooltip?word=${encodeURIComponent(word)}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
-      .then(res => (res.ok ? res.json().catch(() => null) : null))
-      .then(data => {
-        if (data) tooltipCacheRef.current.set(word, data as TooltipData);
-        else tooltipCacheRef.current.delete(word);
-        return data as TooltipData | null;
-      })
-      .catch(err => {
-        tooltipCacheRef.current.delete(word);
-        console.error('Tooltip error:', err);
-        return null;
-      });
-    tooltipCacheRef.current.set(word, promise);
-    return promise;
-  }, [session, bookId]);
-
-  const showTooltip = useCallback((idx: number, cleanWord: string) => {
-    if (tooltipTimerRef.current) {
-      clearTimeout(tooltipTimerRef.current);
-      tooltipTimerRef.current = null;
-    }
-    setTooltip({ idx, word: cleanWord, data: null, loading: true, below: idx < 12 });
-    fetchTooltip(cleanWord).then(data => {
-      setTooltip(prev =>
-        prev && prev.idx === idx && prev.word === cleanWord
-          ? { ...prev, data, loading: false }
-          : prev
-      );
-    });
-  }, [fetchTooltip]);
-
-  const handleMarkerEnter = useCallback((idx: number, cleanWord: string) => {
-    if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
-    tooltipTimerRef.current = setTimeout(() => showTooltip(idx, cleanWord), TOOLTIP_DELAY);
-  }, [showTooltip]);
-
-  const handleMarkerLeave = useCallback(() => {
-    if (tooltipTimerRef.current) {
-      clearTimeout(tooltipTimerRef.current);
-      tooltipTimerRef.current = null;
-    }
-    setTooltip(null);
-  }, []);
-
   // На тач-устройствах hover нет: тап открывает карточку, а не сразу добавляет
   // слово в конспект — добавить можно кнопкой внутри карточки.
   const handleMarkerClick = useCallback((idx: number, cleanWord: string, token: WordToken) => {
@@ -893,22 +592,6 @@ export default function ReaderPage() {
       void toggleCollected(cleanWord, token);
     }
   }, [toggleCollected]);
-
-  // Тап мимо слова или карточки закрывает тултип
-  useEffect(() => {
-    if (!tooltip) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.closest('[data-word-tooltip]') || target?.closest('[data-marker-word]')) {
-        return;
-      }
-      setTooltip(null);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [tooltip]);
 
   // ---- Завершение чтения ----
 
@@ -1098,7 +781,7 @@ export default function ReaderPage() {
                   onMarkerFocus={showTooltip}
                   onMarkerClick={(idx, word, token) => handleMarkerClick(idx, word, token)}
                   onMarkerKeyDown={handleMarkerKeyDown}
-                  onCloseTooltip={() => setTooltip(null)}
+                  onCloseTooltip={hideTooltip}
                   onCollect={(word, token) => void toggleCollected(word, token)}
                 />
               )}
@@ -1140,7 +823,7 @@ export default function ReaderPage() {
             }}
             onSpeak={speak}
             onAddToDictionary={() => void addToDictionary()}
-            onToggleKnown={() => void toggleKnownWord()}
+            onToggleKnown={() => void toggleKnownWord(selectedWord)}
             onToggleAiMode={toggleAiMode}
             onCollect={(word) => void toggleCollected(word)}
           />
