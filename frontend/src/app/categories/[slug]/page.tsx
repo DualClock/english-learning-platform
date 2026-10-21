@@ -1,12 +1,28 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
+import { variants } from '@/lib/motion';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { Tag } from '@/components/ui/Badge';
+import CategoryIcon from '@/components/dictionary/CategoryIcon';
+import { pluralWords } from '@/lib/plural';
+import {
+  ArrowLeftIcon,
+  BookOpenIcon,
+  CheckIcon,
+  CloseIcon,
+  SparkIcon,
+  SpinnerIcon,
+} from '@/components/ui/icons';
 
 interface CategoryWord {
   id: number;
@@ -33,13 +49,13 @@ type Mode = 'list' | 'flashcards' | 'guess' | 'choice';
 const statusLabel: Record<CategoryWord['status'], string> = {
   not_started: 'Не начато',
   learning: 'В процессе',
-  learned: 'Выучено'
+  learned: 'Выучено',
 };
 
-const statusColor: Record<CategoryWord['status'], string> = {
-  not_started: 'bg-[rgba(201,205,212,0.40)] text-[var(--color-slate)]',
-  learning: 'bg-amber-100 text-amber-700',
-  learned: 'bg-green-100 text-green-700'
+const statusTone: Record<CategoryWord['status'], 'neutral' | 'warning' | 'success'> = {
+  not_started: 'neutral',
+  learning: 'warning',
+  learned: 'success',
 };
 
 function shuffle<T>(arr: T[]): T[] {
@@ -61,6 +77,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     data: categoryData,
     error: categoryError,
     isLoading,
+    refresh: retryLoad,
   } = useApiQuery<CategoryDetail>(slug ? `/api/categories/${slug}/words` : null, {
     enabled: authStatus === 'authenticated',
   });
@@ -140,93 +157,116 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     { key: 'choice', label: 'Выбери вариант' }
   ];
 
+  const words = category?.words ?? [];
+  const learnedCount = words.filter((w) => w.status === 'learned').length;
+
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto">
-        <Link href="/categories" className="text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)]">
-          ← Все категории
-        </Link>
+      {/*
+        Узьше, чем каталог: здесь не список для просмотра, а одно задание.
+        Карточка занятия сужается ещё сильнее (SessionShell), как в квизе.
+      */}
+      <div className="mx-auto max-w-3xl">
+        <Button href="/categories" variant="ghost" className="mb-4">
+          <ArrowLeftIcon size={16} />
+          Все категории
+        </Button>
 
-        {error && <div className="card p-12 text-center mt-4 text-[var(--color-slate)]">{error}</div>}
-
-        {!error && !category && isLoading && (
-          <div className="card p-6 animate-pulse mt-4">
-            <div className="h-7 bg-[rgba(201,205,212,0.40)] rounded w-1/3 mb-3"></div>
-            <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-2/3"></div>
-          </div>
+        {error && (
+          <ErrorState
+            title="Категория не загрузилась"
+            description={error}
+            onRetry={retryLoad}
+          />
         )}
+
+        {!error && !category && isLoading && <CategorySkeleton />}
 
         {category && (
           <>
-            <div className="flex items-center gap-4 mt-4 mb-6">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-                style={{ backgroundColor: `${category.color || '#3B82F6'}20` }}
-              >
-                <span aria-hidden="true">{category.icon || '📖'}</span>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-[var(--color-ink)]">{category.name}</h1>
-                <p className="text-[var(--color-slate)]">{category.words.length} слов</p>
+            <div className="page-header flex flex-wrap items-center gap-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-surface text-primary">
+                <CategoryIcon slug={category.slug} name={category.name} size={24} />
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-h1 text-ink">{category.name}</h1>
+                <p className="mt-1 text-body-sm tabular-nums text-slate">
+                  {words.length} {pluralWords(words.length)} · {learnedCount} выучено
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Формат занятия">
               {modes.map((m) => (
                 <button
                   key={m.key}
+                  role="tab"
+                  aria-selected={mode === m.key}
+                  aria-controls="category-mode-panel"
                   onClick={() => setMode(m.key)}
-                  className={mode === m.key ? 'btn-primary' : 'btn-secondary'}
+                  className={mode === m.key ? 'pill-tab-active' : 'pill-tab'}
                 >
                   {m.label}
                 </button>
               ))}
             </div>
 
-            {mode === 'list' && (
-              <div className="space-y-3">
-                {category.words.map((word) => (
-                  <div key={word.id} className="card p-4 flex items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="font-semibold text-[var(--color-ink)]">{word.english}</span>
-                        {word.transcription && (
-                          <span className="text-sm text-[var(--color-slate)]">{word.transcription}</span>
+            <div id="category-mode-panel" role="tabpanel">
+              {words.length === 0 ? (
+                <EmptyState
+                  icon={<BookOpenIcon size={24} />}
+                  title="В категории пока нет слов"
+                  description="Как только подборка наполнится, здесь появятся слова, карточки и упражнения."
+                />
+              ) : mode === 'list' ? (
+                <motion.ul className="stagger space-y-3" initial={false}>
+                  {words.map((word) => (
+                    <li key={word.id} className="card flex flex-wrap items-center gap-x-4 gap-y-3 p-4">
+                      {/*
+                        basis-52: на узких экранах строка переносится целиком,
+                        иначе метка и кнопка сжимают текст до одной буквы в строке.
+                      */}
+                      <div className="min-w-0 grow basis-52">
+                        <div className="flex flex-wrap items-baseline gap-2">
+                          <span className="text-body-lg font-semibold text-ink">{word.english}</span>
+                          {word.transcription && (
+                            <span className="text-body-sm text-slate">{word.transcription}</span>
+                          )}
+                        </div>
+                        <div className="text-body text-ink">{word.translation}</div>
+                        {word.example && (
+                          <div className="mt-1 text-body-sm italic text-slate">{word.example}</div>
                         )}
                       </div>
-                      <div className="text-[var(--color-ink)]">{word.translation}</div>
-                      {word.example && (
-                        <div className="text-sm text-[var(--color-slate)] mt-1 italic">{word.example}</div>
-                      )}
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusColor[word.status]}`}>
-                      {statusLabel[word.status]}
-                    </span>
-                    {word.inDictionary ? (
-                      <span className="text-xs text-green-600 whitespace-nowrap">✓ В словаре</span>
-                    ) : (
-                      <button
-                        onClick={() => addToDictionary(word)}
-                        disabled={addingId === word.id}
-                        className="btn-secondary text-sm whitespace-nowrap"
-                      >
-                        {addingId === word.id ? '...' : 'В мой словарь'}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {mode === 'flashcards' && (
-              <Flashcards words={category.words} onResult={sendProgress} />
-            )}
-            {mode === 'guess' && (
-              <GuessTranslation words={category.words} onResult={sendProgress} />
-            )}
-            {mode === 'choice' && (
-              <ChoiceQuiz words={category.words} onResult={sendProgress} />
-            )}
+                      <div className="ml-auto flex shrink-0 items-center gap-3">
+                        <Tag tone={statusTone[word.status]}>{statusLabel[word.status]}</Tag>
+                        {word.inDictionary ? (
+                          <span className="flex items-center gap-1.5 whitespace-nowrap text-body-sm font-medium text-primary">
+                            <CheckIcon size={16} />
+                            В словаре
+                          </span>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            onClick={() => addToDictionary(word)}
+                            disabled={addingId === word.id}
+                          >
+                            {addingId === word.id ? <SpinnerIcon size={16} /> : null}
+                            В мой словарь
+                          </Button>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </motion.ul>
+              ) : mode === 'flashcards' ? (
+                <Flashcards words={words} onResult={sendProgress} />
+              ) : mode === 'guess' ? (
+                <GuessTranslation words={words} onResult={sendProgress} />
+              ) : (
+                <ChoiceQuiz words={words} onResult={sendProgress} />
+              )}
+            </div>
           </>
         )}
       </div>
@@ -236,17 +276,27 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
 
 // 2 правильных подряд → learned, иначе learning
 function useStreak(onResult: (wordId: number, status: 'learning' | 'learned') => void) {
-  const [, setStreaks] = useState<Record<number, number>>({});
+  // Счётчик в ref, а не в state: апдейт статуса не должен перерисовывать
+  // прокинувшуюся вверх сессию, а side effect внутри setStreaks вызывал
+  // onResult во время рендера родителя.
+  const streaks = useRef<Record<number, number>>({});
 
-  const report = useCallback((wordId: number, correct: boolean) => {
-    setStreaks((prev) => {
-      const next = { ...prev, [wordId]: correct ? (prev[wordId] || 0) + 1 : 0 };
-      onResult(wordId, next[wordId] >= 2 ? 'learned' : 'learning');
-      return next;
-    });
+  return useCallback((wordId: number, correct: boolean) => {
+    const next = correct ? (streaks.current[wordId] || 0) + 1 : 0;
+    streaks.current[wordId] = next;
+    onResult(wordId, next >= 2 ? 'learned' : 'learning');
   }, [onResult]);
+}
 
-  return report;
+/**
+ * Колода замораживается на время сессии. Копия в state, а не useMemo([words]):
+ * каждое оптимистичное обновление статуса слов меняет ссылку на массив, и
+ * колода перезаказывалась бы прямо под пользователем — показывался один слово,
+ * а проверка шла по другому.
+ */
+function useDeck(words: CategoryWord[]) {
+  const [deck] = useState(() => shuffle(words));
+  return deck;
 }
 
 function SessionShell({ title, index, total, children }: {
@@ -256,13 +306,59 @@ function SessionShell({ title, index, total, children }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="card p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold text-[var(--color-ink)]">{title}</h2>
-        <span className="text-sm text-[var(--color-slate)]">{Math.min(index + 1, total)} / {total}</span>
+    <div className="card mx-auto max-w-2xl">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h2 className="text-h3 text-ink">{title}</h2>
+        <span className="text-body-sm tabular-nums text-slate">
+          {Math.min(index + 1, total)} / {total}
+        </span>
       </div>
       {children}
     </div>
+  );
+}
+
+/** Итог сессии: одно состояние на все три формата. */
+function SessionDone({ onRestart, note }: { onRestart: () => void; note: string }) {
+  return (
+    <div className="py-8 text-center">
+      <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-surface-accent text-on-accent">
+        <SparkIcon size={24} />
+      </span>
+      <p className="text-h3 text-ink">Сессия завершена</p>
+      <p className="mt-1 text-body-sm text-slate">{note}</p>
+      <Button onClick={onRestart} className="mt-6">
+        Пройти ещё раз
+      </Button>
+    </div>
+  );
+}
+
+/** Пара «слово ↔ перевод»: смена стороны — только прозрачность, высота карточки не прыгает. */
+function WordFace({ english, translation, transcription, example, flipped }: {
+  english: string;
+  translation: string;
+  transcription?: string;
+  example?: string;
+  flipped: boolean;
+}) {
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={flipped ? 'back' : 'front'}
+        variants={variants.fadeOnly}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+      >
+        <div className="text-h1 text-ink">{flipped ? translation : english}</div>
+        {flipped ? (
+          example && <div className="mt-3 italic text-body-lg text-slate">«{example}»</div>
+        ) : (
+          transcription && <div className="mt-2 text-body-lg text-slate">{transcription}</div>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -270,7 +366,7 @@ function Flashcards({ words, onResult }: {
   words: CategoryWord[];
   onResult: (wordId: number, status: 'learning' | 'learned') => void;
 }) {
-  const deck = useMemo(() => shuffle(words), [words]);
+  const deck = useDeck(words);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const report = useStreak(onResult);
@@ -282,49 +378,34 @@ function Flashcards({ words, onResult }: {
   return (
     <SessionShell title="Флэшкарты" index={index} total={deck.length}>
       {done ? (
-        <div className="text-center py-8">
-          <p className="text-xl font-semibold text-[var(--color-ink)] mb-2">Готово! 🎉</p>
-          <p className="text-[var(--color-slate)]">Вы прошли все карточки.</p>
-          <button className="btn-primary mt-4" onClick={() => { setIndex(0); setFlipped(false); }}>
-            Пройти ещё раз
-          </button>
-        </div>
+        <SessionDone note="Вы прошли все карточки." onRestart={() => { setIndex(0); setFlipped(false); }} />
       ) : (
         <>
           <button
             onClick={() => setFlipped(!flipped)}
-            className="w-full py-16 rounded-2xl border-2 border-dashed border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)] transition-colors text-center"
+            className="flip-face w-full rounded-lg border border-hairline bg-surface px-6 py-8 text-center transition-colors duration-fast ease-soft hover:bg-surface-sunken active:scale-97"
           >
-            {!flipped ? (
-              <>
-                <div className="text-3xl font-bold text-[var(--color-ink)]">{word.english}</div>
-                {word.transcription && (
-                  <div className="text-[var(--color-slate)] mt-2">{word.transcription}</div>
-                )}
-                <div className="text-sm text-[var(--color-slate)] mt-4">Нажмите, чтобы перевернуть</div>
-              </>
-            ) : (
-              <>
-                <div className="text-3xl font-bold text-[var(--color-ink)]">{word.translation}</div>
-                {word.example && (
-                  <div className="text-[var(--color-slate)] mt-3 italic">{word.example}</div>
-                )}
-              </>
-            )}
+            <WordFace
+              english={word.english}
+              translation={word.translation}
+              transcription={word.transcription}
+              example={word.example}
+              flipped={flipped}
+            />
+            <span className="mt-4 block shrink-0 text-caption text-slate">
+              {flipped ? 'Слово' : 'Нажмите, чтобы перевернуть'}
+            </span>
           </button>
-          <div className="flex gap-3 mt-6 justify-center">
-            <button
-              className="btn-secondary"
+          <div className="mt-6 flex justify-center gap-3">
+            <Button
+              variant="secondary"
               onClick={() => { report(word.id, false); setFlipped(false); setIndex(index + 1); }}
             >
               Не знаю
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => { report(word.id, true); setFlipped(false); setIndex(index + 1); }}
-            >
+            </Button>
+            <Button onClick={() => { report(word.id, true); setFlipped(false); setIndex(index + 1); }}>
               Знаю
-            </button>
+            </Button>
           </div>
         </>
       )}
@@ -336,7 +417,7 @@ function GuessTranslation({ words, onResult }: {
   words: CategoryWord[];
   onResult: (wordId: number, status: 'learning' | 'learned') => void;
 }) {
-  const deck = useMemo(() => shuffle(words), [words]);
+  const deck = useDeck(words);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
@@ -368,45 +449,60 @@ function GuessTranslation({ words, onResult }: {
   return (
     <SessionShell title="Угадай перевод" index={index} total={deck.length}>
       {done ? (
-        <div className="text-center py-8">
-          <p className="text-xl font-semibold text-[var(--color-ink)] mb-2">Сессия завершена! 🎉</p>
-          <button className="btn-primary mt-2" onClick={() => { setIndex(0); setAnswer(''); setFeedback(null); }}>
-            Пройти ещё раз
-          </button>
-        </div>
+        <SessionDone
+          note="Все слова этой подборки проверены."
+          onRestart={() => { setIndex(0); setAnswer(''); setFeedback(null); }}
+        />
       ) : (
         <>
-          <div className="text-center py-6">
-            <div className="text-3xl font-bold text-[var(--color-ink)]">{word.english}</div>
+          <div className="py-6 text-center">
+            <div className="text-h1 text-ink">{word.english}</div>
             {word.transcription && (
-              <div className="text-[var(--color-slate)] mt-2">{word.transcription}</div>
+              <div className="mt-2 text-body-lg text-slate">{word.transcription}</div>
             )}
           </div>
-          <div className="flex gap-3 max-w-md mx-auto">
+          <form
+            className="mx-auto flex max-w-md gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (feedback) next();
+              else check();
+            }}
+          >
+            <label className="sr-only" htmlFor="category-guess">
+              Перевод слова {word.english}
+            </label>
             <input
+              id="category-guess"
               type="text"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== 'Enter') return;
-                if (feedback) next();
-                else check();
-              }}
               placeholder="Введите перевод..."
               className="input flex-1"
               autoFocus
             />
-            {feedback ? (
-              <button className="btn-primary" onClick={next}>Далее</button>
-            ) : (
-              <button className="btn-primary" onClick={check}>Проверить</button>
-            )}
+            <Button type="submit">{feedback ? 'Далее' : 'Проверить'}</Button>
+          </form>
+          {/* Только прозрачность: блок обратной связи не должен двигать страницу */}
+          <div role="status" aria-live="polite">
+            <AnimatePresence initial={false}>
+              {feedback && (
+                <motion.p
+                  key={feedback}
+                  variants={variants.fadeOnly}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className={`mt-4 flex items-center justify-center gap-2 text-center text-body font-semibold ${
+                    feedback === 'correct' ? 'text-semantic-success' : 'text-semantic-error'
+                  }`}
+                >
+                  {feedback === 'correct' ? <CheckIcon size={20} /> : <CloseIcon size={20} />}
+                  {feedback === 'correct' ? 'Верно!' : `Неверно. Правильный ответ: ${word.translation}`}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
-          {feedback && (
-            <div className={`text-center mt-4 font-medium ${feedback === 'correct' ? 'text-green-600' : 'text-red-600'}`}>
-              {feedback === 'correct' ? 'Верно! ✓' : `Неверно. Правильный ответ: ${word.translation}`}
-            </div>
-          )}
         </>
       )}
     </SessionShell>
@@ -417,7 +513,7 @@ function ChoiceQuiz({ words, onResult }: {
   words: CategoryWord[];
   onResult: (wordId: number, status: 'learning' | 'learned') => void;
 }) {
-  const deck = useMemo(() => shuffle(words), [words]);
+  const deck = useDeck(words);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [options, setOptions] = useState<string[]>([]);
@@ -426,12 +522,12 @@ function ChoiceQuiz({ words, onResult }: {
   useEffect(() => {
     if (index >= deck.length) return;
     const word = deck[index];
-    const distractors = shuffle(words.filter((w) => w.id !== word.id))
+    const distractors = shuffle(deck.filter((w) => w.id !== word.id))
       .slice(0, 3)
       .map((w) => w.translation);
     setOptions(shuffle([word.translation, ...distractors]));
     setSelected(null);
-  }, [index, deck, words]);
+  }, [index, deck]);
 
   if (deck.length === 0) return null;
   const done = index >= deck.length;
@@ -446,39 +542,75 @@ function ChoiceQuiz({ words, onResult }: {
   return (
     <SessionShell title="Выбери вариант" index={index} total={deck.length}>
       {done ? (
-        <div className="text-center py-8">
-          <p className="text-xl font-semibold text-[var(--color-ink)] mb-2">Сессия завершена! 🎉</p>
-          <button className="btn-primary mt-2" onClick={() => setIndex(0)}>Пройти ещё раз</button>
-        </div>
+        <SessionDone
+          note="Все варианты этого раунда разобраны."
+          onRestart={() => setIndex(0)}
+        />
       ) : (
         <>
-          <div className="text-center py-6">
-            <div className="text-3xl font-bold text-[var(--color-ink)]">{word.english}</div>
+          <div className="py-6 text-center">
+            <div className="text-h1 text-ink">{word.english}</div>
             {word.transcription && (
-              <div className="text-[var(--color-slate)] mt-2">{word.transcription}</div>
+              <div className="mt-2 text-body-lg text-slate">{word.transcription}</div>
             )}
           </div>
-          <div className="grid gap-3 max-w-md mx-auto">
+          <div className="mx-auto grid max-w-md gap-3">
             {options.map((option) => {
-              let cls = 'btn-secondary w-full text-left';
-              if (selected) {
-                if (option === word.translation) cls += ' !border-green-500 !text-green-700';
-                else if (option === selected) cls += ' !border-red-500 !text-red-700';
-              }
+              const chosen = selected === option;
+              const expected = option === word.translation;
+              // Тот же тональный ряд, что и в грамматике: выбрано / верно /
+              // ошиблось / правильный ответ подсвечен после проверки
+              const tone = selected
+                ? expected
+                  ? 'border-semantic-success bg-surface-success text-ink'
+                  : chosen
+                    ? 'border-semantic-error bg-surface-danger text-ink'
+                    : 'border-hairline text-slate'
+                : 'border-hairline-strong text-ink hover:bg-surface';
               return (
-                <button key={option} className={cls} onClick={() => choose(option)}>
+                <button
+                  key={option}
+                  onClick={() => choose(option)}
+                  disabled={selected !== null}
+                  className={`flex items-center justify-between gap-3 rounded-md border px-5 py-2.5 text-left text-body-sm font-medium transition-[background-color,color,border-color,transform] duration-fast ease-soft active:scale-97 disabled:active:scale-100 ${tone}`}
+                >
                   {option}
+                  {selected && expected && <CheckIcon size={16} />}
+                  {selected && chosen && !expected && <CloseIcon size={16} />}
                 </button>
               );
             })}
           </div>
-          {selected && (
-            <div className="text-center mt-6">
-              <button className="btn-primary" onClick={() => setIndex(index + 1)}>Далее</button>
-            </div>
-          )}
+          <div className="mt-6 flex justify-center">
+            {/* Кнопка появляется под ответом и только по прозрачности: варианты не двигаются */}
+            {selected && (
+              <motion.div variants={variants.fadeOnly} initial="hidden" animate="visible">
+                <Button onClick={() => setIndex(index + 1)}>Далее</Button>
+              </motion.div>
+            )}
+          </div>
         </>
       )}
     </SessionShell>
+  );
+}
+
+function CategorySkeleton() {
+  return (
+    <div role="status" aria-busy="true" aria-live="polite" className="card mx-auto max-w-3xl">
+      <span className="sr-only">Загрузка категории</span>
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-14 w-14 shrink-0" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-7 w-1/3" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
+      <div className="mt-6 space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    </div>
   );
 }

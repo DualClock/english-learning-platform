@@ -1,11 +1,20 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import Link from 'next/link';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Button from '@/components/ui/Button';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { CardInteractive } from '@/components/ui/Card';
+import { FoldersIcon } from '@/components/ui/icons';
+import CategoryIcon from '@/components/dictionary/CategoryIcon';
+import { motion } from 'motion/react';
+import { useApiQuery } from '@/app/lib/use-api';
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useApiQuery } from '@/app/lib/use-api';
 
 interface CategorySummary {
   id: number;
@@ -50,88 +59,88 @@ export default function CategoriesPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-[var(--color-ink)] mb-2">Категории слов</h1>
-        <p className="text-[var(--color-slate)] mb-8">
-          Учи слова по темам: эмоции, еда, путешествия и другие
-        </p>
+      <PageHeader
+        title="Категории слов"
+        subtitle="Учи слова по темам: эмоции, еда, путешествия и другие"
+      />
 
-        {error && (
-          <div className="card p-12 text-center">
-            <p className="text-[var(--color-slate)] mb-4">{error}</p>
-            <button onClick={refresh} className="btn-secondary">
-              Попробовать снова
-            </button>
-          </div>
-        )}
+      {error && (
+        <ErrorState
+          title="Категории не загрузились"
+          description={error}
+          onRetry={refresh}
+        />
+      )}
 
-        {showSkeleton && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="card p-6 animate-pulse">
-                <div className="h-8 w-8 bg-[rgba(201,205,212,0.40)] rounded mb-3"></div>
-                <div className="h-5 bg-[rgba(201,205,212,0.40)] rounded w-2/3 mb-2"></div>
-                <div className="h-4 bg-[rgba(201,205,212,0.40)] rounded w-full mb-4"></div>
-                <div className="h-2 bg-[rgba(201,205,212,0.40)] rounded w-full"></div>
-              </div>
-            ))}
-          </div>
-        )}
+      {showSkeleton && <CategoriesSkeleton />}
 
-        {!error && !showSkeleton && categories.length === 0 && (
-          <div className="card p-12 text-center">
-            <div className="text-4xl mb-4" aria-hidden="true">🗂️</div>
-            <h2 className="text-xl font-semibold text-[var(--color-ink)] mb-2">Категории скоро появятся</h2>
-            <p className="text-[var(--color-slate)] mb-6">
-              Пока подборок нет — начните со сборников частотных слов или добавьте свои слова.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/dictionary?tab=lists" className="btn-primary">
-                Открыть сборники
-              </Link>
-              <Link href="/dictionary/add" className="btn-secondary">
+      {!error && !showSkeleton && categories.length === 0 && (
+        <EmptyState
+          icon={<FoldersIcon size={24} />}
+          title="Категории скоро появятся"
+          description="Пока подборок нет — начните со сборников частотных слов или добавьте свои слова."
+          action={
+            <>
+              <Button href="/dictionary?tab=lists">Открыть сборники</Button>
+              <Button href="/dictionary/add" variant="secondary">
                 Добавить слово
-              </Link>
-            </div>
-          </div>
-        )}
+              </Button>
+            </>
+          }
+        />
+      )}
 
-        {!error && !showSkeleton && categories.length > 0 && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {categories.map((cat) => {
-              const learnedPct = cat.wordCount > 0 ? (cat.learned / cat.wordCount) * 100 : 0;
-              const learningPct = cat.wordCount > 0 ? (cat.learning / cat.wordCount) * 100 : 0;
-              return (
-                <Link key={cat.id} href={`/categories/${cat.slug}`} className="card p-6 block hover:shadow-lg transition-shadow">
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4"
-                    style={{ backgroundColor: `${cat.color || '#3B82F6'}20` }}
-                  >
-                    <span aria-hidden="true">{cat.icon || '📖'}</span>
-                  </div>
-                  <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-1">{cat.name}</h2>
-                  {cat.description && (
-                    <p className="text-sm text-[var(--color-slate)] mb-4 line-clamp-2">{cat.description}</p>
-                  )}
-                  <div className="text-xs text-[var(--color-slate)] mb-2">
-                    {cat.learned} выучено · {cat.learning} в процессе · {cat.notStarted} не начато
-                  </div>
-                  <div
-                    className="h-2 rounded-full overflow-hidden flex"
-                    style={{ backgroundColor: 'rgba(201,205,212,0.40)' }}
-                    role="progressbar"
-                    aria-valuenow={cat.learned}
-                    aria-valuemax={cat.wordCount}
-                  >
-                    <div className="h-full" style={{ width: `${learnedPct}%`, backgroundColor: cat.color || '#22C55E' }} />
-                    <div className="h-full" style={{ width: `${learningPct}%`, backgroundColor: `${cat.color || '#22C55E'}80` }} />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {!error && !showSkeleton && categories.length > 0 && (
+        <motion.ul className="stagger grid gap-4 md:grid-cols-2 lg:grid-cols-3" initial={false}>
+          {categories.map((cat) => (
+            <li key={cat.id}>
+              <CardInteractive
+                href={`/categories/${cat.slug}`}
+                ariaLabel={`Категория «${cat.name}»`}
+                className="flex h-full flex-col p-6"
+              >
+                <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-primary">
+                  <CategoryIcon slug={cat.slug} name={cat.name} size={24} />
+                </span>
+                <h2 className="mb-1 text-h3 text-ink">{cat.name}</h2>
+                {cat.description && (
+                  <p className="mb-4 line-clamp-2 text-body-sm text-slate">{cat.description}</p>
+                )}
+                <p className="mt-auto text-caption tabular-nums text-slate">
+                  {cat.learned} выучено · {cat.learning} в процессе · {cat.notStarted} не начато
+                </p>
+                <ProgressBar
+                  value={cat.wordCount > 0 ? (cat.learned / cat.wordCount) * 100 : 0}
+                  label={`Выучено в категории «${cat.name}»`}
+                  className="mt-2"
+                />
+              </CardInteractive>
+            </li>
+          ))}
+        </motion.ul>
+      )}
     </AppLayout>
+  );
+}
+
+/** Заглушка повторяет сетку категорий: карточки не меняют размер при загрузке. */
+function CategoriesSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <span className="sr-only">Загрузка категорий</span>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="card space-y-3">
+          <Skeleton className="h-12 w-12" />
+          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-2 w-full" />
+        </div>
+      ))}
+    </div>
   );
 }

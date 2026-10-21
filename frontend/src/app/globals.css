@@ -378,6 +378,18 @@
     }
   }
 
+  /*
+   * Сторона флэшкарты. Перевод почти всегда длиннее слова, поэтому высота
+   * резервируется: без резерва карточка растёт при каждом перевороте, и кнопки
+   * «Знаю / Не знаю» уезжают из-под пальца.
+   */
+  .flip-face {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 15rem;
+  }
+
   /* Поверхности по смыслу вместо декоративных оттенков */
   .card-tint-peach    { @apply rounded-lg p-6 text-ink bg-surface-warning; }
   .card-tint-rose     { @apply rounded-lg p-6 text-ink bg-surface-danger; }
