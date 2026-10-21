@@ -408,7 +408,7 @@ export default function OnboardingPage() {
                     className="mb-8 w-full"
                   >
                     <TargetIcon size={16} />
-                    {isPlacementLoading ? 'Загружаем тест…' : 'Не знаю свой уровень — пройти тест'}
+                    {isPlacementLoading ? 'Загружаем тест…' : 'Пройти тест на уровень'}
                   </Button>
 
                   {placementError && (
