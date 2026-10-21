@@ -7,7 +7,7 @@ import AuthLayout from '@/app/auth-layout';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Notice from '@/components/ui/Notice';
-import { MailIcon } from '@/components/ui/icons';
+import { ArrowLeftIcon, MailIcon } from '@/components/ui/icons';
 
 // Запрос письма со ссылкой на сброс пароля.
 // Токен приходит письмом (страница /reset-password), в ответе API его больше нет.
@@ -93,8 +93,12 @@ export default function ForgotPasswordPage() {
       </div>
 
       <p className="mt-8 text-center text-body-sm text-slate">
-        <Link href="/login" className="font-medium text-link hover:underline">
-          ← Вернуться ко входу
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 font-medium text-link hover:underline"
+        >
+          <ArrowLeftIcon size={16} />
+          Вернуться ко входу
         </Link>
       </p>
     </AuthLayout>

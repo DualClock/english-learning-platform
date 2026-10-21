@@ -9,7 +9,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import LoadingState from '@/components/ui/LoadingState';
 import Notice from '@/components/ui/Notice';
-import { CheckIcon } from '@/components/ui/icons';
+import { ArrowLeftIcon, CheckIcon } from '@/components/ui/icons';
 
 // Форма нового пароля. Email и токен приходят в ссылке из письма
 // (/reset-password?email=…&token=…), поэтому вводить их вручную не нужно.
@@ -140,8 +140,12 @@ export default function ResetPasswordPage() {
       </Suspense>
 
       <p className="mt-8 text-center text-body-sm text-slate">
-        <Link href="/login" className="font-medium text-link hover:underline">
-          ← Вернуться ко входу
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 font-medium text-link hover:underline"
+        >
+          <ArrowLeftIcon size={16} />
+          Вернуться ко входу
         </Link>
       </p>
     </AuthLayout>
