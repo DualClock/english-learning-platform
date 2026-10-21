@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import {
   BookmarkIcon,
   BookOpenIcon,
@@ -41,7 +42,8 @@ export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }
             <stat.Icon size={20} />
           </span>
           <span className="min-w-0">
-            <span className="block text-h2 text-ink tabular-nums">{stat.value}</span>
+            {/* разряды через AnimatedNumber: тот же формат, что в карточке уровня */}
+            <AnimatedNumber value={stat.value} className="block text-h2 text-ink tabular-nums" />
             <span className="block text-body-sm text-slate">{stat.label}</span>
           </span>
         </div>
