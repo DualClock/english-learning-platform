@@ -14,3 +14,7 @@ export function plural(n: number, forms: [one: string, few: string, many: string
 export function pluralWords(n: number): string {
   return plural(n, ['слово', 'слова', 'слов']);
 }
+
+export function pluralQuestions(n: number): string {
+  return plural(n, ['вопрос', 'вопроса', 'вопросов']);
+}

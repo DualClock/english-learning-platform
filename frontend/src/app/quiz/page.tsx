@@ -4,8 +4,26 @@ import AppLayout from '@/components/AppLayout';
 import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { useTts } from '@/hooks/useTts';
+import { pluralQuestions, pluralWords } from '@/lib/plural';
+import { slideVariants, variants } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import ProgressBar from '@/components/ui/ProgressBar';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import { Skeleton } from '@/components/ui/LoadingState';
+import {
+  BookOpenIcon,
+  CheckCircleIcon,
+  CloseCircleIcon,
+  HeadphonesIcon,
+  InboxIcon,
+  SpinnerIcon,
+  VolumeIcon,
+} from '@/components/ui/icons';
 
 interface Question {
   wordId: number;
@@ -122,13 +140,11 @@ function QuizContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, currentIndex, isFinished, deck.length]);
 
-  // Спиннер — только пока данных ещё нет
+  // Скелет — только пока данных ещё нет
   if (isLoading && data === undefined) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <QuizSkeleton />
       </AppLayout>
     );
   }
@@ -137,17 +153,17 @@ function QuizContent() {
   if (error && data === undefined) {
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto card p-8 text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Тест не загрузился</h1>
-          <p className="text-[var(--color-slate)] mb-6">{error}</p>
-          <div className="flex gap-3 justify-center">
-            <button onClick={refreshQuiz} className="btn-primary">
-              Попробовать снова
-            </button>
-            <button onClick={() => router.push('/dictionary')} className="btn-secondary">
-              В словарь
-            </button>
-          </div>
+        <div className="mx-auto max-w-md">
+          <ErrorState
+            title="Тест не загрузился"
+            description={error}
+            onRetry={refreshQuiz}
+            action={
+              <Button variant="secondary" href="/dictionary">
+                В словарь
+              </Button>
+            }
+          />
         </div>
       </AppLayout>
     );
@@ -155,34 +171,28 @@ function QuizContent() {
 
   // Колода пустая — не крутим вечный спиннер, а объясняем, что делать
   if (deck.length === 0) {
+    const checkpointStats = checkpointLevel && data
+      ? ` Сейчас в словаре ${data.dictionaryWords ?? 0} ${pluralWords(data.dictionaryWords ?? 0)}` +
+        (data.matchedWords != null ? `, из них уровня ${levelLabel} — ${data.matchedWords}.` : '.')
+      : '';
+
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto card p-8 text-center">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">
-            {checkpointLevel ? `Чекпоинт ${levelLabel} пока недоступен` : 'Пока нечего тестировать'}
-          </h1>
-          <p className="text-[var(--color-slate)] mb-4">
-            {checkpointLevel
-              ? 'Для чекпоинта нужно хотя бы 4 слова с переводами в словаре — иначе не собрать варианты ответов.'
-              : 'Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.'}
-          </p>
-          {checkpointLevel && data && (
-            <p className="text-sm text-[var(--color-slate)] mb-6">
-              Слов в словаре: <strong className="text-[var(--color-ink)]">{data.dictionaryWords ?? 0}</strong>
-              {data.matchedWords != null && (
-                <> · из них уровня {levelLabel}: <strong className="text-[var(--color-ink)]">{data.matchedWords}</strong></>
-              )}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3 justify-center">
-            <button onClick={() => router.push('/dictionary?tab=lists')} className="btn-primary">
-              Открыть сборники
-            </button>
-            <button onClick={() => router.push('/dictionary')} className="btn-secondary">
-              Мой словарь
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          icon={<InboxIcon size={24} />}
+          title={checkpointLevel ? `Чекпоинт ${levelLabel} пока недоступен` : 'Пока нечего тестировать'}
+          description={(checkpointLevel
+            ? 'Для чекпоинта нужно хотя бы 4 слова с переводами в словаре — иначе не собрать варианты ответов.'
+            : 'Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.') + checkpointStats}
+          action={
+            <>
+              <Button href="/dictionary?tab=lists">Открыть сборники</Button>
+              <Button href="/dictionary" variant="secondary">
+                Мой словарь
+              </Button>
+            </>
+          }
+        />
       </AppLayout>
     );
   }
@@ -191,66 +201,73 @@ function QuizContent() {
     const percentage = Math.round((score / deck.length) * 100);
     const passed = checkpointLevel ? score >= (data?.passScore ?? Math.ceil(deck.length * 0.8)) : percentage >= 80;
     const passScore = data?.passScore ?? Math.ceil(deck.length * 0.8);
+    const tone = passed
+      ? 'bg-surface-accent text-on-accent'
+      : percentage >= 50
+        ? 'bg-surface-warning text-on-warning'
+        : 'bg-surface-danger text-on-danger';
+    // Число не должно выглядеть фирменной зеленью там, где тест не сдан.
+    const numberTone = passed ? 'text-primary' : percentage >= 50 ? 'text-semantic-warning' : 'text-semantic-error';
 
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className={`w-16 h-16 mx-auto mb-6 rounded-full flex items-center justify-center ${
-            passed ? 'bg-[rgba(14,124,123,0.10)]' : percentage >= 50 ? 'bg-[rgba(249,231,159,0.20)]' : 'bg-[rgba(217,45,32,0.10)]'
-          }`}>
-            <svg className={`w-8 h-8 ${
-              passed ? 'text-[var(--color-primary)]' : percentage >= 50 ? 'text-[#7A3A00]' : 'text-[var(--color-error)]'
-            }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+        <motion.div
+          variants={variants.enter}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto max-w-md py-12 text-center"
+        >
+          <div className={`mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg ${tone}`}>
+            {passed ? <CheckCircleIcon size={24} /> : <CloseCircleIcon size={24} />}
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">
+          <h1 className="mb-2 text-h1 text-ink">
             {checkpointLevel ? `Чекпоинт ${levelLabel}: ${passed ? 'сдан' : 'не сдан'}` : 'Тест завершён'}
           </h1>
-          <p className="text-4xl font-bold text-[var(--color-primary)] my-4">{percentage}%</p>
-          <p className="text-[var(--color-slate)] mb-2">
-            Правильно {score} из {deck.length}
+          <p className={`my-4 text-h1 tabular-nums ${numberTone}`}>
+            <AnimatedNumber value={percentage} />%
+          </p>
+          <p className="mb-2 text-body-lg text-slate">
+            Верных ответов {score} из {deck.length}
           </p>
           {checkpointLevel && (
-            <p className="text-sm text-[var(--color-slate)] mb-8">
+            <p className="mb-8 text-body-sm text-slate">
               {passed
                 ? `Порог ${passScore} пройден — уровень ${levelLabel} можно подтверждать дальше.`
                 : `Для зачёта нужно ${passScore} верных ответов из ${deck.length}. Повторите слова уровня и попробуйте снова.`}
             </p>
           )}
-          <div className="flex gap-4 justify-center">
-            <button onClick={restartQuiz} className="btn-primary">
-              Ещё раз
-            </button>
-            <button onClick={() => router.push('/dashboard')} className="btn-secondary">
+          <div className="mt-8 flex justify-center gap-3">
+            <Button onClick={restartQuiz}>Ещё раз</Button>
+            <Button variant="secondary" onClick={() => router.push('/dashboard')}>
               На главную
-            </button>
+            </Button>
           </div>
-        </div>
+        </motion.div>
       </AppLayout>
     );
   }
 
   const currentQuestion = deck[currentIndex];
+  const answered = selectedAnswer === currentQuestion.correctIndex;
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="mx-auto max-w-2xl">
         {checkpointLevel && (
-          <div className="card p-4 mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="card mb-6 flex flex-wrap items-center justify-between gap-3 p-4">
             <div>
-              <p className="text-xs uppercase tracking-wide text-[var(--color-slate)]">Чекпоинт-тест</p>
-              <p className="text-lg font-semibold text-[var(--color-ink)]">
-                Уровень {levelLabel} · {deck.length} вопросов
+              <p className="text-caption uppercase tracking-wide text-slate">Чекпоинт-тест</p>
+              <p className="text-h3 text-ink">
+                Уровень {levelLabel} · {deck.length} {pluralQuestions(deck.length)}
               </p>
             </div>
-            <div className="text-right text-sm text-[var(--color-slate)]">
+            <div className="text-right text-body-sm text-slate">
               <p>
-                Порог: <strong className="text-[var(--color-ink)]">{data?.passScore ?? Math.ceil(deck.length * 0.8)}</strong> верных
+                Порог: <strong className="font-semibold text-ink">{data?.passScore ?? Math.ceil(deck.length * 0.8)}</strong> верных
               </p>
               {data?.matchedWords != null && (
                 <p>
-                  Слов {levelLabel} в словаре: <strong className="text-[var(--color-ink)]">{data.matchedWords}</strong>
+                  Слов {levelLabel} в словаре: <strong className="font-semibold text-ink">{data.matchedWords}</strong>
                 </p>
               )}
             </div>
@@ -258,22 +275,19 @@ function QuizContent() {
         )}
 
         {/* Режим: чтение или аудирование */}
-        <div className="flex justify-center gap-2 mb-6" role="tablist" aria-label="Режим теста">
+        <div className="mb-6 flex justify-center gap-2" role="tablist" aria-label="Режим теста">
           {([
-            { id: 'reading', label: '📖 Чтение' },
-            { id: 'listening', label: '🎧 Аудирование' },
+            { id: 'reading', label: 'Чтение', icon: <BookOpenIcon size={16} /> },
+            { id: 'listening', label: 'Аудирование', icon: <HeadphonesIcon size={16} /> },
           ] as const).map((option) => (
             <button
               key={option.id}
               role="tab"
               aria-selected={mode === option.id}
               onClick={() => setMode(option.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                mode === option.id
-                  ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                  : 'bg-white text-[var(--color-slate)] border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)]'
-              }`}
+              className={mode === option.id ? 'pill-tab-active' : 'pill-tab'}
             >
+              {option.icon}
               {option.label}
             </button>
           ))}
@@ -281,111 +295,149 @@ function QuizContent() {
 
         {/* Прогресс */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
-            <span>Вопрос {currentIndex + 1} из {deck.length}</span>
-            <span>Score: {score}</span>
+          <div className="mb-2 flex justify-between text-body-sm text-slate">
+            <span className="tabular-nums">Вопрос {currentIndex + 1} из {deck.length}</span>
+            <span className="tabular-nums">Верных: {score}</span>
           </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${((currentIndex + 1) / deck.length) * 100}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={((currentIndex + 1) / deck.length) * 100}
+            label={`Отвечено ${currentIndex + 1} из ${deck.length}`}
+          />
         </div>
 
         {/* Вопрос */}
-        <div className="card p-8">
-          <p className="text-center text-[var(--color-slate)] mb-4">
-            {mode === 'listening'
-              ? 'Выбери перевод того, что слышишь:'
-              : 'Выбери правильный перевод:'}
-          </p>
+        <AnimatePresence mode="wait" custom={1}>
+          <motion.div
+            key={`${currentQuestion.wordId}-${currentIndex}`}
+            variants={slideVariants(1)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="card p-8"
+          >
+            <h1 className="mb-4 text-center text-body text-slate">
+              {mode === 'listening'
+                ? 'Выберите перевод того, что слышите:'
+                : 'Выберите правильный перевод:'}
+            </h1>
 
-          {mode === 'listening' ? (
-            <div className="flex flex-col items-center mb-8">
-              <button
-                onClick={() => play(currentQuestion.text)}
-                disabled={audioLoading}
-                aria-label="Прослушать слово"
-                className="w-24 h-24 rounded-full bg-[var(--color-primary)] text-white text-4xl flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-60"
-              >
-                {audioLoading ? (
-                  <span className="w-7 h-7 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                ) : (
-                  '🔊'
-                )}
-              </button>
-              <button
-                onClick={() => play(currentQuestion.text)}
-                className="mt-3 text-sm text-[var(--color-slate)] hover:text-[var(--color-primary)] transition-colors"
-              >
-                Прослушать ещё раз
-              </button>
-              {showResult && (
-                <p className="mt-4 text-2xl font-bold text-[var(--color-ink)]">
-                  {currentQuestion.text}
-                </p>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={() => play(currentQuestion.text)}
-              className="text-3xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors flex items-center justify-center gap-3 mx-auto mb-8"
-            >
-              {currentQuestion.text}
-              <svg className="w-6 h-6 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-              </svg>
-            </button>
-          )}
-
-          {/* Варианты ответов */}
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => {
-              let buttonClass = "w-full p-4 rounded-lg border-2 text-left transition-all ";
-              
-              if (showResult) {
-                if (index === currentQuestion.correctIndex) {
-                  buttonClass += "border-[var(--color-success)] bg-[rgba(26,156,60,0.10)] text-[var(--color-success)]";
-                } else if (index === selectedAnswer) {
-                  buttonClass += "border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] text-[var(--color-error)]";
-                } else {
-                  buttonClass += "border-[var(--color-hairline-strong)] text-[var(--color-slate)]";
-                }
-              } else {
-                buttonClass += "border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)] hover:bg-[var(--color-tint-mint)]";
-              }
-
-              return (
+            {mode === 'listening' ? (
+              <div className="mb-8 flex flex-col items-center">
                 <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  disabled={showResult}
-                  className={buttonClass}
+                  onClick={() => play(currentQuestion.text)}
+                  disabled={audioLoading}
+                  aria-label="Прослушать слово"
+                  className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-on-primary transition-transform duration-fast ease-soft hover:bg-primary-pressed active:scale-97 disabled:opacity-60"
                 >
-                  <span className="font-medium">{option}</span>
+                  {audioLoading ? (
+                    <SpinnerIcon size={24} className="animate-spin" label="Загрузка озвучки" />
+                  ) : (
+                    <VolumeIcon size={24} />
+                  )}
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Результат */}
-          {showResult && (
-            <div className="mt-6 text-center">
-              <p className={`text-lg font-medium ${selectedAnswer === currentQuestion.correctIndex ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
-                {selectedAnswer === currentQuestion.correctIndex 
-                  ? 'Правильно' 
-                  : `Неправильно. Правильный ответ: ${currentQuestion.options[currentQuestion.correctIndex]}`}
-              </p>
-              
-              <button onClick={handleNext} className="btn-primary mt-4">
-                {currentIndex < deck.length - 1 ? 'Следующий вопрос' : 'Завершить'}
+                <button
+                  onClick={() => play(currentQuestion.text)}
+                  className="mt-3 text-body-sm text-slate transition-colors duration-fast hover:text-primary"
+                >
+                  Прослушать ещё раз
+                </button>
+                <AnimatePresence>
+                  {showResult && (
+                    <motion.p
+                      variants={variants.fadeOnly}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="mt-4 text-h2 text-ink"
+                    >
+                      {currentQuestion.text}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                onClick={() => play(currentQuestion.text)}
+                className="mx-auto mb-8 flex items-center justify-center gap-3 text-h1 text-ink transition-colors duration-fast hover:text-primary"
+              >
+                {currentQuestion.text}
+                <VolumeIcon size={20} className="text-slate" />
               </button>
+            )}
+
+            {/* Варианты ответов */}
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, index) => {
+                const isCorrect = index === currentQuestion.correctIndex;
+                const isChosen = index === selectedAnswer;
+                let tone = 'border-hairline-strong text-ink hover:border-primary hover:bg-surface-accent';
+                if (showResult) {
+                  if (isCorrect) tone = 'border-semantic-success bg-surface-success text-on-success';
+                  else if (isChosen) tone = 'border-semantic-error bg-surface-danger text-on-danger';
+                  else tone = 'border-hairline-strong text-slate';
+                }
+
+                return (
+                  <motion.button
+                    key={index}
+                    onClick={() => handleAnswer(index)}
+                    disabled={showResult}
+                    whileTap={{ scale: 0.99 }}
+                    className={`w-full rounded-lg border-2 p-4 text-left transition-[background-color,border-color,color] duration-fast ease-soft ${tone}`}
+                  >
+                    <span className="font-medium">{option}</span>
+                  </motion.button>
+                );
+              })}
             </div>
-          )}
-        </div>
+
+            {/* Результат ответа */}
+            <AnimatePresence>
+              {showResult && (
+                <motion.div
+                  variants={variants.enter}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="mt-6 text-center"
+                >
+                  <p className={`text-h3 ${answered ? 'text-semantic-success' : 'text-semantic-error'}`}>
+                    {answered
+                      ? 'Верно'
+                      : `Неверно. Правильный ответ: ${currentQuestion.options[currentQuestion.correctIndex]}`}
+                  </p>
+                  <Button className="mt-4" onClick={handleNext}>
+                    {currentIndex < deck.length - 1 ? 'Следующий вопрос' : 'Завершить'}
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </AppLayout>
+  );
+}
+
+/** Скелет повторяет карточку теста: тот же блок вопроса и столбик вариантов. */
+function QuizSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mx-auto max-w-2xl animate-page-in">
+      <span className="sr-only">Загрузка вопросов теста</span>
+      <div className="mb-6 flex justify-center gap-2">
+        <Skeleton className="h-10 w-24 rounded-md" />
+        <Skeleton className="h-10 w-32 rounded-md" />
+      </div>
+      <Skeleton className="mb-2 h-4 w-40" />
+      <Skeleton className="mb-8 h-2 w-full rounded-full" />
+      <div className="card p-8">
+        <Skeleton className="mx-auto mb-4 h-4 w-56" />
+        <Skeleton className="mx-auto mb-8 h-10 w-64" />
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="mb-3 h-14 w-full rounded-lg" />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -395,9 +447,7 @@ export default function QuizPage() {
     <Suspense
       fallback={
         <AppLayout>
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-          </div>
+          <QuizSkeleton />
         </AppLayout>
       }
     >
