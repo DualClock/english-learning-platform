@@ -556,6 +556,64 @@
     @apply mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full;
   }
 
+  /*
+   * Чат с Alex: лента прокручивается внутри, поле ввода прижато к низу.
+   * 4rem — вертикальные отступы main на десктопе; на мобильном к ним
+   * добавляется шапка с бургером (h-14). dvh вместо vh — иначе адресная
+   * строка браузера на телефоне съедает строку ввода.
+   */
+  .chat-shell {
+    height: calc(100vh - 6.5rem);
+    height: calc(100dvh - 6.5rem);
+  }
+
+  @media (min-width: 1024px) {
+    .chat-shell {
+      height: calc(100vh - 4rem);
+      height: calc(100dvh - 4rem);
+    }
+  }
+
+  /* Колонка сообщения: 80% ленты, чтобы реплика не растягала всю ленту */
+  .chat-col {
+    min-width: 0;
+    max-width: 80%;
+  }
+
+  .chat-bubble {
+    @apply whitespace-pre-wrap break-words rounded-xl px-4 py-2.5 text-body;
+  }
+
+  /* Ответ Alex — приподнятая плоскость, моя реплика — фирменный цвет */
+  .chat-bubble-in {
+    @apply chat-bubble rounded-bl-sm border border-hairline bg-canvas text-ink;
+  }
+
+  .chat-bubble-out {
+    @apply chat-bubble rounded-br-sm bg-primary text-on-primary;
+  }
+
+  /* Быстрая реплика: подставляется в поле ввода, а не отправляется сразу */
+  .chip-button {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-canvas
+           px-3 py-1.5 text-caption text-slate
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-primary active:scale-97;
+  }
+
+  /* Кнопка записи: круглая, отклик — тон и пульс во время записи */
+  .mic-chip {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full
+           border border-hairline-strong bg-canvas text-slate
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-primary active:scale-97 disabled:opacity-60;
+  }
+
+  .mic-chip-recording {
+    @apply inline-flex h-11 w-11 shrink-0 animate-pulse items-center justify-center rounded-full
+           border border-transparent bg-semantic-error text-on-primary;
+  }
+
   /* Табы */
   .pill-tab {
     @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium text-slate

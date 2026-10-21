@@ -230,3 +230,11 @@ export const MailIcon = (p: P) => (
     <path d="m3.5 7 8.5 6 8.5-6" />
   </Icon>
 );
+
+/* Отправка сообщения */
+export const SendIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M21.5 2.5 11 13" />
+    <path d="M21.5 2.5 15 21l-4-8-8-4Z" />
+  </Icon>
+);

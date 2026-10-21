@@ -1,5 +1,7 @@
 'use client';
 
+import { CheckIcon, CloseIcon } from '@/components/ui/icons';
+
 export interface AssistantIssue {
   type: string;
   original: string;
@@ -15,10 +17,14 @@ export interface AssistantAnalysis {
   praise: string;
 }
 
-function scoreBadgeClass(score: number): string {
-  if (score >= 80) return 'bg-[rgba(26,156,60,0.15)] text-[var(--color-success)] border border-[rgba(26,156,60,0.30)]';
-  if (score >= 50) return 'bg-[rgba(249,231,159,0.25)] text-[#7A3A00] border border-[var(--color-tint-yellow-bold)]';
-  return 'bg-[rgba(217,45,32,0.10)] text-[var(--color-error)] border border-[rgba(217,45,32,0.30)]';
+/**
+ * Оценка внутри жёлтой карточки: тон плашки совпал бы с тоном бейджа,
+ * поэтому цифра получает цвет, а подложка — нейтральную.
+ */
+function scoreClass(score: number): string {
+  if (score >= 80) return 'text-semantic-success';
+  if (score >= 50) return 'text-on-warning';
+  return 'text-semantic-error';
 }
 
 function issueTypeLabel(type: string): string {
@@ -36,44 +42,50 @@ function issueTypeLabel(type: string): string {
 
 export default function AnalysisCard({ analysis }: { analysis: AssistantAnalysis }) {
   return (
-    <div className="mt-2 rounded-xl border border-[rgba(249,231,159,0.60)] bg-[var(--color-tint-yellow)] p-4 animate-fade-in">
-      <div className="flex items-center gap-3 mb-3">
-        <span className={`badge ${scoreBadgeClass(analysis.score)}`}>{analysis.score}/100</span>
+    <div className="animate-fade-in mt-2 rounded-xl border border-hairline bg-surface-warning p-4">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <span className={`badge bg-canvas ${scoreClass(analysis.score)}`}>{analysis.score}/100</span>
         {analysis.praise && (
-          <p className="text-sm text-[var(--color-ink)] font-medium">{analysis.praise}</p>
+          <p className="text-body-sm font-medium text-ink">{analysis.praise}</p>
         )}
       </div>
 
       {analysis.issues.length > 0 ? (
-        <ul className="space-y-2 mb-3">
+        <ul className="stagger mb-3 space-y-2">
           {analysis.issues.map((issue, idx) => (
-            <li key={idx} className="rounded-lg bg-white border border-[var(--color-hairline-strong)] p-3">
-              <span className="text-xs uppercase tracking-wide text-[var(--color-slate)]">
+            <li key={idx} className="rounded-lg border border-hairline bg-canvas p-3">
+              <span className="text-caption uppercase tracking-wide text-slate">
                 {issueTypeLabel(issue.type)}
               </span>
-              <p className="text-sm mt-1">
-                <span className="text-[var(--color-error)]">✗ {issue.original}</span>
-                <span className="text-[var(--color-slate)] mx-2">→</span>
-                <span className="text-[var(--color-success)] font-medium">✓ {issue.suggestion}</span>
+              <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm">
+                <span className="inline-flex items-center gap-1 text-semantic-error">
+                  <CloseIcon size={16} />
+                  {issue.original}
+                </span>
+                <span className="text-slate">→</span>
+                <span className="inline-flex items-center gap-1 font-medium text-semantic-success">
+                  <CheckIcon size={16} />
+                  {issue.suggestion}
+                </span>
               </p>
               {issue.explanation && (
-                <p className="text-xs text-[var(--color-slate)] mt-1">{issue.explanation}</p>
+                <p className="mt-1 text-caption text-slate">{issue.explanation}</p>
               )}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[var(--color-success)] mb-3">
+        <p className="mb-3 text-body-sm text-semantic-success">
           Ошибок не найдено — отличная работа!
         </p>
       )}
 
       {analysis.betterVersion && (
-        <div className="rounded-lg bg-[var(--color-tint-mint)] p-3">
-          <p className="text-xs uppercase tracking-wide text-[var(--color-primary)] mb-1">
+        <div className="rounded-lg bg-surface-success p-3">
+          <p className="mb-1 text-caption uppercase tracking-wide text-on-success">
             Как сказал бы носитель
           </p>
-          <p className="text-sm text-[var(--color-ink)]">{analysis.betterVersion}</p>
+          <p className="text-body-sm text-ink">{analysis.betterVersion}</p>
         </div>
       )}
     </div>
