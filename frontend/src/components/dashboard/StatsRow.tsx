@@ -7,7 +7,7 @@ import {
   StarIcon,
   type IconProps,
 } from '@/components/ui/icons';
-import { pluralBooks, pluralWords } from '@/lib/plural';
+import { plural, pluralBooks, pluralWords } from '@/lib/plural';
 
 interface Props {
   dictCount: number | null;
@@ -34,7 +34,7 @@ export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }
     },
     { value: booksCount, label: `${pluralBooks(booksCount)} в работе`, Icon: BookmarkIcon },
     ...(totalXp !== null && totalXp !== undefined
-      ? [{ value: totalXp, label: 'баллов набрано', Icon: StarIcon }]
+      ? [{ value: totalXp, label: `${plural(totalXp, ['балл', 'балла', 'баллов'])} набрано`, Icon: StarIcon }]
       : []),
   ];
 

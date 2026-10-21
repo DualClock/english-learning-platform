@@ -246,7 +246,9 @@ export default function ProgressPage() {
           <section className="card mb-6 p-6">
             <div className="mb-5 flex items-baseline justify-between">
               <h2 className="text-h3 text-ink">Эта неделя</h2>
-              <span className="text-body-sm text-slate">{weekMinutes} минут чтения</span>
+              <span className="text-body-sm text-slate">
+                {weekMinutes} {plural(weekMinutes, ['минута', 'минуты', 'минут'])} чтения
+              </span>
             </div>
 
             {weekMinutes === 0 ? (
