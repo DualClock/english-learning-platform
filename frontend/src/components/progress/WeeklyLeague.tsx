@@ -1,6 +1,18 @@
 'use client';
 
 import { useApiQuery } from '@/app/lib/use-api';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingState from '@/components/ui/LoadingState';
+import ProgressBar from '@/components/ui/ProgressBar';
+import {
+  GemIcon,
+  MedalIcon,
+  SparkIcon,
+  StarIcon,
+  TrophyIcon,
+  type IconProps,
+  type IconSize,
+} from '@/components/ui/icons';
 
 interface LeagueEntry {
   rank: number;
@@ -34,13 +46,22 @@ interface Leaderboard {
   entries: LeagueEntry[];
 }
 
-const LEAGUE_ICONS: Record<string, string> = {
-  bronze: '🥉',
-  silver: '🥈',
-  gold: '🥇',
-  platinum: '💠',
-  diamond: '💎',
+/*
+ * Ступени лиги — свои иконки вместо эмодзи-медалей: форма несёт смысл
+ * (место в таблице), а не цвет металла.
+ */
+const LEAGUE_ICONS: Record<string, (p: IconProps) => JSX.Element> = {
+  bronze: MedalIcon,
+  silver: StarIcon,
+  gold: TrophyIcon,
+  platinum: GemIcon,
+  diamond: SparkIcon,
 };
+
+function LeagueIcon({ league, size = 20 }: { league: string; size?: IconSize }) {
+  const Icon = LEAGUE_ICONS[league] ?? TrophyIcon;
+  return <Icon size={size} />;
+}
 
 function formatRange(start: string, end: string): string {
   const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
@@ -66,9 +87,14 @@ export default function WeeklyLeague() {
   const { data, isLoading } = useApiQuery<Leaderboard>('/api/progress/leaderboard');
 
   if (isLoading && !data) {
-    return <div className="card p-6 mb-6 h-40 animate-pulse bg-white" />;
+    return (
+      <section className="card mb-6 p-6" aria-label="Лига недели">
+        <LoadingState rows={4} label="Загрузка лиги недели" />
+      </section>
+    );
   }
 
+  // Блок факультативный: без лидерборда экран прогресса остаётся полезным.
   if (!data) return null;
 
   const { me, entries, leagues } = data;
@@ -82,48 +108,40 @@ export default function WeeklyLeague() {
     : 100;
 
   return (
-    <section className="card p-6 mb-6" aria-label="Лига недели">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
-        <h2 className="text-lg font-semibold text-[var(--color-ink)]">Лига недели</h2>
-        <span className="text-sm text-[var(--color-slate)]">
+    <section className="card mb-6 p-6" aria-label="Лига недели">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-h3 text-ink">Лига недели</h2>
+        <span className="text-body-sm text-slate">
           {formatRange(data.weekStart, data.weekEnd)} · {data.participants}{' '}
           {plural(data.participants, ['участник', 'участника', 'участников'])}
         </span>
       </div>
 
       {/* Своя позиция и лига */}
-      <div className="rounded-xl bg-[var(--color-tint-mint)] p-4 mb-5">
+      <div className="mb-5 rounded-xl bg-surface-accent p-4">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-3xl" aria-hidden="true">{LEAGUE_ICONS[me.league] ?? '🏅'}</span>
-          <div className="flex-1 min-w-[200px]">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="font-semibold text-[var(--color-ink)]">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-canvas text-on-accent">
+            <LeagueIcon league={me.league} size={24} />
+          </span>
+          <div className="min-w-52 flex-1">
+            <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <p className="font-semibold text-ink">
                 {me.leagueTitle}
                 {me.rank != null && (
-                  <span className="ml-2 text-sm font-normal text-[var(--color-slate)]">
-                    {me.rank} место из {data.participants}
+                  <span className="ml-2 text-body-sm font-normal text-slate">
+                    № {me.rank} из {data.participants}
                   </span>
                 )}
               </p>
-              <p className="text-sm text-[var(--color-slate)]">
-                <strong className="text-[var(--color-ink)]">{me.weeklyXp}</strong> XP за неделю
+              <p className="text-body-sm text-slate">
+                <strong className="text-ink">{me.weeklyXp}</strong> XP за неделю
               </p>
             </div>
 
-            <div
-              className="mt-2 h-2 rounded-full bg-[rgba(201,205,212,0.40)] overflow-hidden"
-              role="progressbar"
-              aria-valuenow={leaguePercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <div
-                className="h-full rounded-full bg-[var(--color-primary)] transition-all"
-                style={{ width: `${leaguePercent}%` }}
-              />
-            </div>
+            {/* Трек — цвет подложки панели: на цветной плашке hairline теряется. */}
+            <ProgressBar className="mt-2 bg-canvas" value={leaguePercent} label="Прогресс в лиге недели" />
 
-            <p className="text-xs text-[var(--color-slate)] mt-1.5">
+            <p className="mt-1.5 text-caption text-slate">
               {me.nextLeagueTitle != null
                 ? `До лиги «${me.nextLeagueTitle}» — ${me.xpToNextLeague} XP`
                 : 'Максимальная лига недели — держите темп'}
@@ -134,35 +152,39 @@ export default function WeeklyLeague() {
       </div>
 
       {entries.length === 0 ? (
-        <p className="text-sm text-[var(--color-slate)]">
-          На этой неделе ещё никто не набрал XP — сделайте первое повторение и возглавьте лигу.
-        </p>
+        <EmptyState
+          variant="inline"
+          className="border border-hairline"
+          icon={<TrophyIcon size={24} />}
+          title="На этой неделе ещё никто не набрал XP"
+          description="Сделайте первое повторение и возглавьте лигу."
+        />
       ) : (
-        <ol className="divide-y divide-[var(--color-hairline-strong)]">
+        <ol className="stagger divide-y divide-hairline">
           {entries.map((entry) => (
             <li
               key={`${entry.rank}-${entry.name}`}
               className={`flex items-center gap-3 py-2.5 ${entry.isMe ? 'font-semibold' : ''}`}
             >
               <span
-                className={`w-7 shrink-0 text-center text-sm ${
-                  entry.rank <= 3 ? 'text-[var(--color-primary)]' : 'text-[var(--color-slate)]'
+                className={`w-7 shrink-0 text-center text-body-sm ${
+                  entry.rank <= 3 ? 'text-primary' : 'text-slate'
                 }`}
               >
                 {entry.rank}
               </span>
-              <span className="text-lg shrink-0" aria-hidden="true">
-                {LEAGUE_ICONS[entry.league] ?? '🏅'}
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-canvas text-slate">
+                <LeagueIcon league={entry.league} size={16} />
               </span>
-              <span className="flex-1 min-w-0 truncate text-[var(--color-ink)]">
+              <span className="min-w-0 flex-1 truncate text-ink">
                 {entry.name}
-                {entry.isMe && <span className="ml-2 text-xs text-[var(--color-primary)]">это вы</span>}
+                {entry.isMe && <span className="ml-2 text-caption text-primary">это вы</span>}
               </span>
-              <span className="shrink-0 text-sm text-[var(--color-slate)] hidden sm:inline">
+              <span className="hidden shrink-0 text-body-sm text-slate sm:inline">
                 ур. {entry.level}
                 {entry.cefrLevel && ` · ${entry.cefrLevel.toUpperCase()}`}
               </span>
-              <span className="w-16 shrink-0 text-right text-sm text-[var(--color-ink)]">{entry.weeklyXp} XP</span>
+              <span className="w-16 shrink-0 text-right text-body-sm text-ink">{entry.weeklyXp} XP</span>
             </li>
           ))}
         </ol>
