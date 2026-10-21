@@ -4,10 +4,10 @@ import type { MetadataRoute } from 'next';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: '/',
-    name: 'Lexicon — учи английский через книги',
+    name: 'Lexicon — английский без зубрёжки',
     short_name: 'Lexicon',
     description:
-      'Читай книги на английском, переводи слова в один тап и повторяй их по системе интервальных повторений.',
+      'Чтение, словарь с повторениями, грамматика, произношение и письмо — в одной платформе.',
     lang: 'ru',
     start_url: '/',
     scope: '/',

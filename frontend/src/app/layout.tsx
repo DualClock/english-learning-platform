@@ -17,8 +17,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Lexicon — Учи английский через книги',
-  description: 'Платформа для изучения английского языка через чтение книг и интеллектуальные повторения',
+  title: 'Lexicon — английский без зубрёжки',
+  description:
+    'Читай, разбирай слова, тренируй грамматику, произношение и письмо. Lexicon возвращает пройденное в нужный момент.',
   applicationName: 'Lexicon',
   // Иконки (favicon, icon, apple-icon) Next подхватывает из src/app автоматически
   appleWebApp: {

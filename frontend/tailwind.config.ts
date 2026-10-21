@@ -17,6 +17,7 @@ const config: Config = {
         "navy-deep": "var(--color-navy-deep)",
         link: "var(--color-link)",
         canvas: "var(--color-canvas)",
+        "ground-warm": "var(--color-ground-warm)",
         scrim: "var(--color-scrim)",
         hairline: "var(--color-hairline)",
         "hairline-soft": "var(--color-hairline-soft)",
@@ -70,6 +71,7 @@ const config: Config = {
       },
       fontSize: {
         /* Шкала типографики. Пять рабочих размеров; caption — пол (13px). */
+        hero: ["clamp(2.75rem, 7vw, 5.75rem)", { lineHeight: "0.98", letterSpacing: "-0.035em", fontWeight: "700" }],
         display: ["clamp(2.75rem, 8.5vw, 6.5rem)", { lineHeight: "0.92", letterSpacing: "-0.04em", fontWeight: "700" }],
         h1: ["clamp(1.75rem, 3.2vw, 2.75rem)", { lineHeight: "1.12", letterSpacing: "-0.025em", fontWeight: "600" }],
         h2: ["1.3125rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "600" }],

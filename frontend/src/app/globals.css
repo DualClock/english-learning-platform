@@ -15,6 +15,11 @@
   --color-canvas: #FFFFFF;
   --color-surface: #F6F7F9;
   --color-surface-soft: #FAFAFB;
+  /*
+   * Тёплое поле публичных страниц. Глубже tint-peach: на нём белая карточка
+   * читается как лист бумаги, а не растворяется в фоне.
+   */
+  --color-ground-warm: #F7DAC1;
   --color-hairline: #E5E7EB;
   --color-hairline-soft: #EEF0F3;
   --color-hairline-strong: #C9CDD4;
@@ -110,6 +115,7 @@
   --color-canvas: #0A1B2E;
   --color-surface: #071426;
   --color-surface-soft: #0E2237;
+  --color-ground-warm: #3A2717;
   --color-hairline: #1F3550;
   --color-hairline-soft: #18283D;
   --color-hairline-strong: #33506B;
