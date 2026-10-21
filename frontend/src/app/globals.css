@@ -44,6 +44,16 @@
   --color-tint-yellow-bold: #F9E79F;
   --color-tint-teal: #D6EFEE;
 
+  /*
+   * Маскот Lexi остаётся бумажным в обеих темах: это физический объект,
+   * а не поверхность интерфейса. Меняются только яркость бумаги и линия.
+   */
+  --color-lexi-paper: #FFF2D8;
+  --color-lexi-fold: #F3D3A6;
+  --color-lexi-line: #17314C;
+  --color-lexi-blush: #F3B39B;
+  --color-lexi-accent: #0E7C7B;
+
   /* Semantic */
   --color-success: #1A9C3C;
   --color-warning: #B45309;
@@ -139,6 +149,13 @@
   --color-tint-yellow: #33301A;
   --color-tint-yellow-bold: #4A441F;
   --color-tint-teal: #0F3534;
+
+  /* Бумага не светит в темноте: чуть приглушаем, но оставляем тёплой */
+  --color-lexi-paper: #F6E6C6;
+  --color-lexi-fold: #E5C59A;
+  --color-lexi-line: #102A44;
+  --color-lexi-blush: #EFA992;
+  --color-lexi-accent: #7FDCD5;
 
   /* Semantic */
   --color-success: #3DBB60;

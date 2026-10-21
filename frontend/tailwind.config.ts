@@ -40,6 +40,13 @@ const config: Config = {
           "yellow-bold": "var(--color-tint-yellow-bold)",
           teal: "var(--color-tint-teal)",
         },
+        lexi: {
+          paper: "var(--color-lexi-paper)",
+          fold: "var(--color-lexi-fold)",
+          line: "var(--color-lexi-line)",
+          blush: "var(--color-lexi-blush)",
+          accent: "var(--color-lexi-accent)",
+        },
         semantic: {
           success: "var(--color-success)",
           warning: "var(--color-warning)",

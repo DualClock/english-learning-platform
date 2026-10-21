@@ -1,7 +1,8 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import LexiPeek, { type LexiMood } from '@/components/brand/lexi/LexiPeek';
 import LevelChip from '@/components/ui/LevelChip';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { BookOpenIcon, CheckIcon, PlusIcon, VolumeIcon } from '@/components/ui/icons';
@@ -69,18 +70,58 @@ function WordButton({ wordKey, isActive, onSelect }: WordButtonProps) {
 export default function ReaderDemo() {
   const [activeKey, setActiveKey] = useState<WordKey>('tired');
   const [savedKeys, setSavedKeys] = useState<WordKey[]>([]);
+  const [lexiMood, setLexiMood] = useState<LexiMood>('neutral');
+  const [lexiReaction, setLexiReaction] = useState(0);
+  const moodTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { speak } = useSpeech();
 
   const activeWord = WORDS[activeKey];
   const isSaved = savedKeys.includes(activeKey);
 
+  useEffect(
+    () => () => {
+      if (moodTimer.current) clearTimeout(moodTimer.current);
+    },
+    [],
+  );
+
+  const react = (next: LexiMood, hold: number) => {
+    setLexiMood(next);
+    setLexiReaction((count) => count + 1);
+    if (moodTimer.current) clearTimeout(moodTimer.current);
+    moodTimer.current = setTimeout(() => setLexiMood('neutral'), hold);
+  };
+
+  const selectWord = (key: WordKey) => {
+    if (key === activeKey) return;
+    setActiveKey(key);
+    react('curious', 1100);
+  };
+
   const saveWord = () => {
     if (isSaved) return;
     setSavedKeys((current) => [...current, activeKey]);
+    react('proud', 1700);
   };
+
+  const lexiFocus =
+    lexiMood === 'proud'
+      ? { x: 0, y: -0.3 }
+      : lexiMood === 'curious'
+        ? { x: 0.9, y: 0.9 }
+        : { x: 0.5, y: 0.8 };
 
   return (
     <div className="relative">
+      <div className="relative z-10 -mb-0.5 pl-5 sm:pl-6">
+        <LexiPeek
+          mood={lexiMood}
+          focus={lexiFocus}
+          reaction={lexiReaction}
+          className="w-36 sm:w-44"
+        />
+      </div>
+
       <div data-ui className="relative rounded-xl bg-canvas p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-2 text-caption text-charcoal">
@@ -95,16 +136,16 @@ export default function ReaderDemo() {
           <WordButton
             wordKey="tired"
             isActive={activeKey === 'tired'}
-            onSelect={setActiveKey}
+            onSelect={selectWord}
           />{' '}
           of sitting by her sister on the{' '}
-          <WordButton wordKey="bank" isActive={activeKey === 'bank'} onSelect={setActiveKey} />
+          <WordButton wordKey="bank" isActive={activeKey === 'bank'} onSelect={selectWord} />
           , and of having nothing to do: once or twice she had peeped into the book her sister
           was reading, but it had no pictures or{' '}
           <WordButton
             wordKey="conversations"
             isActive={activeKey === 'conversations'}
-            onSelect={setActiveKey}
+            onSelect={selectWord}
           />{' '}
           in it.
         </p>
