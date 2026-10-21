@@ -4,10 +4,20 @@ import AppLayout from '@/components/AppLayout';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTrack } from '@/app/lib/analytics';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
+import { pluralWords } from '@/lib/plural';
+import { slideVariants, variants } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Tag } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { AlertIcon, CheckIcon, InboxIcon, VolumeIcon } from '@/components/ui/icons';
 
 interface Word {
   wordId: number;
@@ -37,7 +47,7 @@ export default function ReviewPage() {
   // Сессия повторения: колода всегда запрашивается свежей (maxAgeMs: 0),
   // но после первой загрузки работаем с локальным снимком — ответы и позиция
   // не должны «мигать» из-за фонового обновления или перерисовок.
-  const { data, isLoading } = useApiQuery<ReviewTodayResponse>('/api/review/today', {
+  const { data, error: loadError, isLoading, refresh } = useApiQuery<ReviewTodayResponse>('/api/review/today', {
     maxAgeMs: 0,
     enabled: status === 'authenticated',
   });
@@ -67,7 +77,7 @@ export default function ReviewPage() {
     if (words.length > 0 && currentIndex < words.length) {
       speak(words[currentIndex].text);
     }
-  }, [currentIndex, words]);
+  }, [currentIndex, words, speak]);
 
   const handleQuality = async (quality: number) => {
     const word = words[currentIndex];
@@ -108,8 +118,20 @@ export default function ReviewPage() {
   if (isLoading && data === undefined) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
+        <ReviewSkeleton />
+      </AppLayout>
+    );
+  }
+
+  if (loadError && data === undefined) {
+    return (
+      <AppLayout>
+        <div className="mx-auto max-w-md">
+          <ErrorState
+            title="Расписание повторений не загрузилось"
+            description="Сервер не прислал колоду на сегодня. Проверьте соединение и попробуйте снова."
+            onRetry={refresh}
+          />
         </div>
       </AppLayout>
     );
@@ -118,18 +140,21 @@ export default function ReviewPage() {
   if (isFinished) {
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(14,124,123,0.10)] flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <motion.div
+          variants={variants.enter}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto max-w-md py-12 text-center"
+        >
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-surface-accent text-on-accent">
+            <CheckIcon size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Повторение завершено</h1>
-          <p className="text-[var(--color-slate)] mb-8">Повторено {words.length} слов</p>
-          <button onClick={() => router.push('/dashboard')} className="btn-primary">
-            На главную
-          </button>
-        </div>
+          <h1 className="mb-2 text-h1 text-ink">Повторение завершено</h1>
+          <p className="mb-8 text-body-lg text-slate">
+            Повторено {words.length.toLocaleString('ru-RU')} {pluralWords(words.length)}
+          </p>
+          <Button onClick={() => router.push('/dashboard')}>На главную</Button>
+        </motion.div>
       </AppLayout>
     );
   }
@@ -137,18 +162,14 @@ export default function ReviewPage() {
   if (words.length === 0) {
     return (
       <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[var(--color-tint-mint)] flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--color-slate)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-2">Нет слов на сегодня</h1>
-          <p className="text-[var(--color-slate)] mb-8">Добавь новые слова в словарь</p>
-          <button onClick={() => router.push('/dictionary/add')} className="btn-primary">
-            Добавить слово
-          </button>
-        </div>
+        <EmptyState
+          icon={<InboxIcon size={24} />}
+          title="На сегодня слов нет"
+          description="Расписание пустое: все сохранённые слова уже повторены. Добавьте новые — из читалки или вручную."
+          action={
+            <Button href="/dictionary/add">Добавить слово</Button>
+          }
+        />
       </AppLayout>
     );
   }
@@ -157,134 +178,161 @@ export default function ReviewPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="mx-auto max-w-2xl">
         {saveError && (
           <div
             role="alert"
-            className="mb-4 p-4 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)]"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-semantic-error bg-surface-danger p-4 text-body-sm text-on-danger"
           >
-            {saveError}
+            <AlertIcon size={20} />
+            <span>{saveError}</span>
           </div>
         )}
 
         {/* Прогресс */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-[var(--color-slate)] mb-2">
-            <span>Слово {currentIndex + 1} из {words.length}</span>
+          <div className="mb-2 flex justify-between text-body-sm text-slate">
+            <span className="tabular-nums">Слово {currentIndex + 1} из {words.length}</span>
             <span>
               {reviewCount > 0 || newCount > 0
-                ? `${reviewCount} на повторение · ${newCount} новых`
+                ? `${reviewCount} на повторение · ${newCount} ${pluralWords(newCount)}`
                 : `Всего на сегодня: ${totalCount}`}
             </span>
           </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={((currentIndex + 1) / words.length) * 100}
+            label={`Пройдено ${currentIndex + 1} из ${words.length}`}
+          />
           {nextHint && (
-            <p className="text-xs text-[var(--color-slate)] mt-2">{nextHint}</p>
+            <p className="mt-2 text-caption text-slate">{nextHint}</p>
           )}
         </div>
 
         {/* Карточка */}
-        <div className="card p-8 mb-6">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => speak(currentWord.text)}
-                className="text-4xl font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors"
-              >
-                {currentWord.text}
-              </button>
-              <button
-                onClick={() => speak(currentWord.text)}
-                className="p-2 text-xl rounded-full hover:bg-[var(--color-tint-mint)] transition-colors"
-                title="Произнести"
-                aria-label="Произнести слово"
-              >
-                🔊
-              </button>
+        <AnimatePresence mode="wait" custom={1}>
+          <motion.div
+            key={currentWord.wordId}
+            variants={slideVariants(1)}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="card mb-6 p-8"
+          >
+            <div className="mb-6 text-center">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <h1 className="break-words text-h1 text-ink">
+                  <button
+                    onClick={() => speak(currentWord.text)}
+                    className="transition-colors duration-fast hover:text-primary"
+                  >
+                    {currentWord.text}
+                  </button>
+                </h1>
+                <button
+                  onClick={() => speak(currentWord.text)}
+                  className="icon-chip shrink-0 border-transparent bg-transparent hover:bg-surface"
+                  title="Произнести"
+                  aria-label="Произнести слово"
+                >
+                  <VolumeIcon size={20} />
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                {currentWord.isNew && <Tag tone="info">Новое слово</Tag>}
+                {currentWord.isLeech && <Tag tone="warning">Трудное слово</Tag>}
+              </div>
+              <p className="mt-2 text-body-sm text-slate">Нажмите на слово, чтобы услышать</p>
             </div>
-            {currentWord.isNew && (
-              <span className="badge badge-primary text-xs mt-3 inline-block">Новое слово</span>
-            )}
-            {currentWord.isLeech && (
-              <span className="badge text-xs mt-3 ml-2 inline-block bg-[rgba(249,231,159,0.30)] text-[#7A3A00]">
-                Трудное слово
-              </span>
-            )}
-            <p className="text-sm text-[var(--color-slate)] mt-2">Нажми для озвучки</p>
-          </div>
 
-          {showAnswer ? (
-            <div className="border-t border-[var(--color-hairline-strong)] pt-6">
-              {currentWord.definitions.map((def, idx) => (
-                <div key={idx} className="text-center">
-                  <p className="text-xl text-[var(--color-ink)]">{def.definition}</p>
-                  {def.partOfSpeech && (
-                    <span className="badge badge-primary mt-2">{def.partOfSpeech}</span>
-                  )}
-                  {def.example && (
-                    <div className="mt-4">
-                      <p className="text-[var(--color-slate)] italic">«{def.example}»</p>
-                      <button
-                        onClick={() => speak(def.example!)}
-                        className="text-sm text-[var(--color-primary)] hover:underline mt-1 flex items-center gap-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                        </svg>
-                        Озвучить пример
-                      </button>
+            <AnimatePresence mode="wait">
+              {showAnswer ? (
+                <motion.div
+                  key="answer"
+                  variants={variants.fadeOnly}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="border-t border-hairline pt-6"
+                >
+                  {currentWord.definitions.map((def, idx) => (
+                    <div key={idx} className="text-center">
+                      <p className="text-h3 text-ink">{def.definition}</p>
+                      {def.partOfSpeech && (
+                        <span className="mt-2 inline-block">
+                          <Tag tone="neutral">{def.partOfSpeech}</Tag>
+                        </span>
+                      )}
+                      {def.example && (
+                        <div className="mt-4">
+                          <p className="text-body text-slate italic">«{def.example}»</p>
+                          <button
+                            onClick={() => speak(def.example!)}
+                            className="mx-auto mt-1 inline-flex items-center gap-1.5 text-body-sm font-medium text-primary hover:underline"
+                          >
+                            <VolumeIcon size={16} />
+                            Озвучить пример
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center">
-              <button
-                onClick={() => setShowAnswer(true)}
-                className="btn-secondary"
-              >
-                Показать ответ
-              </button>
-            </div>
-          )}
-        </div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="question"
+                  variants={variants.fadeOnly}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="text-center"
+                >
+                  <Button variant="secondary" onClick={() => setShowAnswer(true)}>
+                    Показать ответ
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Кнопки оценки */}
+        {/* Оценка ответа: от «забыл» к «легко» цвет идёт по той же шкале, что и состояния */}
         {showAnswer && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <button
-              onClick={() => handleQuality(1)}
-              className="py-4 rounded-lg bg-[rgba(217,45,32,0.10)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
-            >
-              Забыл
-            </button>
-            <button
-              onClick={() => handleQuality(3)}
-              className="py-4 rounded-lg bg-[rgba(249,231,159,0.20)] text-[#7A3A00] font-medium hover:bg-[var(--color-tint-yellow-bold)] hover:text-[var(--color-ink)] transition-colors"
-            >
-              Трудно
-            </button>
-            <button
-              onClick={() => handleQuality(4)}
-              className="py-4 rounded-lg bg-[rgba(26,156,60,0.10)] text-[var(--color-success)] font-medium hover:bg-[var(--color-success)] hover:text-white transition-colors"
-            >
-              Хорошо
-            </button>
-            <button
-              onClick={() => handleQuality(5)}
-              className="py-4 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-pressed)] transition-colors"
-            >
-              Легко
-            </button>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {QUALITY.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleQuality(option.value)}
+                className={`h-12 rounded-lg text-body font-semibold transition-[background-color,color,transform] duration-fast ease-soft active:scale-97 ${option.className}`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         )}
       </div>
     </AppLayout>
+  );
+}
+
+const QUALITY = [
+  { value: 1, label: 'Забыл', className: 'bg-surface-danger text-on-danger hover:bg-semantic-error hover:text-on-primary' },
+  { value: 3, label: 'Трудно', className: 'bg-surface-warning text-on-warning hover:bg-surface-highlight' },
+  { value: 4, label: 'Хорошо', className: 'bg-surface-success text-on-success hover:bg-semantic-success hover:text-on-primary' },
+  { value: 5, label: 'Легко', className: 'bg-primary text-on-primary hover:bg-primary-pressed' },
+];
+
+/** Скелет повторяет карточку повторения: та же колонка и тот же ритм. */
+function ReviewSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mx-auto max-w-2xl animate-page-in">
+      <span className="sr-only">Загрузка слов на сегодня</span>
+      <Skeleton className="mb-2 h-4 w-48" />
+      <Skeleton className="mb-8 h-2 w-full rounded-full" />
+      <div className="card p-8 text-center">
+        <Skeleton className="mx-auto mb-4 h-10 w-56" />
+        <Skeleton className="mx-auto mb-8 h-4 w-40" />
+        <Skeleton className="mx-auto h-11 w-40 rounded-lg" />
+      </div>
+    </div>
   );
 }
