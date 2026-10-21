@@ -43,7 +43,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className={`${manrope.variable} ${inter.variable}`}>
-      <body className="font-sans bg-[var(--color-surface)] text-[var(--color-ink)]">
+      <body className="font-sans bg-surface text-ink">
         <Providers>{children}</Providers>
       </body>
     </html>

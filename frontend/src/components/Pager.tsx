@@ -1,5 +1,9 @@
 'use client';
 
+import { motion } from 'motion/react';
+import { ArrowLeftIcon, ArrowRightIcon } from './ui/icons';
+import { transition } from '@/lib/motion';
+
 interface PagerProps {
   page: number;
   totalPages: number;
@@ -16,21 +20,33 @@ export default function Pager({ page, totalPages, onPageChange }: PagerProps) {
       aria-label="Пагинация"
     >
       <button
+        type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+        className="btn-secondary"
       >
-        ← Назад
+        <ArrowLeftIcon size={16} />
+        Назад
       </button>
-      <span className="text-sm text-[var(--color-slate)]">
+      {/* Счётчик проявляется заново при смене страницы — тот же сигнал, что и у обновившегося списка */}
+      <motion.span
+        key={page}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={transition.fast}
+        className="text-body-sm text-slate tabular-nums"
+        aria-live="polite"
+      >
         Страница {page} из {totalPages}
-      </span>
+      </motion.span>
       <button
+        type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+        className="btn-secondary"
       >
-        Вперёд →
+        Вперёд
+        <ArrowRightIcon size={16} />
       </button>
     </nav>
   );

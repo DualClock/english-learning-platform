@@ -33,6 +33,8 @@ export const transition = {
   slow: { duration: duration.slow, ease: ease.soft },
   /** Вход блока на экран */
   enter: { duration: duration.entrance, ease: ease.soft },
+  /** Смена кадра/страницы: короткое проявление без travel */
+  page: { duration: duration.page, ease: ease.soft },
   /** Отзыв на верный ответ: лёгкий перелёт */
   correct: { type: 'spring' as const, duration: 0.5, bounce: 0.4 },
   /** Отзыв на ошибку: короткий, без перелёта */

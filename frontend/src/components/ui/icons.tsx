@@ -40,6 +40,9 @@ type P = IconProps;
 export const HomeIcon = (p: P) => (
   <Icon {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 22V12h6v10" /></Icon>
 );
+export const MenuIcon = (p: P) => (
+  <Icon {...p}><path d="M4 6h16M4 12h16M4 18h16" /></Icon>
+);
 export const BooksIcon = (p: P) => (
   <Icon {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></Icon>
 );

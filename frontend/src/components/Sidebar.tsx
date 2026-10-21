@@ -5,7 +5,23 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { resolveAvatarSrc } from '@/app/lib/avatars';
 import { prefetchApi } from '@/app/lib/api-client';
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, type ComponentType } from 'react';
+import {
+  BookOpenIcon,
+  BooksIcon,
+  BotIcon,
+  FoldersIcon,
+  HeadphonesIcon,
+  HomeIcon,
+  MicIcon,
+  NotebookIcon,
+  PenIcon,
+  RepeatIcon,
+  SlidersIcon,
+  TestIcon,
+  TrendUpIcon,
+  type IconProps,
+} from './ui/icons';
 
 /** Данные, которые нужно прогреть в кэш при наведении на пункт меню. */
 const ROUTE_PREFETCH: Record<string, string[]> = {
@@ -23,39 +39,20 @@ const ROUTE_PREFETCH: Record<string, string[]> = {
   '/settings': ['/api/profile'],
 };
 
-const navigation: { name: string; href: string; icon: ReactNode }[] = [
-  { name: 'Главная', href: '/dashboard', icon: '🏠' },
-  { name: 'Библиотека', href: '/books', icon: '📚' },
-  { name: 'Словарь', href: '/dictionary', icon: '📝' },
-  { name: 'Категории', href: '/categories', icon: '🗂️' },
-  { name: 'Повторение', href: '/review', icon: '🔄' },
-  { name: 'Прогресс', href: '/progress', icon: '📈' },
-  { name: 'Грамматика', href: '/grammar', icon: <GrammarIcon /> },
-  { name: 'Тест', href: '/quiz', icon: '✓' },
-  { name: 'Аудирование', href: '/practice/dictation', icon: '🎧' },
-  { name: 'Произношение', href: '/practice/pronunciation', icon: '🗣️' },
-  { name: 'Письмо', href: '/writing', icon: '✍️' },
-  { name: 'AI Собеседник', href: '/translator', icon: '🤖' },
+const navigation: { name: string; href: string; Icon: ComponentType<IconProps> }[] = [
+  { name: 'Главная', href: '/dashboard', Icon: HomeIcon },
+  { name: 'Библиотека', href: '/books', Icon: BooksIcon },
+  { name: 'Словарь', href: '/dictionary', Icon: NotebookIcon },
+  { name: 'Категории', href: '/categories', Icon: FoldersIcon },
+  { name: 'Повторение', href: '/review', Icon: RepeatIcon },
+  { name: 'Прогресс', href: '/progress', Icon: TrendUpIcon },
+  { name: 'Грамматика', href: '/grammar', Icon: BookOpenIcon },
+  { name: 'Тест', href: '/quiz', Icon: TestIcon },
+  { name: 'Аудирование', href: '/practice/dictation', Icon: HeadphonesIcon },
+  { name: 'Произношение', href: '/practice/pronunciation', Icon: MicIcon },
+  { name: 'Письмо', href: '/writing', Icon: PenIcon },
+  { name: 'AI Собеседник', href: '/translator', Icon: BotIcon },
 ];
-
-function GrammarIcon() {
-  return (
-    <svg
-      className="w-5 h-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 6.2C10.4 4.8 8.4 4.2 6 4.2c-1 0-2 .1-3 .4v13.9c1-.3 2-.4 3-.4 2.4 0 4.4.6 6 2 1.6-1.4 3.6-2 6-2 1 0 2 .1 3 .4V4.6c-1-.3-2-.4-3-.4-2.4 0-4.4.6-6 2zm0 0v13.9"
-      />
-    </svg>
-  );
-}
 
 interface SidebarProps {
   open?: boolean;
@@ -80,26 +77,28 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
   );
 
   const linkClass = (isActive: boolean) =>
-    `flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium transition-colors ${
+    `flex items-center gap-3 px-4 py-2.5 rounded-full text-body-sm font-medium transition-colors duration-fast ease-soft ${
       isActive
-        ? 'bg-white text-[var(--color-navy)]'
-        : 'text-[var(--color-on-dark-muted)] hover:bg-white/10 hover:text-white'
+        ? 'bg-on-dark text-navy-deep'
+        : 'text-on-dark-muted hover:bg-white/10 hover:text-on-dark'
     }`;
 
   return (
     <>
-      {/* Оверлей для мобильного drawer */}
+      {/* Оверлей для мобильного drawer. В закрытом состоянии снимается через
+          visibility, чтобы не лежать невидимым слоем над всем текстом страницы. */}
       <div
-        className={`fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden ${
-          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 z-30 bg-black/40 transition-[opacity,visibility] duration-fast ease-soft lg:hidden ${
+          open ? 'opacity-100' : 'opacity-0 invisible pointer-events-none'
         }`}
         onClick={onClose}
         aria-hidden="true"
       />
 
       <aside
-        className={`fixed left-0 top-0 h-full w-64 bg-navy flex flex-col z-40 transition-transform duration-200
-          ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`fixed left-0 top-0 h-full w-64 bg-navy flex flex-col z-40
+          transition-[transform,visibility] duration-base ease-soft
+          ${open ? 'translate-x-0 visible' : '-translate-x-full invisible'} lg:translate-x-0 lg:visible`}
         aria-label="Основная навигация"
         role={open ? 'dialog' : undefined}
         aria-modal={open ? true : undefined}
@@ -107,56 +106,42 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
           if (e.key === 'Escape') onClose?.();
         }}
       >
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
-          <Link href="/dashboard" className="text-xl font-semibold text-white font-heading" onClick={onClose}>
+        <div className="h-16 flex items-center px-6">
+          <Link href="/dashboard" className="text-h2 font-heading text-on-dark" onClick={onClose}>
             Lexicon
           </Link>
         </div>
 
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+          {navigation.map(({ name, href, Icon }) => {
+            const isActive = pathname === href || pathname?.startsWith(href + '/');
 
             return (
               <Link
-                key={item.name}
-                href={item.href}
+                key={name}
+                href={href}
                 onClick={onClose}
-                onMouseEnter={() => warmRoute(item.href)}
-                onFocus={() => warmRoute(item.href)}
-                onTouchStart={() => warmRoute(item.href)}
+                onMouseEnter={() => warmRoute(href)}
+                onFocus={() => warmRoute(href)}
+                onTouchStart={() => warmRoute(href)}
                 className={linkClass(isActive)}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <span className="text-lg leading-none" aria-hidden="true">{item.icon}</span>
-                {item.name}
+                <Icon size={20} className="shrink-0" />
+                {name}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 pt-2">
           <Link
             href="/settings"
             onClick={onClose}
             className={`${linkClass(pathname === '/settings')} mb-3`}
             aria-current={pathname === '/settings' ? 'page' : undefined}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.8}
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
+            <SlidersIcon size={20} className="shrink-0" />
             Настройки
           </Link>
           <div className="flex items-center gap-3 px-2 py-2">
@@ -169,12 +154,12 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-body-sm font-medium text-on-dark truncate">
                 {session?.user?.email}
               </p>
               <Link
                 href="/api/auth/signout"
-                className="text-xs text-[var(--color-on-dark-muted)] hover:text-white"
+                className="text-caption text-on-dark-muted hover:text-on-dark transition-colors duration-fast ease-soft"
               >
                 Выйти
               </Link>

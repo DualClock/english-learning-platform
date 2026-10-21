@@ -1252,7 +1252,7 @@ export default function ReaderPage() {
 
   if (isLoading) {
     return (
-      <AppLayout fullWidth>
+      <AppLayout width="full">
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
         </div>
@@ -1262,7 +1262,7 @@ export default function ReaderPage() {
 
   if (error || !book) {
     return (
-      <AppLayout fullWidth>
+      <AppLayout width="full">
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(217,45,32,0.10)] flex items-center justify-center">
             <svg className="w-8 h-8 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1376,7 +1376,7 @@ export default function ReaderPage() {
   };
 
   return (
-    <AppLayout fullWidth>
+    <AppLayout width="full">
       {/* Шапка книги */}
       <div className="mb-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
