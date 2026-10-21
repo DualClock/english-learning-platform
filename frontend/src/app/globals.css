@@ -601,6 +601,14 @@
            hover:border-primary hover:text-primary active:scale-97;
   }
 
+  /* Выбранный чип — фирменная плашка: тот же силуэт, другой смысл */
+  .chip-button-active {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary
+           px-3 py-1.5 text-caption font-medium text-on-primary
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-on-primary active:scale-97;
+  }
+
   /* Кнопка записи: круглая, отклик — тон и пульс во время записи */
   .mic-chip {
     @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full

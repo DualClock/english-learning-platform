@@ -27,7 +27,8 @@ function scoreClass(score: number): string {
   return 'text-semantic-error';
 }
 
-function issueTypeLabel(type: string): string {
+/** Бэкенд присылает код типа ошибки — показываем человеческое слово. */
+export function issueTypeLabel(type: string): string {
   switch (type) {
     case 'grammar':
       return 'грамматика';

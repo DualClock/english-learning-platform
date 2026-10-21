@@ -1,11 +1,22 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import Link from 'next/link';
+import { issueTypeLabel } from '@/components/assistant/AnalysisCard';
+import Button from '@/components/ui/Button';
+import LevelChip from '@/components/ui/LevelChip';
+import LoadingState from '@/components/ui/LoadingState';
+import Notice from '@/components/ui/Notice';
+import PageHeader from '@/components/ui/PageHeader';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { CheckIcon, CloseIcon, SpinnerIcon } from '@/components/ui/icons';
+import { Tag } from '@/components/ui/Badge';
+import { AnimatePresence, motion } from 'motion/react';
+import { variants } from '@/lib/motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
+import { pluralWords } from '@/lib/plural';
 
 interface WritingTopic {
   id: string;
@@ -181,178 +192,193 @@ export default function WritingPage() {
     }
   };
 
+  /** Пороги числа: 80 — успех, 55 — рабочий акцент, ниже — ошибка. */
   const scoreColor = (score: number) =>
     score >= 80
-      ? 'text-[var(--color-success)]'
+      ? 'text-semantic-success'
       : score >= 55
-        ? 'text-[var(--color-primary)]'
-        : 'text-[var(--color-error)]';
+        ? 'text-primary'
+        : 'text-semantic-error';
 
   if (status === 'loading') {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin" />
-        </div>
+        <LoadingState rows={3} label="Загрузка темы для письма" />
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--color-ink)] mb-1">Письмо</h1>
-          <p className="text-sm text-[var(--color-slate)]">
-            Напишите текст на английском — Alex проверит грамматику, подскажет естественные формулировки
-            и покажет исправленную версию.
-          </p>
-        </div>
+      <div className="mx-auto max-w-3xl">
+        <PageHeader
+          title="Письмо"
+          subtitle="Напишите текст на английском — Alex проверит грамматику, подскажет естественные формулировки и покажет исправленную версию."
+        />
 
-        {/* Темы */}
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+        {/* Темы: перенос, а не горизонтальный скролл — все восемь должны быть видно сразу */}
+        <div className="mb-4 flex flex-wrap gap-2">
           {TOPICS.map((item) => (
             <button
               key={item.id}
               onClick={() => setTopicId(item.id)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                item.id === topicId
-                  ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                  : 'bg-white text-[var(--color-slate)] border-[var(--color-hairline-strong)] hover:border-[var(--color-primary)]'
-              }`}
+              aria-pressed={item.id === topicId}
+              className={`shrink-0 ${item.id === topicId ? 'chip-button-active' : 'chip-button'}`}
             >
               {item.title}
             </button>
           ))}
         </div>
 
-        <div className="card p-6 mb-4">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-[var(--color-ink)]">{topic.title}</h2>
-            <span className="text-xs px-2 py-1 rounded-full bg-[var(--color-tint-mint)] text-[var(--color-primary)]">
-              {topic.level}
-            </span>
+        <div className="card mb-4">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h2 className="text-h3 text-ink">{topic.title}</h2>
+            <LevelChip level={topic.level}>{topic.level}</LevelChip>
           </div>
-          <p className="text-sm text-[var(--color-slate)] leading-relaxed">{topic.prompt}</p>
-          <p className="text-xs text-[var(--color-slate)] mt-2">
-            Ориентир по объёму: от {topic.minWords} слов
+          <p className="max-w-measure text-body-sm leading-relaxed text-slate">{topic.prompt}</p>
+          <p className="mt-2 text-caption text-slate">
+            Ориентир по объёму: от {topic.minWords} {pluralWords(topic.minWords)}
           </p>
         </div>
 
-        <div className="card p-6 mb-4">
+        <div className="card mb-4">
+          <label className="sr-only" htmlFor="writing-text">
+            Текст письма на английском
+          </label>
           <textarea
+            id="writing-text"
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
             rows={9}
             placeholder="Write your text in English…"
-            className="input w-full resize-y min-h-[200px] mb-2"
+            className="input mb-2 min-h-52 resize-y"
             spellCheck
           />
-          <div className="flex items-center justify-between text-xs text-[var(--color-slate)] mb-4">
-            <span>{wordCount} слов</span>
-            <span className={text.length > MAX_LENGTH - 100 ? 'text-[var(--color-error)]' : ''}>
+          <div className="mb-4 flex items-center justify-between text-caption text-slate">
+            <span>
+              {wordCount} {pluralWords(wordCount)}
+            </span>
+            <span className={text.length > MAX_LENGTH - 100 ? 'text-semantic-error' : undefined}>
               {text.length} / {MAX_LENGTH}
             </span>
           </div>
 
-          <button
-            onClick={submit}
-            disabled={checking || !text.trim()}
-            className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {checking ? 'Проверяем текст…' : 'Проверить текст'}
-          </button>
+          <Button onClick={submit} disabled={checking || !text.trim()} className="w-full">
+            {checking ? (
+              <>
+                <SpinnerIcon size={16} />
+                Проверяем текст…
+              </>
+            ) : (
+              'Проверить текст'
+            )}
+          </Button>
 
           {error && (
-            <p className="text-sm text-[var(--color-error)] mt-3 text-center">{error}</p>
+            <div className="mt-3">
+              <Notice tone="danger">{error}</Notice>
+            </div>
           )}
         </div>
 
-        {analysis && (
-          <div className="card p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-[var(--color-slate)]">Оценка</p>
-                <p className={`text-4xl font-bold ${scoreColor(analysis.score)}`}>{analysis.score}</p>
-              </div>
-              <span
-                className={`text-sm font-medium px-3 py-1 rounded-full ${
-                  analysis.isCorrect
-                    ? 'bg-[rgba(26,156,60,0.10)] text-[var(--color-success)]'
-                    : 'bg-[rgba(249,231,159,0.30)] text-[#7A3A00]'
-                }`}
-              >
-                {analysis.isCorrect ? 'Без серьёзных ошибок' : 'Есть что улучшить'}
-              </span>
-            </div>
-
-            <div className="progress-bar mb-4">
-              <div className="progress-fill" style={{ width: `${analysis.score}%` }} />
-            </div>
-
-            {analysis.praise && (
-              <p className="text-sm text-[var(--color-ink)] mb-5">{analysis.praise}</p>
-            )}
-
-            {analysis.issues && analysis.issues.length > 0 && (
-              <div className="mb-5">
-                <p className="text-sm font-medium text-[var(--color-ink)] mb-2">
-                  Разбор ({analysis.issues.length})
-                </p>
-                <ul className="space-y-3">
-                  {analysis.issues.map((issue, index) => (
-                    <li
-                      key={index}
-                      className="p-3 rounded-lg border border-[var(--color-hairline-strong)] bg-white"
-                    >
-                      <p className="text-sm text-[var(--color-ink)] leading-snug">
-                        <span className="line-through text-[var(--color-error)]">{issue.original}</span>
-                        <span className="mx-1.5 text-[var(--color-slate)]">→</span>
-                        <span className="text-[var(--color-success)]">{issue.suggestion}</span>
-                      </p>
-                      {issue.explanation && (
-                        <p className="text-xs text-[var(--color-slate)] mt-1">{issue.explanation}</p>
-                      )}
-                      {issue.type && (
-                        <span className="inline-block mt-2 text-[10px] uppercase tracking-wide text-[var(--color-slate)]">
-                          {issue.type}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {analysis.betterVersion && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-[var(--color-ink)]">Исправленная версия</p>
-                  <button
-                    onClick={copyBetter}
-                    className="text-xs px-2 py-1 rounded-md border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
-                  >
-                    {copied ? 'Скопировано' : 'Скопировать'}
-                  </button>
-                </div>
-                <div className="p-4 rounded-lg bg-[var(--color-tint-mint)] border border-[var(--color-hairline-strong)]">
-                  <p className="text-[var(--color-ink)] whitespace-pre-wrap leading-relaxed">
-                    {analysis.betterVersion}
+        <AnimatePresence mode="wait">
+          {analysis && (
+            <motion.div
+              key="writing-analysis"
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="card mb-6"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-body-sm text-slate">Оценка</p>
+                  <p className={`text-h1 leading-none ${scoreColor(analysis.score)}`}>
+                    {analysis.score}
                   </p>
                 </div>
+                <Tag tone={analysis.isCorrect ? 'success' : 'warning'}>
+                  {analysis.isCorrect ? 'Без серьёзных ошибок' : 'Есть что улучшить'}
+                </Tag>
               </div>
-            )}
 
-            <div className="flex flex-wrap gap-3 mt-5">
-              <button onClick={() => { setAnalysis(null); setText(''); }} className="btn-secondary">
-                Новый текст
-              </button>
-              <Link href="/translator" className="btn-secondary">
-                Обсудить с Alex
-              </Link>
-            </div>
-          </div>
-        )}
+              <ProgressBar value={analysis.score} label="Оценка текста" className="mb-4" />
+
+              {analysis.praise && (
+                <p className="mb-5 max-w-measure text-body-sm text-ink">{analysis.praise}</p>
+              )}
+
+              {analysis.issues && analysis.issues.length > 0 && (
+                <div className="mb-5">
+                  <p className="mb-2 text-body-sm font-medium text-ink">
+                    Разбор ({analysis.issues.length})
+                  </p>
+                  <ul className="stagger space-y-3">
+                    {analysis.issues.map((issue, index) => (
+                      <li key={index} className="rounded-lg border border-hairline bg-surface p-3">
+                        {issue.type && (
+                          <span className="text-caption uppercase tracking-wide text-slate">
+                            {issueTypeLabel(issue.type)}
+                          </span>
+                        )}
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm">
+                          <span className="inline-flex items-center gap-1 text-semantic-error">
+                            <CloseIcon size={16} />
+                            {issue.original}
+                          </span>
+                          <span className="text-slate">→</span>
+                          <span className="inline-flex items-center gap-1 font-medium text-semantic-success">
+                            <CheckIcon size={16} />
+                            {issue.suggestion}
+                          </span>
+                        </p>
+                        {issue.explanation && (
+                          <p className="mt-1 text-caption text-slate">{issue.explanation}</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.betterVersion && (
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-body-sm font-medium text-ink">Исправленная версия</p>
+                    <Button
+                      variant="ghost"
+                      onClick={copyBetter}
+                      className="px-2 py-1 text-caption"
+                    >
+                      {copied ? 'Скопировано' : 'Скопировать'}
+                    </Button>
+                  </div>
+                  <div className="rounded-lg border border-hairline bg-surface-success p-4">
+                    <p className="max-w-measure whitespace-pre-wrap leading-relaxed text-ink">
+                      {analysis.betterVersion}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setAnalysis(null);
+                    setText('');
+                  }}
+                >
+                  Новый текст
+                </Button>
+                <Button variant="secondary" href="/translator">
+                  Обсудить с Alex
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );
