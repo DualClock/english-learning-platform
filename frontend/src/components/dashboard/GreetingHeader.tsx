@@ -1,5 +1,5 @@
-'use client';
-
+import { Tag } from '@/components/ui/Badge';
+import { TargetIcon } from '@/components/ui/icons';
 import Link from 'next/link';
 
 interface Props {
@@ -26,33 +26,30 @@ export default function GreetingHeader({ name, level }: Props) {
   }).format(now);
 
   return (
-    <header className="mb-8">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-sm font-medium text-[var(--color-primary-pressed)] mb-1 capitalize">{dateStr}</p>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--color-ink)] tracking-tight">
-            {greeting}, {name?.trim() || 'друг'}
-          </h1>
-          <p className="text-[var(--color-slate)] mt-2">
-            Немного чтения каждый день — и словарный запас растёт сам.
-          </p>
-        </div>
-        {level ? (
-          <span
-            title="Пересдать тест можно в настройках"
-            className="shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full bg-[rgba(249,231,159,0.30)] border border-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]"
-          >
-            Уровень: {level.toUpperCase()}
-          </span>
-        ) : (
-          <Link
-            href="/settings"
-            className="shrink-0 text-sm font-semibold px-3 py-1.5 rounded-full border-2 border-dashed border-[var(--color-primary-pressed)] text-[var(--color-primary)] hover:bg-[var(--color-tint-mint)] transition-colors"
-          >
-            Определить уровень
-          </Link>
-        )}
+    <header className="mb-10 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p className="text-caption text-slate">{dateStr}</p>
+        <h1 className="mt-1 text-h1 text-ink">
+          {greeting}, {name?.trim() || 'друг'}
+        </h1>
+        <p className="mt-2 max-w-measure text-body text-charcoal">
+          Немного чтения каждый день — и словарный запас растёт сам.
+        </p>
       </div>
+
+      {level ? (
+        <span title="Пересдать тест можно в настройках">
+          <Tag tone="warning">Уровень: {level.toUpperCase()}</Tag>
+        </span>
+      ) : (
+        <Link
+          href="/settings"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-hairline-strong bg-canvas px-3 py-1.5 text-caption font-semibold text-primary transition-colors duration-fast ease-soft hover:border-primary hover:bg-surface-accent"
+        >
+          <TargetIcon size={16} />
+          Определить уровень
+        </Link>
+      )}
     </header>
   );
 }

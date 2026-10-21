@@ -2,6 +2,10 @@
 
 import Link from 'next/link';
 import { useApiQuery } from '@/app/lib/use-api';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { ArrowRightIcon } from '@/components/ui/icons';
 
 interface Achievement {
   code: string;
@@ -30,47 +34,51 @@ export default function LevelCard() {
   const { data } = useApiQuery<UserProgress>('/api/progress/achievements');
 
   if (!data) {
-    return <div className="card p-5 mb-8 h-24 animate-pulse bg-white" />;
+    return (
+      <section className="card mb-8" aria-busy="true">
+        <div className="flex items-center gap-5">
+          <Skeleton className="h-14 w-14 rounded-lg" />
+          <div className="min-w-0 grow space-y-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-2 w-full rounded-full" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+        </div>
+      </section>
+    );
   }
 
   const latest = data.achievements.find((a) => a.unlocked);
 
   return (
-    <section className="card p-5 mb-8" aria-label="Уровень и достижения">
+    <section className="card mb-8" aria-label="Уровень и достижения">
       <div className="flex flex-wrap items-center gap-5">
-        <div className="w-14 h-14 shrink-0 rounded-2xl bg-[var(--color-tint-mint)] flex flex-col items-center justify-center">
-          <span className="text-[10px] uppercase tracking-wide text-[var(--color-slate)]">ур.</span>
-          <span className="text-xl font-bold text-[var(--color-primary)] leading-none">{data.level}</span>
+        <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-surface-accent text-primary">
+          <span className="text-caption text-slate">ур.</span>
+          <AnimatedNumber value={data.level} className="text-h2 leading-none tabular-nums" />
         </div>
 
-        <div className="flex-1 min-w-[200px]">
-          <div className="flex items-baseline justify-between gap-3 mb-1.5">
-            <h2 className="text-base font-semibold text-[var(--color-ink)]">{data.levelTitle}</h2>
-            <span className="text-xs text-[var(--color-slate)]">
-              {data.xp} XP
+        <div className="min-w-0 grow basis-52">
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h2 className="text-h3 text-ink">{data.levelTitle}</h2>
+            <span className="text-caption text-slate tabular-nums">
+              <AnimatedNumber value={data.xp} /> XP
               {data.xpToNextLevel != null && ` · ещё ${data.xpToNextLevel} XP до ${data.level + 1} ур.`}
             </span>
           </div>
-          <div
-            className="h-2 rounded-full bg-[rgba(201,205,212,0.40)] overflow-hidden"
-            role="progressbar"
-            aria-valuenow={data.levelProgressPercent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div
-              className="h-full rounded-full bg-[var(--color-primary)] transition-all"
-              style={{ width: `${data.levelProgressPercent}%` }}
-            />
-          </div>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-slate)]">
+          <ProgressBar value={data.levelProgressPercent} />
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-caption text-slate">
             <span>
-              Достижения: <strong className="text-[var(--color-ink)]">{data.unlockedCount}</strong> из{' '}
+              Достижения: <strong className="font-semibold text-ink">{data.unlockedCount}</strong> из{' '}
               {data.achievements.length}
-              {latest && ` · последнее: ${latest.icon} ${latest.title}`}
+              {latest && ` · последнее: ${latest.title}`}
             </span>
-            <Link href="/progress" className="font-medium text-[var(--color-primary)] hover:underline">
-              Весь прогресс →
+            <Link
+              href="/progress"
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+            >
+              Весь прогресс
+              <ArrowRightIcon size={16} />
             </Link>
           </div>
         </div>

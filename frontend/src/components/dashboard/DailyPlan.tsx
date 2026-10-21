@@ -1,6 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { CardInteractive } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { CheckIcon } from '@/components/ui/icons';
 import { useApiQuery } from '@/app/lib/use-api';
 
 interface TodayPlan {
@@ -53,17 +55,15 @@ function pluralWords(n: number): string {
   return `${n} слов`;
 }
 
-function CheckCircle({ done, index }: { done: boolean; index: number }) {
+function StepMark({ done, index }: { done: boolean; index: number }) {
   return (
     <span
-      className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-        done
-          ? 'bg-[var(--color-primary)] text-white'
-          : 'bg-white border-2 border-[var(--color-hairline-strong)] text-[var(--color-slate)]'
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-body-sm font-semibold transition-colors duration-fast ease-soft ${
+        done ? 'bg-primary text-on-primary' : 'border border-hairline-strong bg-canvas text-slate'
       }`}
       aria-hidden="true"
     >
-      {done ? '✓' : index}
+      {done ? <CheckIcon size={16} /> : index}
     </span>
   );
 }
@@ -73,11 +73,11 @@ export default function DailyPlan() {
 
   if (isLoading && !data) {
     return (
-      <section className="mb-8">
-        <div className="h-6 w-40 rounded bg-[var(--color-tint-mint)] animate-pulse mb-4" />
+      <section className="mb-8" aria-busy="true">
+        <Skeleton className="mb-4 h-6 w-44" />
         <div className="grid gap-3 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="card p-4 h-24 animate-pulse bg-white" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       </section>
@@ -118,37 +118,33 @@ export default function DailyPlan() {
 
   return (
     <section className="mb-8" aria-label="План на сегодня">
-      <div className="flex flex-wrap items-end justify-between gap-2 mb-4">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-x-8 gap-y-2">
         <div>
-          <h2 className="text-lg font-semibold text-[var(--color-ink)]">План на сегодня</h2>
-          <p className="text-sm text-[var(--color-slate)]">
+          <h2 className="text-h3 text-ink">План на сегодня</h2>
+          <p className="mt-1 text-body-sm text-slate">
             {data.itemsCompleted >= data.itemsTotal
               ? 'Всё выполнено — можно читать в удовольствие'
               : 'Три шага, чтобы день засчитался'}
           </p>
         </div>
-        <span className="text-sm font-semibold text-[var(--color-primary)]">
+        <span className="text-body-sm font-medium text-primary tabular-nums">
           {data.itemsCompleted} из {data.itemsTotal}
         </span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3 stagger">
+      <div className="stagger grid gap-3 md:grid-cols-3">
         {items.map((item, index) => (
-          <Link
+          <CardInteractive
             key={item.key}
             href={item.href}
-            className={`card p-4 flex items-start gap-3 transition-shadow hover:shadow-md ${
-              item.done ? 'bg-[var(--color-tint-mint)]' : ''
-            }`}
+            className={`flex items-start gap-3 p-4 ${item.done ? 'bg-surface-success' : ''}`}
           >
-            <CheckCircle done={item.done} index={index + 1} />
+            <StepMark done={item.done} index={index + 1} />
             <span className="min-w-0">
-              <span className="block text-sm font-semibold text-[var(--color-ink)] leading-snug">
-                {item.title}
-              </span>
-              <span className="block text-xs text-[var(--color-slate)] mt-1">{item.subtitle}</span>
+              <span className="block text-body-sm font-medium text-ink">{item.title}</span>
+              <span className="mt-1 block text-caption text-slate">{item.subtitle}</span>
             </span>
-          </Link>
+          </CardInteractive>
         ))}
       </div>
     </section>

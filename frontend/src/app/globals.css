@@ -98,9 +98,13 @@
   --color-navy-deep: #060F1D;
   --color-link: #6FA8DC;
 
-  /* Surfaces */
-  --color-canvas: #071426;
-  --color-surface: #0A1B2E;
+  /*
+   * Surfaces. Роли те же, что в светлой теме: canvas — поднятая плоскость
+   * карточки, surface — поле страницы и второстепенные плашки. Иначе в тёмной
+   * теме карточки тонули бы в фоне, а в светлой — поднимались над ним.
+   */
+  --color-canvas: #0A1B2E;
+  --color-surface: #071426;
   --color-surface-soft: #0E2237;
   --color-hairline: #1F3550;
   --color-hairline-soft: #18283D;

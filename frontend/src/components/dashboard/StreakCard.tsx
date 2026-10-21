@@ -1,5 +1,9 @@
 'use client';
 
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { CheckIcon, FlameIcon } from '@/components/ui/icons';
+
 export interface StreakData {
   currentStreak: number;
   longestStreak: number;
@@ -24,54 +28,61 @@ function pluralizeDays(n: number) {
 export default function StreakCard({ streak }: Props) {
   if (!streak) {
     return (
-      <div className="animate-pulse bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 mb-8">
-        <div className="h-8 w-40 bg-[var(--color-tint-mint)] rounded mb-3"></div>
-        <div className="h-4 w-56 bg-[var(--color-tint-mint)] rounded mb-4"></div>
-        <div className="h-2 w-full bg-[var(--color-tint-mint)] rounded-full"></div>
-      </div>
+      <section className="card mb-8" aria-busy="true">
+        <Skeleton className="mb-3 h-8 w-44" />
+        <Skeleton className="mb-5 h-4 w-56" />
+        <Skeleton className="h-2 w-full rounded-full" />
+      </section>
     );
   }
 
   const { currentStreak, longestStreak, dailyGoalMinutes, today, week } = streak;
   const weekDays = week.slice(-7);
-  const progress = dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
+  const progress =
+    dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
 
   return (
-    <section className="animate-rise-in bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-sm mb-8">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <p className="text-2xl font-bold text-[var(--color-ink)] leading-tight">
-            🔥 {currentStreak} {pluralizeDays(currentStreak)} подряд
-          </p>
-          <p className="text-sm text-[var(--color-slate)] mt-1">
-            Лучшая серия: {longestStreak} {pluralizeDays(longestStreak)}
-          </p>
+    <section className="card animate-rise-in mb-8" aria-label="Серия дней">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-highlight text-primary">
+            <FlameIcon size={20} />
+          </span>
+          <span>
+            <p className="text-h2 text-ink tabular-nums">
+              {currentStreak} {pluralizeDays(currentStreak)} подряд
+            </p>
+            <p className="mt-1 text-body-sm text-slate tabular-nums">
+              Лучшая серия: {longestStreak} {pluralizeDays(longestStreak)}
+            </p>
+          </span>
         </div>
-        <div className="flex gap-1.5 pt-1">
+
+        <ul className="flex gap-1.5 pt-2" aria-label="Последние семь дней">
           {weekDays.map((day) => (
-            <span
+            <li
               key={day.date}
               title={`${day.date}: ${day.goalMet ? 'цель выполнена' : 'цель не выполнена'}`}
-              className={`w-3 h-3 rounded-full ${
-                day.goalMet ? 'bg-[var(--color-tint-yellow-bold)]' : 'bg-[var(--color-hairline-strong)]'
+              className={`h-3 w-3 rounded-full ${
+                day.goalMet ? 'bg-primary' : 'bg-hairline-strong'
               }`}
             />
           ))}
-        </div>
+        </ul>
       </div>
 
-      <div className="flex items-center justify-between text-sm mb-1.5">
-        <span className="text-[var(--color-slate)]">
+      <div className="mb-2 flex items-center justify-between text-body-sm">
+        <span className="text-slate tabular-nums">
           Сегодня: {today.minutesRead} из {dailyGoalMinutes} минут
         </span>
-        {today.goalMet && <span className="text-[var(--color-primary)] font-medium">Цель выполнена ✓</span>}
+        {today.goalMet && (
+          <span className="inline-flex items-center gap-1.5 font-medium text-primary">
+            <CheckIcon size={16} />
+            Цель выполнена
+          </span>
+        )}
       </div>
-      <div className="h-2 bg-[var(--color-tint-mint)] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-[var(--color-primary)] rounded-full transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      <ProgressBar value={progress} />
     </section>
   );
 }

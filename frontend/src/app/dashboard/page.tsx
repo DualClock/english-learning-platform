@@ -13,7 +13,10 @@ import { useTrack } from '@/app/lib/analytics';
 import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import StreakCard, { StreakData } from '@/components/dashboard/StreakCard';
 import RecommendedShelf, { RecommendedBook } from '@/components/dashboard/RecommendedShelf';
-import { EmptyBooks, ErrorState } from '@/components/dashboard/States';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Button from '@/components/ui/Button';
+import { ArrowRightIcon, BookOpenIcon } from '@/components/ui/icons';
 import { Book, pickContinueBook } from '@/components/dashboard/utils';
 import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
@@ -121,7 +124,19 @@ export default function DashboardPage() {
                   );
                 })()
               ) : (
-                <EmptyBooks />
+                <section className="mb-8">
+                  <EmptyState
+                    icon={<BookOpenIcon size={24} />}
+                    title="Библиотека пока пуста"
+                    description="Добавь первую книгу — и начинай читать на английском, сохраняя новые слова по пути."
+                    action={
+                      <Button href="/books">
+                        Перейти в библиотеку
+                        <ArrowRightIcon size={16} />
+                      </Button>
+                    }
+                  />
+                </section>
               )}
 
               <TodayReview reviewCount={reviewCount} />
