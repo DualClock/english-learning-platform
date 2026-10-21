@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useApiQuery } from '@/app/lib/use-api';
+import { formatNumber } from '@/lib/format';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Button from '@/components/ui/Button';
@@ -94,7 +95,7 @@ export default function WordListsSection() {
             <div className="mt-auto">
               <div className="mb-1.5 flex items-center justify-between text-caption text-slate">
                 <span className="tabular-nums">
-                  {list.learnedCount.toLocaleString('ru-RU')} / {list.itemCount.toLocaleString('ru-RU')} изучено
+                  {formatNumber(list.learnedCount)} / {formatNumber(list.itemCount)} изучено
                 </span>
                 <span className="font-semibold tabular-nums text-primary">{percent}%</span>
               </div>

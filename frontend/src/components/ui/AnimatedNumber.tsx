@@ -2,14 +2,11 @@
 
 import { useEffect, useRef } from 'react';
 import { animate } from 'motion/react';
+import { formatNumber } from '@/lib/format';
 
 interface Props {
   value: number;
   className?: string;
-}
-
-function format(n: number): string {
-  return Math.round(n).toLocaleString('ru-RU');
 }
 
 /**
@@ -27,7 +24,7 @@ export default function AnimatedNumber({ value, className }: Props) {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced || document.visibilityState !== 'visible') {
-      node.textContent = format(value);
+      node.textContent = formatNumber(value);
       from.current = value;
       return;
     }
@@ -36,7 +33,7 @@ export default function AnimatedNumber({ value, className }: Props) {
       duration: 0.7,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
-        node.textContent = format(latest);
+        node.textContent = formatNumber(latest);
       },
     });
     from.current = value;
@@ -46,7 +43,7 @@ export default function AnimatedNumber({ value, className }: Props) {
 
   return (
     <span ref={ref} className={className}>
-      {format(value)}
+      {formatNumber(value)}
     </span>
   );
 }

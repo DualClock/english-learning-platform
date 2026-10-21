@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/icons';
 import { transition } from '@/lib/motion';
 import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 
 interface Word {
   id: number;
@@ -181,7 +182,7 @@ function DictionaryContent() {
     <AppLayout>
       <PageHeader
         title="Словарь"
-        subtitle={`${totalCount.toLocaleString('ru-RU')} ${pluralWords(totalCount)} сохранено`}
+        subtitle={`${formatNumber(totalCount)} ${pluralWords(totalCount)} сохранено`}
         actions={
           <Button href="/dictionary/add" variant="primary">
             <PlusIcon size={16} />

@@ -10,6 +10,7 @@ import { useSpeech } from '@/hooks/useSpeech';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 import { slideVariants, variants } from '@/lib/motion';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
@@ -151,7 +152,7 @@ export default function ReviewPage() {
           </div>
           <h1 className="mb-2 text-h1 text-ink">Повторение завершено</h1>
           <p className="mb-8 text-body-lg text-slate">
-            Повторено {words.length.toLocaleString('ru-RU')} {pluralWords(words.length)}
+            Повторено {formatNumber(words.length)} {pluralWords(words.length)}
           </p>
           <Button onClick={() => router.push('/dashboard')}>На главную</Button>
         </motion.div>

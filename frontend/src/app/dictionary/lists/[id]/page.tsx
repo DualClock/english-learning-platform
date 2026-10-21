@@ -24,6 +24,7 @@ import {
   VolumeIcon,
 } from '@/components/ui/icons';
 import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 import { variants } from '@/lib/motion';
 
 interface ListItem {
@@ -259,8 +260,8 @@ export default function WordListPage() {
             >
               <CheckIcon size={20} />
               <span>
-                Добавлено {notice.added.toLocaleString('ru-RU')} {pluralWords(notice.added)}
-                {notice.skipped > 0 ? `, пропущено ${notice.skipped.toLocaleString('ru-RU')}` : ''}
+                Добавлено {formatNumber(notice.added)} {pluralWords(notice.added)}
+                {notice.skipped > 0 ? `, пропущено ${formatNumber(notice.skipped)}` : ''}
               </span>
             </motion.div>
           )}

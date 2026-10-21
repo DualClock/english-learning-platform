@@ -3,6 +3,7 @@
 import type { ComponentType } from 'react';
 import { motion } from 'motion/react';
 import { transition } from '@/lib/motion';
+import { formatNumber } from '@/lib/format';
 import ProgressBar from '@/components/ui/ProgressBar';
 import {
   BookmarkFilledIcon,
@@ -68,7 +69,7 @@ export default function ReaderToolbar({
         <div className="mb-1 flex justify-between text-caption text-slate">
           <span className="tabular-nums text-primary">{content.progress}%</span>
           <span className="tabular-nums">
-            {content.wordsRead.toLocaleString('ru-RU')} / {content.totalWords.toLocaleString('ru-RU')}
+            {formatNumber(content.wordsRead)} / {formatNumber(content.totalWords)}
           </span>
         </div>
         <ProgressBar value={content.progress} label="Прогресс чтения" />
