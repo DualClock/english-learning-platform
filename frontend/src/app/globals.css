@@ -357,6 +357,27 @@
            cursor-pointer;
   }
 
+  /*
+   * Действие на карточке (удалить, закрепить). Прятать контрол только за hover
+   * нельзя: на тач-экранах hover не бывает, и кнопка становится недостижимой.
+   * Поэтому по умолчанию контрол виден, а лёгкое проявление — только там,
+   * где есть точный курсор.
+   */
+  .card-action {
+    @apply transition-opacity duration-fast ease-soft;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .card-action {
+      @apply opacity-0;
+    }
+    .group:hover .card-action,
+    .card-action:focus-visible,
+    .card-action:focus {
+      @apply opacity-100;
+    }
+  }
+
   /* Поверхности по смыслу вместо декоративных оттенков */
   .card-tint-peach    { @apply rounded-lg p-6 text-ink bg-surface-warning; }
   .card-tint-rose     { @apply rounded-lg p-6 text-ink bg-surface-danger; }

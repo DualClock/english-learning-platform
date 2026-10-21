@@ -1,9 +1,18 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Badge from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { BooksIcon, CheckIcon, AlertIcon, UploadIcon, SpinnerIcon } from '@/components/ui/icons';
 import { API_URL } from '@/app/lib/api-url';
 import { invalidateCache } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
+import { AnimatePresence, motion } from 'motion/react';
+import { transition, variants } from '@/lib/motion';
+import { pluralBooks } from '@/lib/plural';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -26,14 +35,6 @@ const LEVEL_CAPTIONS: Record<string, string> = {
 
 function sameTitle(a: string, b: string): boolean {
   return a.trim().toLowerCase().replace(/\s+/g, ' ') === b.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function pluralBooks(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return `${n} книга`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} книги`;
-  return `${n} книг`;
 }
 
 interface Toast {
@@ -79,6 +80,14 @@ export default function BooksPage() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }, []);
+
+  // Тост живёт дольше, чем страница: таймер снимаем при размонтировании
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    []
+  );
 
   const authHeaders = useCallback(
     (): Record<string, string> =>
@@ -129,6 +138,10 @@ export default function BooksPage() {
     (title: string) => books.some((b) => sameTitle(b.title, title)),
     [books]
   );
+
+  // Каталог пуст: показывать два пустых блока подряд незачем —
+  // «Каталог пока недоступен» с загрузкой EPUB закрывает оба случая.
+  const catalogEmpty = classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0;
 
   const findStoryBookId = useCallback(
     (story: Story): number | null => {
@@ -229,91 +242,113 @@ export default function BooksPage() {
     }
   };
 
+  // Файловый инпут остаётся в дереве доступности (sr-only, а не display:none):
+  // label не является контролом, и без фокусируемого input загрузка
+  // была бы недоступна с клавиатуры.
+  const uploadButton = (variant: 'primary' | 'secondary') => (
+    <label
+      className={`${
+        variant === 'primary' ? 'btn-primary' : 'btn-secondary'
+      } cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-opacity-20`}
+    >
+      {uploading ? <SpinnerIcon size={16} /> : <UploadIcon size={16} />}
+      {uploading ? 'Загрузка…' : 'Загрузить свою книгу'}
+      <input
+        type="file"
+        accept=".epub"
+        onChange={handleFileUpload}
+        disabled={uploading}
+        className="sr-only"
+      />
+    </label>
+  );
+
   return (
     <AppLayout>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--color-ink)]">Библиотека</h1>
-          <p className="mt-1 text-[var(--color-slate)]">Читайте то, что по силам — и чуть сложнее</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {!isLoading && <span className="text-sm text-[var(--color-slate)]">{pluralBooks(totalCount)}</span>}
-          <label className="btn-secondary flex cursor-pointer items-center gap-2 px-4 py-2 text-sm">
-            {uploading ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)]" />
-                Загрузка…
-              </>
-            ) : (
-              <>
-                <span className="text-base font-bold leading-none text-[var(--color-primary)]">+</span>
-                Загрузить свою книгу
-              </>
+      <PageHeader
+        title="Библиотека"
+        subtitle="Читайте то, что по силам — и чуть сложнее"
+        actions={
+          <>
+            {!isLoading && (
+              <span className="text-body-sm tabular-nums text-slate">
+                {totalCount} {pluralBooks(totalCount)}
+              </span>
             )}
-            <input
-              type="file"
-              accept=".epub"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="hidden"
-            />
-          </label>
-        </div>
+            {uploadButton('secondary')}
+          </>
+        }
+      />
+
+      {/* Живая область смонтирована заранее: появляющийся вместе с текстом
+          region экранные читатели обычно не объявляют. */}
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 md:justify-end md:px-6"
+      >
+        <AnimatePresence initial={false}>
+          {toast && (
+            <motion.div
+              key={toast.text}
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={`pointer-events-auto flex items-center gap-2 rounded-lg border px-4 py-3 text-body-sm font-medium shadow-card ${
+                toast.kind === 'ok'
+                  ? 'border-hairline bg-canvas text-ink'
+                  : 'border-semantic-error bg-surface-danger text-on-danger'
+              }`}
+            >
+              {toast.kind === 'ok' ? (
+                <CheckIcon size={20} className="shrink-0 text-semantic-success" />
+              ) : (
+                <AlertIcon size={20} className="shrink-0" />
+              )}
+              {toast.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {error && (
-        <div
-          role="alert"
-          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-error)] bg-[rgba(217,45,32,0.10)] p-4 text-[var(--color-error)]"
-        >
-          <span>{error}</span>
-          <button onClick={reloadBooks} className="btn-secondary shrink-0">
-            Попробовать снова
-          </button>
+        <div className="mb-8">
+          <ErrorState
+            title="Библиотека не загрузилась"
+            description={error}
+            onRetry={reloadBooks}
+          />
         </div>
       )}
 
       {isLoading ? (
-        <div>
-          <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3">
-                <div className="aspect-[2/3] w-full rounded-xl bg-[var(--color-tint-mint)]" />
-                <div className="mt-3 h-3 w-full rounded bg-[var(--color-tint-mint)]" />
-                <div className="mt-2 h-3 w-2/3 rounded bg-[var(--color-tint-mint)]" />
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-xl border border-[var(--color-hairline-strong)] bg-white p-4">
-                <div className="flex h-full items-center gap-4">
-                  <div className="h-20 w-14 shrink-0 rounded-lg bg-[var(--color-tint-mint)]" />
-                  <div className="flex-1">
-                    <div className="h-4 w-2/3 rounded bg-[var(--color-tint-mint)]" />
-                    <div className="mt-2 h-3 w-full rounded bg-[var(--color-tint-mint)]" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-[var(--color-tint-mint)]" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <LibrarySkeleton />
       ) : (
         <>
           {books.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">Мои книги</h2>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 stagger">
-                {books.map((book) => (
-                  <MyBookCard
-                    key={book.id}
-                    book={book}
-                    onOpen={openBook}
-                    onDelete={deleteBook}
-                  />
-                ))}
+              <div className="mb-4 flex items-baseline gap-2">
+                <h2 className="text-h2 text-ink">Мои книги</h2>
+                <span className="text-caption tabular-nums text-slate">
+                  {books.length} {pluralBooks(books.length)}
+                </span>
               </div>
+              <motion.ul
+                className="stagger grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5"
+                initial={false}
+              >
+                <AnimatePresence initial={false}>
+                  {books.map((book) => (
+                    <motion.li
+                      key={book.id}
+                      exit={{ opacity: 0, scale: 0.96, transition: transition.fast }}
+                    >
+                      <MyBookCard book={book} onOpen={openBook} onDelete={deleteBook} />
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </motion.ul>
               <Pager
                 page={page}
                 totalPages={totalPages}
@@ -325,21 +360,20 @@ export default function BooksPage() {
             </section>
           )}
 
-          {books.length === 0 && (
-            <div className="mb-10 rounded-xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[var(--color-ink)]">В библиотеке пока пусто</p>
-              <p className="mt-1 text-sm text-[var(--color-slate)]">
-                Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB.
-              </p>
+          {books.length === 0 && !catalogEmpty && (
+            <div className="mb-10">
+              <EmptyState
+                icon={<BooksIcon size={24} />}
+                title="В библиотеке пока пусто"
+                description="Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB."
+              />
             </div>
           )}
 
           {stories.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">
-                Рассказы для вашего уровня
-              </h2>
-              <div className="grid gap-4 md:grid-cols-2 stagger">
+              <h2 className="mb-4 text-h2 text-ink">Рассказы для вашего уровня</h2>
+              <div className="stagger grid gap-4 md:grid-cols-2">
                 {stories.map((story) => (
                   <StoryCard
                     key={story.index}
@@ -356,27 +390,21 @@ export default function BooksPage() {
 
           {classicGroups.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-[var(--color-ink)]">Классика по уровням</h2>
+              <h2 className="mb-4 text-h2 text-ink">Классика по уровням</h2>
               {classicGroups.map(({ level, items }) => {
                 const recommended = userLevel === level;
                 return (
-                  <div
-                    key={level}
-                    className={`relative mb-8 rounded-xl p-4 ${
-                      recommended ? 'bg-[rgba(249,231,159,0.10)] ring-2 ring-[var(--color-tint-yellow-bold)]' : ''
-                    }`}
-                  >
-                    {recommended && (
-                      <span className="absolute -top-3 left-4 rounded-full bg-[var(--color-tint-yellow-bold)] px-3 py-1 text-xs font-semibold text-[var(--color-ink)] shadow-sm">
-                        для вас
-                      </span>
-                    )}
-                    <div className="mb-4 flex items-center gap-2">
+                  <div key={level} className="mb-8">
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
                       <LevelChip level={level} />
-                      <h3 className="font-semibold text-[var(--color-ink)]">
+                      <h3 className="text-body-lg font-semibold text-ink">
                         {level} — {LEVEL_CAPTIONS[level]}
                       </h3>
-                      <span className="text-sm text-[var(--color-slate)]">{items.length}</span>
+                      <span className="text-caption tabular-nums text-slate">{items.length}</span>
+                      {/* Уровень отмечен плашкой, а не тонированным блоком:
+                          заливать целую секцию пастелью нельзя — под ней
+                          исчезнут hairline-границы карточек */}
+                      {recommended && <Badge tone="accent">для вас</Badge>}
                     </div>
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                       {items.map((book) => (
@@ -393,10 +421,10 @@ export default function BooksPage() {
                 );
               })}
               {uncategorized.length > 0 && (
-                <div className="mb-8 rounded-xl p-4">
+                <div className="mb-8">
                   <div className="mb-4 flex items-center gap-2">
-                    <h3 className="font-semibold text-[var(--color-ink)]">Без указания уровня</h3>
-                    <span className="text-sm text-[var(--color-slate)]">{uncategorized.length}</span>
+                    <h3 className="text-body-lg font-semibold text-ink">Без указания уровня</h3>
+                    <span className="text-caption tabular-nums text-slate">{uncategorized.length}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                     {uncategorized.map((book) => (
@@ -414,26 +442,48 @@ export default function BooksPage() {
             </section>
           )}
 
-          {classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0 && (
-            <div className="rounded-xl border border-dashed border-[var(--color-hairline-strong)] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[var(--color-ink)]">Каталог пока недоступен</p>
-              <p className="mt-1 text-sm text-[var(--color-slate)]">
-                Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги».
-              </p>
-            </div>
+          {catalogEmpty && (
+            <EmptyState
+              icon={<BooksIcon size={24} />}
+              title="Каталог пока недоступен"
+              description="Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги»."
+              action={uploadButton('primary')}
+            />
           )}
         </>
       )}
-
-      {toast && (
-        <div
-          className={`animate-fade-in fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
-            toast.kind === 'ok' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-error)] text-white'
-          }`}
-        >
-          {toast.text}
-        </div>
-      )}
     </AppLayout>
+  );
+}
+
+/** Заглушка совпадает с реальной сеткой: при замене контента строки не прыгают. */
+function LibrarySkeleton() {
+  return (
+    <div role="status" aria-busy="true" aria-live="polite" className="space-y-10">
+      <span className="sr-only">Загрузка библиотеки</span>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="card p-2">
+            <Skeleton className="aspect-book w-full" />
+            <Skeleton className="mt-3 h-3 w-full" />
+            <Skeleton className="mt-2 h-3 w-2/3" />
+            <Skeleton className="mt-3 h-1 w-full" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="card flex gap-4">
+            <Skeleton className="aspect-book w-14 shrink-0" />
+            <div className="flex-1 space-y-2 py-1">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="mt-3 h-9 w-36" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

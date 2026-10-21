@@ -26,3 +26,7 @@ export function pluralSentences(n: number): string {
 export function pluralUnits(n: number): string {
   return plural(n, ['юнит', 'юнита', 'юнитов']);
 }
+
+export function pluralBooks(n: number): string {
+  return plural(n, ['книга', 'книги', 'книг']);
+}
