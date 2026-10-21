@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Button from '@/components/ui/Button';
 import { API_URL } from '@/app/lib/api-url';
 import { DEFAULT_AVATARS, resolveAvatarSrc } from '@/app/lib/avatars';
 
@@ -9,11 +10,13 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface AvatarPickerProps {
   token: string;
+  /** Текущий аватар профиля — чтобы выбор не выглядел как сетка одинаковых кнопок. */
+  current?: string | null;
   onDone: (avatarUrl: string) => void;
   onSkip?: () => void;
 }
 
-export default function AvatarPicker({ token, onDone, onSkip }: AvatarPickerProps) {
+export default function AvatarPicker({ token, current, onDone, onSkip }: AvatarPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -75,19 +78,31 @@ export default function AvatarPicker({ token, onDone, onSkip }: AvatarPickerProp
 
   return (
     <div>
-      <div className="grid grid-cols-5 gap-3 mb-5 stagger">
-        {DEFAULT_AVATARS.map((name) => (
-          <button
-            key={name}
-            onClick={() => chooseDefault(name)}
-            disabled={isUploading}
-            aria-label={`Выбрать аватар ${name}`}
-            className="rounded-full transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] disabled:opacity-50"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={resolveAvatarSrc(`/avatars/${name}.svg`)} alt="" className="w-full h-auto rounded-full" />
-          </button>
-        ))}
+      <div
+        className="stagger mb-5 grid grid-cols-5 gap-3"
+        role="group"
+        aria-label="Готовые аватары"
+      >
+        {DEFAULT_AVATARS.map((name) => {
+          const src = resolveAvatarSrc(`/avatars/${name}.svg`);
+          const isCurrent = Boolean(current) && resolveAvatarSrc(current) === src;
+          return (
+            <button
+              key={name}
+              type="button"
+              onClick={() => chooseDefault(name)}
+              disabled={isUploading}
+              aria-current={isCurrent || undefined}
+              aria-label={`Выбрать аватар ${name}`}
+              className={`rounded-full transition-transform duration-fast ease-soft hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50 ${
+                isCurrent ? 'ring-2 ring-navy' : ''
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="aspect-square w-full rounded-full" />
+            </button>
+          );
+        })}
       </div>
 
       <input
@@ -102,22 +117,22 @@ export default function AvatarPicker({ token, onDone, onSkip }: AvatarPickerProp
         }}
       />
 
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
-        className="w-full py-3 rounded-lg border-2 border-dashed border-[var(--color-hairline-strong)] text-[var(--color-ink)] font-medium hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors disabled:opacity-50"
-      >
-        {isUploading ? 'Загружаем…' : 'Загрузить свою'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+          {isUploading ? 'Загружаем…' : 'Загрузить своё'}
+        </Button>
+        <span className="text-caption text-slate">JPG, PNG или WEBP до 2 МБ</span>
+      </div>
 
-      {error && (
-        <p className="mt-3 text-sm text-[var(--color-error)] text-center">{error}</p>
-      )}
+      {/* Живой регион смонтирован заранее: сообщение появляется не на пустом месте. */}
+      <p role="alert" className={error ? 'mt-3 text-body-sm text-semantic-error' : 'sr-only'}>
+        {error}
+      </p>
 
       {onSkip && (
-        <button onClick={onSkip} className="mt-4 w-full text-[var(--color-slate)] hover:text-[var(--color-ink)]">
+        <Button variant="ghost" className="mt-4 w-full" onClick={onSkip}>
           Пропустить
-        </button>
+        </Button>
       )}
     </div>
   );

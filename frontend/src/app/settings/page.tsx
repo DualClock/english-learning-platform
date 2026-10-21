@@ -1,7 +1,15 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect } from 'react';
+import PageHeader from '@/components/ui/PageHeader';
+import Button from '@/components/ui/Button';
+import ErrorState from '@/components/ui/ErrorState';
+import LoadingState from '@/components/ui/LoadingState';
+import { Tag } from '@/components/ui/Badge';
+import { useTheme } from '@/components/ThemeProvider';
+import { THEME_MODES } from '@/lib/theme';
+import { AlertIcon, CheckIcon } from '@/components/ui/icons';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
@@ -32,14 +40,107 @@ const LEVEL_LABELS: Record<string, string> = {
   c1: 'C1',
 };
 
-const inputCls =
-  'w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent';
+const labelCls = 'mb-2 block text-body-sm font-medium text-ink';
+const hintCls = 'mt-2 max-w-measure text-caption text-slate';
+
+/** Ответ сервиса: одно и то же сообщение об успехе/ошибке на весь экран. */
+function Notice({ tone = 'ok', children }: { tone?: 'ok' | 'error'; children: ReactNode }) {
+  return (
+    <div
+      role={tone === 'ok' ? 'status' : 'alert'}
+      className={`flex items-start gap-2 rounded-md p-3 text-body-sm ${
+        tone === 'ok' ? 'bg-surface-success text-on-success' : 'bg-surface-danger text-on-danger'
+      }`}
+    >
+      {tone === 'ok' ? (
+        <CheckIcon size={16} className="mt-0.5 shrink-0" />
+      ) : (
+        <AlertIcon size={16} className="mt-0.5 shrink-0" />
+      )}
+      <div className="space-y-1">{children}</div>
+    </div>
+  );
+}
+
+/** Группа кнопок-переключателей: один выбор из нескольких. */
+function ChoiceRow<T extends string | number>({
+  id,
+  label,
+  options,
+  value,
+  onChange,
+  format,
+  hint,
+}: {
+  id: string;
+  label: string;
+  options: T[];
+  value: T;
+  onChange: (next: T) => void;
+  format?: (option: T) => string;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <span id={id} className={labelCls}>
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-2" role="group" aria-labelledby={id}>
+        {options.map((option) => (
+          <button
+            key={String(option)}
+            type="button"
+            aria-pressed={value === option}
+            onClick={() => onChange(option)}
+            className={value === option ? 'pill-tab-active' : 'pill-tab'}
+          >
+            {format ? format(option) : String(option)}
+          </button>
+        ))}
+      </div>
+      {hint && <p className={hintCls}>{hint}</p>}
+    </div>
+  );
+}
+
+/**
+ * Тема живёт в localStorage этого браузера, а не в профиле: устройство может
+ * быть общим, а оформление — личным.
+ */
+function ThemePicker() {
+  const { mode, setMode } = useTheme();
+  return (
+    <div>
+      {/* Заголовок секции и есть подпись группы — дублировать его видимым лейблом не нужно. */}
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Тема">
+        {THEME_MODES.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={mode === option.value}
+            onClick={() => setMode(option.value)}
+            className={mode === option.value ? 'pill-tab-active' : 'pill-tab'}
+          >
+            {mode === option.value && <CheckIcon size={16} />}
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <p className={hintCls}>Применяется сразу и сохраняется в этом браузере.</p>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
 
-  const { data: profileData, isLoading: isProfileLoading } = useApiQuery<Profile>('/api/profile', {
+  const {
+    data: profileData,
+    error: profileLoadError,
+    isLoading: isProfileLoading,
+    refresh: reloadProfile,
+  } = useApiQuery<Profile>('/api/profile', {
     enabled: status === 'authenticated',
   });
 
@@ -85,6 +186,20 @@ export default function SettingsPage() {
     setAvatarUrl(profileData.avatarUrl ?? null);
   }, [profileData]);
 
+  // Уровень из профиля сравниваем без регистра: чипы хранят ключи строчными
+  const activeLevel = (cefrLevel || '').toLowerCase();
+
+  // Уведомление живёт дольше, чем одно нажатие: таймер снимаем при размонтировании
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifySaved = (text: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setProfileToast(text);
+    toastTimer.current = setTimeout(() => setProfileToast(''), 3000);
+  };
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
+
   const saveProfile = async () => {
     setIsSavingProfile(true);
     setProfileToast('');
@@ -113,8 +228,7 @@ export default function SettingsPage() {
         // при следующем заходе увидели новые данные.
         invalidate: ['/api/profile'],
       });
-      setProfileToast('Профиль сохранён');
-      setTimeout(() => setProfileToast(''), 3000);
+      notifySaved('Профиль сохранён');
     } catch {
       setProfileError('Не удалось сохранить профиль. Попробуйте ещё раз.');
     } finally {
@@ -157,7 +271,8 @@ export default function SettingsPage() {
     }
   };
 
-  const changePassword = async (e: React.FormEvent<HTMLFormElement>) => {    e.preventDefault();
+  const changePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setPasswordSuccess('');
     setPasswordErrors([]);
 
@@ -198,6 +313,20 @@ export default function SettingsPage() {
     router.push('/login');
   };
 
+  // Данные профиля не пришли вообще — форма была бы пустой и обманчивой
+  if (profileLoadError && profileData === undefined) {
+    return (
+      <AppLayout>
+        <PageHeader title="Настройки" />
+        <ErrorState
+          title="Настройки не загрузились"
+          description={profileLoadError}
+          onRetry={reloadProfile}
+        />
+      </AppLayout>
+    );
+  }
+
   if (
     status === 'loading' ||
     (status === 'authenticated' &&
@@ -207,8 +336,9 @@ export default function SettingsPage() {
   ) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
+        <PageHeader title="Настройки" />
+        <div className="mx-auto max-w-2xl">
+          <LoadingState rows={4} label="Загрузка настроек" />
         </div>
       </AppLayout>
     );
@@ -216,12 +346,12 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-[var(--color-ink)] mb-8">Настройки</h1>
+      <PageHeader title="Настройки" subtitle="Профиль, норма дня и напоминания" />
 
+      <div className="mx-auto max-w-2xl space-y-6">
         {/* Профиль */}
-        <section className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Профиль</h2>
+        <section className="card">
+          <h2 className="mb-5 text-h3 text-ink">Профиль</h2>
 
           <div className="space-y-5">
             {/* Аватар */}
@@ -230,17 +360,17 @@ export default function SettingsPage() {
               <img
                 src={resolveAvatarSrc(avatarUrl)}
                 alt="Текущий аватар"
-                className="w-16 h-16 rounded-full object-cover shrink-0"
+                className="h-16 w-16 shrink-0 rounded-full object-cover"
               />
               <div>
-                <p className="font-medium text-[var(--color-ink)]">
+                <p className="text-body-sm font-medium text-ink">
                   {displayName || session?.user?.email}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsEditingAvatar((v) => !v)}
                   aria-expanded={isEditingAvatar}
-                  className="text-sm font-medium text-[var(--color-primary)] hover:underline"
+                  className="text-body-sm font-medium text-primary hover:underline"
                 >
                   {isEditingAvatar ? 'Скрыть выбор' : 'Сменить'}
                 </button>
@@ -248,14 +378,14 @@ export default function SettingsPage() {
             </div>
 
             {isEditingAvatar && (
-              <div className="p-4 rounded-lg border border-[var(--color-hairline-strong)] bg-[var(--color-surface)]">
+              <div className="rounded-lg border border-hairline-strong bg-surface p-4">
                 <AvatarPicker
                   token={session?.accessToken || ''}
+                  current={avatarUrl}
                   onDone={async (url) => {
                     setAvatarUrl(url);
                     setIsEditingAvatar(false);
-                    setProfileToast('Аватар обновлён');
-                    setTimeout(() => setProfileToast(''), 3000);
+                    notifySaved('Аватар обновлён');
                     // AvatarPicker сохраняет аватар сам, но кэш профиля
                     // нужно сбросить, чтобы остальные вкладки увидели новый аватар.
                     invalidateCache('/api/profile');
@@ -270,106 +400,72 @@ export default function SettingsPage() {
             )}
 
             <div>
-              <label htmlFor="setting-name" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Имя</label>
-              <input id="setting-name"
+              <label htmlFor="setting-name" className={labelCls}>
+                Имя
+              </label>
+              <input
+                id="setting-name"
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Как к вам обращаться"
-                className={inputCls}
+                className="input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Уровень</label>
-              <div className="flex flex-wrap gap-2">
-                {LEVELS.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => setCefrLevel(cefrLevel === level ? '' : level)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-colors ${
-                      cefrLevel === level
-                        ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
-                        : 'bg-white border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]'
-                    }`}
-                  >
-                    {LEVEL_LABELS[level]}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-[var(--color-slate)] mt-2">
-                Нажмите ещё раз, чтобы снять выбор («уровень не определён»)
-              </p>
-            </div>
+            {/* Профиль может вернуть «B1», а ключи чипов строчные */}
+            <ChoiceRow
+              id="setting-level"
+              label="Уровень"
+              options={LEVELS}
+              value={activeLevel}
+              onChange={(level) => setCefrLevel(activeLevel === level ? '' : level)}
+              format={(level) => LEVEL_LABELS[level]}
+              hint="Нажмите ещё раз, чтобы снять выбор («уровень не определён»)"
+            />
+
+            <ChoiceRow
+              id="setting-minutes"
+              label="Норма дня, минут"
+              options={[10, 20, 30]}
+              value={dailyGoalMinutes}
+              onChange={setDailyGoalMinutes}
+            />
+
+            <ChoiceRow
+              id="setting-new-words"
+              label="Новых слов в повторении за день"
+              options={[0, 5, 10, 20, 30]}
+              value={dailyNewWords}
+              onChange={setDailyNewWords}
+              hint="0 — повторять только то, что уже учите. Новые слова попадают в очередь в порядке добавления."
+            />
 
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
-                Норма дня, минут
-              </label>
-              <div className="inline-flex rounded-xl border border-[var(--color-hairline-strong)] overflow-hidden">
-                {[10, 20, 30].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setDailyGoalMinutes(n)}
-                    aria-pressed={dailyGoalMinutes === n}
-                    className={`px-5 py-2 text-sm font-semibold transition-colors ${
-                      dailyGoalMinutes === n
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'bg-white text-[var(--color-slate)] hover:bg-[var(--color-surface)]'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
-                Новых слов в повторении за день
-              </label>
-              <div className="inline-flex rounded-xl border border-[var(--color-hairline-strong)] overflow-hidden">
-                {[0, 5, 10, 20, 30].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setDailyNewWords(n)}
-                    aria-pressed={dailyNewWords === n}
-                    className={`px-4 py-2 text-sm font-semibold transition-colors ${
-                      dailyNewWords === n
-                        ? 'bg-[var(--color-primary)] text-white'
-                        : 'bg-white text-[var(--color-slate)] hover:bg-[var(--color-surface)]'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-[var(--color-slate)] mt-2">
-                0 — повторять только то, что уже учите. Новые слова попадают в очередь в порядке добавления.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">
+              <span id="setting-reminders" className={labelCls}>
                 Напоминания
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
+              </span>
+              <label className="flex cursor-pointer items-center gap-3" htmlFor="setting-notify">
                 <input
+                  id="setting-notify"
                   type="checkbox"
                   checked={notifyEnabled}
                   onChange={(e) => setNotifyEnabled(e.target.checked)}
-                  className="w-4 h-4 rounded border-[var(--color-hairline-strong)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                  className="h-4 w-4 shrink-0 accent-primary"
                 />
-                <span className="text-sm text-[var(--color-slate)]">Напоминать о занятиях</span>
+                <span className="text-body-sm text-slate">Напоминать о занятиях</span>
               </label>
 
               {notifyEnabled && (
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="text-sm text-[var(--color-slate)]">Удобное время</span>
+                  <label htmlFor="setting-hour" className="text-body-sm text-slate">
+                    Удобное время
+                  </label>
                   <select
+                    id="setting-hour"
                     value={reminderHour}
                     onChange={(e) => setReminderHour(Number(e.target.value))}
-                    className="px-3 py-2 rounded-lg border border-[var(--color-hairline-strong)] text-sm bg-white"
+                    className="input h-10 w-auto"
                   >
                     {Array.from({ length: 24 }, (_, h) => (
                       <option key={h} value={h}>
@@ -380,174 +476,159 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <p className="text-xs text-[var(--color-slate)] mt-2">
-                Выбор сохраняется в профиле. Часовой пояс определяется автоматически — по нему считается день в стрике.
+              <p className={hintCls}>
+                Выбор сохраняется в профиле. Часовой пояс определяется автоматически — по нему
+                считается день в стрике.
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={testReminder}
-                  disabled={isTestingReminder}
-                  className="btn-secondary text-sm disabled:opacity-50"
-                >
+                <Button variant="secondary" onClick={testReminder} disabled={isTestingReminder}>
                   {isTestingReminder ? 'Проверяем…' : 'Проверить напоминание'}
-                </button>
-                {reminderTestResult && (
-                  <span className="text-xs text-[var(--color-slate)]" role="status">
-                    {reminderTestResult}
-                  </span>
-                )}
+                </Button>
+                {/* Живая область смонтирована заранее: иначе сообщение не озвучится */}
+                <p role="status" aria-live="polite" className="text-caption text-slate">
+                  {reminderTestResult}
+                </p>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
+              <span className={labelCls}>Email</span>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-[var(--color-slate)] break-all">
-                  {profileData?.email}
-                </span>
+                <span className="text-body-sm text-slate break-all">{profileData?.email}</span>
                 {profileData?.emailConfirmed ? (
-                  <span className="text-xs px-2 py-1 rounded-md bg-[rgba(14,124,123,0.10)] text-[var(--color-primary)]">
+                  <Tag tone="success">
+                    <CheckIcon size={16} className="mr-1" />
                     подтверждён
-                  </span>
+                  </Tag>
                 ) : (
-                  <span className="text-xs px-2 py-1 rounded-md bg-[rgba(249,231,159,0.40)] text-[var(--color-ink)]">
-                    не подтверждён
-                  </span>
+                  <Tag tone="warning">не подтверждён</Tag>
                 )}
               </div>
 
               {profileData && !profileData.emailConfirmed && (
                 <>
-                  <p className="text-xs text-[var(--color-slate)] mt-2">
+                  <p className={hintCls}>
                     Подтвердите адрес — иначе не сможем прислать напоминания и восстановить пароль.
                     Ссылка приходит письмом при регистрации.
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
                       onClick={resendConfirmation}
                       disabled={isResendingConfirmation}
-                      className="btn-secondary text-sm disabled:opacity-50"
                     >
                       {isResendingConfirmation ? 'Отправляем…' : 'Отправить письмо ещё раз'}
-                    </button>
-                    {confirmationResult && (
-                      <span className="text-xs text-[var(--color-slate)]" role="status">
-                        {confirmationResult}
-                      </span>
-                    )}
+                    </Button>
+                    <p role="status" aria-live="polite" className="text-caption text-slate">
+                      {confirmationResult}
+                    </p>
                   </div>
                 </>
               )}
             </div>
 
-            {profileToast && (
-              <div className="p-3 rounded-lg bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)] text-sm">
-                {profileToast}
-              </div>
-            )}
-            {profileError && (
-              <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm">
-                {profileError}
-              </div>
-            )}
+            {profileToast && <Notice>{profileToast}</Notice>}
+            {profileError && <Notice tone="error">{profileError}</Notice>}
 
-            <button
-              onClick={saveProfile}
-              disabled={isSavingProfile}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button onClick={saveProfile} disabled={isSavingProfile}>
               {isSavingProfile ? 'Сохраняем…' : 'Сохранить'}
-            </button>
+            </Button>
           </div>
         </section>
 
+        {/* Оформление */}
+        <section className="card">
+          <h2 className="mb-5 text-h3 text-ink">Оформление</h2>
+          <ThemePicker />
+        </section>
+
         {/* Смена пароля */}
-        <section className="card p-6 mb-6">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Смена пароля</h2>
+        <section className="card">
+          <h2 className="mb-5 text-h3 text-ink">Смена пароля</h2>
 
           <form onSubmit={changePassword} className="space-y-4">
             <div>
-              <label htmlFor="setting-current-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Текущий пароль</label>
-              <input id="setting-current-password"
+              <label htmlFor="setting-current-password" className={labelCls}>
+                Текущий пароль
+              </label>
+              <input
+                id="setting-current-password"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 autoComplete="current-password"
                 required
-                className={inputCls}
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="setting-new-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Новый пароль</label>
-              <input id="setting-new-password"
+              <label htmlFor="setting-new-password" className={labelCls}>
+                Новый пароль
+              </label>
+              <input
+                id="setting-new-password"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 autoComplete="new-password"
                 required
-                className={inputCls}
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="setting-repeat-password" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Повторите новый пароль</label>
-              <input id="setting-repeat-password"
+              <label htmlFor="setting-repeat-password" className={labelCls}>
+                Повторите новый пароль
+              </label>
+              <input
+                id="setting-repeat-password"
                 type="password"
                 value={repeatPassword}
                 onChange={(e) => setRepeatPassword(e.target.value)}
                 autoComplete="new-password"
                 required
-                className={inputCls}
+                className="input"
               />
             </div>
 
-            {passwordSuccess && (
-              <div className="p-3 rounded-lg bg-[rgba(14,124,123,0.10)] border border-[var(--color-primary)] text-[var(--color-primary)] text-sm">
-                ✓ {passwordSuccess}
-              </div>
-            )}
+            {passwordSuccess && <Notice>{passwordSuccess}</Notice>}
             {passwordErrors.length > 0 && (
-              <div className="p-3 rounded-lg bg-[rgba(217,45,32,0.10)] border border-[var(--color-error)] text-[var(--color-error)] text-sm space-y-1">
+              <Notice tone="error">
                 {passwordErrors.map((err, i) => (
                   <p key={i}>{err}</p>
                 ))}
-              </div>
+              </Notice>
             )}
 
-            <button
-              type="submit"
-              disabled={isChangingPassword}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button type="submit" disabled={isChangingPassword}>
               {isChangingPassword ? 'Меняем…' : 'Сменить пароль'}
-            </button>
+            </Button>
           </form>
         </section>
 
         {/* Аккаунт */}
-        <section className="card p-6">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-5">Аккаунт</h2>
+        <section className="card">
+          <h2 className="mb-5 text-h3 text-ink">Аккаунт</h2>
 
           <div className="mb-5">
-            <label htmlFor="setting-email" className="block text-sm font-medium text-[var(--color-ink)] mb-2">Email</label>
-            <input id="setting-email"
+            <label htmlFor="setting-email" className={labelCls}>
+              Email
+            </label>
+            <input
+              id="setting-email"
               type="email"
               value={session?.user?.email || ''}
               readOnly
-              className={`${inputCls} bg-[var(--color-surface)] text-[var(--color-slate)] cursor-not-allowed`}
+              aria-readonly="true"
+              className="input bg-surface text-slate"
             />
           </div>
 
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-lg border border-[var(--color-error)] text-[var(--color-error)] font-medium hover:bg-[var(--color-error)] hover:text-white transition-colors"
-          >
+          <Button variant="danger" onClick={handleLogout}>
             Выйти
-          </button>
+          </Button>
         </section>
       </div>
     </AppLayout>

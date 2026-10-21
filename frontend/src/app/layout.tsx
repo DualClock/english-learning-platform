@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Manrope, Inter } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
+import { THEME_PREPAINT_SCRIPT } from '@/lib/theme';
 
 const manrope = Manrope({
   subsets: ['latin', 'cyrillic'],
@@ -43,6 +44,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" className={`${manrope.variable} ${inter.variable}`}>
+      <head>
+        {/*
+          Тема применяется до первой отрисовки: без этого шага тёмный режим
+          мигает светлым кадром, пока гидратируется React. Единственный случай,
+          где inline-скрипт оправдан — см. lib/theme.ts.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_PREPAINT_SCRIPT }} />
+      </head>
       <body className="font-sans bg-surface text-ink">
         <Providers>{children}</Providers>
       </body>
