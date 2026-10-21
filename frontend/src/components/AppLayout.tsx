@@ -3,10 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
 import Sidebar from './Sidebar';
 import { MenuIcon, SpinnerIcon } from './ui/icons';
-import { transition } from '@/lib/motion';
 import { prefetchApi } from '@/app/lib/api-client';
 
 // Данные вкладок, которые прогреваются в фоне сразу после входа:
@@ -101,22 +99,19 @@ export default function AppLayout({
 
       <main className="lg:ml-64 min-h-screen">
         {/*
-          Вход кадра: только прозрачность. transform на этом узле сделал бы все
-          position:fixed внутри страницы зависимыми от него, поэтому travel здесь
-          сознательно нет — направление перехода показывают сами экраны.
+          Вход кадра: только прозрачность, средствами CSS-слоя (globals.css).
+          Через JS-анимацию скрывать контент нельзя — в невидимой вкладке,
+          у краулеров и на снимках кадр остался бы пустым.
         */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={transition.page}
+        <div
           className={
             width === 'full'
-              ? 'px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
-              : 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
+              ? 'animate-page-in px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
+              : 'animate-page-in mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
           }
         >
           {children}
-        </motion.div>
+        </div>
       </main>
     </div>
   );

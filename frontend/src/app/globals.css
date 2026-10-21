@@ -79,6 +79,8 @@
   --duration-fast: 180ms;
   --duration-base: 260ms;
   --duration-slow: 420ms;
+  /* Вход кадра: длиннее base, короче entrance */
+  --duration-page: 300ms;
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -155,9 +157,10 @@
     font-family: var(--font-inter), Inter, system-ui, sans-serif;
   }
 
+  /* Заголовки наследуют чернила своего поля, а не тянут ink из светлой темы */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
-    @apply font-semibold tracking-tight text-ink;
+    @apply font-semibold tracking-tight text-inherit;
   }
 
   :focus-visible {
@@ -180,7 +183,44 @@
   }
 
   .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
+    animation: fade-in var(--duration-base) var(--ease-out-soft) both;
+  }
+
+  /*
+   * Маскированный заголовок: каждая строка поднимается из-за своей базовой.
+   * Переносы задаёт вёрстка, маска — overflow по строке.
+   */
+  .mask-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  .mask-line > span {
+    display: block;
+  }
+
+  @keyframes line-up {
+    to {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mask-line > span {
+      transform: translateY(105%);
+      animation: line-up 900ms var(--ease-out-soft) forwards;
+    }
+
+    .mask-line:nth-child(2) > span { animation-delay: 260ms; }
+    .mask-line:nth-child(3) > span { animation-delay: 370ms; }
+
+    /* Реплика под заголовком входит после последней строки */
+    .mask-after {
+      opacity: 0;
+      animation: fade-in var(--duration-slow) var(--ease-out-soft) 700ms both;
+    }
   }
 
   /* Экран «С возвращением!» — поочерёдное появление (stagger через animation-delay) */
@@ -259,7 +299,7 @@
   }
 
   .animate-page-in {
-    animation: page-in 0.3s ease-out both;
+    animation: page-in var(--duration-page) var(--ease-out-soft) both;
   }
 
   /* Кнопки */
@@ -638,6 +678,14 @@
   .animate-page-in,
   .stagger > *,
   .progress-fill {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Маска строк заголовка: без анимации строка просто стоит на своём месте */
+  .mask-line > span,
+  .mask-after {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

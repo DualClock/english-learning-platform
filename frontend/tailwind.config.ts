@@ -69,8 +69,8 @@ const config: Config = {
       },
       fontSize: {
         /* Шкала типографики. Пять рабочих размеров; caption — пол (13px). */
-        display: ["clamp(2.75rem, 7.5vw, 5.5rem)", { lineHeight: "0.94", letterSpacing: "-0.035em", fontWeight: "700" }],
-        h1: ["clamp(1.625rem, 2.4vw, 2.125rem)", { lineHeight: "1.18", letterSpacing: "-0.02em", fontWeight: "600" }],
+        display: ["clamp(2.75rem, 8.5vw, 6.5rem)", { lineHeight: "0.92", letterSpacing: "-0.04em", fontWeight: "700" }],
+        h1: ["clamp(1.75rem, 3.2vw, 2.75rem)", { lineHeight: "1.12", letterSpacing: "-0.025em", fontWeight: "600" }],
         h2: ["1.3125rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "600" }],
         h3: ["1.0625rem", { lineHeight: "1.4", letterSpacing: "-0.01em", fontWeight: "600" }],
         "body-lg": ["1.0625rem", { lineHeight: "1.6" }],

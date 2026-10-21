@@ -1,8 +1,6 @@
 'use client';
 
-import { motion } from 'motion/react';
 import { ArrowLeftIcon, ArrowRightIcon } from './ui/icons';
-import { transition } from '@/lib/motion';
 
 interface PagerProps {
   page: number;
@@ -29,16 +27,13 @@ export default function Pager({ page, totalPages, onPageChange }: PagerProps) {
         Назад
       </button>
       {/* Счётчик проявляется заново при смене страницы — тот же сигнал, что и у обновившегося списка */}
-      <motion.span
+      <span
         key={page}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={transition.fast}
-        className="text-body-sm text-slate tabular-nums"
+        className="animate-fade-in text-body-sm text-slate tabular-nums"
         aria-live="polite"
       >
         Страница {page} из {totalPages}
-      </motion.span>
+      </span>
       <button
         type="button"
         onClick={() => onPageChange(page + 1)}
