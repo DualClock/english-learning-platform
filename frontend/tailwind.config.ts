@@ -17,6 +17,7 @@ const config: Config = {
         "navy-deep": "var(--color-navy-deep)",
         link: "var(--color-link)",
         canvas: "var(--color-canvas)",
+        scrim: "var(--color-scrim)",
         hairline: "var(--color-hairline)",
         "hairline-soft": "var(--color-hairline-soft)",
         "hairline-strong": "var(--color-hairline-strong)",

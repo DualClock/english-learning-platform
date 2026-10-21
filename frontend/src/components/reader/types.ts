@@ -128,7 +128,7 @@ export const MAX_FONT_SIZE = 28;
 export const DEFAULT_FONT_SIZE = 20;
 export const MIN_LINE_WIDTH = 45;
 export const MAX_LINE_WIDTH = 90;
-export const DEFAULT_LINE_WIDTH = 65;
+export const DEFAULT_LINE_WIDTH = 68;
 
 // Свайп должен быть заметно горизонтальным, иначе это скролл или тап по слову
 export const SWIPE_MIN_DISTANCE = 60;
@@ -145,7 +145,7 @@ export const TUTORIAL_STEPS: {
     card: { top: '62%', left: '40%' },
   },
   {
-    text: 'Слова с ✦ — маркеры: кликните, чтобы собрать в конспект. В конце чтения — мини-тест',
+    text: 'Слова с пунктиром под строкой — маркеры: кликните, чтобы собрать в конспект. В конце чтения — мини-тест',
     circle: { top: '56%', left: '44%', size: 110 },
     card: { top: '70%', left: '44%' },
   },

@@ -1,5 +1,8 @@
 'use client';
 
+import { motion } from 'motion/react';
+import { duration, ease } from '@/lib/motion';
+import Button from '@/components/ui/Button';
 import { TUTORIAL_STEPS } from './types';
 
 interface Props {
@@ -18,44 +21,39 @@ export default function ReaderTutorial({ step, visible, onAdvance, onSkip }: Pro
   const isLast = step === LAST_STEP;
 
   return (
-    <div className="fixed inset-0 z-[60]">
-      <div
-        className="absolute rounded-full transition-opacity duration-300"
+    <motion.div className="fixed inset-0 z-[60]" exit={{ opacity: 0 }}>
+      <motion.div
+        className="absolute rounded-full"
         style={{
           top: current.circle.top,
           left: current.circle.left,
           width: current.circle.size,
           height: current.circle.size,
           transform: 'translate(-50%, -50%)',
-          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.6)',
-          opacity: visible ? 1 : 0,
+          boxShadow: '0 0 0 9999px var(--color-scrim)',
         }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: visible ? 1 : 0 }}
+        transition={{ duration: duration.base, ease: ease.soft }}
       />
-      <div
-        className="absolute w-80 max-w-[90vw] bg-white rounded-xl border border-[var(--color-hairline-strong)] p-5 shadow-2xl transition-all duration-200"
-        style={{
-          top: current.card.top,
-          left: current.card.left,
-          transform: `translateX(-50%) scale(${visible ? 1 : 0.95})`,
-          opacity: visible ? 1 : 0,
-        }}
+      <motion.div
+        className="card absolute w-80 max-w-[90vw] p-5 shadow-modal"
+        style={{ top: current.card.top, left: current.card.left }}
+        initial={{ opacity: 0, scale: 0.95, x: '-50%' }}
+        animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.95, x: '-50%' }}
+        transition={{ duration: duration.fast, ease: ease.soft }}
       >
-        <p className="text-xs font-semibold text-[var(--color-primary)] mb-2">
+        <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-primary">
           Шаг {step + 1} из {TUTORIAL_STEPS.length}
         </p>
-        <p className="text-sm text-[var(--color-ink)] leading-relaxed mb-4">{current.text}</p>
+        <p className="mb-4 text-body-sm leading-relaxed text-ink">{current.text}</p>
         <div className="flex items-center justify-between gap-3">
-          <button
-            onClick={onSkip}
-            className="text-xs text-[var(--color-slate)] hover:text-[var(--color-ink)] transition-colors"
-          >
+          <Button variant="ghost" onClick={onSkip} className="text-caption">
             Пропустить
-          </button>
-          <button onClick={onAdvance} className="btn-primary text-sm py-2 px-5">
-            {isLast ? 'Начать читать' : 'Далее'}
-          </button>
+          </Button>
+          <Button onClick={onAdvance}>{isLast ? 'Начать читать' : 'Далее'}</Button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,6 +1,12 @@
 'use client';
 
+import { AnimatePresence, motion } from 'motion/react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { variants } from '@/lib/motion';
+import { CheckIcon, CloseIcon, PlusIcon } from '@/components/ui/icons';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { Tag } from '@/components/ui/Badge';
+import Button from '@/components/ui/Button';
 import type { TooltipState, WordToken } from './types';
 
 interface Props {
@@ -42,65 +48,61 @@ function Tooltip({
   const collected = isCollected(tooltip.word.toLowerCase());
 
   return (
-    <div
+    <motion.div
       data-word-tooltip
       // На телефоне карточка прижата к низу экрана — так она не уезжает за край
-      className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-[var(--color-hairline-strong)] bg-white p-3 shadow-lg md:absolute md:inset-x-auto md:left-0 md:w-[240px] ${
-        tooltip.below
-          ? 'md:top-full md:mt-1 md:bottom-auto'
-          : 'md:bottom-full md:mb-1 md:top-auto'
-      }`}
+      className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-hairline bg-canvas p-3 shadow-modal
+                  md:absolute md:inset-x-auto md:left-0 md:w-60 ${
+                    tooltip.below ? 'md:top-full md:mt-2 md:bottom-auto' : 'md:bottom-full md:mb-2 md:top-auto'
+                  }`}
+      variants={variants.overlay}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="text-sm font-semibold break-words text-[var(--color-ink)]">
+          <span className="min-w-0 break-words text-body-sm font-semibold text-ink">
             {t?.word ?? tooltip.word}
           </span>
-          {t?.cefrLevel && (
-            <span className="px-1.5 py-0.5 bg-[var(--color-tint-mint)] text-[var(--color-primary)] text-[10px] rounded-full shrink-0">
-              {t.cefrLevel}
-            </span>
-          )}
+          {t?.cefrLevel && <Tag tone="success">{t.cefrLevel}</Tag>}
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Закрыть подсказку"
-          className="-mr-1 -mt-1 shrink-0 p-1 text-lg leading-none text-[var(--color-slate)] transition-colors hover:text-[var(--color-ink)]"
+          className="-mr-1 -mt-1 shrink-0 rounded p-1 text-slate transition-colors duration-fast ease-soft hover:bg-surface hover:text-ink"
         >
-          ×
+          <CloseIcon size={16} />
         </button>
       </div>
 
       {tooltip.loading || !t ? (
-        <div className="space-y-2 animate-pulse mt-2">
-          <div className="h-3 w-2/3 bg-[var(--color-tint-mint)] rounded"></div>
-          <div className="h-3 w-1/3 bg-[var(--color-tint-mint)] rounded"></div>
-          <div className="h-3 w-1/2 bg-[var(--color-tint-mint)] rounded"></div>
+        <div className="mt-3 space-y-2">
+          <Skeleton className="h-3 w-2/3" />
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-3 w-1/2" />
         </div>
       ) : (
         <>
           {translationText ? (
-            <p className="mt-1 text-sm text-[var(--color-ink)]">{translationText}</p>
+            <p className="mt-2 text-body-sm text-ink">{translationText}</p>
           ) : (
-            <p className="mt-1 text-sm text-[var(--color-slate)] italic">перевод появится позже</p>
+            <p className="mt-2 text-body-sm italic text-slate">перевод появится позже</p>
           )}
           {readingSessionId && (
-            <button
-              type="button"
+            <Button
+              variant={collected ? 'secondary' : 'primary'}
               onClick={() => onCollect(tooltip.word)}
-              className={`mt-2 w-full rounded-lg py-1.5 text-xs font-medium transition-colors ${
-                collected
-                  ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]'
-                  : 'bg-[var(--color-tint-mint)] text-[var(--color-primary)]'
-              }`}
+              className="mt-3 w-full"
             >
-              {collected ? '✓ В конспекте' : '+ В конспект'}
-            </button>
+              {collected ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
+              {collected ? 'В конспекте' : 'В конспект'}
+            </Button>
           )}
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -159,24 +161,21 @@ export default function ReaderText({
                 onClick={() => onMarkerClick(idx, lower, token)}
                 onKeyDown={(e) => onMarkerKeyDown(e, lower, token)}
                 onFocus={() => onMarkerFocus(idx, lower)}
-                className={`inline-block rounded px-0.5 border-b border-dashed border-[var(--color-primary-pressed)] cursor-pointer transition-colors hover:bg-[rgba(249,231,159,0.20)] ${
-                  collected ? 'bg-[rgba(249,231,159,0.60)] text-[var(--color-ink)]' : ''
-                }`}
+                className={`reader-marker${collected ? ' reader-marker-collected' : ''}`}
               >
                 {token.word}
-                <span className="text-[var(--color-primary-pressed)] text-xs ml-0.5 select-none">
-                  {collected ? '✓' : '✦'}
-                </span>
               </span>
-              {tooltip?.idx === idx && (
-                <Tooltip
-                  tooltip={tooltip}
-                  readingSessionId={readingSessionId}
-                  isCollected={isCollected}
-                  onClose={onCloseTooltip}
-                  onCollect={(word) => onCollect(word, token)}
-                />
-              )}
+              <AnimatePresence>
+                {tooltip?.idx === idx && (
+                  <Tooltip
+                    tooltip={tooltip}
+                    readingSessionId={readingSessionId}
+                    isCollected={isCollected}
+                    onClose={onCloseTooltip}
+                    onCollect={(word) => onCollect(word, token)}
+                  />
+                )}
+              </AnimatePresence>
             </span>
           );
         }
@@ -185,13 +184,13 @@ export default function ReaderText({
           <span
             key={idx}
             onClick={() => isClickable && onWordClick(idx)}
-            className={`inline-block mr-1 rounded px-0.5 transition-colors ${
+            className={
               isSelected
-                ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
+                ? 'reader-word reader-word-selected'
                 : isClickable
-                  ? 'cursor-pointer hover:bg-[rgba(249,231,159,0.20)]'
-                  : 'text-[var(--color-slate)]'
-            }`}
+                  ? 'reader-word'
+                  : 'reader-plain'
+            }
           >
             {token.word}
           </span>

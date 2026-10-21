@@ -1,6 +1,10 @@
 'use client';
 
 import { Fragment } from 'react';
+import { Skeleton } from '@/components/ui/LoadingState';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import { BooksIcon } from '@/components/ui/icons';
 import type { ParallelChunk } from './types';
 
 interface Props {
@@ -15,43 +19,49 @@ interface Props {
 export default function ParallelText({ chunks, loading, error, showHint, onRetry }: Props) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start" role="status" aria-busy="true">
         {[95, 88, 92, 70].map((w, i) => (
           <Fragment key={i}>
-            <div className="h-5 rounded bg-[var(--color-tint-mint)] animate-pulse" style={{ width: `${w}%` }}></div>
-            <div
-              className="h-4 mt-1 rounded bg-[rgba(217,243,225,0.60)] animate-pulse"
-              style={{ width: `${Math.max(40, w - 25)}%` }}
-            ></div>
+            <Skeleton className="h-6" style={{ width: `${w}%` }} />
+            <Skeleton className="h-5" style={{ width: `${Math.max(40, w - 25)}%` }} />
           </Fragment>
         ))}
+        <span className="sr-only">Загружаем параллельный перевод</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-10">
-        <p className="text-sm text-[var(--color-error)] mb-4">Не удалось загрузить перевод</p>
-        <button onClick={onRetry} className="btn-secondary text-sm py-2 px-4">
-          Повторить
-        </button>
-      </div>
+      <ErrorState
+        title="Не удалось загрузить перевод"
+        description="Параллельный текст не пришёл. Попробуйте ещё раз — обычный режим чтения при этом работает."
+        onRetry={onRetry}
+      />
+    );
+  }
+
+  if (!chunks.length) {
+    return (
+      <EmptyState
+        variant="inline"
+        icon={<BooksIcon size={24} />}
+        title="Перевод этой страницы ещё не готов"
+        description="Вернитесь в режим EN и листайте дальше — параллельный текст подтянется, как только будет обработан."
+      />
     );
   }
 
   return (
     <div>
       {showHint && (
-        <p className="text-xs text-[var(--color-slate)] italic mb-4">
-          Кликайте по словам в обычном режиме EN
-        </p>
+        <p className="mb-4 text-caption italic text-slate">Кликайте по словам в обычном режиме EN</p>
       )}
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
         {chunks.map((chunk, i) => (
           <Fragment key={i}>
-            <p className="text-[var(--color-ink)]">{chunk.en}</p>
-            <p className="text-base leading-relaxed text-[var(--color-slate)]">{chunk.ru ?? ''}</p>
+            <p className="text-ink">{chunk.en}</p>
+            <p className="text-charcoal">{chunk.ru ?? ''}</p>
           </Fragment>
         ))}
       </div>

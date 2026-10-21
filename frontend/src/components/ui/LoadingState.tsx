@@ -1,5 +1,13 @@
-export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-hairline-soft ${className}`.trim()} aria-hidden="true" />;
+import type { CSSProperties } from 'react';
+
+export function Skeleton({ className = '', style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <div
+      className={`animate-pulse rounded-md bg-hairline-soft ${className}`.trim()}
+      style={style}
+      aria-hidden="true"
+    />
+  );
 }
 
 interface LoadingStateProps {

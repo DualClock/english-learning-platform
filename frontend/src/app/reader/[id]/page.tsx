@@ -3,14 +3,20 @@
 import AppLayout from '@/components/AppLayout';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type {
+  CSSProperties,
   KeyboardEvent as ReactKeyboardEvent,
   TouchEvent as ReactTouchEvent,
 } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
+import { AnimatePresence } from 'motion/react';
 import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
+import Button from '@/components/ui/Button';
+import ErrorState from '@/components/ui/ErrorState';
+import PageHeader from '@/components/ui/PageHeader';
 import ReaderDrawer from '@/components/reader/ReaderDrawer';
+import ReaderSkeleton from '@/components/reader/ReaderSkeleton';
 import ReaderText from '@/components/reader/ReaderText';
 import ReaderTutorial from '@/components/reader/ReaderTutorial';
 import ReaderToolbar from '@/components/reader/ReaderToolbar';
@@ -945,9 +951,7 @@ export default function ReaderPage() {
   if (isLoading) {
     return (
       <AppLayout width="full">
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <ReaderSkeleton />
       </AppLayout>
     );
   }
@@ -955,18 +959,16 @@ export default function ReaderPage() {
   if (error || !book) {
     return (
       <AppLayout width="full">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[rgba(217,45,32,0.10)] flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <p className="text-[var(--color-error)] mb-2">{error || 'Книга не найдена'}</p>
-          <p className="text-sm text-[var(--color-slate)] mb-6">ID книги: {bookId}</p>
-          <button onClick={() => router.push('/books')} className="btn-primary">
-            ← Назад к книгам
-          </button>
-        </div>
+        <ErrorState
+          title="Книга не открылась"
+          description={error || 'Книга с этим адресом не найдена в библиотеке.'}
+          onRetry={() => void loadBook()}
+          action={
+            <Button href="/books" variant="primary">
+              Назад к книгам
+            </Button>
+          }
+        />
       </AppLayout>
     );
   }
@@ -975,17 +977,21 @@ export default function ReaderPage() {
   const quizQuestions = finishResult?.quiz?.questions ?? [];
   const quizCurrent = quizQuestions[quizIndex];
 
+  // Настройки чтения живут в токенах --reader-*: их читает класс .reader-text,
+  // поэтому размер строки не превращается в набор inline-правил.
+  const readerVars = {
+    '--reader-size': `${fontSize}px`,
+    '--reader-leading': 1.75,
+    '--reader-measure': `${lineWidth}ch`,
+  } as CSSProperties;
+
   return (
     <AppLayout width="full">
-      {/* Шапка книги */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-[var(--color-ink)] sm:text-2xl">{book.title}</h1>
-            {book.author && <p className="text-[var(--color-slate)]">{book.author}</p>}
-          </div>
-
-          {content && (
+      <PageHeader
+        title={book.title}
+        subtitle={book.author || undefined}
+        actions={
+          content ? (
             <ReaderToolbar
               content={content}
               pageDifficulty={currentPageDifficulty}
@@ -1013,41 +1019,47 @@ export default function ReaderPage() {
               onTogglePanel={() => setPanelOpen((v) => !v)}
               onToggleNotes={() => setShowNotes((v) => !v)}
             />
-          )}
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
       {/* Поповер конспекта */}
-      {showNotes && readingSessionId && (
-        <NotesPopover
-          items={collectedKeys.map((key) => collectedRef.current.get(key)!)}
-          isFinishing={isFinishing}
-          onRemove={(word) => void removeCollected(word)}
-          onFinish={() => void finishReading()}
-        />
-      )}
+      <AnimatePresence>
+        {showNotes && readingSessionId && (
+          <NotesPopover
+            key="notes"
+            items={collectedKeys.map((key) => collectedRef.current.get(key)!)}
+            isFinishing={isFinishing}
+            onRemove={(word) => void removeCollected(word)}
+            onFinish={() => void finishReading()}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Drawer: оглавление и закладки */}
-      {drawerOpen && (
-        <ReaderDrawer
-          tab={drawerTab}
-          onTabChange={setDrawerTab}
-          onClose={() => setDrawerOpen(false)}
-          tocItems={tocItems}
-          tocLoading={tocLoading}
-          bookmarks={bookmarks}
-          onPage={goToPage}
-          onDeleteBookmark={async (id) => {
-            const token = session?.accessToken;
-            if (!token) return;
-            await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${id}`, {
-              method: 'DELETE',
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            await refreshBookmarks();
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {drawerOpen && (
+          <ReaderDrawer
+            key="drawer"
+            tab={drawerTab}
+            onTabChange={setDrawerTab}
+            onClose={() => setDrawerOpen(false)}
+            tocItems={tocItems}
+            tocLoading={tocLoading}
+            bookmarks={bookmarks}
+            onPage={goToPage}
+            onDeleteBookmark={async (id) => {
+              const token = session?.accessToken;
+              if (!token) return;
+              await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              await refreshBookmarks();
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-col gap-4 md:flex-row">
         {/* Текст книги */}
@@ -1061,8 +1073,8 @@ export default function ReaderPage() {
             <div
               key={currentPage}
               data-reader-text
-              className="animate-page-in mx-auto font-serif text-[var(--color-ink)]"
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.8, maxWidth: `${lineWidth}ch` }}
+              className="reader-text animate-page-in"
+              style={readerVars}
             >
               {parallelMode ? (
                 <ParallelText
@@ -1099,7 +1111,7 @@ export default function ReaderPage() {
           )}
 
           {content && content.totalPages > 1 && (
-            <p className="mt-3 text-center text-xs text-[var(--color-slate)] md:hidden">
+            <p className="mt-3 text-center text-caption text-slate md:hidden">
               Свайп влево и вправо листает страницы
             </p>
           )}
@@ -1136,42 +1148,48 @@ export default function ReaderPage() {
       </div>
 
       {/* Туториал для новичка */}
-      {tutorialStep !== null && (
-        <ReaderTutorial
-          step={tutorialStep}
-          visible={tutorialVisible}
-          onAdvance={() => {
-            if (tutorialStep === TUTORIAL_STEPS.length - 1) finishTutorial();
-            else setTutorialStep((s) => (s === null ? null : s + 1));
-          }}
-          onSkip={finishTutorial}
-        />
-      )}
+      <AnimatePresence>
+        {tutorialStep !== null && (
+          <ReaderTutorial
+            key="tutorial"
+            step={tutorialStep}
+            visible={tutorialVisible}
+            onAdvance={() => {
+              if (tutorialStep === TUTORIAL_STEPS.length - 1) finishTutorial();
+              else setTutorialStep((s) => (s === null ? null : s + 1));
+            }}
+            onSkip={finishTutorial}
+          />
+        )}
+      </AnimatePresence>
 
-      {finishResult && (
-        <FinishReadingDialog
-          result={finishResult}
-          questions={quizQuestions}
-          index={quizIndex}
-          answer={quizAnswer}
-          score={quizScore}
-          done={quizDone}
-          onAnswer={(choice) => {
-            setQuizAnswer(choice);
-            if (choice === quizCurrent?.correctIndex) setQuizScore((s) => s + 1);
-          }}
-          onNext={() => {
-            if (quizIndex + 1 < quizQuestions.length) {
-              setQuizIndex((i) => i + 1);
-              setQuizAnswer(null);
-            } else {
-              setQuizDone(true);
-            }
-          }}
-          onClose={() => setFinishResult(null)}
-          onGoToDictionary={() => router.push('/dictionary')}
-        />
-      )}
+      <AnimatePresence>
+        {finishResult && (
+          <FinishReadingDialog
+            key="finish"
+            result={finishResult}
+            questions={quizQuestions}
+            index={quizIndex}
+            answer={quizAnswer}
+            score={quizScore}
+            done={quizDone}
+            onAnswer={(choice) => {
+              setQuizAnswer(choice);
+              if (choice === quizCurrent?.correctIndex) setQuizScore((s) => s + 1);
+            }}
+            onNext={() => {
+              if (quizIndex + 1 < quizQuestions.length) {
+                setQuizIndex((i) => i + 1);
+                setQuizAnswer(null);
+              } else {
+                setQuizDone(true);
+              }
+            }}
+            onClose={() => setFinishResult(null)}
+            onGoToDictionary={() => router.push('/dictionary')}
+          />
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }

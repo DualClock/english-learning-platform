@@ -1,5 +1,17 @@
 'use client';
 
+import type { ComponentType } from 'react';
+import { motion } from 'motion/react';
+import { transition } from '@/lib/motion';
+import ProgressBar from '@/components/ui/ProgressBar';
+import {
+  BookmarkFilledIcon,
+  BookmarkIcon,
+  ChevronRightIcon,
+  MenuIcon,
+  NotebookIcon,
+} from '@/components/ui/icons';
+import type { IconProps } from '@/components/ui/icons';
 import type { BookContent, PageDifficulty } from './types';
 import TextSettingsMenu from './TextSettingsMenu';
 
@@ -28,6 +40,10 @@ interface Props {
   onToggleNotes: () => void;
 }
 
+/**
+ * Панель управления чтением. Полоса прогресса тянется от ответа сервера,
+ * остальные контролы — обычные чипы: отклик нажатием, без тени в покое.
+ */
 export default function ReaderToolbar({
   content,
   pageDifficulty,
@@ -44,32 +60,38 @@ export default function ReaderToolbar({
   onTogglePanel,
   onToggleNotes,
 }: Props) {
+  const BookmarkIconType: ComponentType<IconProps> = hasBookmark ? BookmarkFilledIcon : BookmarkIcon;
+
   return (
     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       <div className="w-full sm:w-48">
-        <div className="flex justify-between text-xs text-[var(--color-slate)] mb-1">
-          <span>{content.progress}%</span>
-          <span>{content.wordsRead.toLocaleString()} / {content.totalWords.toLocaleString()}</span>
+        <div className="mb-1 flex justify-between text-caption text-slate">
+          <span className="tabular-nums text-primary">{content.progress}%</span>
+          <span className="tabular-nums">
+            {content.wordsRead.toLocaleString('ru-RU')} / {content.totalWords.toLocaleString('ru-RU')}
+          </span>
         </div>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${content.progress}%` }}></div>
-        </div>
+        <ProgressBar value={content.progress} label="Прогресс чтения" />
       </div>
-      <span className="text-sm tabular-nums text-[var(--color-slate)]">
+
+      <span className="text-body-sm tabular-nums text-slate">
         {content.currentPage} / {content.totalPages}
       </span>
 
       {/* Доля знакомых слов на текущей странице */}
       {pageDifficulty && (
-        <span
-          className="inline-flex h-10 items-center gap-1 rounded-full border border-[var(--color-hairline-strong)] bg-white px-3 text-sm text-[var(--color-slate)] shadow-md"
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={transition.fast}
+          className="inline-flex h-10 items-center gap-1.5 rounded-md border border-hairline-strong bg-canvas px-2.5 text-body-sm text-slate"
           title={`Знакомых: ${pageDifficulty.knownPercent}% · изучаемых: ${pageDifficulty.learningPercent}% · новых: ${pageDifficulty.newPercent}%`}
         >
-          <span className="font-semibold text-[var(--color-primary)]">
+          <span className="font-semibold tabular-nums text-primary">
             {Math.round(pageDifficulty.knownPercent)}%
           </span>
           <span className="hidden sm:inline">знакомых</span>
-        </span>
+        </motion.span>
       )}
 
       <button
@@ -77,11 +99,9 @@ export default function ReaderToolbar({
         onClick={onOpenDrawer}
         title="Оглавление"
         aria-label="Оглавление"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)]"
+        className="icon-chip"
       >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h10" />
-        </svg>
+        <MenuIcon size={20} />
       </button>
 
       <button
@@ -90,13 +110,9 @@ export default function ReaderToolbar({
         title={hasBookmark ? 'Убрать закладку' : 'Поставить закладку'}
         aria-label={hasBookmark ? 'Убрать закладку' : 'Поставить закладку'}
         aria-pressed={hasBookmark}
-        className={`inline-flex h-10 w-10 items-center justify-center rounded-full border text-lg shadow-md transition-colors ${
-          hasBookmark
-            ? 'border-transparent bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)]'
-            : 'border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-        }`}
+        className={hasBookmark ? 'icon-chip border-transparent bg-surface text-ink' : 'icon-chip'}
       >
-        <span aria-hidden="true">{hasBookmark ? '★' : '☆'}</span>
+        <BookmarkIconType size={20} />
       </button>
 
       <TextSettingsMenu
@@ -113,13 +129,9 @@ export default function ReaderToolbar({
         onClick={onToggleParallel}
         title="Параллельный перевод"
         aria-pressed={parallelMode}
-        className={`h-10 px-3.5 rounded-full text-sm font-semibold shadow-md transition-colors ${
-          parallelMode
-            ? 'bg-[var(--color-tint-yellow-bold)] text-[var(--color-ink)] hover:bg-[#E3BF5F]'
-            : 'bg-white border border-[var(--color-hairline-strong)] text-[var(--color-slate)] hover:bg-[var(--color-tint-mint)]'
-        }`}
+        className={parallelMode ? 'icon-chip-active font-semibold' : 'icon-chip font-semibold'}
       >
-        {parallelMode ? 'RU ⇄' : 'EN'}
+        {parallelMode ? 'RU' : 'EN'}
       </button>
 
       {/* Свернуть/развернуть панель перевода — только на десктопе */}
@@ -130,23 +142,21 @@ export default function ReaderToolbar({
           title={panelOpen ? 'Свернуть перевод' : 'Показать перевод'}
           aria-label={panelOpen ? 'Свернуть панель перевода' : 'Показать панель перевода'}
           aria-expanded={panelOpen}
-          className="hidden h-10 w-10 items-center justify-center rounded-full border border-[var(--color-hairline-strong)] bg-white text-[var(--color-slate)] shadow-md transition-colors hover:bg-[var(--color-tint-mint)] md:inline-flex"
+          className="icon-chip hidden md:inline-flex"
         >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d={panelOpen ? 'M9 5l7 7-7 7' : 'M15 5l-7 7 7 7'} />
-          </svg>
+          <ChevronRightIcon size={20} className={panelOpen ? '' : 'rotate-180'} />
         </button>
       )}
 
       {canCollect && (
         <button
           onClick={onToggleNotes}
-          className="relative h-10 min-w-10 rounded-full bg-[var(--color-tint-yellow-bold)] px-2 text-[var(--color-ink)] font-semibold shadow-md hover:shadow-lg transition-shadow"
-          title="Конспект"
           aria-label={`Конспект, слов: ${notesCount}`}
           aria-expanded={notesVisible}
+          className={notesVisible ? 'icon-chip-active' : 'icon-chip'}
         >
-          ✦ {notesCount}
+          <NotebookIcon size={20} />
+          <span className="tabular-nums">{notesCount}</span>
         </button>
       )}
     </div>
