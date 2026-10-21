@@ -1,13 +1,29 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTrack } from '@/app/lib/analytics';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
+import { pluralQuestions } from '@/lib/plural';
+import { variants } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import ErrorState from '@/components/ui/ErrorState';
+import LevelChip from '@/components/ui/LevelChip';
+import ProgressBar from '@/components/ui/ProgressBar';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import { Skeleton } from '@/components/ui/LoadingState';
+import {
+  AlertIcon,
+  ArrowLeftIcon,
+  CheckIcon,
+  CloseIcon,
+  FlameIcon,
+  SpinnerIcon,
+} from '@/components/ui/icons';
 
 interface Exercise {
   id: number;
@@ -154,9 +170,7 @@ export default function GrammarUnitPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[var(--color-hairline-strong)] border-t-[var(--color-primary)] rounded-full animate-spin"></div>
-        </div>
+        <UnitSkeleton />
       </AppLayout>
     );
   }
@@ -164,23 +178,17 @@ export default function GrammarUnitPage() {
   if (!unit) {
     return (
       <AppLayout>
-        <div className="max-w-2xl mx-auto">
-          <Link
-            href="/grammar"
-            className="inline-flex items-center gap-2 text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)] mb-6"
-          >
-            ← К грамматике
-          </Link>
-          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-8 text-center">
-            <p className="text-[var(--color-ink)] mb-4">
-              {unitError
-                ? 'Не удалось загрузить юнит. Проверь соединение и попробуй ещё раз.'
-                : 'Юнит не найден'}
-            </p>
-            <button onClick={refreshUnit} className="btn-primary">
-              Попробовать снова
-            </button>
-          </div>
+        <div className="mx-auto max-w-2xl">
+          <BackToList />
+          <ErrorState
+            title={unitError ? 'Юнит не загрузился' : 'Юнит не найден'}
+            description={
+              unitError
+                ? 'Проверь соединение и попробуй ещё раз.'
+                : 'Такого урока грамматики нет: возможно, он ещё не опубликован.'
+            }
+            onRetry={refreshUnit}
+          />
         </div>
       </AppLayout>
     );
@@ -190,59 +198,61 @@ export default function GrammarUnitPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto">
-        <Link
-          href="/grammar"
-          className="inline-flex items-center gap-2 text-sm text-[var(--color-slate)] hover:text-[var(--color-ink)] mb-4"
-        >
-          ← К грамматике
-        </Link>
+      <div className="mx-auto max-w-3xl">
+        <BackToList />
 
-        <div className="flex items-center gap-3 mb-8">
-          <h1 className="text-3xl font-bold text-[var(--color-ink)]">{unit.title}</h1>
-          <span className="badge badge-primary">{unit.cefrLevel}</span>
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <h1 className="text-h1 text-ink">{unit.title}</h1>
+          <LevelChip level={unit.cefrLevel} className="px-3 py-1" />
         </div>
 
         {/* Теория */}
-        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Теория</h2>
-          <div
-            className="text-[var(--color-ink)] leading-relaxed text-[15px] [&_p]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_strong]:font-semibold [&_em]:italic [&_code]:bg-[var(--color-surface)] [&_code]:px-1 [&_code]:rounded [&_blockquote]:border-l-4 [&_blockquote]:border-[var(--color-tint-yellow-bold)] [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-[var(--color-slate)] [&_a]:text-[var(--color-primary)] [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4 [&_th]:bg-[var(--color-surface)] [&_th]:border [&_th]:border-[var(--color-hairline-strong)] [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-[var(--color-hairline-strong)] [&_td]:px-2 [&_td]:py-1"
-            dangerouslySetInnerHTML={{ __html: unit.theoryHtml }}
-          />
-        </div>
+        <section className="card mb-6 p-6 md:p-8" aria-labelledby="theory-title">
+          <h2 id="theory-title" className="mb-4 text-h3 text-ink">
+            Теория
+          </h2>
+          <div className="theory-text" dangerouslySetInnerHTML={{ __html: unit.theoryHtml }} />
+        </section>
 
         {/* Итог */}
-        {score !== null && (
-          <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 mb-6 text-center">
-            <p className="text-2xl font-bold text-[var(--color-ink)]">
-              Результат: {correctCount} из {sortedExercises.length} ({score}%)
-            </p>
-            {passed && (
-              <div className="mt-4 inline-flex flex-col items-center gap-3">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[rgba(249,231,159,0.30)] text-[#7A3A00] font-semibold">
-                  +XP за урок 🔥
+        <AnimatePresence>
+          {score !== null && (
+            <motion.section
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              aria-labelledby="result-title"
+              className="card mb-6 p-6 text-center"
+            >
+              <h2 id="result-title" className="text-h2 tabular-nums text-ink">
+                Результат: {correctCount} из {sortedExercises.length}{' '}
+                <span className={passed ? 'text-primary' : 'text-semantic-warning'}>
+                  (<AnimatedNumber value={score} />%)
                 </span>
-                {nextUnit ? (
-                  <Link
-                    href={`/grammar/${nextUnit.id}`}
-                    className="btn-primary"
-                  >
-                    Следующий юнит: {nextUnit.title}
-                  </Link>
-                ) : (
-                  <Link href="/grammar" className="btn-secondary">
-                    Вернуться к списку
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+              </h2>
+              {passed && (
+                <div className="mt-4 inline-flex flex-col items-center gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-surface-highlight px-4 py-2 text-body-sm font-semibold text-ink">
+                    <FlameIcon size={16} />
+                    +XP за урок
+                  </span>
+                  {nextUnit ? (
+                    <Button href={`/grammar/${nextUnit.id}`}>Следующий юнит: {nextUnit.title}</Button>
+                  ) : (
+                    <Button variant="secondary" href="/grammar">
+                      Вернуться к списку
+                    </Button>
+                  )}
+                </div>
+              )}
+            </motion.section>
+          )}
+        </AnimatePresence>
 
         {/* Упражнения */}
-        <div className="bg-white rounded-xl border border-[var(--color-hairline-strong)] p-6 md:p-8 mb-6">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-6">
+        <section className="card mb-6 p-6 md:p-8" aria-labelledby="practice-title">
+          <h2 id="practice-title" className="mb-6 text-h3 text-ink">
             Упражнения
           </h2>
           <div className="space-y-8">
@@ -254,40 +264,52 @@ export default function GrammarUnitPage() {
                 <div
                   key={ex.id}
                   id={`exercise-${ex.id}`}
-                  className={`rounded-lg border p-4 transition-colors ${
+                  className={`rounded-lg border p-4 transition-colors duration-fast ease-soft ${
                     result
                       ? result.correct
-                        ? 'border-[var(--color-primary)] bg-[rgba(14,124,123,0.05)]'
-                        : 'border-[var(--color-error)] bg-[rgba(217,45,32,0.05)]'
-                      : 'border-[var(--color-hairline-strong)]'
+                        ? 'border-semantic-success bg-surface-success'
+                        : 'border-semantic-error bg-surface-danger'
+                      : 'border-hairline-strong'
                   }`}
                 >
-                  <p className="font-medium text-[var(--color-ink)] mb-4">
-                    {index + 1}. {ex.prompt}
+                  <p className="mb-4 text-body text-ink">
+                    <span className="tabular-nums text-slate">{index + 1}.</span> {ex.prompt}
                   </p>
 
                   {ex.type === 'mc' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {(ex.options ?? []).map((option, optIdx) => (
-                        <button
-                          key={optIdx}
-                          type="button"
-                          disabled={score !== null}
-                          onClick={() =>
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [ex.id]: String(optIdx),
-                            }))
-                          }
-                          className={`text-left px-4 py-3 rounded-lg border text-sm transition-colors ${
-                            selected === String(optIdx)
-                              ? 'border-[var(--color-tint-yellow-bold)] bg-[rgba(249,231,159,0.40)] text-[var(--color-ink)] font-medium'
-                              : 'border-[var(--color-hairline-strong)] text-[var(--color-ink)] hover:border-[var(--color-tint-yellow-bold)]'
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {(ex.options ?? []).map((option, optIdx) => {
+                        const chosen = selected === String(optIdx);
+                        const revealed = result && !result.correct && option === result.expected;
+                        const tone =
+                          chosen && result && result.correct
+                            ? 'border-semantic-success bg-surface-success text-ink'
+                            : chosen && result
+                              ? 'border-semantic-error bg-surface-danger text-ink'
+                              : revealed
+                                ? 'border-primary bg-surface-accent text-ink'
+                                : chosen
+                                  ? 'border-transparent bg-surface-highlight text-ink'
+                                  : 'border-hairline-strong text-ink hover:bg-surface';
+
+                        return (
+                          <motion.button
+                            key={optIdx}
+                            type="button"
+                            disabled={score !== null}
+                            whileTap={{ scale: 0.99 }}
+                            onClick={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                [ex.id]: String(optIdx),
+                              }))
+                            }
+                            className={`rounded-lg border-2 px-4 py-3 text-left text-body-sm font-medium transition-[background-color,border-color] duration-fast ease-soft disabled:cursor-default ${tone}`}
+                          >
+                            {option}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   ) : (
                     <input
@@ -298,65 +320,108 @@ export default function GrammarUnitPage() {
                       onChange={(e) =>
                         setAnswers((prev) => ({ ...prev, [ex.id]: e.target.value }))
                       }
-                      className="w-full px-4 py-3 rounded-lg border border-[var(--color-hairline-strong)] text-sm text-[var(--color-ink)] placeholder-[rgba(93,100,112,0.60)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent disabled:bg-[var(--color-surface)]"
+                      className="input w-full"
                     />
                   )}
 
-                  {result && (
-                    <div className="mt-3">
-                      <div className="flex items-start gap-2 text-sm">
-                        {result.correct ? (
-                          <>
-                            <span className="text-[var(--color-primary)] font-bold">✓</span>
-                            <span className="text-[var(--color-primary)]">Верно!</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[var(--color-error)] font-bold">✗</span>
-                            <span className="text-[var(--color-error)]">
-                              Правильно: {result.expected}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                      {result.explanation && (
-                        <p className="mt-2 text-sm text-[var(--color-slate)] bg-[var(--color-surface)] rounded-lg px-3 py-2">
-                          {result.explanation}
+                  {/* Разбор появляется вместе с проверкой — только прозрачность,
+                      чтобы страница не прыгала по высоте */}
+                  <AnimatePresence>
+                    {result && (
+                      <motion.div variants={variants.fadeOnly} initial="hidden" animate="visible" className="mt-3">
+                        <p
+                          className={`flex items-center gap-2 text-body-sm font-medium ${
+                            result.correct ? 'text-semantic-success' : 'text-semantic-error'
+                          }`}
+                        >
+                          {result.correct ? <CheckIcon size={16} /> : <CloseIcon size={16} />}
+                          {result.correct ? 'Верно' : `Правильно: ${result.expected}`}
                         </p>
-                      )}
-                    </div>
-                  )}
+                        {result.explanation && (
+                          <p className="mt-2 rounded-lg bg-surface-sunken px-3 py-2 text-body-sm text-slate">
+                            {result.explanation}
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}
           </div>
 
           {checkError && (
-            <p className="mt-6 text-sm text-[var(--color-error)]">{checkError}</p>
+            <p role="alert" className="mt-6 flex items-start gap-2 text-body-sm text-semantic-error">
+              <AlertIcon size={20} className="mt-0.5 shrink-0" />
+              {checkError}
+            </p>
           )}
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             {score === null ? (
-              <button
-                onClick={handleCheck}
-                disabled={isChecking || answeredCount === 0}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button onClick={handleCheck} disabled={isChecking || answeredCount === 0}>
+                {isChecking && <SpinnerIcon size={16} className="animate-spin" />}
                 {isChecking ? 'Проверяем…' : 'Проверить ответы'}
-              </button>
+              </Button>
             ) : (
-              <button onClick={handleRetry} className="btn-secondary">
+              <Button variant="secondary" onClick={handleRetry}>
                 Пройти ещё раз
-              </button>
+              </Button>
             )}
             {score === null && (
-              <span className="text-sm text-[var(--color-slate)]">
+              <span className="text-body-sm tabular-nums text-slate">
                 Отвечено: {answeredCount} из {sortedExercises.length}
               </span>
             )}
           </div>
-        </div>
+
+          {score === null && sortedExercises.length > 0 && (
+            <div className="mt-4">
+              <ProgressBar
+                value={(answeredCount / sortedExercises.length) * 100}
+                label={`Отвечено ${answeredCount} из ${sortedExercises.length} ${pluralQuestions(sortedExercises.length)}`}
+              />
+            </div>
+          )}
+        </section>
       </div>
     </AppLayout>
+  );
+}
+
+/** Возврат к списку юнитов — это навигация, поэтому ссылка, а не обработчик клика. */
+function BackToList() {
+  return (
+    <Button href="/grammar" variant="ghost" className="mb-4">
+      <ArrowLeftIcon size={16} />
+      К грамматике
+    </Button>
+  );
+}
+
+/** Скелет повторяет страницу: заголовок, блок теории и карточки упражнений. */
+function UnitSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mx-auto max-w-3xl animate-page-in">
+      <span className="sr-only">Загрузка юнита грамматики</span>
+      <Skeleton className="mb-4 h-8 w-36" />
+      <Skeleton className="mb-8 h-9 w-2/3" />
+      <div className="card mb-6 p-6 md:p-8">
+        <Skeleton className="mb-4 h-6 w-28" />
+        <Skeleton className="mb-3 h-4 w-full" />
+        <Skeleton className="mb-3 h-4 w-11/12" />
+        <Skeleton className="mb-3 h-4 w-4/5" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+      <div className="card p-6 md:p-8">
+        <Skeleton className="mb-6 h-6 w-36" />
+        {[0, 1].map((i) => (
+          <div key={i} className="mb-4 rounded-lg border border-hairline p-4">
+            <Skeleton className="mb-4 h-4 w-3/4" />
+            <Skeleton className="h-12 w-full rounded-lg" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -22,3 +22,7 @@ export function pluralQuestions(n: number): string {
 export function pluralSentences(n: number): string {
   return plural(n, ['предложение', 'предложения', 'предложений']);
 }
+
+export function pluralUnits(n: number): string {
+  return plural(n, ['юнит', 'юнита', 'юнитов']);
+}

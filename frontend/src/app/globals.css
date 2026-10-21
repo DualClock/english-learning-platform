@@ -452,6 +452,57 @@
     @apply mr-1 inline-block text-slate;
   }
 
+  /* HTML теории из API: разметка приходит с сервера, поэтому стили здесь,
+     а не в className страницы. Все значения — из токенов. */
+  .theory-text {
+    @apply text-body-lg leading-relaxed text-ink;
+  }
+  .theory-text p {
+    @apply mb-3;
+  }
+  .theory-text h1 {
+    @apply mb-3 text-h2 text-ink;
+  }
+  .theory-text h2 {
+    @apply mb-2 mt-5 text-h3 text-ink;
+  }
+  .theory-text h3 {
+    @apply mb-2 mt-4 text-body-lg font-semibold text-ink;
+  }
+  .theory-text ul {
+    @apply mb-3 list-disc pl-6;
+  }
+  .theory-text ol {
+    @apply mb-3 list-decimal pl-6;
+  }
+  .theory-text li {
+    @apply mb-1;
+  }
+  .theory-text strong {
+    @apply font-semibold;
+  }
+  .theory-text em {
+    @apply italic;
+  }
+  .theory-text code {
+    @apply rounded bg-surface px-1 font-mono text-body-sm;
+  }
+  .theory-text blockquote {
+    @apply my-3 border-l-4 border-surface-highlight pl-3 italic text-slate;
+  }
+  .theory-text a {
+    @apply text-primary underline;
+  }
+  .theory-text table {
+    @apply mb-4 w-full border-collapse;
+  }
+  .theory-text th {
+    @apply border border-hairline-strong bg-surface px-2 py-1 text-left font-semibold;
+  }
+  .theory-text td {
+    @apply border border-hairline-strong px-2 py-1;
+  }
+
   /* Квадратный контрол панели: в покое без тени, отклик — тон и сжатие */
   .icon-chip {
     @apply inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-md
