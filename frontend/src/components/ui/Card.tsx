@@ -1,35 +1,64 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-type Tint = 'peach' | 'rose' | 'mint' | 'lavender' | 'sky' | 'yellow' | 'yellow-bold';
+type FieldTone = 'info' | 'success' | 'warning' | 'danger' | 'accent' | 'decor' | 'highlight';
+
+const fieldClass: Record<FieldTone, string> = {
+  info: 'bg-surface-info text-ink',
+  success: 'bg-surface-success text-ink',
+  warning: 'bg-surface-warning text-ink',
+  danger: 'bg-surface-danger text-ink',
+  accent: 'bg-surface-accent text-ink',
+  decor: 'bg-surface-decor text-ink',
+  highlight: 'bg-surface-highlight text-ink',
+};
 
 interface CardProps {
-  tint?: Tint;
-  interactive?: boolean;
   className?: string;
   children: ReactNode;
-  onClick?: () => void;
+  as?: 'div' | 'section' | 'article' | 'li';
 }
 
-export default function Card({ tint, interactive = false, className = '', children, onClick }: CardProps) {
-  const base = tint ? `card-tint-${tint}` : interactive ? 'card-interactive' : 'card';
-  const cls = `${base} ${className}`.trim();
-  if (onClick) {
+/** Плоская поверхность карточки: hairline + шаг тона, без тени в покое. */
+export default function Card({ className = '', children, as = 'div' }: CardProps) {
+  const Box = as;
+  return <Box className={`card ${className}`.trim()}>{children}</Box>;
+}
+
+interface CardInteractiveProps {
+  className?: string;
+  children: ReactNode;
+  href?: string;
+  onClick?: () => void;
+  ariaLabel?: string;
+}
+
+/** Карточка, по которой можно нажать: настоящая ссылка или кнопка, с подъёмом на hover. */
+export function CardInteractive({ className = '', children, href, onClick, ariaLabel }: CardInteractiveProps) {
+  const cls = `card-interactive w-full text-left ${className}`.trim();
+  if (href) {
     return (
-      <div
-        className={cls}
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick();
-          }
-        }}
-      >
+      <Link href={href} className={cls} aria-label={ariaLabel}>
         {children}
-      </div>
+      </Link>
     );
   }
-  return <div className={cls}>{children}</div>;
+  return (
+    <button type="button" onClick={onClick} className={cls} aria-label={ariaLabel}>
+      {children}
+    </button>
+  );
+}
+
+interface CardFieldProps {
+  tone: FieldTone;
+  className?: string;
+  children: ReactNode;
+  as?: 'div' | 'section' | 'article' | 'li';
+}
+
+/** Карточка-поле: цвет объясняет роль блока (успех, предупреждение, подсказка). */
+export function CardField({ tone, className = '', children, as = 'div' }: CardFieldProps) {
+  const Box = as;
+  return <Box className={`rounded-lg p-6 ${fieldClass[tone]} ${className}`.trim()}>{children}</Box>;
 }

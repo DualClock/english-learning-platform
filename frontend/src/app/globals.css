@@ -37,22 +37,127 @@
   --color-tint-sky: #DCECFA;
   --color-tint-yellow: #FEF7D6;
   --color-tint-yellow-bold: #F9E79F;
+  --color-tint-teal: #D6EFEE;
 
   /* Semantic */
   --color-success: #1A9C3C;
   --color-warning: #B45309;
   --color-error: #D92D20;
+
+  /*
+   * Семантические поверхности. Единственный источник цвета карточек и плашек:
+   * класс описывает смысл (информация/успех/предупреждение/ошибка/акцент),
+   * а не оттенок. Значения меняются вместе с темой.
+   */
+  --surface-info: var(--color-tint-sky);
+  --surface-success: var(--color-tint-mint);
+  --surface-warning: var(--color-tint-yellow);
+  --surface-danger: var(--color-tint-rose);
+  --surface-accent: var(--color-tint-teal);
+  --surface-decor: var(--color-tint-lavender);
+  --surface-highlight: var(--color-tint-yellow-bold);
+  --surface-sunken: #F1F3F6;
+  --surface-inverse: var(--color-navy);
+
+  /* Текст на семантических поверхностях */
+  --on-info: #0B4A7A;
+  --on-success: #14662B;
+  --on-warning: #7A3A00;
+  --on-danger: #B42318;
+  --on-accent: #0A6362;
+  --on-decor: #3D2463;
+  /* Текст на фирменной плашке: в светлой теме белый, в тёмной — тёмный */
+  --on-primary: #FFFFFF;
+
+  /* Читалка: значения переопределяются настройками чтения на контейнере текста */
+  --reader-size: 1.25rem;
+  --reader-leading: 1.8;
+  --reader-ui-size: 0.9375rem;
+
+  /* Анимация: единая шкала длительностей и кривых */
+  --duration-tap: 120ms;
+  --duration-fast: 180ms;
+  --duration-base: 260ms;
+  --duration-slow: 420ms;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Тёмная тема: переворачиваются те же имена токенов, поэтому весь UI,
+ * собранный на классах primary, navy, canvas, surface, ink, tint и
+ * surface-подповерхностей, переключается без правок в компонентах.
+ */
+:root.dark {
+  /* Brand */
+  --color-primary: #2FB0A8;
+  --color-primary-pressed: #46C2BB;
+  --color-primary-deep: #0C4342;
+  --color-navy: #0A1A2F;
+  --color-navy-deep: #060F1D;
+  --color-link: #6FA8DC;
+
+  /* Surfaces */
+  --color-canvas: #071426;
+  --color-surface: #0A1B2E;
+  --color-surface-soft: #0E2237;
+  --color-hairline: #1F3550;
+  --color-hairline-soft: #18283D;
+  --color-hairline-strong: #33506B;
+
+  /* Text */
+  --color-ink: #E8ECF3;
+  --color-ink-deep: #FFFFFF;
+  --color-charcoal: #C9D3E2;
+  --color-slate: #9AA9BF;
+  --color-steel: #8493A8;
+  --color-muted: #6B7A90;
+  --color-on-dark: #F4F7FB;
+  --color-on-dark-muted: #9FB0C7;
+
+  /* Pastel tints → приглушённые поля того же тона */
+  --color-tint-peach: #33230F;
+  --color-tint-rose: #3A1626;
+  --color-tint-mint: #123327;
+  --color-tint-lavender: #221A38;
+  --color-tint-sky: #10283E;
+  --color-tint-yellow: #33301A;
+  --color-tint-yellow-bold: #4A441F;
+  --color-tint-teal: #0F3534;
+
+  /* Semantic */
+  --color-success: #3DBB60;
+  --color-warning: #E0A458;
+  --color-error: #F2685C;
+
+  --surface-info: var(--color-tint-sky);
+  --surface-success: var(--color-tint-mint);
+  --surface-warning: var(--color-tint-yellow);
+  --surface-danger: var(--color-tint-rose);
+  --surface-accent: var(--color-tint-teal);
+  --surface-decor: var(--color-tint-lavender);
+  --surface-highlight: var(--color-tint-yellow-bold);
+  --surface-sunken: #050E1B;
+  --surface-inverse: #0E2237;
+
+  /* Текст на семантических поверхностях в тёмной теме светлеет */
+  --on-info: #8FC4F2;
+  --on-success: #7AD79B;
+  --on-warning: #F0BE7E;
+  --on-danger: #FFA79E;
+  --on-accent: #7FDCD5;
+  --on-decor: #C9B8F0;
+  --on-primary: #06202B;
 }
 
 @layer base {
   body {
-    @apply bg-[var(--color-surface)] text-[var(--color-ink)] antialiased;
+    @apply bg-surface text-ink antialiased;
     font-family: var(--font-inter), Inter, system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
-    @apply font-semibold tracking-tight text-[var(--color-ink)];
+    @apply font-semibold tracking-tight text-ink;
   }
 
   :focus-visible {
@@ -107,7 +212,7 @@
   }
 
   .animate-rise-in {
-    animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rise-in 0.45s var(--ease-out-soft) both;
   }
 
   /* Лёгкое «выпрыгивание» — акцентные элементы */
@@ -123,12 +228,12 @@
   }
 
   .animate-pop-in {
-    animation: pop-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: pop-in 0.35s var(--ease-out-soft) both;
   }
 
   /* Поочерёдное появление детей контейнера: stagger на сетке/списке */
   .stagger > * {
-    animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rise-in 0.45s var(--ease-out-soft) both;
   }
 
   .stagger > *:nth-child(1) { animation-delay: 0.05s; }
@@ -159,71 +264,73 @@
 
   /* Кнопки */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white px-[18px] py-2.5 rounded-md text-sm font-medium
-           hover:bg-[var(--color-primary-pressed)] transition-all duration-200 active:scale-[0.97]
-           disabled:bg-[var(--color-hairline)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-md text-body-sm font-medium
+           hover:bg-primary-pressed transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97
+           disabled:bg-surface disabled:text-slate disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-hairline-strong)] hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97]
-           disabled:text-[var(--color-muted)] disabled:border-[var(--color-hairline)] disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-ink px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-hairline-strong hover:bg-surface transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97
+           disabled:text-slate disabled:border-hairline disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 text-[var(--color-slate)] px-3 py-2 rounded-md text-sm font-medium
-           hover:text-[var(--color-ink)] hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 text-slate px-3 py-2 rounded-md text-body-sm font-medium
+           hover:text-ink hover:bg-surface transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent text-[var(--color-error)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-error)] hover:bg-red-50 transition-all duration-200 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-semantic-error px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-semantic-error hover:bg-surface-danger transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
   }
 
   .btn-on-dark {
-    @apply inline-flex items-center justify-center gap-2 bg-white text-[var(--color-ink)] px-[18px] py-2.5 rounded-md text-sm font-medium
-           hover:bg-[var(--color-surface)] transition-all duration-200 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 bg-on-dark text-navy px-5 py-2.5 rounded-md text-body-sm font-medium
+           hover:bg-surface-soft transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
   }
 
   .btn-secondary-on-dark {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent text-white px-[18px] py-2.5 rounded-md text-sm font-medium
-           border border-[var(--color-on-dark-muted)] hover:border-white transition-all duration-200 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-on-dark px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-on-dark-muted hover:border-on-dark transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
   }
 
-  /* Карточки */
+  /* Карточки: в покое — шаг тона и hairline, тень только у поднимаемого слоя */
   .card {
-    @apply bg-white rounded-lg border border-[var(--color-hairline)] p-6;
+    @apply bg-canvas rounded-lg border border-hairline p-6;
   }
 
   .card-interactive {
-    @apply bg-white rounded-lg border border-[var(--color-hairline)]
-           hover:border-[var(--color-primary)] hover:shadow-card hover:-translate-y-0.5 transition-all duration-200
+    @apply bg-canvas rounded-lg border border-hairline
+           hover:border-primary hover:shadow-card hover:-translate-y-0.5 transition-[border-color,box-shadow,transform] duration-fast ease-soft
            cursor-pointer;
   }
 
-  .card-tint-peach    { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-peach); }
-  .card-tint-rose     { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-rose); }
-  .card-tint-mint     { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-mint); }
-  .card-tint-lavender { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-lavender); }
-  .card-tint-sky      { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-sky); }
-  .card-tint-yellow   { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-yellow); }
-  .card-tint-yellow-bold { @apply rounded-lg p-8 text-[var(--color-charcoal)]; background-color: var(--color-tint-yellow-bold); }
+  /* Поверхности по смыслу вместо декоративных оттенков */
+  .card-tint-peach    { @apply rounded-lg p-6 text-ink bg-surface-warning; }
+  .card-tint-rose     { @apply rounded-lg p-6 text-ink bg-surface-danger; }
+  .card-tint-mint     { @apply rounded-lg p-6 text-ink bg-surface-success; }
+  .card-tint-lavender { @apply rounded-lg p-6 text-ink bg-surface-decor; }
+  .card-tint-sky      { @apply rounded-lg p-6 text-ink bg-surface-info; }
+  .card-tint-yellow   { @apply rounded-lg p-6 text-ink bg-surface-warning; }
+  .card-tint-yellow-bold { @apply rounded-lg p-6 text-ink bg-surface-highlight; }
+  .card-tint-teal     { @apply rounded-lg p-6 text-ink bg-surface-accent; }
 
   /* Поля ввода */
   .input {
-    @apply w-full h-11 px-4 rounded-md border border-[var(--color-hairline-strong)] bg-white
-           text-[var(--color-ink)] placeholder-[var(--color-muted)]
-           focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20
-           transition-shadow duration-200;
+    @apply w-full h-11 px-4 rounded-md border border-hairline-strong bg-canvas
+           text-ink placeholder:text-muted text-body
+           focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-20
+           transition-[border-color,box-shadow] duration-fast ease-soft;
   }
 
   /* Заголовки секций и страниц */
   .section-title {
-    @apply text-2xl md:text-3xl font-semibold text-[var(--color-ink)] mb-2;
+    @apply text-h1 text-ink mb-2;
   }
 
   .section-subtitle {
-    @apply text-[var(--color-slate)] text-lg mb-8;
+    @apply text-slate text-body-lg mb-8;
   }
 
   .page-header {
@@ -232,47 +339,49 @@
 
   /* Бейджи */
   .badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-[13px] font-semibold;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-caption font-semibold;
   }
 
   .badge-primary {
-    @apply bg-[var(--color-primary)] text-white;
+    @apply bg-primary text-on-primary;
   }
 
   .badge-secondary {
-    @apply bg-[var(--color-surface)] text-[var(--color-slate)] border border-[var(--color-hairline)];
+    @apply bg-surface text-slate border border-hairline;
   }
 
   .badge-tag {
-    @apply inline-flex items-center px-2 py-0.5 rounded-md text-[13px] font-semibold;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-caption font-semibold;
   }
 
-  .badge-tag-green  { @apply badge-tag; background-color: var(--color-tint-mint); color: #14662B; }
-  .badge-tag-orange { @apply badge-tag; background-color: var(--color-tint-peach); color: #7A3A00; }
-  .badge-tag-purple { @apply badge-tag; background-color: var(--color-tint-lavender); color: #3D2463; }
-  .badge-tag-sky    { @apply badge-tag; background-color: var(--color-tint-sky); color: #0B4A7A; }
+  .badge-tag-green  { @apply badge-tag bg-surface-success text-on-success; }
+  .badge-tag-orange { @apply badge-tag bg-surface-warning text-on-warning; }
+  .badge-tag-purple { @apply badge-tag bg-surface-decor text-on-decor; }
+  .badge-tag-sky    { @apply badge-tag bg-surface-info text-on-info; }
+  .badge-tag-teal   { @apply badge-tag bg-surface-accent text-on-accent; }
+  .badge-tag-red    { @apply badge-tag bg-surface-danger text-on-danger; }
 
-  /* Пилюли-табы */
+  /* Табы */
   .pill-tab {
-    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-[var(--color-steel)]
-           border border-[var(--color-hairline)] hover:text-[var(--color-ink)] transition-colors duration-200;
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium text-steel
+           border border-hairline hover:text-ink transition-[background-color,color,transform,box-shadow] duration-fast ease-soft;
   }
 
   .pill-tab-active {
-    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium
-           bg-[var(--color-navy)] text-white border border-[var(--color-navy)];
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium
+           bg-navy text-on-dark border border-navy;
   }
 
   /* Прогресс-бар */
   .progress-bar {
-    @apply h-2 bg-[var(--color-hairline-soft)] rounded-full overflow-hidden;
+    @apply h-2 bg-hairline-soft rounded-full overflow-hidden;
   }
 
   .progress-fill {
-    @apply h-full bg-[var(--color-primary)] rounded-full transition-all duration-500;
+    @apply h-full bg-primary rounded-full transition-[width] duration-slow;
     /* Полоса «вырастает» из левого края при появлении */
     transform-origin: left center;
-    animation: bar-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: bar-grow 0.8s var(--ease-out-soft) both;
   }
 
   @keyframes bar-grow {
@@ -530,6 +639,34 @@
   .stagger > *,
   .progress-fill {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * Единая деградация при «уменьшить анимацию»: все CSS-переходы и keyframes
+ * схлопываются в мгновенное состояние, содержимое остаётся видимым.
+ * Motion-анимации обрабатывает <MotionConfig reducedMotion="user">.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-rise-in,
+  .animate-pop-in,
+  .animate-fade-in,
+  .animate-page-in,
+  .stagger > *,
+  .assistant-fade-up,
+  .assistant-message-in,
+  .progress-fill {
     opacity: 1 !important;
     transform: none !important;
   }

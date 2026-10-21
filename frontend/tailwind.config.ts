@@ -17,8 +17,6 @@ const config: Config = {
         "navy-deep": "var(--color-navy-deep)",
         link: "var(--color-link)",
         canvas: "var(--color-canvas)",
-        surface: "var(--color-surface)",
-        "surface-soft": "var(--color-surface-soft)",
         hairline: "var(--color-hairline)",
         "hairline-soft": "var(--color-hairline-soft)",
         "hairline-strong": "var(--color-hairline-strong)",
@@ -38,21 +36,84 @@ const config: Config = {
           sky: "var(--color-tint-sky)",
           yellow: "var(--color-tint-yellow)",
           "yellow-bold": "var(--color-tint-yellow-bold)",
+          teal: "var(--color-tint-teal)",
         },
         semantic: {
           success: "var(--color-success)",
           warning: "var(--color-warning)",
           error: "var(--color-error)",
         },
+        /* Семантические поверхности: цвет карточки означает статус/роль, а не декор */
+        surface: {
+          DEFAULT: "var(--color-surface)",
+          soft: "var(--color-surface-soft)",
+          info: "var(--surface-info)",
+          success: "var(--surface-success)",
+          warning: "var(--surface-warning)",
+          danger: "var(--surface-danger)",
+          accent: "var(--surface-accent)",
+          decor: "var(--surface-decor)",
+          highlight: "var(--surface-highlight)",
+          sunken: "var(--surface-sunken)",
+          inverse: "var(--surface-inverse)",
+        },
+        on: {
+          info: "var(--on-info)",
+          success: "var(--on-success)",
+          warning: "var(--on-warning)",
+          danger: "var(--on-danger)",
+          accent: "var(--on-accent)",
+          decor: "var(--on-decor)",
+          primary: "var(--on-primary)",
+        },
+      },
+      fontSize: {
+        /* Шкала типографики. Пять рабочих размеров; caption — пол (13px). */
+        display: ["clamp(2.75rem, 7.5vw, 5.5rem)", { lineHeight: "0.94", letterSpacing: "-0.035em", fontWeight: "700" }],
+        h1: ["clamp(1.625rem, 2.4vw, 2.125rem)", { lineHeight: "1.18", letterSpacing: "-0.02em", fontWeight: "600" }],
+        h2: ["1.3125rem", { lineHeight: "1.3", letterSpacing: "-0.015em", fontWeight: "600" }],
+        h3: ["1.0625rem", { lineHeight: "1.4", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-lg": ["1.0625rem", { lineHeight: "1.6" }],
+        body: ["1rem", { lineHeight: "1.6" }],
+        "body-sm": ["0.9375rem", { lineHeight: "1.55" }],
+        caption: ["0.8125rem", { lineHeight: "1.45", letterSpacing: "0.005em" }],
+        mono: ["0.875rem", { lineHeight: "1.5" }],
+        /* Шкала читалки: значения приходят из настроек чтения (--reader-*) */
+        reading: ["var(--reader-size, 1.25rem)", { lineHeight: "var(--reader-leading, 1.8)" }],
+        "reading-ui": ["var(--reader-ui-size, 0.9375rem)", { lineHeight: "1.5" }],
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
         heading: ['var(--font-manrope)', 'Inter', 'system-ui', 'sans-serif'],
+        reading: ['var(--font-manrope)', 'Georgia', 'serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       borderRadius: {
         'md': '8px',
         'lg': '12px',
         'xl': '16px',
+      },
+      scale: {
+        '97': '0.97',
+      },
+      transitionDuration: {
+        tap: "var(--duration-tap)",
+        fast: "var(--duration-fast)",
+        base: "var(--duration-base)",
+        slow: "var(--duration-slow)",
+      },
+      transitionTimingFunction: {
+        soft: "var(--ease-out-soft)",
+      },
+      aspectRatio: {
+        book: "3 / 4",
+        wide: "16 / 9",
+      },
+      maxWidth: {
+        /* Ширина набора: 42ch — подпись и statements, 68ch — интерфейс, 76ch — читалка */
+        'measure-sm': "42ch",
+        measure: "68ch",
+        reading: "76ch",
       },
       boxShadow: {
         'soft': '0 1px 2px rgba(15, 15, 15, 0.04)',

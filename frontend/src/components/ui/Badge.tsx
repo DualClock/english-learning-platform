@@ -1,35 +1,42 @@
 import type { ReactNode } from 'react';
 
-type Tone = 'primary' | 'green' | 'orange' | 'purple' | 'sky' | 'navy' | 'secondary';
+type SolidTone = 'accent' | 'neutral' | 'inverse';
+type TagTone = 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'decor' | 'neutral';
 
-const pillClass: Record<Tone, string> = {
-  primary: 'badge-primary',
-  green: 'bg-[var(--color-success)] text-white',
-  orange: 'bg-[var(--color-warning)] text-white',
-  purple: 'bg-[#6D28D9] text-white',
-  sky: 'bg-[#0B4A7A] text-white',
-  navy: 'bg-navy text-white',
-  secondary: 'badge-secondary',
+const solidClass: Record<SolidTone, string> = {
+  accent: 'badge-primary',
+  neutral: 'badge-secondary',
+  inverse: 'badge inline-flex items-center gap-1 rounded-full bg-surface-inverse px-2.5 py-1 text-caption font-semibold text-on-dark',
 };
 
-const tagClass: Record<Tone, string> = {
-  primary: 'badge-tag bg-[var(--color-tint-mint)] text-[#14662B]',
-  green: 'badge-tag-green',
-  orange: 'badge-tag-orange',
-  purple: 'badge-tag-purple',
-  sky: 'badge-tag-sky',
-  navy: 'badge-tag bg-[var(--color-tint-sky)] text-[var(--color-navy)]',
-  secondary: 'badge-tag bg-[var(--color-surface)] text-[var(--color-slate)]',
+const tagClass: Record<TagTone, string> = {
+  accent: 'badge-tag-teal',
+  success: 'badge-tag-green',
+  warning: 'badge-tag-orange',
+  danger: 'badge-tag-red',
+  info: 'badge-tag-sky',
+  decor: 'badge-tag-purple',
+  neutral: 'badge-tag bg-surface text-slate',
 };
 
 interface BadgeProps {
-  tone?: Tone;
-  tag?: boolean;
+  tone?: SolidTone;
   className?: string;
   children: ReactNode;
 }
 
-export default function Badge({ tone = 'primary', tag = false, className = '', children }: BadgeProps) {
-  const cls = `${tag ? tagClass[tone] : pillClass[tone]} ${className}`.trim();
-  return <span className={cls}>{children}</span>;
+/** Плотная плашка-статус: акцент, нейтральная или инверсная поверхность. */
+export default function Badge({ tone = 'accent', className = '', children }: BadgeProps) {
+  return <span className={`${solidClass[tone]} ${className}`.trim()}>{children}</span>;
+}
+
+interface TagProps {
+  tone?: TagTone;
+  className?: string;
+  children: ReactNode;
+}
+
+/** Мягкое поле с подписью: цвет несёт смысл (успех, предупреждение, ошибка, информация). */
+export function Tag({ tone = 'neutral', className = '', children }: TagProps) {
+  return <span className={`${tagClass[tone]} ${className}`.trim()}>{children}</span>;
 }

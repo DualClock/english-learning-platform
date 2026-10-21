@@ -73,9 +73,6 @@ export default function WeeklyLeague() {
 
   const { me, entries, leagues } = data;
   const myLeague = leagues.find((l) => l.code === me.league);
-  const nextLeague = me.nextLeagueXp != null
-    ? leagues.find((l) => l.minXp === me.nextLeagueXp)
-    : null;
 
   // Прогресс внутри лиги: от её порога до порога следующей
   const leagueStart = myLeague?.minXp ?? 0;
