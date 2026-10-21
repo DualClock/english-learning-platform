@@ -7,7 +7,7 @@ import {
   StarIcon,
   type IconProps,
 } from '@/components/ui/icons';
-import { pluralize } from './utils';
+import { pluralBooks, pluralWords } from '@/lib/plural';
 
 interface Props {
   dictCount: number | null;
@@ -25,10 +25,14 @@ interface Stat {
 export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }: Props) {
   const stats: Stat[] = [
     ...(dictCount !== null
-      ? [{ value: dictCount, label: pluralize(dictCount, 'слово', 'слова', 'слов') + ' в словаре', Icon: BookOpenIcon }]
+      ? [{ value: dictCount, label: `${pluralWords(dictCount)} в словаре`, Icon: BookOpenIcon }]
       : []),
-    { value: reviewCount, label: pluralize(reviewCount, 'слово', 'слова', 'слов') + ' на повторении', Icon: RepeatIcon },
-    { value: booksCount, label: pluralize(booksCount, 'книга', 'книги', 'книг') + ' в работе', Icon: BookmarkIcon },
+    {
+      value: reviewCount,
+      label: `${pluralWords(reviewCount)} на повторении`,
+      Icon: RepeatIcon,
+    },
+    { value: booksCount, label: `${pluralBooks(booksCount)} в работе`, Icon: BookmarkIcon },
     ...(totalXp !== null && totalXp !== undefined
       ? [{ value: totalXp, label: 'баллов набрано', Icon: StarIcon }]
       : []),

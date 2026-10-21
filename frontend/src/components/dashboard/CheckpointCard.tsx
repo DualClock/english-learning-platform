@@ -1,6 +1,8 @@
 'use client';
 
 import { useApiQuery } from '@/app/lib/use-api';
+import { pluralQuestions, pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 import Button from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { TargetIcon } from '@/components/ui/icons';
@@ -20,14 +22,6 @@ const LEVEL_TITLES: Record<string, string> = {
   b1: 'B1',
   b2: 'B2',
 };
-
-function plural(n: number, one: string, few: string, many: string): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-}
 
 /**
  * Карточка чекпоинт-теста на дашборде. Запрашивает только счётчики
@@ -71,14 +65,16 @@ export default function CheckpointCard({ level }: { level?: string | null }) {
           <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
             <h2 className="text-h3 text-ink">Чекпоинт {label}</h2>
             <span className="text-caption text-slate tabular-nums">
-              {matched} {plural(matched, 'слово', 'слова', 'слов')} уровня {label} в словаре
+              {formatNumber(matched)} {pluralWords(matched)} уровня {label} в словаре
             </span>
           </div>
 
           <p className="mb-5 max-w-measure text-body-sm text-charcoal">
             {data.available
-              ? `Тест на ${capacity} ${plural(capacity, 'вопрос', 'вопроса', 'вопросов')}: проверьте, готовы ли вы к уровню ${label}.`
-              : `Нужно минимум ${data.requiredWords} ${plural(data.requiredWords, 'слово', 'слова', 'слов')} в словаре — сейчас ${data.dictionaryWords}. Добавьте слова из книги или сборника.`}
+              ? `Тест на ${formatNumber(capacity)} ${pluralQuestions(capacity)}: проверьте, готовы ли вы к уровню ${label}.`
+              : `Нужно минимум ${formatNumber(data.requiredWords)} ${pluralWords(
+                  data.requiredWords
+                )} в словаре — сейчас ${formatNumber(data.dictionaryWords)}. Добавьте слова из книги или сборника.`}
           </p>
 
           <div className="flex flex-wrap items-center gap-3">

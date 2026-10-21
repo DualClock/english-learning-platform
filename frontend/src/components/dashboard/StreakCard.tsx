@@ -3,6 +3,7 @@
 import ProgressBar from '@/components/ui/ProgressBar';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { CheckIcon, FlameIcon } from '@/components/ui/icons';
+import { pluralDays } from '@/lib/plural';
 
 export interface StreakData {
   currentStreak: number;
@@ -15,14 +16,6 @@ export interface StreakData {
 
 interface Props {
   streak: StreakData | null;
-}
-
-function pluralizeDays(n: number) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'день';
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'дня';
-  return 'дней';
 }
 
 export default function StreakCard({ streak }: Props) {
@@ -50,10 +43,10 @@ export default function StreakCard({ streak }: Props) {
           </span>
           <span>
             <p className="text-h2 text-ink tabular-nums">
-              {currentStreak} {pluralizeDays(currentStreak)} подряд
+              {currentStreak} {pluralDays(currentStreak)} подряд
             </p>
             <p className="mt-1 text-body-sm text-slate tabular-nums">
-              Лучшая серия: {longestStreak} {pluralizeDays(longestStreak)}
+              Лучшая серия: {longestStreak} {pluralDays(longestStreak)}
             </p>
           </span>
         </div>

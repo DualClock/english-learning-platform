@@ -4,6 +4,8 @@ import { CardInteractive } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { CheckIcon } from '@/components/ui/icons';
 import { useApiQuery } from '@/app/lib/use-api';
+import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 
 interface TodayPlan {
   date: string;
@@ -47,14 +49,6 @@ interface PlanItem {
   done: boolean;
 }
 
-function pluralWords(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return `${n} слово`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} слова`;
-  return `${n} слов`;
-}
-
 function StepMark({ done, index }: { done: boolean; index: number }) {
   return (
     <span
@@ -89,7 +83,10 @@ export default function DailyPlan() {
   const items: PlanItem[] = [
     {
       key: 'review',
-      title: data.review.due > 0 ? `Повторить ${pluralWords(data.review.due)}` : 'Повторение на сегодня',
+      title:
+        data.review.due > 0
+          ? `Повторить ${formatNumber(data.review.due)} ${pluralWords(data.review.due)}`
+          : 'Повторение на сегодня',
       subtitle: data.review.due > 0
         ? `Пройдено ${data.review.done} из ${data.review.target}`
         : 'Нет слов к повторению',

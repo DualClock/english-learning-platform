@@ -1,6 +1,7 @@
 import Button from '@/components/ui/Button';
 import { CheckCircleIcon, RepeatIcon } from '@/components/ui/icons';
-import { pluralize } from './utils';
+import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 
 export default function TodayReview({ reviewCount }: { reviewCount: number }) {
   if (reviewCount === 0) {
@@ -29,7 +30,7 @@ export default function TodayReview({ reviewCount }: { reviewCount: number }) {
         </span>
         <div className="min-w-0 flex-1">
           <h2 className="text-h3 text-ink tabular-nums">
-            {reviewCount} {pluralize(reviewCount, 'слово', 'слова', 'слов')} ждут повторения
+            {formatNumber(reviewCount)} {pluralWords(reviewCount)} ждут повторения
           </h2>
           <p className="mt-1 text-body-sm text-slate">
             Пара минут сейчас — и эти слова останутся с тобой надолго.
