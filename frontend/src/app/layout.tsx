@@ -16,11 +16,36 @@ const inter = Inter({
   display: 'swap',
 });
 
+const siteUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+const description =
+  'Читай, разбирай слова, тренируй грамматику, произношение и письмо. Lexicon возвращает пройденное в нужный момент.';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Lexicon — английский без зубрёжки',
-  description:
-    'Читай, разбирай слова, тренируй грамматику, произношение и письмо. Lexicon возвращает пройденное в нужный момент.',
+  description,
   applicationName: 'Lexicon',
+  openGraph: {
+    type: 'website',
+    locale: 'ru_RU',
+    siteName: 'Lexicon',
+    title: 'Lexicon — английский без зубрёжки',
+    description,
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Lexi машет рукой рядом с надписью «Английский без зубрёжки»',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lexicon — английский без зубрёжки',
+    description,
+    images: ['/og.png'],
+  },
   // Иконки (favicon, icon, apple-icon) Next подхватывает из src/app автоматически
   appleWebApp: {
     capable: true,

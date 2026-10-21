@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +19,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { Tag } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/LoadingState';
-import { AlertIcon, CheckIcon, InboxIcon, VolumeIcon } from '@/components/ui/icons';
+import { AlertIcon, InboxIcon, VolumeIcon } from '@/components/ui/icons';
 
 interface Word {
   wordId: number;
@@ -147,9 +148,7 @@ export default function ReviewPage() {
           animate="visible"
           className="mx-auto max-w-md py-12 text-center"
         >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-surface-accent text-on-accent">
-            <CheckIcon size={24} />
-          </div>
+          <LexiMascot pose="celebrate" className="mx-auto mb-1 w-40" />
           <h1 className="mb-2 text-h1 text-ink">Повторение завершено</h1>
           <p className="mb-8 text-body-lg text-slate">
             Повторено {formatNumber(words.length)} {pluralWords(words.length)}

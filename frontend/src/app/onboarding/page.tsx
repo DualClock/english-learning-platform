@@ -1,13 +1,13 @@
 'use client';
 
 import Button from '@/components/ui/Button';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import Notice from '@/components/ui/Notice';
 import ProgressBar from '@/components/ui/ProgressBar';
 import {
   BookOpenIcon,
   BriefcaseIcon,
   BulbIcon,
-  CheckCircleIcon,
   CheckIcon,
   FilmIcon,
   HomeIcon,
@@ -327,9 +327,7 @@ export default function OnboardingPage() {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-surface px-4">
         <div className="w-full max-w-md text-center">
-          <span className="state-orb animate-pop-in bg-surface-success text-on-success">
-            <CheckCircleIcon size={24} className="h-8 w-8" />
-          </span>
+          <LexiMascot pose="wave" className="mx-auto -mt-4 mb-3 w-40" />
           <h1 className="mb-4 text-h1 text-ink">Добро пожаловать, {data.name || 'друг'}!</h1>
           <p className="mb-8 text-body-lg text-slate">
             Ваш аккаунт готов. Уровень: <b className="font-semibold text-ink">{levelLabel(data.level)}</b>
