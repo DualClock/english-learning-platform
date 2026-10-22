@@ -104,6 +104,19 @@ public class ReadingSessionLimitsTests
     }
 
     [Fact]
+    public async Task AddWord_OversizedText_Rejected()
+    {
+        var (controller, context, _) = Create();
+        var bookId = context.Books.Single().Id;
+        var sessionId = GetSessionId(await controller.StartSession(new StartSessionRequest { BookId = bookId }));
+
+        var oversized = new string('a', 5000);
+        var result = controller.AddWord(sessionId, new AddSessionWordRequest { Text = oversized, Page = 1 });
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
     public async Task StartSession_OverUserLimit_EvictsOldestSession()
     {
         var (controller, context, _) = Create();

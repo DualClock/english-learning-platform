@@ -36,6 +36,7 @@ public class ReadingSessionController : ControllerBase
     // раздуть сессию тысячами слов или открыть тысячи сессий (OOM инстанса).
     public const int MaxWordsPerSession = 1000;
     public const int MaxActiveSessionsPerUser = 20;
+    public const int MaxWordLength = 100;
 
     private readonly ApplicationDbContext _context;
     private readonly DictionaryService _dictionaryService;
@@ -117,6 +118,12 @@ public class ReadingSessionController : ControllerBase
 
         var text = (request.Text ?? "").Trim().ToLowerInvariant();
         if (text.Length < 2) return BadRequest(new { message = "Invalid word" });
+
+        // Длина ограничена: огромная строка в словаре сессии — это память
+        if (text.Length > MaxWordLength)
+        {
+            return BadRequest(new { message = $"Слово слишком длинное (максимум {MaxWordLength} символов)." });
+        }
 
         if (!session.Words.Any(w => w.Text == text))
         {
