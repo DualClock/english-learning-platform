@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -195,17 +196,22 @@ export default function PronunciationPage() {
           subtitle="Выберите слово, послушайте образец и повторите — проверим на слух."
         />
 
-        <div className="mt-6 mb-2 flex justify-between text-body-sm text-slate">
-          <span>
-            Пара {index + 1} из {pairs.length}
-          </span>
-          <span>Тренируем: {target}</span>
+        <div className="mt-6 mb-6 flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex justify-between text-body-sm text-slate">
+              <span>
+                Пара {index + 1} из {pairs.length}
+              </span>
+              <span>Тренируем: {target}</span>
+            </div>
+            <ProgressBar
+              value={((index + 1) / pairs.length) * 100}
+              label={`Пара ${index + 1} из ${pairs.length}`}
+            />
+          </div>
+          {/* Слушает и замирает, пока идёт запись */}
+          <LexiPeek mood="sleepy" paused={recorder.isRecording || checking} className="w-12 shrink-0" />
         </div>
-        <ProgressBar
-          value={((index + 1) / pairs.length) * 100}
-          label={`Пара ${index + 1} из ${pairs.length}`}
-          className="mb-6"
-        />
 
         <AnimatePresence mode="wait" custom={1}>
           <motion.div

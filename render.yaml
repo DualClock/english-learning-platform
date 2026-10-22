@@ -27,3 +27,6 @@ services:
         value: gemini-2.5-flash
       - key: Seeder__Key
         sync: false
+      # Куда присылать отзывы беты. Если пусто — на Email__From.
+      - key: Feedback__ToEmail
+        sync: false

@@ -3,6 +3,7 @@
 import { motion } from 'motion/react';
 import { duration, ease } from '@/lib/motion';
 import Button from '@/components/ui/Button';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import { TUTORIAL_STEPS } from './types';
 
 interface Props {
@@ -38,11 +39,18 @@ export default function ReaderTutorial({ step, visible, onAdvance, onSkip }: Pro
       />
       <motion.div
         className="card absolute w-80 max-w-[90vw] p-5 shadow-modal"
-        style={{ top: current.card.top, left: current.card.left }}
+        style={{
+          top: current.card.top,
+          // На узких экранах карточка не должна вылезать за край: w-80 (320px)
+          // с центровкой по left 40% на 390px даёт 4px отступа влево за экран.
+          left: `clamp(176px, ${current.card.left}, calc(100vw - 176px))`,
+        }}
         initial={{ opacity: 0, scale: 0.95, x: '-50%' }}
         animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.95, x: '-50%' }}
         transition={{ duration: duration.fast, ease: ease.soft }}
       >
+        {/* Единственный экран, где Lexi объясняет жестом: указывает на подсвеченный элемент */}
+        <LexiMascot pose="point" className="absolute -top-20 left-1/2 w-20 -translate-x-1/2" />
         <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-primary">
           Шаг {step + 1} из {TUTORIAL_STEPS.length}
         </p>

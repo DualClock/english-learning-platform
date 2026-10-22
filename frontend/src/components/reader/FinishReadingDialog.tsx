@@ -3,9 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Button from '@/components/ui/Button';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import ProgressBar from '@/components/ui/ProgressBar';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
-import { ArrowRightIcon, CheckIcon, CloseIcon, TrophyIcon } from '@/components/ui/icons';
+import { ArrowRightIcon, CheckIcon, CloseIcon } from '@/components/ui/icons';
 import { slideVariants, transition, variants } from '@/lib/motion';
 import { pluralWords } from '@/lib/plural';
 import type { FinishResult, QuizQuestion } from './types';
@@ -90,16 +91,9 @@ export default function FinishReadingDialog({
           <CloseIcon className="h-5 w-5" />
         </button>
 
-        <motion.div
-          className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-surface-accent text-on-accent"
-          variants={variants.feedbackCorrect}
-          initial="hidden"
-          animate="visible"
-        >
-          <TrophyIcon className="h-6 w-6" />
-        </motion.div>
+        <LexiMascot pose="celebrate" className="mx-auto mt-2 w-24" />
 
-        <h2 id="finish-title" className="mt-4 text-h1 text-ink">
+        <h2 id="finish-title" className="mt-2 text-h1 text-ink">
           Отличная работа!
         </h2>
         <p className="mt-2 text-body text-slate">

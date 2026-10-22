@@ -363,7 +363,7 @@ export default function BooksPage() {
           {books.length === 0 && !catalogEmpty && (
             <div className="mb-10">
               <EmptyState
-                icon={<BooksIcon size={24} />}
+                lexi="stand"
                 title="В библиотеке пока пусто"
                 description="Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB."
               />

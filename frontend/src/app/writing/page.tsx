@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { issueTypeLabel } from '@/components/assistant/AnalysisCard';
 import Button from '@/components/ui/Button';
 import LevelChip from '@/components/ui/LevelChip';
@@ -241,7 +242,15 @@ export default function WritingPage() {
           </p>
         </div>
 
-        <div className="card mb-4">
+        <div className="relative card mb-4">
+          {/* Читает поверх твоего текста: чем больше написано, тем выше поднимает глаза */}
+          <div className="absolute -top-9 right-6 z-10">
+            <LexiPeek
+              mood="neutral"
+              focus={{ x: -0.6, y: 0.9 - Math.min(text.length / 400, 1) * 1.7 }}
+              className="w-16"
+            />
+          </div>
           <label className="sr-only" htmlFor="writing-text">
             Текст письма на английском
           </label>

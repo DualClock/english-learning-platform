@@ -14,6 +14,7 @@ import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
 import Button from '@/components/ui/Button';
 import ErrorState from '@/components/ui/ErrorState';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import PageHeader from '@/components/ui/PageHeader';
 import ReaderDrawer from '@/components/reader/ReaderDrawer';
 import ReaderSkeleton from '@/components/reader/ReaderSkeleton';
@@ -102,6 +103,11 @@ export default function ReaderPage() {
 
   // Панель перевода: на десктопе сворачивается, на мобильных — bottom-sheet
   const [panelOpen, setPanelOpen] = useState(true);
+
+  // Lexi у панели перевода: стоит, а когда читатель залип на странице — садится читать рядом
+  const [lexiPose, setLexiPose] = useState<'stand' | 'read'>('stand');
+  const [lexiLean, setLexiLean] = useState(0);
+  const lexiLeanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const requestIdRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -334,6 +340,28 @@ export default function ReaderPage() {
     }
   }, [currentPage, hideTooltip]);
 
+  // Залип на странице дольше 40 секунд — Lexi не дёргает, а тихо садится читать рядом
+  useEffect(() => {
+    if (!content) return;
+    setLexiPose('stand');
+    const timer = setTimeout(() => setLexiPose('read'), 40_000);
+    return () => clearTimeout(timer);
+  }, [currentPage, content]);
+
+  // Косится на панель перевода, когда слово ушло в словарь или конспект
+  const glanceAtPanel = useCallback(() => {
+    setLexiLean(1);
+    if (lexiLeanTimerRef.current) clearTimeout(lexiLeanTimerRef.current);
+    lexiLeanTimerRef.current = setTimeout(() => setLexiLean(0), 1400);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (lexiLeanTimerRef.current) clearTimeout(lexiLeanTimerRef.current);
+    },
+    []
+  );
+
   // Эффект печатания перевода: cleanup отменяет таймер при смене перевода
   useEffect(() => {
     if (!translation || isTranslating) return;
@@ -495,6 +523,7 @@ export default function ReaderPage() {
 
       if (res.ok) {
         setAddedToDict(true);
+        glanceAtPanel();
         trackEvent('word_learned', selectedWord);
       }
     } catch (err) {
@@ -533,6 +562,7 @@ export default function ReaderPage() {
       : '';
     collectedRef.current.set(text, { text, page: currentPage, sentence });
     syncCollected();
+    glanceAtPanel();
     try {
       await fetch(`${API_URL}/api/reading/sessions/${readingSessionId}/words`, {
         method: 'POST',
@@ -546,7 +576,7 @@ export default function ReaderPage() {
     } catch (err) {
       console.error('Error collecting word:', err);
     }
-  }, [readingSessionId, content, currentPage, session, syncCollected]);
+  }, [readingSessionId, content, currentPage, session, syncCollected, glanceAtPanel]);
 
   const removeCollected = useCallback(async (text: string) => {
     if (!readingSessionId) return;
@@ -798,6 +828,11 @@ export default function ReaderPage() {
               Свайп влево и вправо листает страницы
             </p>
           )}
+        </div>
+
+        {/* Lexi — спутник у панели перевода. На телефоне прячется: там панель это bottom-sheet */}
+        <div className="hidden w-14 shrink-0 md:block">
+          <LexiMascot pose={lexiPose} lean={lexiLean} className="sticky top-8" />
         </div>
 
         {/* Панель перевода — скрыта в режиме параллельного перевода.

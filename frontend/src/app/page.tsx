@@ -2,6 +2,7 @@ import Link from 'next/link';
 import ReaderDemo from '@/components/landing/ReaderDemo';
 import SkillsGrid from '@/components/landing/SkillsGrid';
 import { Reveal, RevealGroup, RevealItem } from '@/components/landing/Reveal';
+import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import LevelChip from '@/components/ui/LevelChip';
 import { ArrowRightIcon, CheckIcon } from '@/components/ui/icons';
 
@@ -36,6 +37,9 @@ export default function HomePage() {
             <a href="#library" className="transition-colors duration-fast ease-soft hover:text-ink">
               Библиотека
             </a>
+            <FeedbackTrigger className="transition-colors duration-fast ease-soft hover:text-ink">
+              Отзыв
+            </FeedbackTrigger>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -182,6 +186,9 @@ export default function HomePage() {
               <a href="#library" className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Библиотека
               </a>
+              <FeedbackTrigger className="transition-colors duration-fast ease-soft hover:text-on-dark">
+                Обратная связь
+              </FeedbackTrigger>
               <Link href="/login" className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Войти
               </Link>

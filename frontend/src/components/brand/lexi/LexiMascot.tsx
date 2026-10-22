@@ -4,11 +4,13 @@ import { motion, useInView, usePageInView, useReducedMotion } from 'motion/react
 import { useEffect, useRef, useState } from 'react';
 import { ease } from '@/lib/motion';
 
-export type LexiPose = 'stand' | 'wave' | 'read' | 'sleep' | 'celebrate';
+export type LexiPose = 'stand' | 'wave' | 'read' | 'sleep' | 'celebrate' | 'write' | 'point';
 
 interface LexiMascotProps {
   pose?: LexiPose;
   className?: string;
+  /** Наклон к панели перевода: -1…1 по горизонтали, лёгкое смещение с поворотом. */
+  lean?: number;
 }
 
 const bodyPath =
@@ -116,7 +118,7 @@ function Face({ eyes, brows, mouth, blinking = false }: FaceProps) {
   );
 }
 
-export default function LexiMascot({ pose = 'stand', className = '' }: LexiMascotProps) {
+export default function LexiMascot({ pose = 'stand', className = '', lean = 0 }: LexiMascotProps) {
   const reducedMotion = useReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
   const inView = useInView(wrapRef);
@@ -124,7 +126,7 @@ export default function LexiMascot({ pose = 'stand', className = '' }: LexiMasco
   const active = inView && pageInView && !reducedMotion;
 
   const [blinking, setBlinking] = useState(false);
-  const hasOpenEyes = pose === 'stand' || pose === 'wave' || pose === 'read';
+  const hasOpenEyes = pose === 'stand' || pose === 'wave' || pose === 'read' || pose === 'write' || pose === 'point';
 
   useEffect(() => {
     if (!active || !hasOpenEyes) {
@@ -176,13 +178,22 @@ export default function LexiMascot({ pose = 'stand', className = '' }: LexiMasco
           ? { eyes: 'open', brows: 'raised', mouth: 'big', blinking }
           : pose === 'read'
             ? { eyes: 'open', brows: 'oneUp', mouth: 'smile', blinking }
-            : { eyes: 'open', brows: 'neutral', mouth: 'smile', blinking };
+            : pose === 'write'
+              ? { eyes: 'open', brows: 'neutral', mouth: 'smile', blinking }
+              : pose === 'point'
+                ? { eyes: 'open', brows: 'raised', mouth: 'smile', blinking }
+                : { eyes: 'open', brows: 'neutral', mouth: 'smile', blinking };
 
   return (
     <div ref={wrapRef} className={`pointer-events-none select-none ${className}`} aria-hidden="true">
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={{
+          opacity: 1,
+          y: 0,
+          x: reducedMotion ? 0 : lean * 7,
+          rotate: reducedMotion ? 0 : lean * 2.5,
+        }}
         transition={{ duration: 0.5, delay: 0.12, ease: ease.soft }}
       >
         <motion.div
@@ -243,10 +254,33 @@ export default function LexiMascot({ pose = 'stand', className = '' }: LexiMasco
                   <>
                     {legs}
                     {pose === 'stand' && armsDown}
+                    {pose === 'point' && (
+                      <>
+                        <path d="M57 132 C46 121 38 108 35 96" />
+                        <circle cx="33" cy="90" r="8" className="fill-lexi-paper" />
+                        <g strokeWidth="3">
+                          <path d="M30 78 C31 73 33 68 36 64" />
+                        </g>
+                        <path d="M204 140 C212 150 215 162 214 172" />
+                        <circle cx="214" cy="176" r="7.5" className="fill-lexi-paper" />
+                      </>
+                    )}
                     {pose === 'read' && (
                       <>
                         <path d="M58 150 C66 158 72 168 78 178" />
                         <path d="M202 150 C194 158 188 168 182 178" />
+                      </>
+                    )}
+                    {pose === 'write' && (
+                      <>
+                        <path d="M58 150 C66 158 74 166 82 178" />
+                        <circle cx="86" cy="182" r="7.5" className="fill-lexi-paper" />
+                        <path d="M202 150 C194 158 186 166 178 178" />
+                        <circle cx="174" cy="182" r="7.5" className="fill-lexi-paper" />
+                        <path d="M97 185 L143 185 L143 227 L97 227 Z" className="fill-lexi-paper" />
+                        <g strokeWidth="2.4">
+                          <path d="M105 198 L135 198 M105 209 L135 209 M105 220 L127 220" />
+                        </g>
                       </>
                     )}
                   </>

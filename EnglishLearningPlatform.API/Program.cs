@@ -147,6 +147,19 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }));
+
+    // Обратная связь анонимна: без лимита один человек (или скрипт) может
+    // засыпать почту отзывами. Тридцать сообщений за десять минут — с запасом
+    // для группы тестеров и без простора для флуда.
+    options.AddPolicy("feedback", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddAuthentication(options =>
@@ -266,6 +279,39 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
         await context.Response.WriteAsync(payload, context.RequestAborted);
     }
 });
+
+// В Development засеваем контент при старте. Сидеры идемпотентны, поэтому
+// повторный запуск ничего не дублирует. Без этого «Сборники», «Категории»
+// и «Грамматика» на фронтенде остаются пустыми, пока кто-нибудь вручную
+// не дёрнет /api/admin/seed-* с JWT.
+if (app.Environment.IsDevelopment())
+{
+    using var seedScope = app.Services.CreateScope();
+    var seedProvider = seedScope.ServiceProvider;
+    var seedLogger = seedProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var wordListsSeed = await seedProvider.GetRequiredService<WordListSeeder>().SeedAsync();
+        var categoriesSeed = await seedProvider.GetRequiredService<CategorySeeder>().SeedAsync();
+        var grammarSeed = await seedProvider.GetRequiredService<GrammarSeeder>().SeedAsync();
+
+        seedLogger.LogInformation(
+            "Сиды: сборники — {WordLists} (списков {Lists}, слов {Words}), категории — {Categories}, грамматика — {Grammar} (юнитов {Units})",
+            wordListsSeed.AlreadySeeded ? "уже были" : "засеяны",
+            wordListsSeed.ListsCreated,
+            wordListsSeed.WordLevelsSeeded,
+            categoriesSeed.AlreadySeeded ? "уже были" : "засеяны",
+            grammarSeed.AlreadySeeded ? "уже были" : "засеяны",
+            grammarSeed.UnitsCreated);
+    }
+    catch (Exception ex)
+    {
+        // Не валим старт API из-за контента: без сидов приложение работает,
+        // просто соответствующие разделы будут пустыми.
+        seedLogger.LogError(ex, "Автозасев контента не удался, приложение продолжает работу");
+    }
+}
 
 // Логируем запуск
 Log.Information("English Learning Platform API started");

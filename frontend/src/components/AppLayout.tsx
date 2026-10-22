@@ -1,9 +1,10 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
+import LexiSign from './brand/lexi/LexiSign';
 import { MenuIcon, SpinnerIcon } from './ui/icons';
 import { prefetchApi } from '@/app/lib/api-client';
 
@@ -36,6 +37,7 @@ export default function AppLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const burgerRef = useRef<HTMLButtonElement>(null);
 
@@ -93,6 +95,7 @@ export default function AppLayout({
           <MenuIcon size={24} />
         </button>
         <span className="text-h3 font-heading text-on-dark">Lexicon</span>
+        <LexiSign pageKey={pathname} className="ml-auto h-6 w-6 shrink-0" />
       </header>
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

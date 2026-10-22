@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/icons';
 import { transition, variants } from '@/lib/motion';
 import { pluralDays } from '@/lib/plural';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 
 interface WelcomeItem {
   type: 'words' | 'book' | 'lesson';
@@ -131,6 +132,7 @@ export default function WelcomeBackModal() {
             exit={{ opacity: 0, y: 8 }}
             transition={transition.base}
           >
+            <LexiMascot pose="wave" className="mx-auto -mt-1 mb-1 w-24" />
             <h2 id="welcome-back-title" className="text-h2 text-ink">
               С возвращением!
             </h2>

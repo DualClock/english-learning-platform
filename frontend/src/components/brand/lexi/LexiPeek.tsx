@@ -12,6 +12,8 @@ interface LexiPeekProps {
   focus?: { x: number; y: number };
   /** Новый номер реакции запускает мягкий подскок. */
   reaction?: number;
+  /** Замирает полностью: ни дыхания, ни моргания (идёт запись — микрофон активен). */
+  paused?: boolean;
   className?: string;
 }
 
@@ -21,6 +23,7 @@ export default function LexiPeek({
   mood = 'neutral',
   focus = { x: 0.5, y: 0.8 },
   reaction = 0,
+  paused = false,
   className = '',
 }: LexiPeekProps) {
   const reducedMotion = useReducedMotion();
@@ -28,7 +31,7 @@ export default function LexiPeek({
   const [scope, animate] = useAnimate();
   const inView = useInView(wrapRef);
   const pageInView = usePageInView();
-  const active = inView && pageInView && !reducedMotion;
+  const active = inView && pageInView && !reducedMotion && !paused;
 
   const [blinking, setBlinking] = useState(false);
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');

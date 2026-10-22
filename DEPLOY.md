@@ -68,6 +68,11 @@
 > В Production при пустых `Email__From` / `App__FrontendUrl` / `Email__Smtp__Host`
 > приложение не стартует — это защита от «молча неработающих» писем.
 
+> **Обратная связь беты.** Форма на сайте шлёт отзыв на `Feedback__ToEmail`
+> (если переменная пуста — на `Email__From`). Копия всегда сохраняется в таблице
+> `EmailMessages` с `Kind = "feedback"`, поэтому отзыв не теряется даже при сбое SMTP.
+> Все отзывы можно смотреть на `/admin/feedback` — страница попросит `Seeder__Key`.
+
 5. Deploy. Через 5-10 минут API поднимется на `https://lexicon-api.onrender.com`.
    Проверка: открой `https://lexicon-api.onrender.com/health` → `{"status":"ok"}`.
 

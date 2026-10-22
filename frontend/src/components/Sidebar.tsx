@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import LexiSign from './brand/lexi/LexiSign';
+import FeedbackTrigger from './feedback/FeedbackTrigger';
 import { resolveAvatarSrc } from '@/app/lib/avatars';
 import { prefetchApi } from '@/app/lib/api-client';
 import { useCallback, type ComponentType } from 'react';
@@ -10,6 +12,7 @@ import {
   BookOpenIcon,
   BooksIcon,
   BotIcon,
+  FeedbackIcon,
   FoldersIcon,
   HeadphonesIcon,
   HomeIcon,
@@ -110,6 +113,7 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
           <Link href="/dashboard" className="text-h2 font-heading text-on-dark" onClick={onClose}>
             Lexicon
           </Link>
+          <LexiSign pageKey={pathname} className="ml-auto h-6 w-6 shrink-0" />
         </div>
 
         <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
@@ -135,6 +139,13 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
         </nav>
 
         <div className="p-4 pt-2">
+          <FeedbackTrigger
+            onClick={onClose}
+            className={`${linkClass(false)} mb-3 w-full`}
+          >
+            <FeedbackIcon size={20} className="shrink-0" />
+            Обратная связь
+          </FeedbackTrigger>
           <Link
             href="/settings"
             onClick={onClose}

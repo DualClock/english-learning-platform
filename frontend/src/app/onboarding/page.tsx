@@ -2,6 +2,7 @@
 
 import Button from '@/components/ui/Button';
 import LexiMascot from '@/components/brand/lexi/LexiMascot';
+import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import Notice from '@/components/ui/Notice';
 import ProgressBar from '@/components/ui/ProgressBar';
 import {
@@ -353,9 +354,14 @@ export default function OnboardingPage() {
       <header className="border-b border-hairline">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
           <span className="font-heading text-h2 text-ink">Lexicon</span>
-          <span className="text-body-sm text-slate">
-            Шаг {currentStepNumber} из {totalSteps}
-          </span>
+          <div className="flex items-center gap-4">
+            <FeedbackTrigger className="text-caption text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink">
+              Отзыв
+            </FeedbackTrigger>
+            <span className="text-body-sm text-slate">
+              Шаг {currentStepNumber} из {totalSteps}
+            </span>
+          </div>
         </div>
       </header>
 

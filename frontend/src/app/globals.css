@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 :root {
+  /* Нативные контролы (чекбоксы, скроллбары) идут за темой */
+  color-scheme: light;
+
   /* Brand */
   --color-primary: #0E7C7B;
   --color-primary-pressed: #0A6362;
@@ -109,6 +112,8 @@
  * surface-подповерхностей, переключается без правок в компонентах.
  */
 :root[data-theme='dark'] {
+  color-scheme: dark;
+
   /* Brand */
   --color-primary: #2FB0A8;
   --color-primary-pressed: #46C2BB;

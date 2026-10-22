@@ -12,25 +12,17 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 /**
  * Класс темы ставит pre-paint скрипт в layout. Провайдер нужен для двух вещей:
- * мгновенно переключать тему по выбору в настройках и следить за системной,
- * пока режим «Как в системе».
+ * мгновенно переключать тему по выбору в настройках и хранить выбор в браузере.
+ * Базовая тема — светлая; системная настройка в выборе не участвует.
  */
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>('system');
+  const [mode, setModeState] = useState<ThemeMode>('light');
 
   useEffect(() => {
     const saved = readTheme();
     setModeState(saved);
     applyTheme(saved);
   }, []);
-
-  useEffect(() => {
-    if (mode !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => applyTheme('system');
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [mode]);
 
   const setMode = useCallback((next: ThemeMode) => {
     writeTheme(next);

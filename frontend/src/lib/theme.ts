@@ -1,26 +1,25 @@
-export type ThemeMode = 'system' | 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark';
 
 export const THEME_STORAGE_KEY = 'lexicon-theme';
 export const THEME_MODES: { value: ThemeMode; label: string }[] = [
-  { value: 'system', label: 'Как в системе' },
   { value: 'light', label: 'Светлая' },
   { value: 'dark', label: 'Тёмная' },
 ];
 
-const prefersDark = () =>
-  typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
 export function isDark(mode: ThemeMode): boolean {
-  return mode === 'dark' || (mode === 'system' && prefersDark());
+  return mode === 'dark';
 }
 
+/**
+ * Базовая тема — светлая. Системная настройка больше не участвует:
+ * сохранённый «system» (или мусор в хранилище) читается как светлая.
+ */
 export function readTheme(): ThemeMode {
   try {
-    const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light';
   } catch {
     // приватный режим браузера: тема работает до перезагрузки страницы
-    return 'system';
+    return 'light';
   }
 }
 
@@ -41,14 +40,22 @@ export function writeTheme(mode: ThemeMode) {
  * экран давал «Prop className did not match».
  */
 export function applyTheme(mode: ThemeMode) {
-  document.documentElement.dataset.theme = isDark(mode) ? 'dark' : 'light';
+  const dark = isDark(mode);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+
+  // Цвет адресной строки на телефоне идёт за темой, а не остаётся teal
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) {
+    themeColor.setAttribute('content', dark ? '#0A1A2F' : '#0E7C7B');
+  }
 }
 
 /**
  * Скрипт до первой отрисовки (вставляется в <head> корневого layout): без него
- * тёмная тема мигает светлым кадром, пока гидратируется React.
+ * тёмная тема мигает светлым кадром, пока гидратируется React. Светлая — базовая,
+ * поэтому отсутствие сохранённого выбора даёт её без обращения к системе.
  */
 export const THEME_PREPAINT_SCRIPT =
-  `try{var m=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})||'system';` +
-  `var d=m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);` +
-  `document.documentElement.dataset.theme=d?'dark':'light';}catch(e){}`;
+  `try{var m=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});` +
+  `document.documentElement.dataset.theme=m==='dark'?'dark':'light';}catch(e){` +
+  `document.documentElement.dataset.theme='light';}`;

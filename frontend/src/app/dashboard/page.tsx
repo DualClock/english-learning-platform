@@ -16,7 +16,7 @@ import RecommendedShelf, { RecommendedBook } from '@/components/dashboard/Recomm
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Button from '@/components/ui/Button';
-import { ArrowRightIcon, BookOpenIcon } from '@/components/ui/icons';
+import { ArrowRightIcon } from '@/components/ui/icons';
 import { Book, pickContinueBook } from '@/components/dashboard/utils';
 import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
@@ -126,7 +126,7 @@ export default function DashboardPage() {
               ) : (
                 <section className="mb-8">
                   <EmptyState
-                    icon={<BookOpenIcon size={24} />}
+                    lexi="stand"
                     title="Библиотека пока пуста"
                     description="Добавь первую книгу — и начинай читать на английском, сохраняя новые слова по пути."
                     action={

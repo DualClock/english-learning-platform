@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -79,6 +80,7 @@ function QuizContent() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [nod, setNod] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [deckLocked, setDeckLocked] = useState(false);
   const [mode, setMode] = useState<QuizMode>('reading');
@@ -104,6 +106,7 @@ function QuizContent() {
 
     if (index === deck[currentIndex].correctIndex) {
       setScore(score + 1);
+      setNod((n) => n + 1);
     }
   };
 
@@ -294,14 +297,21 @@ function QuizContent() {
         </div>
 
         {/* Прогресс */}
-        <div className="mb-8">
-          <div className="mb-2 flex justify-between text-body-sm text-slate">
-            <span className="tabular-nums">Вопрос {currentIndex + 1} из {deck.length}</span>
-            <span className="tabular-nums">Верных: {score}</span>
+        <div className="mb-8 flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex justify-between text-body-sm text-slate">
+              <span className="tabular-nums">Вопрос {currentIndex + 1} из {deck.length}</span>
+              <span className="tabular-nums">Верных: {score}</span>
+            </div>
+            <ProgressBar
+              value={((currentIndex + 1) / deck.length) * 100}
+              label={`Отвечено ${currentIndex + 1} из ${deck.length}`}
+            />
           </div>
-          <ProgressBar
-            value={((currentIndex + 1) / deck.length) * 100}
-            label={`Отвечено ${currentIndex + 1} из ${deck.length}`}
+          <LexiPeek
+            mood={showResult ? (answered ? 'happy' : 'thinking') : 'neutral'}
+            reaction={nod}
+            className="w-12 shrink-0"
           />
         </div>
 

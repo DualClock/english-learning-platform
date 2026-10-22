@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { MotionConfig } from 'motion/react';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import ThemeProvider from '@/components/ThemeProvider';
+import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           <ServiceWorkerRegistrar />
           {children}
+          <FeedbackWidget />
         </ThemeProvider>
       </MotionConfig>
     </SessionProvider>

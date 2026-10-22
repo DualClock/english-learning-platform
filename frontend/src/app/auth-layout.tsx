@@ -1,3 +1,5 @@
+import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-canvas">
@@ -35,6 +37,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <span className="font-heading text-h2 text-ink">Lexicon</span>
           </div>
           {children}
+          <div className="mt-6 text-center">
+            <FeedbackTrigger className="text-caption text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink">
+              Оставить отзыв о бете
+            </FeedbackTrigger>
+          </div>
         </div>
       </main>
     </div>

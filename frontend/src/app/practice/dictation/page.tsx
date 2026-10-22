@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -18,7 +19,6 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { Skeleton } from '@/components/ui/LoadingState';
 import {
   CheckCircleIcon,
-  InboxIcon,
   PlayIcon,
   RepeatIcon,
   SpinnerIcon,
@@ -183,7 +183,7 @@ export default function DictationPage() {
       <AppLayout>
         <div className="mx-auto max-w-md">
           <EmptyState
-            icon={<InboxIcon size={24} />}
+            lexi="sleep"
             title="Пока нечего диктовать"
             description="Диктант собирается из ваших слов. Добавьте хотя бы одно слово в словарь — и возвращайтесь."
             action={
@@ -249,14 +249,18 @@ export default function DictationPage() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-2xl">
-        <div className="mb-6">
-          <div className="mb-2 flex justify-between text-body-sm text-slate">
-            <span>
-              Предложение {index + 1} из {items.length}
-            </span>
-            <span className="tabular-nums">Верно: {results.filter((r) => r.correct).length}</span>
+        <div className="mb-6 flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex justify-between text-body-sm text-slate">
+              <span>
+                Предложение {index + 1} из {items.length}
+              </span>
+              <span className="tabular-nums">Верно: {results.filter((r) => r.correct).length}</span>
+            </div>
+            <ProgressBar value={progress} label={`Пройдено ${index + 1} из ${items.length}`} />
           </div>
-          <ProgressBar value={progress} label={`Пройдено ${index + 1} из ${items.length}`} />
+          {/* Пишет рядом: руки-ниточки держат свою страничку */}
+          <LexiMascot pose="write" className="w-16 shrink-0" />
         </div>
 
         <AnimatePresence mode="wait" custom={1}>

@@ -3,10 +3,16 @@ import Button from '@/components/ui/Button';
 import { CardInteractive } from '@/components/ui/Card';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { ArrowRightIcon } from '@/components/ui/icons';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { Book } from './utils';
 
 export default function ContinueReading({ hero, others }: { hero: Book; others: Book[] }) {
   const progress = Math.round(hero.progress ?? 0);
+
+  const lexiLine =
+    hero.currentPage && hero.totalPages
+      ? `Остановился на «${hero.title}», страница ${hero.currentPage}`
+      : 'Сегодня пусто. Можно пять минут';
 
   return (
     <section className="mb-8">
@@ -37,6 +43,11 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
               <ArrowRightIcon size={16} />
             </Button>
           </div>
+        </div>
+
+        <div className="hidden shrink-0 flex-col items-center justify-center gap-1 pl-2 md:flex">
+          <LexiPeek mood="neutral" focus={{ x: -0.9, y: 0.5 }} className="w-20" />
+          <p className="line-clamp-2 max-w-[10rem] text-center text-caption leading-snug text-slate">{lexiLine}</p>
         </div>
       </div>
 

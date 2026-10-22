@@ -1,6 +1,7 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
@@ -83,6 +84,7 @@ function PracticeContent() {
   const [learnError, setLearnError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [nod, setNod] = useState(0);
 
   // Загрузка раунда: тянем страницы по 200 слов, пока не наберём достаточно
   // (все страницы проходят через общий кэш, поэтому повторные раунды быстрее).
@@ -219,6 +221,7 @@ function PracticeContent() {
     if (!currentWord || isLearningRef.current) return;
     const nextUnknown = known ? unknown : [...unknown, currentWord.wordText];
     setUnknown(nextUnknown);
+    if (known) setNod((n) => n + 1);
     if (index < batch.length - 1) {
       setIndex(index + 1);
       setTranslation({ status: 'hidden' });
@@ -363,12 +366,15 @@ function PracticeContent() {
     <AppLayout>
       <div className="mx-auto max-w-lg">
         {/* Прогресс */}
-        <div className="mb-6">
-          <div className="mb-2 flex justify-between text-body-sm text-slate">
-            <span className="tabular-nums">Слово {index + 1} из {batch.length}</span>
-            <span className="tabular-nums">Не знаю: {unknown.length}</span>
+        <div className="mb-6 flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex justify-between text-body-sm text-slate">
+              <span className="tabular-nums">Слово {index + 1} из {batch.length}</span>
+              <span className="tabular-nums">Не знаю: {unknown.length}</span>
+            </div>
+            <ProgressBar value={((index + 1) / batch.length) * 100} label="Прогресс раунда" />
           </div>
-          <ProgressBar value={((index + 1) / batch.length) * 100} label="Прогресс раунда" />
+          <LexiPeek mood="neutral" reaction={nod} className="w-12 shrink-0" />
         </div>
 
         {/* Карточка: каждая следующая приходит со стороны движения вперёд */}

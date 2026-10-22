@@ -20,7 +20,6 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import {
   AlertIcon,
-  LibraryIcon,
   PlusIcon,
   SearchIcon,
   TrashIcon,
@@ -250,11 +249,12 @@ function DictionaryContent() {
         />
       ) : words.length === 0 ? (
         <EmptyState
-          icon={appliedQuery ? <SearchIcon size={24} /> : <LibraryIcon size={24} />}
+          icon={appliedQuery ? <SearchIcon size={24} /> : undefined}
+          lexi={appliedQuery ? undefined : 'read'}
           title={appliedQuery ? 'Ничего не нашлось' : 'В словаре пока пусто'}
           description={appliedQuery
             ? `Слова «${appliedQuery}» в вашем словаре нет.`
-            : 'Слова появляются здесь из читалки или вручную — добавьте первое.'}
+            : 'Сохрани первое слово в читалке — оно появится здесь.'}
           action={
             appliedQuery ? (
               <Button

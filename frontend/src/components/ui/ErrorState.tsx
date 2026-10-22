@@ -1,6 +1,5 @@
 import { type ReactNode } from 'react';
 import EmptyState from './EmptyState';
-import { AlertIcon } from './icons';
 import Button from './Button';
 
 interface ErrorStateProps {
@@ -31,7 +30,7 @@ export default function ErrorState({
   );
   return (
     <EmptyState
-      icon={<AlertIcon size={24} className="text-semantic-error" />}
+      lexi="sleep"
       title={title}
       description={description}
       action={onRetry || action ? actions : undefined}

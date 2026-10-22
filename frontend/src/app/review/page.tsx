@@ -2,6 +2,7 @@
 
 import AppLayout from '@/components/AppLayout';
 import LexiMascot from '@/components/brand/lexi/LexiMascot';
+import LexiPeek from '@/components/brand/lexi/LexiPeek';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -63,6 +64,7 @@ export default function ReviewPage() {
   const [nextHint, setNextHint] = useState('');
   const [reviewCount, setReviewCount] = useState(0);
   const [newCount, setNewCount] = useState(0);
+  const [nod, setNod] = useState(0);
 
   // Один раз сохраняем загруженную колоду в state и дальше работаем с ней.
   useEffect(() => {
@@ -103,6 +105,8 @@ export default function ReviewPage() {
           ? `Следующее повторение через ${outcome.intervalMinutes} мин — слово вернётся в этой сессии`
           : `Следующее повторение через ${outcome?.interval ?? 1} дн.`
       );
+      // Кивок за уверенный ответ — вместо «Отлично!»
+      if (quality >= 4) setNod((n) => n + 1);
 
       if (currentIndex < words.length - 1) {
         setCurrentIndex(currentIndex + 1);
@@ -189,22 +193,25 @@ export default function ReviewPage() {
         )}
 
         {/* Прогресс */}
-        <div className="mb-8">
-          <div className="mb-2 flex justify-between text-body-sm text-slate">
-            <span className="tabular-nums">Слово {currentIndex + 1} из {words.length}</span>
-            <span>
-              {reviewCount > 0 || newCount > 0
-                ? `${reviewCount} на повторение · ${newCount} ${pluralWords(newCount)}`
-                : `Всего на сегодня: ${totalCount}`}
-            </span>
+        <div className="mb-8 flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex justify-between text-body-sm text-slate">
+              <span className="tabular-nums">Слово {currentIndex + 1} из {words.length}</span>
+              <span>
+                {reviewCount > 0 || newCount > 0
+                  ? `${reviewCount} на повторение · ${newCount} ${pluralWords(newCount)}`
+                  : `Всего на сегодня: ${totalCount}`}
+              </span>
+            </div>
+            <ProgressBar
+              value={((currentIndex + 1) / words.length) * 100}
+              label={`Пройдено ${currentIndex + 1} из ${words.length}`}
+            />
+            {nextHint && (
+              <p className="mt-2 text-caption text-slate">{nextHint}</p>
+            )}
           </div>
-          <ProgressBar
-            value={((currentIndex + 1) / words.length) * 100}
-            label={`Пройдено ${currentIndex + 1} из ${words.length}`}
-          />
-          {nextHint && (
-            <p className="mt-2 text-caption text-slate">{nextHint}</p>
-          )}
+          <LexiPeek mood="neutral" reaction={nod} className="w-12 shrink-0" />
         </div>
 
         {/* Карточка */}
