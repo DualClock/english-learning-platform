@@ -138,7 +138,12 @@ public class FeedbackController : ControllerBase
         [FromQuery] int limit = 100,
         CancellationToken cancellationToken = default)
     {
-        var configuredKey = _configuration["Seeder:Key"];
+        var configuredKey = _configuration["Feedback:AdminKey"];
+        if (string.IsNullOrEmpty(configuredKey))
+        {
+            configuredKey = _configuration["Seeder:Key"];
+        }
+
         if (!string.IsNullOrEmpty(configuredKey))
         {
             if (seedKey != configuredKey)

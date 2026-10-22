@@ -46,14 +46,23 @@ public class EmailSender
         };
 
         var host = _configuration["Email:Smtp:Host"];
+        var user = _configuration["Email:Smtp:User"];
+        var password = _configuration["Email:Smtp:Password"];
 
-        if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(host))
+        // Пароль не задан, а логин задан: соединение с SMTP всё равно не
+        // авторизуется и будет висеть до таймаута. Сохраняем письмо в журнал
+        // сразу — так форма отзыва отвечает мгновенно, а не через полминуты.
+        var credentialsMissing = !string.IsNullOrWhiteSpace(user) && string.IsNullOrWhiteSpace(password);
+
+        if (string.IsNullOrWhiteSpace(to) || string.IsNullOrWhiteSpace(host) || credentialsMissing)
         {
             message.Transport = "log";
             message.Delivered = false;
             message.Error = string.IsNullOrWhiteSpace(to)
                 ? "У пользователя не указан email"
-                : "SMTP не настроен — письмо сохранено в журнал";
+                : string.IsNullOrWhiteSpace(host)
+                    ? "SMTP не настроен — письмо сохранено в журнал"
+                    : "SMTP: не задан пароль — письмо сохранено в журнал";
 
             await SaveAsync(message, cancellationToken);
 
@@ -68,15 +77,15 @@ public class EmailSender
         try
         {
             var port = _configuration.GetValue("Email:Smtp:Port", 587);
-            var user = _configuration["Email:Smtp:User"];
-            var password = _configuration["Email:Smtp:Password"];
             var enableSsl = _configuration.GetValue("Email:Smtp:EnableSsl", true);
             var from = _configuration["Email:From"] ?? "no-reply@lexicon.local";
             var fromName = _configuration["Email:FromName"] ?? "Lexicon";
 
             using var client = new SmtpClient(host, port)
             {
-                EnableSsl = enableSsl
+                EnableSsl = enableSsl,
+                // Без таймаута недоступный SMTP держит HTTP-запрос до 100 секунд
+                Timeout = _configuration.GetValue("Email:Smtp:TimeoutMs", 10000)
             };
 
             if (!string.IsNullOrWhiteSpace(user))
