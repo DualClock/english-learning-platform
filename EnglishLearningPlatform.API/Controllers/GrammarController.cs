@@ -3,9 +3,11 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishLearningPlatform.API.Controllers;
@@ -28,6 +30,7 @@ public class GrammarController : ControllerBase
 
     [HttpPost]
     [Route("/api/admin/seed-grammar")]
+    [EnableRateLimiting("admin")]
     public async Task<ActionResult<object>> SeedGrammar(
         [FromServices] GrammarSeeder seeder,
         [FromServices] IConfiguration configuration,
@@ -35,16 +38,10 @@ public class GrammarController : ControllerBase
         [FromHeader(Name = "X-Seed-Key")] string? seedKey)
     {
         var configuredKey = configuration["Seeder:Key"];
-        if (!string.IsNullOrEmpty(configuredKey))
+        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, env.IsDevelopment()))
         {
-            if (seedKey != configuredKey)
-            {
-                return Unauthorized(new { message = "Invalid seed key" });
-            }
-        }
-        else if (!env.IsDevelopment())
-        {
-            return Forbid();
+            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
+            return Unauthorized(new { message = "Invalid seed key" });
         }
 
         var result = await seeder.SeedAsync();
@@ -117,7 +114,9 @@ public class GrammarController : ControllerBase
             unit.Order,
             unit.Title,
             unit.CefrLevel,
-            unit.TheoryHtml,
+            // Теорию рендерит фронтенд через dangerouslySetInnerHTML —
+            // отдаём только очищенную разметку
+            TheoryHtml = TheoryHtmlSanitizer.Sanitize(unit.TheoryHtml),
             Exercises = unit.Exercises.OrderBy(e => e.Order).Select(e => new
             {
                 e.Id,
