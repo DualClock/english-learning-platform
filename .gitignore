@@ -51,3 +51,9 @@ EnglishLearningPlatform.API/uploads/
 # Инструменты и временные файлы
 .kimi/
 .tmp/
+
+# Локальные артефакты с секретами (QA-пароли, конфиги Qoder) —
+# не коммитить и не публиковать
+.qoder/
+.taste-skill/
+prompt-tunnel-brother.md
