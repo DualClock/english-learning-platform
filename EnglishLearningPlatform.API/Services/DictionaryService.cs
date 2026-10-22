@@ -209,12 +209,48 @@ public class DictionaryService
 
         if (userWord == null) return null;
 
-        if (!string.IsNullOrEmpty(request.Text))
+        var word = userWord.Word;
+
+        // Слово может быть общим для нескольких пользователей (Words — глобальная
+        // таблица). Правка такого слова «на месте» меняла бы перевод всем.
+        // Для общих слов делаем личную копию и переключаем на неё только свой UserWord.
+        var sharedWithOthers = await _context.UserWords
+            .AnyAsync(uw => uw.WordId == word.Id && uw.UserId != userId);
+
+        if (sharedWithOthers)
         {
-            userWord.Word.Text = request.Text;
+            var source = word.Definitions.OrderBy(d => d.DisplayOrder).FirstOrDefault();
+            var copy = new Word
+            {
+                Text = string.IsNullOrEmpty(request.Text) ? word.Text : request.Text,
+                Language = word.Language
+            };
+            copy.Definitions.Add(new WordDefinition
+            {
+                Definition = string.IsNullOrEmpty(request.Definition)
+                    ? source?.Definition ?? string.Empty
+                    : request.Definition,
+                PartOfSpeech = request.PartOfSpeech ?? source?.PartOfSpeech,
+                Example = request.Example ?? source?.Example,
+                DisplayOrder = 0
+            });
+
+            _context.Words.Add(copy);
+            await _context.SaveChangesAsync();
+
+            userWord.WordId = copy.Id;
+            userWord.Word = copy;
+            await _context.SaveChangesAsync();
+
+            return MapToResponse(copy);
         }
 
-        var definition = userWord.Word.Definitions.FirstOrDefault();
+        if (!string.IsNullOrEmpty(request.Text))
+        {
+            word.Text = request.Text;
+        }
+
+        var definition = word.Definitions.FirstOrDefault();
         if (definition != null)
         {
             if (!string.IsNullOrEmpty(request.Definition))
@@ -228,7 +264,7 @@ public class DictionaryService
         }
 
         await _context.SaveChangesAsync();
-        return MapToResponse(userWord.Word);
+        return MapToResponse(word);
     }
 
     public async Task<bool> DeleteWordAsync(string userId, int wordId)

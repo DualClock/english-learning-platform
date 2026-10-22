@@ -40,6 +40,7 @@ public class UpdateWordRequestValidator : AbstractValidator<UpdateWordRequest>
     {
         RuleFor(x => x.Text)
             .MaximumLength(100).WithMessage("Слово не может быть длиннее 100 символов")
+            .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("Только английские буквы, пробелы, дефисы и апострофы")
             .When(x => !string.IsNullOrEmpty(x.Text));
 
         RuleFor(x => x.Definition)
