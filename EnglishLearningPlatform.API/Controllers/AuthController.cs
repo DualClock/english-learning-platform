@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EnglishLearningPlatform.API.Controllers;
@@ -21,17 +22,35 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly AuthEmailService _authEmail;
     private readonly ILogger<AuthController> _logger;
+    private readonly IMemoryCache _cache;
+
+    // Пауза между письмами на один адрес: защита от email-бомбинга
+    private static readonly TimeSpan AuthEmailCooldown = TimeSpan.FromMinutes(5);
 
     public AuthController(
         UserManager<User> userManager,
         IConfiguration configuration,
         AuthEmailService authEmail,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IMemoryCache cache)
     {
         _userManager = userManager;
         _configuration = configuration;
         _authEmail = authEmail;
         _logger = logger;
+        _cache = cache;
+    }
+
+    private bool TryAcquireEmailSendSlot(string kind, string email)
+    {
+        var key = $"auth-email:{kind}:{email.Trim().ToLowerInvariant()}";
+        if (_cache.TryGetValue(key, out _))
+        {
+            return false;
+        }
+
+        _cache.Set(key, true, AuthEmailCooldown);
+        return true;
     }
 
     // POST: api/auth/register
@@ -157,6 +176,12 @@ public class AuthController : ControllerBase
             return Ok(new { message = neutral });
         }
 
+        // Один адрес получает письмо не чаще раза в 5 минут
+        if (!TryAcquireEmailSendSlot("password-reset", user.Email ?? dto.Email))
+        {
+            return Ok(new { message = neutral });
+        }
+
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         await _authEmail.SendPasswordResetAsync(user, token);
 
@@ -210,6 +235,11 @@ public class AuthController : ControllerBase
         if (await _userManager.IsEmailConfirmedAsync(user))
         {
             return Ok(new { message = "Email уже подтверждён.", alreadyConfirmed = true });
+        }
+
+        if (!TryAcquireEmailSendSlot("confirm-email", user.Email))
+        {
+            return Ok(new { message = "Письмо уже отправлено недавно — проверьте почту." });
         }
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);

@@ -5,6 +5,7 @@ using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -65,7 +66,8 @@ public class LoginLockoutTests
             userManager,
             configuration,
             authEmail,
-            NullLogger<AuthController>.Instance);
+            NullLogger<AuthController>.Instance,
+            new MemoryCache(new MemoryCacheOptions()));
 
         return new Harness(controller, userManager, context);
     }
