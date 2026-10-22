@@ -211,6 +211,7 @@ builder.Services.AddScoped<WordListSeeder>();
 builder.Services.AddScoped<CategorySeeder>();
 builder.Services.AddScoped<GrammarSeeder>();
 builder.Services.AddScoped<StorySeeder>();
+builder.Services.AddHttpClient<FeedbackNotifier>();
 
 var app = builder.Build();
 

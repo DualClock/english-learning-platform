@@ -31,6 +31,7 @@ public class FeedbackController : ControllerBase
     };
 
     private readonly EmailSender _emailSender;
+    private readonly FeedbackNotifier _notifier;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _environment;
@@ -38,12 +39,14 @@ public class FeedbackController : ControllerBase
 
     public FeedbackController(
         EmailSender emailSender,
+        FeedbackNotifier notifier,
         ApplicationDbContext context,
         IConfiguration configuration,
         IWebHostEnvironment environment,
         ILogger<FeedbackController> logger)
     {
         _emailSender = emailSender;
+        _notifier = notifier;
         _context = context;
         _configuration = configuration;
         _environment = environment;
@@ -126,6 +129,14 @@ public class FeedbackController : ControllerBase
             userEmail ?? "аноним",
             result.Transport,
             result.Delivered);
+
+        await _notifier.NotifyAsync(
+            typeLabel,
+            message,
+            contact,
+            pagePath,
+            userEmail,
+            cancellationToken);
 
         // Письмо могло не уйти (SMTP), но копия уже сохранена в EmailMessages —
         // поэтому для тестера отправка всё равно успешна.
