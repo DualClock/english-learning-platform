@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 using EnglishLearningPlatform.API.Data;
@@ -18,6 +19,18 @@ public class BookService
     private static readonly TimeSpan PagesCacheTtl = TimeSpan.FromHours(1);
 
     private const long MaxUploadBytes = 50 * 1024 * 1024;
+
+    // Защита от zip-бомб: сжатый архив ≤ 50 МБ может развернуться в гигабайты.
+    // Ограничиваем заявленный распакованный объём и число записей до чтения EPUB.
+    private const long MaxExpandedBytes = 150L * 1024 * 1024;
+    private const long MaxSingleEntryBytes = 50L * 1024 * 1024;
+    private const int MaxArchiveEntries = 5000;
+
+    // Полный текст книги — десятки мегабайт. Кэшируем только книги в рамках
+    // бюджета: иначе несколько больших EPUB вытеснят память инстанса.
+    public const int MaxCachedTextChars = 2_000_000;
+
+    public static bool ShouldCacheText(long totalChars) => totalChars <= MaxCachedTextChars;
 
     public BookService(
         ApplicationDbContext context,
@@ -43,6 +56,19 @@ public class BookService
         var extension = Path.GetExtension(file.FileName).ToLower();
         if (extension != ".epub")
             return null;
+
+        // Проверяем архив до записи на диск и до EpubReader: «бомба» с
+        // заявленным распакованным объёмом в гигабайты отклоняется сразу.
+        await using (var validationStream = file.OpenReadStream())
+        {
+            if (!IsArchiveWithinLimits(validationStream, MaxSingleEntryBytes, MaxExpandedBytes, MaxArchiveEntries))
+            {
+                _logger.LogWarning(
+                    "EPUB upload rejected: archive exceeds safe expansion limits (file {FileName}, {Size} bytes)",
+                    file.FileName, file.Length);
+                return null;
+            }
+        }
 
         var uploadsFolder = Path.Combine(_environment.ContentRootPath, "uploads", "books");
         Directory.CreateDirectory(uploadsFolder);
@@ -102,6 +128,45 @@ public class BookService
         await _context.SaveChangesAsync();
 
         return newBook;
+    }
+
+    /// <summary>
+    /// Проверяет, что zip-архив не развернётся за пределы лимитов.
+    /// Смотрит заявленные размеры записей в центральном каталоге и не
+    /// распаковывает данные, поэтому дешёв для больших «бомб».
+    /// </summary>
+    public static bool IsArchiveWithinLimits(Stream stream, long maxEntryBytes, long maxTotalBytes, int maxEntries)
+    {
+        try
+        {
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            if (archive.Entries.Count > maxEntries)
+            {
+                return false;
+            }
+
+            long totalLength = 0;
+            foreach (var entry in archive.Entries)
+            {
+                if (entry.Length > maxEntryBytes)
+                {
+                    return false;
+                }
+
+                totalLength += entry.Length;
+                if (totalLength > maxTotalBytes)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            // Не zip — это не EPUB
+            return false;
+        }
     }
 
     public async Task<(List<Book> Items, int TotalCount)> GetUserBooksAsync(string userId, int page, int pageSize)
@@ -164,7 +229,14 @@ public class BookService
                 .ToList();
 
             if (pages.Count == 0) pages.Add(string.Empty);
-            _cache.Set(cacheKey, pages, PagesCacheTtl);
+
+            // Большие книги не кэшируем целиком: страница будет перечитываться,
+            // зато память не растёт пропорционально библиотеке пользователя
+            if (ShouldCacheText(pages.Sum(p => (long)p.Length)))
+            {
+                _cache.Set(cacheKey, pages, PagesCacheTtl);
+            }
+
             return pages;
         }
         catch (Exception ex)
