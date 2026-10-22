@@ -2,9 +2,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishLearningPlatform.API.Controllers;
@@ -32,11 +34,19 @@ public class AnalyticsController : ControllerBase
 
     private readonly ApplicationDbContext _context;
     private readonly ILogger<AnalyticsController> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public AnalyticsController(ApplicationDbContext context, ILogger<AnalyticsController> logger)
+    public AnalyticsController(
+        ApplicationDbContext context,
+        ILogger<AnalyticsController> logger,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         _context = context;
         _logger = logger;
+        _configuration = configuration;
+        _environment = environment;
     }
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
@@ -74,8 +84,18 @@ public class AnalyticsController : ControllerBase
 
     // GET: api/analytics/summary — сводка по проекту (для владельца)
     [HttpGet("summary")]
-    public async Task<IActionResult> Summary()
+    [EnableRateLimiting("admin")]
+    public async Task<IActionResult> Summary([FromHeader(Name = "X-Seed-Key")] string? seedKey)
     {
+        // Сводка — бизнес-метрики всего проекта, а не данные пользователя:
+        // обычный JWT здесь недостаточен, нужен административный ключ.
+        var configuredKey = _configuration["Seeder:Key"];
+        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, _environment.IsDevelopment()))
+        {
+            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
+            return Unauthorized(new { message = "Invalid admin key" });
+        }
+
         var since = DateTime.UtcNow.AddDays(-30);
 
         // Для беты агрегируем в памяти: объёмы малы, зато нет проблем с трансляцией LINQ
