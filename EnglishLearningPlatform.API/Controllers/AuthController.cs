@@ -99,12 +99,26 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password" });
         }
 
+        // Заблокированный аккаунт: сообщение то же, что и при неверном пароле,
+        // чтобы не раскрывать существование аккаунта перебором почт.
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            _logger.LogWarning("Попытка входа в заблокированный аккаунт: {UserId}", user.Id);
+            return Unauthorized(new { message = "Invalid email or password" });
+        }
+
         var result = await _userManager.CheckPasswordAsync(user, dto.Password);
 
         if (!result)
         {
+            // Считаем неудачу: после MaxFailedAccessAttempts аккаунт блокируется
+            // на DefaultLockoutTimeSpan, и перебор пароля перестаёт работать.
+            await _userManager.AccessFailedAsync(user);
             return Unauthorized(new { message = "Invalid email or password" });
         }
+
+        // Успешный вход сбрасывает счётчик неудач
+        await _userManager.ResetAccessFailedCountAsync(user);
 
         // Генерируем JWT
         var token = GenerateJwtToken(user);

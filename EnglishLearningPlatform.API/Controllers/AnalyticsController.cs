@@ -53,6 +53,7 @@ public class AnalyticsController : ControllerBase
 
     // POST: api/analytics/event
     [HttpPost("event")]
+    [EnableRateLimiting("analytics")]
     public async Task<IActionResult> Track([FromBody] AnalyticsEventDto dto)
     {
         if (!AllowedEvents.Contains(dto.Event))

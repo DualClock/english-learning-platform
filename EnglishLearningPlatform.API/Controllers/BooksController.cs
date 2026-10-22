@@ -5,6 +5,7 @@ using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -45,6 +46,7 @@ public class BooksController : ControllerBase
 
     // POST: api/books/upload
     [HttpPost("upload")]
+    [EnableRateLimiting("upload")]
     public async Task<IActionResult> UploadBook(IFormFile file)
     {
         if (file == null || file.Length == 0)

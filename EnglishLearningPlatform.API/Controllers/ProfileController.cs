@@ -4,6 +4,7 @@ using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EnglishLearningPlatform.API.Controllers;
 
@@ -120,6 +121,7 @@ public class ProfileController : ControllerBase
 
     // POST: api/profile/avatar — загрузка своего аватара (JPG/PNG/WEBP, до 2 МБ)
     [HttpPost("avatar")]
+    [EnableRateLimiting("upload")]
     public async Task<IActionResult> UploadAvatar(IFormFile file)
     {
         var user = await _userManager.FindByIdAsync(GetUserId());

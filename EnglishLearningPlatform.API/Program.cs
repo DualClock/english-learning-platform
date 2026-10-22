@@ -82,6 +82,12 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+
+    // Блокировка после неудачных входов: без неё CheckPasswordAsync позволяет
+    // перебирать пароль неограниченно с одного аккаунта
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -173,6 +179,30 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(5),
                 QueueLimit = 0
             }));
+
+    // Загрузка аватара/EPUB — тяжёлые операции (декодирование картинок,
+    // распаковка архива). Без лимита ими легко исчерпать CPU и память.
+    options.AddPolicy("upload", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0
+            }));
+
+    // Клиентская аналитика пишется в БД на каждый запрос — ограничиваем
+    // частоту, чтобы один клиент не залил таблицу событиями.
+    options.AddPolicy("analytics", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddAuthentication(options =>
@@ -239,6 +269,10 @@ app.UseSerilogRequestLogging(options =>
                 ? Serilog.Events.LogEventLevel.Verbose
                 : Serilog.Events.LogEventLevel.Information;
 });
+
+// Защитные заголовки — до обработчика исключений, чтобы они попадали
+// и на ответы об ошибках
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 // Ловит необработанные исключения из всего, что ниже по конвейеру
 app.UseExceptionHandler();
