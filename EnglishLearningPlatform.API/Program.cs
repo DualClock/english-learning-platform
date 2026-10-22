@@ -160,6 +160,19 @@ builder.Services.AddRateLimiter(options =>
                 Window = TimeSpan.FromMinutes(10),
                 QueueLimit = 0
             }));
+
+    // Админские endpoint'ы защищены статическим ключом: без лимита попыток
+    // его можно перебирать онлайн. Десять попыток за пять минут оставляют
+    // запас владельцу и делают брутфорс бессмысленным.
+    options.AddPolicy("admin", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0
+            }));
 });
 
 builder.Services.AddAuthentication(options =>

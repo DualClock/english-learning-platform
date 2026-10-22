@@ -93,7 +93,7 @@ export default function AdminFeedbackClient() {
             <Input
               label="Ключ доступа"
               type="password"
-              hint="Ключ админки: Feedback__AdminKey (или Seeder__Key)."
+              hint="Ключ админки: Feedback__AdminKey."
               placeholder="••••••••"
               autoComplete="off"
               value={adminKey}

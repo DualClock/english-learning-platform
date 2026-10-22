@@ -72,7 +72,8 @@
 > (по умолчанию `kompasmini@yandex.com`). Копия всегда сохраняется в таблице
 > `EmailMessages` с `Kind = "feedback"`, поэтому отзыв не теряется даже при сбое SMTP.
 > Все отзывы можно смотреть на `/admin/feedback` — страница попросит
-> `Feedback__AdminKey` (фолбэк — `Seeder__Key`).
+> `Feedback__AdminKey`. Отдельный ключ обязателен: `Seeder__Key` (ключ сидов
+> контента) больше не даёт доступа к личным отзывам пользователей.
 
 5. Deploy. Через 5-10 минут API поднимется на `https://lexicon-api.onrender.com`.
    Проверка: открой `https://lexicon-api.onrender.com/health` → `{"status":"ok"}`.

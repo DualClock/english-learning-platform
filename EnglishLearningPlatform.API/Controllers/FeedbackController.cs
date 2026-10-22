@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Data;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -144,27 +145,25 @@ public class FeedbackController : ControllerBase
     }
 
     [HttpGet]
+    [EnableRateLimiting("admin")]
     public async Task<IActionResult> List(
         [FromHeader(Name = "X-Seed-Key")] string? seedKey,
         [FromQuery] int limit = 100,
         CancellationToken cancellationToken = default)
     {
+        // Только собственный ключ отзывов: Seeder:Key больше не открывает
+        // переписку пользователей — у контентных сидов и личных данных
+        // должны быть разные ключи.
         var configuredKey = _configuration["Feedback:AdminKey"];
-        if (string.IsNullOrEmpty(configuredKey))
-        {
-            configuredKey = _configuration["Seeder:Key"];
-        }
 
-        if (!string.IsNullOrEmpty(configuredKey))
+        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, _environment.IsDevelopment()))
         {
-            if (seedKey != configuredKey)
+            if (string.IsNullOrEmpty(configuredKey))
             {
-                return Unauthorized(new { message = "Неверный ключ доступа." });
+                return Forbid();
             }
-        }
-        else if (!_environment.IsDevelopment())
-        {
-            return Forbid();
+
+            return Unauthorized(new { message = "Неверный ключ доступа." });
         }
 
         var take = Math.Clamp(limit, 1, 200);

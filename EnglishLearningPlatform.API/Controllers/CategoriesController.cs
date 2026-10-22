@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishLearningPlatform.API.Controllers;
@@ -173,6 +175,7 @@ public class CategoriesController : ControllerBase
 
     [HttpPost]
     [Route("/api/admin/seed-categories")]
+    [EnableRateLimiting("admin")]
     public async Task<ActionResult<object>> SeedCategories(
         [FromServices] CategorySeeder seeder,
         [FromServices] IConfiguration configuration,
@@ -180,16 +183,10 @@ public class CategoriesController : ControllerBase
         [FromHeader(Name = "X-Seed-Key")] string? seedKey)
     {
         var configuredKey = configuration["Seeder:Key"];
-        if (!string.IsNullOrEmpty(configuredKey))
+        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, env.IsDevelopment()))
         {
-            if (seedKey != configuredKey)
-            {
-                return Unauthorized(new { message = "Invalid seed key" });
-            }
-        }
-        else if (!env.IsDevelopment())
-        {
-            return Forbid();
+            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
+            return Unauthorized(new { message = "Invalid seed key" });
         }
 
         var result = await seeder.SeedAsync();
