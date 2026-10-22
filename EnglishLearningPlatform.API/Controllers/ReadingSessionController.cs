@@ -32,6 +32,11 @@ public class ReadingSessionController : ControllerBase
 {
     private static readonly TimeSpan SessionTtl = TimeSpan.FromHours(12);
 
+    // Сессии хранятся в памяти процесса: без лимитов один пользователь может
+    // раздуть сессию тысячами слов или открыть тысячи сессий (OOM инстанса).
+    public const int MaxWordsPerSession = 1000;
+    public const int MaxActiveSessionsPerUser = 20;
+
     private readonly ApplicationDbContext _context;
     private readonly DictionaryService _dictionaryService;
     private readonly ActivityService _activityService;
@@ -55,6 +60,8 @@ public class ReadingSessionController : ControllerBase
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
     private static string SessionKey(Guid id) => $"readingsession:{id}";
+
+    private static string UserSessionsKey(string userId) => $"readingsessions:{userId}";
 
     private ReadingSession? GetSession(Guid id, string userId)
     {
@@ -83,6 +90,21 @@ public class ReadingSessionController : ControllerBase
         };
 
         _cache.Set(SessionKey(session.Id), session, SessionTtl);
+
+        // Держим не больше MaxActiveSessionsPerUser сессий на пользователя:
+        // вытесняем самую старую вместе с её данными.
+        var listKey = UserSessionsKey(userId);
+        var activeIds = _cache.GetOrCreate(listKey, _ => new List<Guid>())!;
+        if (activeIds.Count >= MaxActiveSessionsPerUser)
+        {
+            var oldest = activeIds[0];
+            activeIds.RemoveAt(0);
+            _cache.Remove(SessionKey(oldest));
+        }
+
+        activeIds.Add(session.Id);
+        _cache.Set(listKey, activeIds, SessionTtl);
+
         return Ok(new { sessionId = session.Id });
     }
 
@@ -98,6 +120,13 @@ public class ReadingSessionController : ControllerBase
 
         if (!session.Words.Any(w => w.Text == text))
         {
+            // Повтор уже добавленного слова не увеличивает сессию,
+            // а новое сверх лимита — отклоняем.
+            if (session.Words.Count >= MaxWordsPerSession)
+            {
+                return BadRequest(new { message = $"В сессии уже максимум слов ({MaxWordsPerSession})." });
+            }
+
             session.Words.Add(new SessionWord
             {
                 Text = text,
@@ -173,6 +202,14 @@ public class ReadingSessionController : ControllerBase
         var quiz = BuildQuiz(uniqueWords, levelMap);
 
         _cache.Remove(SessionKey(session.Id));
+
+        // Убираем сессию из списка активных пользователя
+        var listKey = UserSessionsKey(userId);
+        if (_cache.TryGetValue(listKey, out List<Guid>? activeIds) && activeIds != null)
+        {
+            activeIds.Remove(session.Id);
+            _cache.Set(listKey, activeIds, SessionTtl);
+        }
 
         return Ok(new { quiz, added, minutes });
     }
