@@ -23,29 +23,6 @@ const SESSION_COOKIES = [
 
 const NO_INDEX = { 'X-Robots-Tag': 'noindex, nofollow' };
 
-/**
- * Префиксы приватных разделов. Совпадают со списком Disallow в
- * src/app/robots.ts. Публичные /, /test, /books и служебные /login,
- * /onboarding, /api/auth здесь отсутствуют намеренно.
- */
-export const PRIVATE_PREFIXES = [
-  'admin',
-  'categories',
-  'dashboard',
-  'dictionary',
-  'grammar',
-  'listening',
-  'practice',
-  'profile',
-  'progress',
-  'quiz',
-  'reader',
-  'review',
-  'settings',
-  'translator',
-  'writing',
-];
-
 export function middleware(request: NextRequest) {
   const hasSessionCookie = SESSION_COOKIES.some((name) =>
     Boolean(request.cookies.get(name)?.value),
@@ -77,10 +54,28 @@ export function middleware(request: NextRequest) {
  * Matcher перечисляет приватные префиксы явно: единый «всё, кроме публичного»
  * ловил бы и /api/*, и статику, и страницы восстановления пароля, до которых
  * пользователь без сессии обязан добраться.
+ *
+ * Массив обязан быть литералом: Next читает экспорт config статически (без
+ * выполнения файла) и значение, посчитанное в рантайме (flatMap по списку
+ * префиксов), не резолвит — middleware начинал матчить вообще всё, включая /.
+ * `:path*` = «ноль или больше сегментов», поэтому голый префикс тоже покрыт.
  */
 export const config = {
-  matcher: PRIVATE_PREFIXES.flatMap((prefix) => [
-    `/${prefix}`,
-    `/${prefix}/:path*`,
-  ]),
+  matcher: [
+    '/admin/:path*',
+    '/categories/:path*',
+    '/dashboard/:path*',
+    '/dictionary/:path*',
+    '/grammar/:path*',
+    '/listening/:path*',
+    '/practice/:path*',
+    '/profile/:path*',
+    '/progress/:path*',
+    '/quiz/:path*',
+    '/reader/:path*',
+    '/review/:path*',
+    '/settings/:path*',
+    '/translator/:path*',
+    '/writing/:path*',
+  ],
 };
