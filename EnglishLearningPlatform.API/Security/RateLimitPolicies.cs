@@ -7,7 +7,7 @@ namespace EnglishLearningPlatform.API.Security;
 /// <summary>
 /// Политики rate limiting вынесены из Program.cs, чтобы партицирование
 /// проверялось юнит-тестами без поднятия всего хоста.
-/// auth — 10/мин на связку IP+email; admin — 10/5 мин там же;
+/// auth — 10/мин на связку IP+email; admin — 10/5 мин на значение ключа;
 /// feedback/upload/analytics — по IP, как были.
 ///
 /// Регистрация (W1.4.1, SECURITY_GATE R-02/R-10) ограничена двумя
@@ -124,7 +124,7 @@ public static class RateLimitPolicies
 
     public static RateLimitPartition<string> AdminPartition(HttpContext context) =>
         RateLimitPartition.GetFixedWindowLimiter(
-            RateLimitPartitionKeys.Identity(context),
+            RateLimitPartitionKeys.AdminIdentity(context),
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 10,

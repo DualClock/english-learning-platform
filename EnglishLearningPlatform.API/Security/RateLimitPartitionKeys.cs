@@ -8,16 +8,23 @@ namespace EnglishLearningPlatform.API.Security;
 /// Ключи партиций rate limiting. За прокси (Render/Timeweb) RemoteIpAddress
 /// у всех клиентов = адрес прокси, поэтому лимиты только по IP превращаются
 /// в DoS: один скрипт выжигает лимит логина для всей беты (SECURITY_GATE 1.4).
-/// Для auth/admin ключ — sha256(IP + нормализованный email из тела запроса):
+/// Для auth ключ — sha256(IP + нормализованный email из тела запроса):
 /// перебор чужого аккаунта по-прежнему ограничен, но 429 одного клиента
 /// не блокирует других.
 /// Для регистрации (W1.4.1) ключ — сам email: школа или офис за одним NAT
 /// — это десятки разных людей, и лимит «5 в час на IP» отрезал их всех.
+/// Для admin тело запроса не читается: там нет email, поэтому партиция
+/// строится по значению административного ключа (X-Seed-Key), а запросы
+/// без ключа — по IP. Иначе все админские вызовы мира попадали бы в одну
+/// корзину, и любой мог бы закрыть владельцу его же дашборд (R-05).
 /// </summary>
 public static class RateLimitPartitionKeys
 {
     // inspected body cap: DTO-тела логина/регистрации заведомо меньше
     private const long MaxInspectedBodyBytes = 64 * 1024;
+
+    /// <summary>Заголовок, которым защищены служебные эндпоинты (AdminKeyGuard).</summary>
+    public const string AdminKeyHeader = "X-Seed-Key";
 
     public static string IpOnly(HttpContext context) =>
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -41,6 +48,20 @@ public static class RateLimitPartitionKeys
         return email.Length == 0
             ? $"no-email|{IpOnly(context)}"
             : Hash($"email|{email}");
+    }
+
+    /// <summary>
+    /// Партиция админских эндпоинтов: своя корзина у того, кто прислал ключ,
+    /// и общая корзина по IP для тех, кто ключа не прислал. Значение ключа
+    /// не попадает в ключ партиции — только его хеш.
+    /// </summary>
+    public static string AdminIdentity(HttpContext context)
+    {
+        var providedKey = context.Request.Headers[AdminKeyHeader].ToString();
+
+        return string.IsNullOrWhiteSpace(providedKey)
+            ? $"ip:{IpOnly(context)}"
+            : $"key:{Hash(providedKey.Trim())}";
     }
 
     /// <summary>Нормализованный email из JSON-тела запроса; "" если его нет.</summary>

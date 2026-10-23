@@ -253,12 +253,39 @@ public class RateLimitPartitionTests
     }
 
     [Fact]
-    public void AdminPolicy_PartitionsByIpPlusLoginLikeAuth()
+    public void AdminPolicy_PartitionsByPresentedKeyNotByIpPlusLogin()
     {
-        var a = RateLimitPolicies.AdminPartition(LoginRequest(ProxyIp, """{"email":"alice@example.com"}"""));
-        var b = RateLimitPolicies.AdminPartition(LoginRequest(ProxyIp, """{"email":"bob@example.com"}"""));
+        // R-05: тело админских запросов поля email не содержит, поэтому
+        // прошлая партиция (IP+email) превращалась в одну корзину на весь мир
+        // за прокси. Админский лимитер теперь смотрит только на X-Seed-Key.
+        var keyed = RateLimitPolicies.AdminPartition(
+            LoginRequest(ProxyIp, """{"email":"alice@example.com"}"""));
+        var keyedSameIp = RateLimitPolicies.AdminPartition(AdminKeyedRequest("alice-key"));
 
-        Assert.NotEqual(a.PartitionKey, b.PartitionKey);
+        Assert.StartsWith("key:", keyedSameIp.PartitionKey, StringComparison.Ordinal);
+        Assert.DoesNotContain("alice-key", keyedSameIp.PartitionKey, StringComparison.Ordinal);
+
+        // Тело запроса на админ-партицию больше не влияет: GET без тела и
+        // POST с email попадают в корзину по IP, если ключ не прислан.
+        var noKeyPost = RateLimitPolicies.AdminPartition(LoginRequest(ProxyIp, """{"email":"bob@example.com"}"""));
+        var noKeyGet = RateLimitPolicies.AdminPartition(AdminKeyedRequest(seedKey: null));
+
+        Assert.Equal(noKeyPost.PartitionKey, noKeyGet.PartitionKey);
+        Assert.StartsWith("ip:", noKeyGet.PartitionKey, StringComparison.Ordinal);
+    }
+
+    private static DefaultHttpContext AdminKeyedRequest(string? seedKey)
+    {
+        var context = new DefaultHttpContext();
+        context.Connection.RemoteIpAddress = IPAddress.Parse(ProxyIp);
+        context.Request.Method = HttpMethods.Get;
+
+        if (seedKey != null)
+        {
+            context.Request.Headers["X-Seed-Key"] = seedKey;
+        }
+
+        return context;
     }
 }
 
