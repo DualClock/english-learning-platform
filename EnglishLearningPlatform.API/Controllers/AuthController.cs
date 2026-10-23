@@ -83,6 +83,14 @@ public class AuthController : ControllerBase
             AvatarUrl = AvatarService.DefaultAvatarUrl("avatar-1")
         };
 
+        // Атрибуция канала фиксируется здесь и больше нигде: ни вход, ни
+        // повторная попытка регистрации не должны её переписывать.
+        AcquisitionNormalizer.ApplyOnCreate(
+            user,
+            refCode: dto.Ref,
+            utmSource: dto.UtmSource,
+            utmMedium: dto.UtmMedium,
+            utmContent: dto.UtmContent);
 
         var result = await _userManager.CreateAsync(user, dto.Password);
 
@@ -418,7 +426,13 @@ public record RegisterDto(
     bool? NotifyEnabled = null,
     int? ReminderHour = null,
     // Honeypot-поле: всегда null/пусто для живого пользователя
-    [property: MaxLength(200)] string? Website = null);
+    [property: MaxLength(200)] string? Website = null,
+    // Атрибуция канала (W2.1): метки приходят прямо из URL, поэтому длина
+    // ограничена, а значение нормализуется на сервере (AcquisitionNormalizer).
+    [property: MaxLength(200)] string? UtmSource = null,
+    [property: MaxLength(200)] string? UtmMedium = null,
+    [property: MaxLength(200)] string? UtmContent = null,
+    [property: MaxLength(200)] string? Ref = null);
 public record LoginDto(
     [property: Required, EmailAddress, MaxLength(256)] string Email,
     [property: Required, MaxLength(128)] string Password);

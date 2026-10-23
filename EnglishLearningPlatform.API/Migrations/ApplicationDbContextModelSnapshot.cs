@@ -655,6 +655,14 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("AcquisitionCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("AcquisitionSource")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("AvatarFrame")
                         .IsRequired()
                         .HasMaxLength(20)

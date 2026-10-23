@@ -57,4 +57,16 @@ public class User : IdentityUser
     public bool NotifyEnabled { get; set; }
 
     public int ReminderHour { get; set; } = 9;
+
+    // Атрибуция канала: откуда человек узнал о сервисе. Пишется один раз при
+    // регистрации и больше не перезаписывается — иначе повторный вход с другой
+    // ссылкой переписал бы историю, и через неделю нельзя было бы сказать,
+    // какой канал дал читающих людей, а не просто регистрации.
+    // Source — канал (utm_source или личный код, приоритет у кода),
+    // Code — конкретная ссылка/пост (utm_content, когда кода нет).
+    [MaxLength(64)]
+    public string? AcquisitionSource { get; set; }
+
+    [MaxLength(64)]
+    public string? AcquisitionCode { get; set; }
 }

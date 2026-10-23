@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
+import { getActiveAttribution, registrationPayload } from '@/lib/attribution';
 
 type Step = 'level' | 'placement' | 'goal' | 'time' | 'account' | 'processing' | 'welcome';
 
@@ -237,6 +238,13 @@ export default function OnboardingPage() {
 
     const timeOption = timeOptions.find((t) => t.value === data.time);
 
+    // Канал, по которому человек пришёл (utm/ref из cookie). Пустой объект,
+    // если меток не было: аккаунт остаётся «без источника», а не «с пустым».
+    const attribution =
+      typeof window === 'undefined'
+        ? {}
+        : registrationPayload(getActiveAttribution(document.cookie, window.sessionStorage));
+
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
@@ -257,6 +265,7 @@ export default function OnboardingPage() {
             }
           })(),
           notifyEnabled: data.notifications,
+          ...attribution,
         }),
       });
 
