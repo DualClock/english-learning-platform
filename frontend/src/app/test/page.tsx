@@ -85,6 +85,24 @@ export default function TestPage() {
           <div className="mt-7">
             <PlacementTest />
           </div>
+
+          {/*
+           * Вторая дверь, а не тупик (W3.3): человеку, которому не подходит
+           * «сам, когда хочу», нужен формат с датой и компанией. Ссылка живёт в
+           * серверном HTML рядом с CTA теста, а не только на экране результата,
+           * куда ещё надо долистать 16 вопросов.
+           */}
+          <p className="mt-6 max-w-measure border-t border-hairline pt-5 text-body-sm text-slate">
+            Хотите читать не в одиночку?{' '}
+            <Link
+              href="/beta"
+              className="font-medium text-primary underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink"
+            >
+              Когорта Lexicon
+            </Link>{' '}
+            — 14 дней чтения по главе в день, старт 2 ноября, 80 мест и два коротких отзыва с
+            вас.
+          </p>
         </div>
 
         <section className="mt-10" aria-labelledby="test-scale-title">

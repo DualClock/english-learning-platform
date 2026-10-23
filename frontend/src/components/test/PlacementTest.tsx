@@ -298,6 +298,17 @@ export default function PlacementTest() {
             Сохранить результат и получать слова на повторение
             <ArrowRightIcon size={20} aria-hidden />
           </Button>
+          {/*
+           * Рядом с «вступить» — вторая дверь (W3.3): когорта для тех, кому
+           * нужен формат с датой старта и компанией, а не «сам когда хочу».
+           */}
+          <Link
+            href="/beta"
+            className="mt-3 flex items-center justify-center gap-2 text-body-sm text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink"
+          >
+            Или вступить в когорту со 2 ноября
+            <ArrowRightIcon size={16} aria-hidden />
+          </Link>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"

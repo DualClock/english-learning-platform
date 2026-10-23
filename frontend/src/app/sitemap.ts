@@ -23,8 +23,13 @@ import { siteUrl } from '@/lib/site';
  * сервису свою почту и свою группу. Молодому домену полезно, чтобы робот
  * заходил на них напрямую, а не только по ссылке из футера. Ссылки в футере
  * лендинга при этом остаются: индекс — это про краулера, ссылка — про читателя.
+ *
+ * /beta (W3.3) — страница когорты: на неё ведут все письма и посты из
+ * `docs/beta-launch/OUTREACH_KIT.md`, поэтому ей нужен и индекс, и прямая
+ * ссылка для краулера. Это тоже серверная страница без авторизации: в matcher
+ * приватных разделов её добавлять нельзя (проверено юнитом `beta.test.mjs`).
  */
-const publicPaths: string[] = ['/', '/test', '/privacy', '/terms'];
+const publicPaths: string[] = ['/', '/test', '/beta', '/privacy', '/terms'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -35,6 +40,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Правовые страницы — не контент для чтения: они меняются редко, и
     // «weekly» для них значило бы, что мы зря гоняем краулер на пустой diff.
     changeFrequency: path === '/privacy' || path === '/terms' ? 'yearly' : 'weekly',
-    priority: path === '/' ? 1 : path === '/test' ? 0.8 : 0.4,
+    // Когорта — страница с дедлайном: до старта она важнее почти всего, кроме
+    // самой главной, и теряет смысл после 15 ноября.
+    priority: path === '/' ? 1 : path === '/test' ? 0.8 : path === '/beta' ? 0.7 : 0.4,
   }));
 }

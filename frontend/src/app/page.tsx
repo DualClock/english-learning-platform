@@ -44,6 +44,14 @@ export default function HomePage() {
           </Link>
 
           <nav className="hidden items-center gap-8 text-body-sm text-charcoal md:flex">
+            {/*
+             * Когорта (W3.3) — адрес, на который ведут все письма и посты
+             * аутрича. В шапке он рядом с «Возможностями», потому что решение
+             * «идти или нет» человек принимает до того, как дочитает лендинг.
+             */}
+            <Link href="/beta" className="transition-colors duration-fast ease-soft hover:text-ink">
+              Когорта
+            </Link>
             <a href="#skills" className="transition-colors duration-fast ease-soft hover:text-ink">
               Возможности
             </a>
@@ -201,6 +209,12 @@ export default function HomePage() {
               </a>
             </div>
             <nav className="flex flex-wrap gap-x-8 gap-y-2 text-body-sm text-on-dark-muted">
+              <Link
+                href="/beta"
+                className="transition-colors duration-fast ease-soft hover:text-on-dark"
+              >
+                Когорта
+              </Link>
               <a href="#skills" className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Возможности
               </a>
