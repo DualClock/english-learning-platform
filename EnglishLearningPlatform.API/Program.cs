@@ -1,8 +1,8 @@
 using System.Text;
-using System.Threading.RateLimiting;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Middleware;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using EnglishLearningPlatform.API.Validators;
 using FluentValidation;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 // Настройка Serilog
@@ -140,70 +141,18 @@ if (configProblems.Count > 0)
     Log.Warning("Проверка конфигурации: {ConfigProblems}", message);
 }
 
-// Rate limiting: защита логина/регистрации/сброса пароля от брутфорса
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("auth", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
-            }));
+// Rate limiting: защита логина/регистрации/сброса пароля от брутфорса.
+// Политики и партиции — в Security/RateLimitPolicies (покрыто юнит-тестами).
+builder.Services.AddRateLimiter(RateLimitPolicies.Configure);
 
-    // Обратная связь анонимна: без лимита один человек (или скрипт) может
-    // засыпать почту отзывами. Тридцать сообщений за десять минут — с запасом
-    // для группы тестеров и без простора для флуда.
-    options.AddPolicy("feedback", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 30,
-                Window = TimeSpan.FromMinutes(10),
-                QueueLimit = 0
-            }));
-
-    // Админские endpoint'ы защищены статическим ключом: без лимита попыток
-    // его можно перебирать онлайн. Десять попыток за пять минут оставляют
-    // запас владельцу и делают брутфорс бессмысленным.
-    options.AddPolicy("admin", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(5),
-                QueueLimit = 0
-            }));
-
-    // Загрузка аватара/EPUB — тяжёлые операции (декодирование картинок,
-    // распаковка архива). Без лимита ими легко исчерпать CPU и память.
-    options.AddPolicy("upload", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(5),
-                QueueLimit = 0
-            }));
-
-    // Клиентская аналитика пишется в БД на каждый запрос — ограничиваем
-    // частоту, чтобы один клиент не залил таблицу событиями.
-    options.AddPolicy("analytics", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 120,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
-            }));
-});
+// ForwardedHeaders: настоящий IP клиента виден лимитеру только если мы доверяем
+// X-Forwarded-* нашему реверс-прокси. Источник доверия — Proxy__TrustedCidrs
+// (CIDR/IP через запятую); пустое значение = не доверять никому, поведение
+// ровно как раньше (партиция по адресу непосредственного пира).
+// Настройка должна быть применена ДО UseRateLimiter в конвейере (см. ниже).
+var trustedProxyCidrs = builder.Configuration["Proxy:TrustedCidrs"];
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    TrustedProxySetup.Configure(options, trustedProxyCidrs));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -258,6 +207,11 @@ builder.Services.AddScoped<StorySeeder>();
 builder.Services.AddHttpClient<FeedbackNotifier>();
 
 var app = builder.Build();
+
+// ForwardedHeaders — самым первым middleware: всё, что ниже (логирование
+// запросов и особенно UseRateLimiter с партицией по IP), должно видеть
+// настоящий адрес клиента, а не адрес прокси.
+app.UseForwardedHeaders();
 
 // Одна строка на каждый HTTP-запрос в журнал; /health опрашивается часто —
 // успешные его пробы не пишем, чтобы не засорять журнал
