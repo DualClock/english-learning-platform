@@ -231,24 +231,110 @@ test('/test осталась публичной для краулера', () => 
   assert.match(landing, /href="\/test"/, 'на лендинге нет заметной ссылки на тест уровня');
 });
 
-/**
- * Честный замер: гостевые завершения теста сегодня НЕ пишутся в базу.
+/*
+ * Канарейка воронки /test (W2.2a → W2.4).
  *
- * Трекер на экране результата стоит (`track('placement_test_completed', 'source=test', …)`),
- * но `AnalyticsController` закрыт `[Authorize]` — без JWT это 401, а событие к тому
- * же нет в `AllowedEvents` — с JWT это 400. Сервер ради метрики не дырявили
- * (SECURITY_GATE), поэтому тест работает канарейкой: как только одно из двух
- * изменится, проверка упадёт и заставит обновить TODO в PlacementTest.tsx и
- * отчёт по воронке.
+ * Раньше этот тест проверял, что гостевые завершения НЕ пишутся: трекер стоял,
+ * упирался в `[Authorize]` и молчал. Теперь гостевой замер работает — через
+ * отдельный анонимный эндпоинт `POST /api/analytics/anonymous`, а не через
+ * снятие защиты с существующего. Смысл канарейки тот же, только она сторожит
+ * границы: старый путь обязан остаться за JWT, список гостевых событий обязан
+ * совпадать у сервера и клиента в обе стороны, и ни у кого не должно появиться
+ * поля для свободного текста.
  */
-test('placement_test_completed пока не принимается сервером (гостя не мерим)', () => {
-  assert.match(analyticsController, /\[Authorize\]/, 'аналитика открыта — проверьте TODO на /test');
+test('гостевая воронка /test measure’ится через отдельный анонимный эндпоинт', () => {
+  // 1. Аутентифицированный путь не тронут: `[Authorize]` на классе остался,
+  //    и гостевых имён в его whitelist нет.
+  assert.match(
+    analyticsController,
+    /\[Authorize\]/,
+    'с AnalyticsController снят [Authorize] — гостевой счётчик для этого и не открывали'
+  );
+  const authenticatedWhitelist = analyticsController.match(/AllowedEvents[\s\S]*?\};/);
+  assert.ok(authenticatedWhitelist, 'не найден AllowedEvents аутентифицированной аналитики');
   assert.ok(
-    !/"placement_test_completed"/.test(analyticsController),
-    'событие добавлено в AllowedEvents — замер гостевых завершений пора включать'
+    !/placement_test_/.test(authenticatedWhitelist[0]),
+    'гостевое событие попало в whitelist платного пути: воронка гостя и метрики читателя смешались'
   );
 
+  // 2. Новый путь существует, анонимный и только на запись.
+  const anonymousController = readRepo(
+    'EnglishLearningPlatform.API',
+    'Controllers',
+    'AnonymousAnalyticsController.cs'
+  );
+  assert.match(anonymousController, /\[AllowAnonymous\]/, 'гостевой эндпоинт не анонимный — гость снова получает 401');
+  assert.match(anonymousController, /\[Route\("api\/analytics"\)\]/, 'сменился префикс маршрута');
+  assert.match(anonymousController, /\[HttpPost\("anonymous"\)\]/, 'маршрут POST /api/analytics/anonymous пропал');
+  assert.match(
+    anonymousController,
+    /\[EnableRateLimiting\("guest-analytics"\)\]/,
+    'гостевой write-путь идёт под общим лимитером аналитики: анонимный скрипт съедает бюджет читателя'
+  );
+  assert.match(
+    anonymousController,
+    /RequestSizeLimit\(MaxBodyBytes\)/,
+    'исчез кап тела: анонимный эндпоинт снова принимает неограниченную посылку'
+  );
+  assert.doesNotMatch(anonymousController, /\[HttpGet/, 'у гостевого контроллера появилась читалка: воронка отдаётся без админского ключа');
+
+  // 3. Whitelist сервера = whitelist клиента. Расхождение в любую сторону
+  //    означает либо молча丢掉ное событие, либо открытое имя без отправителя.
+  const serverEvents = [...anonymousController.matchAll(/public const string \w+Event = "([^"]+)";/g)]
+    .map((match) => match[1])
+    .sort();
+  const clientSource = read('..', 'app', 'lib', 'analytics.ts');
+  const clientBlock = clientSource.match(/export const GUEST_EVENTS = \{([\s\S]*?)\} as const;/);
+  assert.ok(clientBlock, 'в analytics.ts не найден GUEST_EVENTS — клиент больше не знает контракт сервера');
+  const clientEvents = [...clientBlock[1].matchAll(/'([^']+)'/g)].map((match) => match[1]).sort();
+
+  assert.deepEqual(
+    clientEvents,
+    serverEvents,
+    `списки гостевых событий разошлись: сервер — ${serverEvents.join(', ')}, клиент — ${clientEvents.join(', ')}`
+  );
+  assert.ok(
+    serverEvents.includes('placement_test_started') && serverEvents.includes('placement_test_completed'),
+    'из whitelist пропали старт и завершение — верх воронки снова неизмерим'
+  );
+
+  // 4. Свободного текста на этом пути нет ни в одну из сторон.
+  assert.match(
+    anonymousController,
+    /"event", "level", "dedupeKey"/,
+    'набор полей гостевого запроса изменился: проверьте, что ни одно из них не принимает текст от гостя'
+  );
+  assert.doesNotMatch(
+    clientSource,
+    /GUEST_ANALYTICS_PATH[\s\S]{0,600}\bmeta\b/,
+    'гостевой вызов начал слать meta — то самое свободное поле, ради которого путь не открывали целиком'
+  );
+
+  // 5. placement_test_abandoned_step нет ни на одной стороне, а причина отказа
+  //    живёт не в заметке, а в коде сервера: без разбора доставки такое
+  //    событие только врёт в отчёт.
+  assert.doesNotMatch(
+    `${anonymousController}\n${clientSource}`,
+    /["']placement_test_abandoned_step["']/,
+    'abandoned_step вернулся в контракт: перечитайте разбор доставки (sendBeacon + кросс-доменный JSON) — без надёжной доставки событие врёт'
+  );
+  assert.match(anonymousController, /sendBeacon/, 'исчезло объяснение, почему abandonment не меряется');
+
+  // 6. Экран отправляет оба события и не зовёт аутентифицированный трекер.
   const testFlow = read('..', 'components', 'test', 'PlacementTest.tsx');
-  assert.match(testFlow, /placement_test_completed/, 'трекер исчез с экрана результата');
-  assert.match(testFlow, /TODO\(W2\.2b\)/, 'нет пометки, почему событие сейчас глухо');
+  assert.match(testFlow, /GUEST_EVENTS\.testStarted/, 'со страницы теста не сообщается о начале прохода');
+  assert.match(testFlow, /GUEST_EVENTS\.testCompleted/, 'со страницы теста не сообщается о результате');
+  assert.match(testFlow, /level: result\.cefrLevel/, 'завершение уходит без уровня — метрика «какой уровень качают» пуста');
+  assert.doesNotMatch(
+    testFlow,
+    /import \{[^}]*\btrack\b[^}]*\} from '@\/app\/lib\/analytics'/,
+    'гость снова импортирует track() с токеном: на /test это 401, который track() глотает молча'
+  );
+  assert.doesNotMatch(testFlow, /TODO\(W2\.2b\)/, 'устаревшая пометка о «глухом» событии осталась на экране');
+
+  // 7. Выгрузка для менеджера показывает весь верх воронки, а не только регистрации.
+  for (const field of ['GuestStarts', 'GuestCompletions', 'Registrations', 'Activated']) {
+    assert.ok(analyticsController.includes(field), `в /api/analytics/acquisition нет колонки ${field}`);
+  }
 });
+

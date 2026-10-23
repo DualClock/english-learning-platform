@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { AnimatePresence, motion } from 'motion/react';
 import Button from '@/components/ui/Button';
 import ChoiceCard from '@/components/ui/ChoiceCard';
@@ -17,7 +16,12 @@ import {
   SpinnerIcon,
   TargetIcon,
 } from '@/components/ui/icons';
-import { track } from '@/app/lib/analytics';
+import {
+  GUEST_EVENTS,
+  guestPassKeys,
+  trackGuest,
+  type GuestPassKeys,
+} from '@/app/lib/analytics';
 import { fetchPlacementQuestions, submitPlacementAnswers } from '@/app/lib/placement-api';
 import {
   buildPlacementAnswers,
@@ -40,18 +44,20 @@ import { variants } from '@/lib/motion';
  */
 
 /**
- * Замер завершения. TODO(W2.2b): гостевые завершения сегодня НЕ меряются —
- * `AnalyticsController` закрыт `[Authorize]` (без JWT — 401), а событие к тому
- * же нет в `AllowedEvents` (с JWT — 400). Дырявить аналитику ради метрики не
- * стали; трекер оставлен здесь, чтобы после решения сервера осталось одно
- * слово в скобках. Пока что про тест судят по `/onboarding` после ссылки.
+ * Замер верха воронки (W2.4). Раньше это событие уходило в
+ * `/api/analytics/event` и получало молчаливый 401: тот путь закрыт
+ * `[Authorize]`, а `track()` ошибки глотает. Теперь гостевые события идут на
+ * отдельный анонимный эндпоинт с whitelist из двух имён — `placement_test_started`
+ * (вопросы загружены) и `placement_test_completed` (человек увидел уровень).
+ *
+ * «Ушёл до результата» здесь не отправляется: с /test это не доставляется
+ * надёжно, а врущая метрика хуже отсутствующей. Незакрывшие тест видны как
+ * `starts − completions` в `/api/analytics/acquisition`.
  */
-const PLACEMENT_COMPLETED_EVENT = 'placement_test_completed';
 
 type Phase = 'idle' | 'loading' | 'question' | 'scoring' | 'result';
 
 export default function PlacementTest() {
-  const { data: session } = useSession();
   const [phase, setPhase] = useState<Phase>('idle');
   const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
   const [index, setIndex] = useState(0);
@@ -62,6 +68,23 @@ export default function PlacementTest() {
 
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const completedTracked = useRef(false);
+  /**
+   * Ключи одного прохода теста. Нужны, чтобы сетевой повтор (обрыв связи,
+   * ретрай браузера) не превратился в двух гостей: сервер видит тот же
+   * dedupeKey и молча игнорирует вторую строку.
+   */
+  const passKeys = useRef<GuestPassKeys | null>(null);
+
+  /**
+   * Новый проход: генерируем ключи и говорим серверу, что тест начали.
+   * Вызывается только когда вопросы реально показали: «открыл страницу» и
+   * «начал тест» — разные вещи, и вторая и есть верх воронки.
+   */
+  const beginPass = useCallback(() => {
+    const keys = guestPassKeys();
+    passKeys.current = keys;
+    void trackGuest(GUEST_EVENTS.testStarted, { dedupeKey: keys.started });
+  }, []);
 
   const start = useCallback(async () => {
     setError('');
@@ -73,11 +96,12 @@ export default function PlacementTest() {
       setChoices(list.map(() => null));
       setIndex(0);
       setPhase('question');
+      beginPass();
     } catch {
       setError('Не удалось загрузить вопросы. Проверьте соединение и попробуйте ещё раз.');
       setPhase('idle');
     }
-  }, []);
+  }, [beginPass]);
 
   const score = useCallback(async (list: PlacementQuestion[], answers: (number | null)[]) => {
     setError('');
@@ -118,6 +142,9 @@ export default function PlacementTest() {
     setIndex(0);
     setError('');
     completedTracked.current = false;
+    // Новый проход = новые ключи: иначе второй результат гостя сервер
+    // посчитал бы повтором первого и выбросил.
+    beginPass();
     setPhase('question');
   };
 
@@ -125,8 +152,13 @@ export default function PlacementTest() {
   useEffect(() => {
     if (phase !== 'result' || !result || completedTracked.current) return;
     completedTracked.current = true;
-    void track(PLACEMENT_COMPLETED_EVENT, 'source=test', session?.accessToken ?? null);
-  }, [phase, result, session?.accessToken]);
+    // Ключ прохода создан в beginPass(); фолбэк на случай, если результат
+    // оказался на экране раньше (чужой рендер, восстановление из кэша).
+    void trackGuest(GUEST_EVENTS.testCompleted, {
+      level: result.cefrLevel,
+      dedupeKey: (passKeys.current ?? guestPassKeys()).completed,
+    });
+  }, [phase, result]);
 
   const selectChoice = (choice: number) => {
     setError('');
