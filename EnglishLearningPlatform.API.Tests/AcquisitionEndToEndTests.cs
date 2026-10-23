@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using EnglishLearningPlatform.API.Controllers;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
@@ -212,5 +213,51 @@ public class AcquisitionEndToEndTests
         Assert.Null(row.Source);
         Assert.Equal(1, report.Totals.Registrations);
         Assert.Equal(0, report.Totals.Activated);
+    }
+}
+
+/// <summary>
+/// Контур между фронтендом и контроллером: тело регистрации собирается в
+/// `registrationPayload` (frontend/src/lib/attribution.ts) и приходит в API
+/// camelCase'ом. MVC связывает JSON по именам без учёта регистра, поэтому
+/// «utmSource» и «utm_content» — это разные вещи: опечатка в ключ молча
+/// проигнорирует, и атрибуция перестанет долетать до БД без единой ошибки.
+/// </summary>
+public class AcquisitionWireFormatTests
+{
+    /// <summary>Те же настройки, что у MVC-связывателя: camelCase вход, регистр не важен.</summary>
+    private static readonly JsonSerializerOptions WebJson = new(JsonSerializerDefaults.Web);
+
+    [Fact]
+    public void RegisterDto_BindsThePayloadTheFrontendActuallySends()
+    {
+        var json = """
+            {"email":"pupil@example.com","password":"Password1",
+             "ref":"stasya","utmSource":"vk","utmMedium":"social","utmContent":"post-7"}
+            """;
+
+        var dto = JsonSerializer.Deserialize<RegisterDto>(json, WebJson);
+
+        Assert.NotNull(dto);
+        Assert.Equal("stasya", dto!.Ref);
+        Assert.Equal("vk", dto.UtmSource);
+        Assert.Equal("social", dto.UtmMedium);
+        Assert.Equal("post-7", dto.UtmContent);
+    }
+
+    [Fact]
+    public void RegisterDto_WithoutMarkers_LeavesEverythingNull()
+    {
+        var json = """
+            {"email":"pupil@example.com","password":"Password1"}
+            """;
+
+        var dto = JsonSerializer.Deserialize<RegisterDto>(json, WebJson);
+
+        Assert.NotNull(dto);
+        Assert.Null(dto!.Ref);
+        Assert.Null(dto.UtmSource);
+        Assert.Null(dto.UtmMedium);
+        Assert.Null(dto.UtmContent);
     }
 }
