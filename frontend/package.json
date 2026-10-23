@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs"
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs src/lib/pulse.test.mjs"
   },
   "dependencies": {
     "motion": "^14.5.0",

@@ -14,6 +14,7 @@ import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
 import Button from '@/components/ui/Button';
 import ErrorState from '@/components/ui/ErrorState';
+import BetaPulse from '@/components/feedback/BetaPulse';
 import ReaderDrawer from '@/components/reader/ReaderDrawer';
 import ReaderFooter from '@/components/reader/ReaderFooter';
 import ReaderRail from '@/components/reader/ReaderRail';
@@ -880,7 +881,13 @@ export default function ReaderPage() {
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="flex min-h-full justify-center px-5 pb-16 pt-9 sm:px-8 sm:pt-12 lg:px-12 lg:pt-16">
+                {/* flex-col вместо row: под текстом страницы живёт ровно один
+                    дополнительный слой — inline-вопрос pulse (W4.1). В column
+                    горизонталь режет items-center вместо justify-center, а
+                    текст по-прежнему прижат к верху: раскладка, кегль и
+                    перелистывание не затронуты, у блока та же measure-сетка,
+                    что у текста. */}
+                <div className="flex min-h-full flex-col items-center px-5 pb-16 pt-9 sm:px-8 sm:pt-12 lg:px-12 lg:pt-16">
                   {/* key по номеру страницы: при перелистывании блок перемонтируется и текст мягко проявляется */}
                   <div
                     key={currentPage}
@@ -917,6 +924,16 @@ export default function ReaderPage() {
                       />
                     )}
                   </div>
+
+                  {/* Микроопрос беты: один вопрос под текстом, без слоя поверх
+                      чтения. Сам блок решает «показывать ли» через сервер
+                      (/api/analytics/pulse/eligible), поэтому здесь он просто
+                      стоит в колонке. */}
+                  <BetaPulse
+                    userId={session?.user?.id ?? null}
+                    accessToken={session?.accessToken ?? null}
+                    page={currentPage}
+                  />
                 </div>
               </div>
 
