@@ -313,10 +313,12 @@ public class RegistrationHoneypotTests
 
         var emailSender = new EmailSender(db, configuration, Microsoft.Extensions.Logging.Abstractions.NullLogger<EmailSender>.Instance);
         var authEmail = new AuthEmailService(emailSender, configuration);
+        var cache = new MemoryCache(new MemoryCacheOptions());
         return new AuthController(
             userManager, configuration, authEmail,
             Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthController>.Instance,
-            new MemoryCache(new MemoryCacheOptions()));
+            cache,
+            new RegistrationQuotaService(db, cache, configuration, Microsoft.Extensions.Logging.Abstractions.NullLogger<RegistrationQuotaService>.Instance));
     }
 
     [Fact]

@@ -61,13 +61,15 @@ public class LoginLockoutTests
 
         var emailSender = new EmailSender(context, configuration, NullLogger<EmailSender>.Instance);
         var authEmail = new AuthEmailService(emailSender, configuration);
+        var cache = new MemoryCache(new MemoryCacheOptions());
 
         var controller = new AuthController(
             userManager,
             configuration,
             authEmail,
             NullLogger<AuthController>.Instance,
-            new MemoryCache(new MemoryCacheOptions()));
+            cache,
+            new RegistrationQuotaService(context, cache, configuration, NullLogger<RegistrationQuotaService>.Instance));
 
         return new Harness(controller, userManager, context);
     }

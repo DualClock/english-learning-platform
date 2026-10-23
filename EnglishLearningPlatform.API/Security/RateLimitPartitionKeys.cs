@@ -11,6 +11,8 @@ namespace EnglishLearningPlatform.API.Security;
 /// Для auth/admin ключ — sha256(IP + нормализованный email из тела запроса):
 /// перебор чужого аккаунта по-прежнему ограничен, но 429 одного клиента
 /// не блокирует других.
+/// Для регистрации (W1.4.1) ключ — сам email: школа или офис за одним NAT
+/// — это десятки разных людей, и лимит «5 в час на IP» отрезал их всех.
 /// </summary>
 public static class RateLimitPartitionKeys
 {
@@ -22,11 +24,27 @@ public static class RateLimitPartitionKeys
 
     public static string Identity(HttpContext context)
     {
-        var raw = $"{IpOnly(context)}|{TryReadEmail(context)}";
+        var raw = $"{IpOnly(context)}|{EmailFromBody(context)}";
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw))).ToLowerInvariant();
     }
 
-    private static string TryReadEmail(HttpContext context)
+    /// <summary>
+    /// Ключ партиции регистрации: нормализованный email, а не IP. Если email
+    /// в теле не читается (битый JSON, запрос без тела, чужой Content-Type),
+    /// ключ падает в bucket «без email» на конкретном IP — такие запросы всё
+    /// равно ограничены, но не съедают бюджет реальных адресов и не сливаются
+    /// в одну общую корзину на весь мир.
+    /// </summary>
+    public static string SignupEmail(HttpContext context)
+    {
+        var email = EmailFromBody(context);
+        return email.Length == 0
+            ? $"no-email|{IpOnly(context)}"
+            : Hash($"email|{email}");
+    }
+
+    /// <summary>Нормализованный email из JSON-тела запроса; "" если его нет.</summary>
+    public static string EmailFromBody(HttpContext context)
     {
         try
         {
@@ -84,4 +102,7 @@ public static class RateLimitPartitionKeys
             return string.Empty;
         }
     }
+
+    private static string Hash(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }

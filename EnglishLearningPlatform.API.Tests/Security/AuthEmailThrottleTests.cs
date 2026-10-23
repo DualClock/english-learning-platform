@@ -68,7 +68,8 @@ public class AuthEmailThrottleTests
             configuration,
             authEmail,
             NullLogger<AuthController>.Instance,
-            cache);
+            cache,
+            new RegistrationQuotaService(context, cache, configuration, NullLogger<RegistrationQuotaService>.Instance));
 
         return new Harness(controller, userManager, context);
     }

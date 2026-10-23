@@ -23,6 +23,7 @@ public class AuthController : ControllerBase
     private readonly AuthEmailService _authEmail;
     private readonly ILogger<AuthController> _logger;
     private readonly IMemoryCache _cache;
+    private readonly RegistrationQuotaService _registrationQuota;
 
     // Пауза между письмами на один адрес: защита от email-бомбинга
     private static readonly TimeSpan AuthEmailCooldown = TimeSpan.FromMinutes(5);
@@ -32,13 +33,15 @@ public class AuthController : ControllerBase
         IConfiguration configuration,
         AuthEmailService authEmail,
         ILogger<AuthController> logger,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        RegistrationQuotaService registrationQuota)
     {
         _userManager = userManager;
         _configuration = configuration;
         _authEmail = authEmail;
         _logger = logger;
         _cache = cache;
+        _registrationQuota = registrationQuota;
     }
 
     private bool TryAcquireEmailSendSlot(string kind, string email)
@@ -66,6 +69,19 @@ public class AuthController : ControllerBase
         {
             _logger.LogWarning("Регистрация отклонена honeypot-полем: {Email}", email);
             return BadRequest(new { message = "Invalid sign-up request" });
+        }
+
+        // Суточный кап на весь сервис (W1.4.1): почасовые лимиты по email и IP
+        // обходятся сплэмом на тысячу разных адресов — этот не обходится,
+        // он считается по созданным пользователям.
+        if (!await _registrationQuota.IsWithinDailyCapAsync())
+        {
+            _logger.LogWarning(
+                "Регистрация отклонена: суточный кап {Limit} исчерпан, попытка с {Email}",
+                _registrationQuota.DailyGlobalLimit, email);
+            return StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                new { message = "Регистрации на сегодня закрыты — дневной лимит исчерпан. Попробуйте завтра." });
         }
 
         var user = new User
@@ -98,6 +114,10 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
+
+        // Кап считается по созданным пользователям, поэтому фиксируем успех
+        // сразу — иначе счётчик отстаёт на TTL кэша
+        _registrationQuota.OnRegistrationCreated();
 
         var token = GenerateJwtToken(user);
         var refreshToken = GenerateRefreshJwtToken(user);

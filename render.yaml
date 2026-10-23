@@ -27,6 +27,17 @@ services:
         value: gemini-2.5-flash
       - key: Seeder__Key
         sync: false
+      # Сети реверс-прокси, чьему X-Forwarded-For мы верим (CIDR через запятую).
+      # Без них все лимиты партицируются по адресу прокси: один клиент,
+      # исчерпавший лимит, блокирует всю бету. Значения — в DEPLOY.md.
+      - key: Proxy__TrustedCidrs
+        sync: false
+      # Суточный кап новых регистраций на весь сервис (по умолчанию 500).
+      - key: Registration__DailyGlobalLimit
+        sync: false
+      # Общий дневной бюджет обращений к Gemini на весь сервис (по умолчанию 2000).
+      - key: Ai__GlobalDailyRequestLimit
+        sync: false
       # Куда присылать отзывы беты. Если пусто — на Email__From.
       - key: Feedback__ToEmail
         sync: false

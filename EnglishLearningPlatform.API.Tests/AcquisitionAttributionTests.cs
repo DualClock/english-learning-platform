@@ -226,12 +226,14 @@ public class AcquisitionRegistrationTests
 
         var emailSender = new EmailSender(db, configuration, NullLogger<EmailSender>.Instance);
         var authEmail = new AuthEmailService(emailSender, configuration);
+        var cache = new MemoryCache(new MemoryCacheOptions());
         var controller = new AuthController(
             userManager,
             configuration,
             authEmail,
             NullLogger<AuthController>.Instance,
-            new MemoryCache(new MemoryCacheOptions()));
+            cache,
+            new RegistrationQuotaService(db, cache, configuration, NullLogger<RegistrationQuotaService>.Instance));
 
         return new Harness(controller, userManager, db);
     }

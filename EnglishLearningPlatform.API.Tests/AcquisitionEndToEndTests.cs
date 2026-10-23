@@ -74,12 +74,14 @@ public class AcquisitionEndToEndTests
             .Build();
 
         var emailSender = new EmailSender(context, configuration, NullLogger<EmailSender>.Instance);
+        var cache = new MemoryCache(new MemoryCacheOptions());
         var auth = new AuthController(
             userManager,
             configuration,
             new AuthEmailService(emailSender, configuration),
             NullLogger<AuthController>.Instance,
-            new MemoryCache(new MemoryCacheOptions()));
+            cache,
+            new RegistrationQuotaService(context, cache, configuration, NullLogger<RegistrationQuotaService>.Instance));
 
         var analytics = new AnalyticsController(
             context,

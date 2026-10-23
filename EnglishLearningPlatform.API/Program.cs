@@ -178,6 +178,7 @@ builder.Services.AddAuthorization();
 // Наши сервисы
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<AiQuotaService>();
+builder.Services.AddScoped<RegistrationQuotaService>();
 builder.Services.AddSingleton(sp => new ResilientAiService(
     sp.GetRequiredService<IConfiguration>(),
     sp.GetRequiredService<ILogger<ResilientAiService>>(),
