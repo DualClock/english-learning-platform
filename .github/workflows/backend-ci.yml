@@ -2,14 +2,24 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'release/**' ]
     paths:
       - 'EnglishLearningPlatform.API/**'
+      - 'EnglishLearningPlatform.API.Tests/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'EnglishLearningPlatform.API/**'
+      - 'EnglishLearningPlatform.API.Tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
@@ -29,6 +39,10 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+      DOTNET_NOLOGO: 'true'
 
     steps:
       - name: Checkout code
@@ -51,9 +65,27 @@ jobs:
           Jwt__Key: "test-secret-key-for-ci-min-32-chars!!"
           Jwt__Issuer: "TestIssuer"
           Jwt__Audience: "TestAudience"
+        # --no-build убирался не за компанию: он собирал только API-проект, тестовая
+        # сборка при этом не существовала, и шаг Test падал (или «проходил» пусто).
+        # dotnet test сам восстановит и соберёт тестовый проект.
         run: |
           if [ -d "EnglishLearningPlatform.API.Tests" ]; then
-            dotnet test EnglishLearningPlatform.API.Tests/EnglishLearningPlatform.API.Tests.csproj --no-build --verbosity normal
+            dotnet test EnglishLearningPlatform.API.Tests/EnglishLearningPlatform.API.Tests.csproj --verbosity normal
           else
             echo "No test project found, skipping tests"
+            exit 1
           fi
+
+      # Non-blocking по той же причине, что и во фронтенде: ImageSharp 3.1.12 несёт
+      # известные high-адвизори, принятые с датой пересмотра (R-xx в
+      # security/risk-register.md), потому что фикс — платная 4.x. Блокирующим шаг
+      # станет после смены декодера или покупки лицензии.
+      - name: Vulnerable packages (non-blocking until accepted risks close)
+        continue-on-error: true
+        run: dotnet list EnglishLearningPlatform.API/EnglishLearningPlatform.API.csproj package --vulnerable --include-transitive
+
+      # Проверки «модель разошлась с миграциями» здесь намеренно нет:
+      # `dotnet ef migrations has-model-changes` удалён из EF Core 7+, а
+      # `migrations list` требует живого подключения к базе. Применение миграций
+      # остаётся ручным шагом деплоя под номером 1 в EXECUTION_SEQUENCE A9 —
+      # новый код без них ломает регистрацию, и это проверяется на стенде, а не в CI.

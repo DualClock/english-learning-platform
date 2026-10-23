@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'release/**' ]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
@@ -10,10 +10,29 @@ on:
     branches: [ main ]
     paths:
       - 'frontend/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Новый пуш в ту же ветку отменяет предыдущий прогон: иначе очередь CI
+# намертво забивается сборками, которые уже никто не ждёт.
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    env:
+      # Сборка обязана сходиться без боевых секретов. Значения-заглушки:
+      # реальные NEXT_PUBLIC_SITE_URL и NEXTAUTH_SECRET задаются на хостинге,
+      # и проверка «OG строится от боевого домена» делается в LAUNCH_DAY_RUNBOOK,
+      # а не здесь.
+      NEXTAUTH_SECRET: ci-only-placeholder-secret-not-used-in-prod
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: https://example.test
 
     steps:
       - name: Checkout code
@@ -23,12 +42,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # Убрали cache, так как package-lock.json может отсутствовать
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
+      # npm ci вместо npm install: сборка должна идти по зафиксированному lock-файлу,
+      # иначе CI проверяет не тот код, который поедет на прод.
       - name: Install dependencies
         run: |
           cd frontend
-          npm install
+          npm ci
+
+      # `npm test --if-present` молча ничего не делал: в package.json нет скрипта test,
+      # есть test:unit. Из-за этого юнит-тесты фронта в CI не запускались никогда.
+      - name: Unit tests
+        run: |
+          cd frontend
+          npm run test:unit
 
       - name: Lint
         run: |
@@ -40,7 +69,13 @@ jobs:
           cd frontend
           npm run build
 
-      - name: Test
+      # not-blocking осознанно: на 24.10 в прод-дереве живёт один принятый critical
+      # (next@14.2.35, риск закрыт достижимостью /_next/image, а не версией) и high
+      # postcss внутри next. Воронка «красный CI» на известном принятом риске только
+      # приучает его игнорировать. Становится блокирующим после закрытия R-05/R-14
+      # в security/risk-register.md — тогда убрать continue-on-error.
+      - name: Dependency advisories (non-blocking until accepted risks close)
+        continue-on-error: true
         run: |
           cd frontend
-          npm test --if-present
+          npm audit --omit=dev --audit-level=high
