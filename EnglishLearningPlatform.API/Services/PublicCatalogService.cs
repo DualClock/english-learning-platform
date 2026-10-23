@@ -52,6 +52,17 @@ public class PublicCatalogService
     public const int PreviewWordLimit = 150;
 
     private static readonly TimeSpan CatalogCacheTtl = TimeSpan.FromHours(6);
+    private static readonly TimeSpan PreviewCacheTtl = TimeSpan.FromHours(12);
+
+    /// <summary>Размер «страницы» при чтении EPUB ради превью — как в читалке.</summary>
+    private const int PreviewPageSize = 300;
+
+    /// <summary>
+    /// EPUB больше этого размера ради превью не разбираем. BookService читает
+    /// книгу целиком, и без предохранителя один запрос краулера заставлял бы
+    /// сервер распаковывать и склеивать 50-мегабайтный архив.
+    /// </summary>
+    private const long MaxPreviewFileBytes = 15L * 1024 * 1024;
 
     /// <summary>
     /// Сколько миллисекунд публичный эндпоинт готов ждать обложки с Open Library.
@@ -61,7 +72,10 @@ public class PublicCatalogService
     /// </summary>
     private static readonly TimeSpan CoverBudget = TimeSpan.FromSeconds(3);
 
-    private const string CatalogCacheKey = "public-catalog";
+    // Ключи открыты: тесты проверяют, что каталог и превью переиспользуются, а
+    // не пересобираются на каждый запрос краулера.
+    public const string CatalogCacheKey = "public-catalog";
+    public const string PreviewCacheKeyPrefix = "public-catalog-preview:";
 
     // Одна пересборка каталога на весь процесс: краулер, пришедший первым, не
     // должен запускать десять параллельных сборок.
@@ -70,6 +84,7 @@ public class PublicCatalogService
     private readonly ApplicationDbContext _context;
     private readonly StorySeeder _storySeeder;
     private readonly PopularBooksService _popularBooksService;
+    private readonly BookService _bookService;
     private readonly IMemoryCache _cache;
     private readonly ILogger<PublicCatalogService> _logger;
 
@@ -77,12 +92,14 @@ public class PublicCatalogService
         ApplicationDbContext context,
         StorySeeder storySeeder,
         PopularBooksService popularBooksService,
+        BookService bookService,
         IMemoryCache cache,
         ILogger<PublicCatalogService> logger)
     {
         _context = context;
         _storySeeder = storySeeder;
         _popularBooksService = popularBooksService;
+        _bookService = bookService;
         _cache = cache;
         _logger = logger;
     }
@@ -225,7 +242,7 @@ public class PublicCatalogService
         for (var i = 0; i < ordered.Count; i++)
         {
             var entry = ordered[i];
-            var preview = ResolvePreview(entry);
+            var preview = await ResolvePreviewAsync(entry, ct);
 
             result.Add(new PublicBookDto(
                 Slug: slugs[i],
@@ -323,18 +340,71 @@ public class PublicCatalogService
     // ------------------------------------------------------------------ превью
 
     /// <summary>
-    /// Превью витрины. Источник — ТОЛЬКО текст сида, который мы сами держим в
-    /// репозитории как public domain (абзацы рассказа из Data/Seed/stories.json).
+    /// Превью витрины. Источник — ТОЛЬКО public domain:
     ///
-    /// Системная копия книги в таблице Books (UploadedByUserId == null) текст
-    /// даёт через существующий механизм чтения, но только после повторной
-    /// проверки whitelist на уровне SQL: иначе совпадение по названию с чужим
-    /// экземпляром превратило бы приватный EPUB в публичную цитату. Эта часть
-    /// границы («превью, а не читалка»: лимит слов, лимит размера файла, кэш)
-    /// добавлена следующим коммитом.
+    ///  1. абзацы рассказа из сида Data/Seed/stories.json (текст лежит в
+    ///     репозитории, написан нами);
+    ///  2. первая страница EPUB системной копии (строка Books без владельца) —
+    ///     через существующий механизм чтения BookService/EpubReader.
+    ///
+    /// Второе — это и есть юридическая граница: приватный EPUB пользователя не
+    /// читается даже тогда, когда книга совпала по названию с классикой из
+    /// Gutenberg. Проверка whitelist стоит повторно на уровне SQL прямо перед
+    /// чтением файла, а не только при сборке списка: защита от того, что кто-то
+    /// передаст в метод чужой bookId.
+    ///
+    /// Цена: распаковка EPUB — самая дорогая операция на этом пути, поэтому
+    /// результат закеширован (12 ч) и ограничен размером файла. Публичная
+    /// страница не должна превращаться в «каждый краулер распаковывает Моби Дик».
     /// </summary>
-    private static string? ResolvePreview(CatalogEntry entry) =>
-        string.IsNullOrWhiteSpace(entry.SeedText) ? null : TakePreview(entry.SeedText);
+    private async Task<string?> ResolvePreviewAsync(CatalogEntry entry, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.SeedText))
+        {
+            return TakePreview(entry.SeedText);
+        }
+
+        if (entry.BookId is not { } bookId) return null;
+
+        var cacheKey = PreviewCacheKeyPrefix + bookId;
+        if (_cache.TryGetValue(cacheKey, out string? cachedPreview))
+        {
+            // Отрицательный результат тоже кэш: отсутствие файла или слишком
+            // большой архив не надо перебирать на каждый запрос краулера
+            return cachedPreview;
+        }
+
+        var preview = await BuildPreviewFromEpubAsync(bookId, ct);
+        _cache.Set(cacheKey, preview, PreviewCacheTtl);
+        return preview;
+    }
+
+    private async Task<string?> BuildPreviewFromEpubAsync(int bookId, CancellationToken ct)
+    {
+        var allowed = await _context.Books.AsNoTracking()
+            .Where(b => b.Id == bookId && b.UploadedByUserId == null)
+            .Select(b => new { b.FilePath, b.FileSize })
+            .FirstOrDefaultAsync(ct);
+
+        if (allowed == null)
+        {
+            _logger.LogWarning("Превью запрошено для книги {BookId}, у которой есть владелец", bookId);
+            return null;
+        }
+
+        if (allowed.FileSize > MaxPreviewFileBytes)
+        {
+            _logger.LogInformation(
+                "Превью книги {BookId} не строится: файл {Size} байт больше лимита",
+                bookId, allowed.FileSize);
+            return null;
+        }
+
+        var pages = await _bookService.GetPagesAsync(bookId, PreviewPageSize);
+        if (pages == null || pages.Count == 0) return null;
+
+        return TakePreview(pages[0]);
+    }
 
     /// <summary>
     /// Первые <see cref="PreviewWordLimit"/> слов, обрезанные по границе

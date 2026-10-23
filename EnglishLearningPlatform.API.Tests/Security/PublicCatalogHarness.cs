@@ -70,6 +70,7 @@ public sealed class PublicCatalogHarness : IDisposable
             Context,
             new StorySeeder(Context, Environment, NullLogger<StorySeeder>.Instance),
             Popular,
+            new BookService(Context, Environment, NullLogger<BookService>.Instance, Cache),
             Cache,
             NullLogger<PublicCatalogService>.Instance);
     }
