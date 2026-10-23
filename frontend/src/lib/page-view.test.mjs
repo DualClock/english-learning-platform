@@ -21,7 +21,10 @@ import {
  */
 
 const SRC = resolve(import.meta.dirname, '..');
-const SERVER_CONTROLLER = resolve(SRC, '..', 'EnglishLearningPlatform.API', 'Controllers', 'AnonymousAnalyticsController.cs');
+// src -> frontend -> корень репозитория: два подъёма, а не один. С одним
+// путём он указывал на frontend/EnglishLearningPlatform.API, файла нет, и тест
+// «клиентские имена не разъехались с whitelist сервера» молча пропускался.
+const SERVER_CONTROLLER = resolve(SRC, '..', '..', 'EnglishLearningPlatform.API', 'Controllers', 'AnonymousAnalyticsController.cs');
 const GUEST_ANALYTICS = resolve(SRC, 'app', 'lib', 'analytics.ts');
 const PAGE_VIEW_COMPONENT = resolve(SRC, 'components', 'analytics', 'PageView.tsx');
 const BETA_PAGE = resolve(SRC, 'app', 'beta', 'page.tsx');
