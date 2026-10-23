@@ -209,6 +209,15 @@ builder.Services.AddHttpClient<FeedbackNotifier>();
 
 var app = builder.Build();
 
+// W1.4.2: пустой Proxy__TrustedCidrs не выглядит как поломка — приложение
+// отвечает 200 и имеет зелёный /health, просто все лимиты по IP начинают
+// делить одну корзину на всю бету, а HSTS не доезжает до клиента. Оставить
+// это молча — значит пропустить дыру повторно на следующем деплое.
+BareProxyGuard.WarnIfBareProxy(
+    app.Services.GetRequiredService<IConfiguration>(),
+    app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup"),
+    RateLimitPolicies.AnyPartitionDependsOnClientIp());
+
 // ForwardedHeaders — самым первым middleware: всё, что ниже (логирование
 // запросов и особенно UseRateLimiter с партицией по IP), должно видеть
 // настоящий адрес клиента, а не адрес прокси.

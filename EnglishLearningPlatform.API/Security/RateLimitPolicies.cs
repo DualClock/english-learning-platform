@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -39,27 +40,77 @@ public static class RateLimitPolicies
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-        options.AddPolicy("auth", AuthPartition);
-        options.AddPolicy("admin", AdminPartition);
-        options.AddPolicy("signup", SignupPartition);
-
-        // Обратная связь анонимна: без лимита один человек (или скрипт) может
-        // засыпать почту отзывами.
-        options.AddPolicy("feedback", ctx => IpPartition(ctx, permit: 30, window: TimeSpan.FromMinutes(10)));
-
-        // Загрузка аватара/EPUB — тяжёлые операции (декодирование картинок,
-        // распаковка архива). Без лимита ими легко исчерпать CPU и память.
-        options.AddPolicy("upload", ctx => IpPartition(ctx, permit: 10, window: TimeSpan.FromMinutes(5)));
-
-        // Клиентская аналитика пишется в БД на каждый запрос — ограничиваем
-        // частоту, чтобы один клиент не залил таблицу событиями.
-        options.AddPolicy("analytics", ctx => IpPartition(ctx, permit: 120, window: TimeSpan.FromMinutes(1)));
+        foreach (var (name, partition) in EndpointPartitions)
+        {
+            options.AddPolicy(name, partition);
+        }
 
         // Per-IP кап регистрации: см. комментарий к классу. GlobalLimiter
         // отрабатывает до endpoint-политики и для всех остальных путей
         // возвращает «нет лимитера».
         options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(RegistrationIpPartition);
     }
+
+    /// <summary>
+    /// Все endpoint-партиции одним реестром: политики строятся из него же.
+    /// Так «посмотреть на все лимитеры» не требует второго списка, который
+    /// кто-нибудь забудет обновить — именно от такого списка пострадал
+    /// email-гейт (SECURITY_GATE R-06).
+    /// </summary>
+    public static IReadOnlyDictionary<string, Func<HttpContext, RateLimitPartition<string>>> EndpointPartitions { get; } =
+        new Dictionary<string, Func<HttpContext, RateLimitPartition<string>>>(StringComparer.Ordinal)
+        {
+            ["auth"] = AuthPartition,
+            ["admin"] = AdminPartition,
+            ["signup"] = SignupPartition,
+
+            // Обратная связь анонимна: без лимита один человек (или скрипт) может
+            // засыпать почту отзывами.
+            ["feedback"] = ctx => IpPartition(ctx, permit: 30, window: TimeSpan.FromMinutes(10)),
+
+            // Загрузка аватара/EPUB — тяжёлые операции (декодирование картинок,
+            // распаковка архива). Без лимита ими легко исчерпать CPU и память.
+            ["upload"] = ctx => IpPartition(ctx, permit: 10, window: TimeSpan.FromMinutes(5)),
+
+            // Клиентская аналитика пишется в БД на каждый запрос — ограничиваем
+            // частоту, чтобы один клиент не залил таблицу событиями.
+            ["analytics"] = ctx => IpPartition(ctx, permit: 120, window: TimeSpan.FromMinutes(1)),
+        };
+
+    // Два адреса из TEST-NET-2/TEST-NET-3: партиции проверяются прогоном на них,
+    // без интернета и без риска пересечься с реальным трафиком
+    private const string ProbeIpA = "198.51.100.7";
+    private const string ProbeIpB = "203.0.113.9";
+
+    /// <summary>
+    /// Зависят ли лимиты от адреса пира. Определяется не списком и не
+    /// предположением, а прогоном: если два запроса с разных IP попадают в
+    /// разные партиции — лимитер делит корзину между клиентами по IP, и за
+    /// прокси эта корзина становится общей на всех (W1.4.2).
+    /// </summary>
+    public static bool AnyPartitionDependsOnClientIp() =>
+        PartitionsDependOnIp(EndpointPartitions.Values.Append(RegistrationIpPartition));
+
+    public static bool PartitionsDependOnIp(IEnumerable<Func<HttpContext, RateLimitPartition<string>>> partitions)
+    {
+        foreach (var partition in partitions)
+        {
+            if (partition(ProbeContext(ProbeIpA)).PartitionKey != partition(ProbeContext(ProbeIpB)).PartitionKey)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static HttpContext ProbeContext(string ip) => new DefaultHttpContext
+    {
+        Connection = { RemoteIpAddress = IPAddress.Parse(ip) },
+        // POST на путь регистрации: часть партиций (signup, GlobalLimiter)
+        // различают метод и путь, probes должны выглядеть как живой запрос
+        Request = { Method = HttpMethods.Post, Path = new PathString(RegistrationPath) }
+    };
 
     public static RateLimitPartition<string> AuthPartition(HttpContext context) =>
         RateLimitPartition.GetFixedWindowLimiter(
