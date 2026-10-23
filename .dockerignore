@@ -1,0 +1,21 @@
+**/bin
+**/obj
+**/logs
+**/.git
+**/.vs
+**/node_modules
+**/.next
+frontend
+README.md
+DEPLOY.md
+render.yaml
+*.user
+
+# Секреты не должны попадать в build-контекст и publish-артефакты:
+# dev-конфиг содержит рабочие JWT/Gemini/proxy-креденты (SECURITY_GATE 1.2)
+appsettings.Development.json
+**/appsettings.Development.json
+**/appsettings.Development.local.json
+**/appsettings.Production.local.json
+.env*
+**/.env*

@@ -29,7 +29,8 @@ next-env.d.ts
 .env.production.local
 
 # Docker
-*.dockerignore
+# (Не игнорировать .dockerignore: он security-relevant — без него в образ
+# на хосте сборки попадает appsettings.Development.json с живыми секретами)
 
 # OS
 Thumbs.db
