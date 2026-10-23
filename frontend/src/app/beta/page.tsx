@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PageView from '@/components/analytics/PageView';
 import Button from '@/components/ui/Button';
 import Notice from '@/components/ui/Notice';
 import LexiPeek from '@/components/brand/lexi/LexiPeek';
@@ -187,6 +188,15 @@ export default function BetaPage() {
           Войти
         </Link>
       </header>
+
+      {/*
+       * Верх воронки (W3.4): раньше страница когорты не измерялась совсем, и
+       * конверсия «увидел когорту → вступил» была недоступна — в выгрузке
+       * человек появлялся только на уровне регистрации. Клиентский leaf, а не
+       * `'use client'` на всей странице: контент обязан остаться в серверном
+       * HTML (см. комментарий в src/components/analytics/PageView.tsx).
+       */}
+      <PageView surface="cohort" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 sm:px-6">
         {/*

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { API_URL } from '@/app/lib/api-url';
+import PageView from '@/components/analytics/PageView';
 import BookCover from '@/components/library/BookCover';
 import Button from '@/components/ui/Button';
 import LevelChip from '@/components/ui/LevelChip';
@@ -113,6 +114,15 @@ export default async function LibraryPage() {
           </Link>
         </nav>
       </header>
+
+      {/*
+       * Верх воронки (W3.4): полка — вторая входная дверь после /beta, и она
+       * тоже была неизмерима. Страницы конкретных книг (`/library/[slug]`)
+       * намеренно НЕ подключены: 18 SSG-страниц под один счётчик, который
+       * сегодня на что не оптимизирует, а slug в теле события был бы тем самым
+       * свободным текстом, который контракт запрещает.
+       */}
+      <PageView surface="library" />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-16 sm:px-6">
         <section className="card p-5 sm:p-8">

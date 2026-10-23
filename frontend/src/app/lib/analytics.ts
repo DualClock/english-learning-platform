@@ -59,10 +59,17 @@ export const GUEST_ANALYTICS_PATH = '/api/analytics/anonymous';
 /**
  * События, которые гость имеет право прислать. Любое другое имя сервер
  * отклоняет 400 — молча и без вреда для человека на экране.
+ *
+ * W3.4 добавила две ступени ДО теста: просмотр страницы когорты и просмотр
+ * публичной полки. Полей у них ровно те же два, что у старта теста: ни slug,
+ * ни query, ни user-agent сервер не принимает, и клиент их тоже не изобретает
+ * (см. AnonymousAnalyticsController.AllowedEvents — источник истины по списку).
  */
 export const GUEST_EVENTS = {
   testStarted: 'placement_test_started',
   testCompleted: 'placement_test_completed',
+  cohortViewed: 'cohort_page_viewed',
+  libraryViewed: 'library_page_viewed',
 } as const;
 
 export type GuestEvent = (typeof GUEST_EVENTS)[keyof typeof GUEST_EVENTS];
