@@ -16,7 +16,7 @@ public class DictionaryService
 
     public static readonly HashSet<string> AllowedSources = new(StringComparer.OrdinalIgnoreCase)
     {
-        "manual", "reader", "key_word", "grammar", "list", "quiz", "category"
+        "manual", "reader", "key_word", "grammar", "list", "quiz", "category", "bulk"
     };
 
     public async Task<WordResponse?> AddWordAsync(string userId, AddWordRequest request, string source = "manual")
@@ -24,6 +24,11 @@ public class DictionaryService
         var existingWord = await _context.Words
             .Include(w => w.Definitions)
             .FirstOrDefaultAsync(w => w.Text.ToLower() == request.Text.ToLower());
+
+        var definition = request.Definition?.Trim();
+        var example = request.Example?.Trim();
+        var context = request.Context?.Trim();
+        var interactionContext = string.IsNullOrWhiteSpace(context) ? example : context;
 
         Word word;
         
@@ -39,13 +44,18 @@ public class DictionaryService
                 Language = "en"
             };
 
-            word.Definitions.Add(new WordDefinition
+            // Пустой WordDefinition — это не «слово без перевода», а битая
+            // карточка в повторениях и тестах. Просто не создаём строку.
+            if (!string.IsNullOrWhiteSpace(definition))
             {
-                Definition = request.Definition,
-                PartOfSpeech = request.PartOfSpeech,
-                Example = request.Example,
-                DisplayOrder = 0
-            });
+                word.Definitions.Add(new WordDefinition
+                {
+                    Definition = definition,
+                    PartOfSpeech = request.PartOfSpeech,
+                    Example = example,
+                    DisplayOrder = 0
+                });
+            }
 
             _context.Words.Add(word);
             await _context.SaveChangesAsync();
@@ -57,6 +67,21 @@ public class DictionaryService
         if (existingUserWord != null)
         {
             return null;
+        }
+
+        // Слово уже было в общей базе без перевода (например, из чужой
+        // пачки или из слуха). Первый, кто знает перевод, заполняет его.
+        if (existingWord != null
+            && existingWord.Definitions.Count == 0
+            && !string.IsNullOrWhiteSpace(definition))
+        {
+            existingWord.Definitions.Add(new WordDefinition
+            {
+                Definition = definition,
+                PartOfSpeech = request.PartOfSpeech,
+                Example = example,
+                DisplayOrder = 0
+            });
         }
 
         var userWord = new UserWord
@@ -73,11 +98,11 @@ public class DictionaryService
             UserId = userId,
             WordId = word.Id,
             Source = source,
-            ContextSentence = null
+            ContextSentence = interactionContext
         });
         await _context.SaveChangesAsync();
 
-        return MapToResponse(word);
+        return MapToResponse(word, source, interactionContext);
     }
 
     // Батчевое добавление слов (FinishSession из читалки): раньше на каждое слово
@@ -122,11 +147,14 @@ public class DictionaryService
             else
             {
                 word = new Word { Text = text, Language = "en" };
-                word.Definitions.Add(new WordDefinition
+                if (!string.IsNullOrWhiteSpace(definition))
                 {
-                    Definition = definition,
-                    DisplayOrder = 0
-                });
+                    word.Definitions.Add(new WordDefinition
+                    {
+                        Definition = definition.Trim(),
+                        DisplayOrder = 0
+                    });
+                }
                 _context.Words.Add(word);
             }
 
@@ -159,14 +187,29 @@ public class DictionaryService
 
         var totalCount = await query.CountAsync();
 
-        var words = await query
+        var userWords = await query
             .OrderByDescending(uw => uw.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(uw => uw.Word)
             .ToListAsync();
 
-        return (words.Select(MapToResponse).ToList(), totalCount);
+        var contexts = await LoadContextsAsync(
+            userId,
+            userWords.Select(uw => uw.WordId));
+        var categoryIcons = await LoadCategoryIconsAsync(
+            userWords.Select(uw => uw.Word.Text));
+
+        var items = userWords
+            .Select(uw => MapToResponse(
+                uw.Word,
+                uw.Source,
+                contexts.GetValueOrDefault(uw.WordId),
+                uw.Emoji,
+                uw.ImageUrl,
+                categoryIcons.GetValueOrDefault(uw.Word.Text)))
+            .ToList();
+
+        return (items, totalCount);
     }
 
     public async Task<List<WordResponse>> SearchWordsAsync(string userId, string query)
@@ -175,29 +218,51 @@ public class DictionaryService
         // поиск — дорогая ILIKE-операция, нельзя отдавать тонну строк
         var trimmed = query.Trim().Length > 100 ? query.Trim()[..100] : query.Trim();
 
-        var words = await _context.UserWords
+        var userWords = await _context.UserWords
             .Where(uw => uw.UserId == userId)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
             .Where(uw => EF.Functions.ILike(uw.Word.Text, $"%{trimmed}%"))
             .OrderBy(uw => uw.Word.Text)
             .Take(50)
-            .Select(uw => uw.Word)
             .ToListAsync();
 
-        return words.Select(MapToResponse).ToList();
+        var contexts = await LoadContextsAsync(
+            userId,
+            userWords.Select(uw => uw.WordId));
+        var categoryIcons = await LoadCategoryIconsAsync(
+            userWords.Select(uw => uw.Word.Text));
+
+        return userWords
+            .Select(uw => MapToResponse(
+                uw.Word,
+                uw.Source,
+                contexts.GetValueOrDefault(uw.WordId),
+                uw.Emoji,
+                uw.ImageUrl,
+                categoryIcons.GetValueOrDefault(uw.Word.Text)))
+            .ToList();
     }
 
     public async Task<WordResponse?> GetWordAsync(string userId, int wordId)
     {
-        var word = await _context.UserWords
+        var userWord = await _context.UserWords
             .Where(uw => uw.UserId == userId && uw.WordId == wordId)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
-            .Select(uw => uw.Word)
             .FirstOrDefaultAsync();
 
-        return word == null ? null : MapToResponse(word);
+        if (userWord == null) return null;
+
+        var contexts = await LoadContextsAsync(userId, new[] { wordId });
+        var categoryIcons = await LoadCategoryIconsAsync(new[] { userWord.Word.Text });
+        return MapToResponse(
+            userWord.Word,
+            userWord.Source,
+            contexts.GetValueOrDefault(wordId),
+            userWord.Emoji,
+            userWord.ImageUrl,
+            categoryIcons.GetValueOrDefault(userWord.Word.Text));
     }
 
     public async Task<WordResponse?> UpdateWordAsync(string userId, int wordId, UpdateWordRequest request)
@@ -210,6 +275,7 @@ public class DictionaryService
         if (userWord == null) return null;
 
         var word = userWord.Word;
+        var requestedDefinition = request.Definition?.Trim();
 
         // Слово может быть общим для нескольких пользователей (Words — глобальная
         // таблица). Правка такого слова «на месте» меняла бы перевод всем.
@@ -225,24 +291,48 @@ public class DictionaryService
                 Text = string.IsNullOrEmpty(request.Text) ? word.Text : request.Text,
                 Language = word.Language
             };
-            copy.Definitions.Add(new WordDefinition
+
+            var copyDefinition = string.IsNullOrWhiteSpace(requestedDefinition)
+                ? source?.Definition
+                : requestedDefinition;
+
+            if (!string.IsNullOrWhiteSpace(copyDefinition))
             {
-                Definition = string.IsNullOrEmpty(request.Definition)
-                    ? source?.Definition ?? string.Empty
-                    : request.Definition,
-                PartOfSpeech = request.PartOfSpeech ?? source?.PartOfSpeech,
-                Example = request.Example ?? source?.Example,
-                DisplayOrder = 0
-            });
+                copy.Definitions.Add(new WordDefinition
+                {
+                    Definition = copyDefinition,
+                    PartOfSpeech = request.PartOfSpeech ?? source?.PartOfSpeech,
+                    Example = request.Example ?? source?.Example,
+                    DisplayOrder = 0
+                });
+            }
 
             _context.Words.Add(copy);
             await _context.SaveChangesAsync();
+
+            // Контекст и история встреч принадлежат пользователю: после копии
+            // переносим их на новое слово, иначе карточка потеряет предложение.
+            var interactions = await _context.Interactions
+                .Where(i => i.UserId == userId && i.WordId == word.Id)
+                .ToListAsync();
+            foreach (var interaction in interactions)
+            {
+                interaction.WordId = copy.Id;
+            }
 
             userWord.WordId = copy.Id;
             userWord.Word = copy;
             await _context.SaveChangesAsync();
 
-            return MapToResponse(copy);
+            var copyContexts = await LoadContextsAsync(userId, new[] { copy.Id });
+            var copyIcons = await LoadCategoryIconsAsync(new[] { copy.Text });
+            return MapToResponse(
+                copy,
+                userWord.Source,
+                copyContexts.GetValueOrDefault(copy.Id),
+                userWord.Emoji,
+                userWord.ImageUrl,
+                copyIcons.GetValueOrDefault(copy.Text));
         }
 
         if (!string.IsNullOrEmpty(request.Text))
@@ -251,10 +341,18 @@ public class DictionaryService
         }
 
         var definition = word.Definitions.FirstOrDefault();
+        if (definition == null && !string.IsNullOrWhiteSpace(requestedDefinition))
+        {
+            // Слово сохранили без перевода — при первом редактировании
+            // создаём определение, а не пытаемся обновить несуществующее.
+            definition = new WordDefinition { DisplayOrder = 0 };
+            word.Definitions.Add(definition);
+        }
+
         if (definition != null)
         {
-            if (!string.IsNullOrEmpty(request.Definition))
-                definition.Definition = request.Definition;
+            if (!string.IsNullOrWhiteSpace(requestedDefinition))
+                definition.Definition = requestedDefinition;
             
             if (request.PartOfSpeech != null)
                 definition.PartOfSpeech = request.PartOfSpeech;
@@ -264,7 +362,95 @@ public class DictionaryService
         }
 
         await _context.SaveChangesAsync();
-        return MapToResponse(word);
+        var contexts = await LoadContextsAsync(userId, new[] { word.Id });
+        var categoryIcons = await LoadCategoryIconsAsync(new[] { word.Text });
+        return MapToResponse(
+            word,
+            userWord.Source,
+            contexts.GetValueOrDefault(word.Id),
+            userWord.Emoji,
+            userWord.ImageUrl,
+            categoryIcons.GetValueOrDefault(word.Text));
+    }
+
+    public async Task<(WordResponse? Word, string? RemovedImageUrl)> SetEmojiAsync(
+        string userId,
+        int wordId,
+        string? emoji)
+    {
+        var userWord = await _context.UserWords
+            .Include(uw => uw.Word)
+                .ThenInclude(w => w.Definitions)
+            .FirstOrDefaultAsync(uw => uw.UserId == userId && uw.WordId == wordId);
+
+        if (userWord == null) return (null, null);
+
+        var normalized = emoji?.Trim();
+        var removedImage = string.IsNullOrEmpty(normalized) ? null : userWord.ImageUrl;
+
+        userWord.Emoji = string.IsNullOrEmpty(normalized) ? null : normalized;
+        if (!string.IsNullOrEmpty(normalized))
+        {
+            userWord.ImageUrl = null;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var contexts = await LoadContextsAsync(userId, new[] { wordId });
+        var response = MapToResponse(
+            userWord.Word,
+            userWord.Source,
+            contexts.GetValueOrDefault(wordId),
+            userWord.Emoji,
+            userWord.ImageUrl);
+
+        return (response, removedImage);
+    }
+
+    public async Task<(WordResponse? Word, string? RemovedImageUrl)> SetImageAsync(
+        string userId,
+        int wordId,
+        string imageUrl)
+    {
+        var userWord = await _context.UserWords
+            .Include(uw => uw.Word)
+                .ThenInclude(w => w.Definitions)
+            .FirstOrDefaultAsync(uw => uw.UserId == userId && uw.WordId == wordId);
+
+        if (userWord == null) return (null, null);
+
+        var removedImage = userWord.ImageUrl;
+        userWord.ImageUrl = imageUrl;
+        userWord.Emoji = null;
+
+        await _context.SaveChangesAsync();
+
+        var contexts = await LoadContextsAsync(userId, new[] { wordId });
+        var response = MapToResponse(
+            userWord.Word,
+            userWord.Source,
+            contexts.GetValueOrDefault(wordId),
+            userWord.Emoji,
+            userWord.ImageUrl);
+
+        return (response, removedImage);
+    }
+
+    public async Task<(bool Cleared, string? RemovedImageUrl)> ClearVisualAsync(
+        string userId,
+        int wordId)
+    {
+        var userWord = await _context.UserWords
+            .FirstOrDefaultAsync(uw => uw.UserId == userId && uw.WordId == wordId);
+
+        if (userWord == null) return (false, null);
+
+        var removedImage = userWord.ImageUrl;
+        userWord.Emoji = null;
+        userWord.ImageUrl = null;
+        await _context.SaveChangesAsync();
+
+        return (true, removedImage);
     }
 
     public async Task<bool> DeleteWordAsync(string userId, int wordId)
@@ -279,13 +465,70 @@ public class DictionaryService
         return true;
     }
 
-    private static WordResponse MapToResponse(Word word)
+    private async Task<Dictionary<int, string?>> LoadContextsAsync(
+        string userId,
+        IEnumerable<int> wordIds)
+    {
+        var ids = wordIds.Distinct().ToList();
+        if (ids.Count == 0) return new Dictionary<int, string?>();
+
+        var rows = await _context.Interactions
+            .Where(i => i.UserId == userId
+                        && i.WordId != null
+                        && ids.Contains(i.WordId.Value)
+                        && i.ContextSentence != null
+                        && i.ContextSentence != "")
+            .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new { i.WordId, i.ContextSentence })
+            .ToListAsync();
+
+        return rows
+            .GroupBy(i => i.WordId!.Value)
+            .ToDictionary(g => g.Key, g => g.First().ContextSentence);
+    }
+
+    private async Task<Dictionary<string, string>> LoadCategoryIconsAsync(
+        IEnumerable<string> texts)
+    {
+        var normalized = texts
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .Select(text => text.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToList();
+
+        if (normalized.Count == 0) return new Dictionary<string, string>();
+
+        var rows = await _context.CategoryWords
+            .AsNoTracking()
+            .Where(word => word.Category.Icon != null
+                           && normalized.Contains(word.English.ToLower()))
+            .OrderBy(word => word.CategoryId)
+            .Select(word => new { word.English, word.Category.Icon })
+            .ToListAsync();
+
+        return rows
+            .Where(row => !string.IsNullOrWhiteSpace(row.Icon))
+            .GroupBy(row => row.English, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.First().Icon!,
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static WordResponse MapToResponse(
+        Word word,
+        string? source = null,
+        string? context = null,
+        string? emoji = null,
+        string? imageUrl = null,
+        string? categoryIcon = null)
     {
         return new WordResponse(
             word.Id,
             word.Text,
             word.Language,
             word.Definitions
+                .Where(d => !string.IsNullOrWhiteSpace(d.Definition))
                 .OrderBy(d => d.DisplayOrder)
                 .Select(d => new DefinitionResponse(
                     d.Id,
@@ -294,7 +537,12 @@ public class DictionaryService
                     d.Example
                 ))
                 .ToList(),
-            word.CreatedAt
+            word.CreatedAt,
+            source,
+            context,
+            emoji,
+            imageUrl,
+            categoryIcon
         );
     }
 }

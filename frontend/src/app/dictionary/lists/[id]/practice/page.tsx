@@ -141,12 +141,10 @@ function PracticeContent() {
   }, [session?.accessToken, listId]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    } else if (status === 'authenticated') {
+    if (status === 'authenticated') {
       startRound();
     }
-  }, [status, router, startRound, count, levelsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [status, startRound, count, levelsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Накопление слов из пришедшей страницы сборника
   useEffect(() => {

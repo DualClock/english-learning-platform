@@ -11,6 +11,13 @@ public class User : IdentityUser
     [MaxLength(300)]
     public string? AvatarUrl { get; set; }
 
+    // Косметика профиля: рамка не меняет данные обучения, только внешний вид.
+    [MaxLength(20)]
+    public string AvatarFrame { get; set; } = "none";
+
+    [MaxLength(20)]
+    public string AccentTheme { get; set; } = "teal";
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? LastLoginAt { get; set; }
@@ -35,6 +42,10 @@ public class User : IdentityUser
     public DateTime? LastActivityDate { get; set; }
 
     public int TotalXp { get; set; } = 0;
+
+    // Лига текущей недели. Меняется только при закрытии недели, не от каждого XP.
+    [MaxLength(20)]
+    public string League { get; set; } = "bronze";
 
     // Часовой пояс пользователя (IANA, например "Europe/Moscow").
     // Нужен, чтобы «день» для стрика и дневной цели считался по местному времени,

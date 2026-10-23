@@ -117,11 +117,14 @@ public class ReminderService
         var dueCount = await _context.UserWords.CountAsync(
             uw => uw.UserId == user.Id
                   && uw.LastReviewedAt != null
-                  && (uw.NextReviewDate == null || uw.NextReviewDate <= now),
+                  && (uw.NextReviewDate == null || uw.NextReviewDate <= now)
+                  && uw.Word.Definitions.Any(d => d.Definition != ""),
             cancellationToken);
 
         var newAvailable = await _context.UserWords.CountAsync(
-            uw => uw.UserId == user.Id && uw.LastReviewedAt == null,
+            uw => uw.UserId == user.Id
+                  && uw.LastReviewedAt == null
+                  && uw.Word.Definitions.Any(d => d.Definition != ""),
             cancellationToken);
 
         var wordsTotal = await _context.UserWords.CountAsync(uw => uw.UserId == user.Id, cancellationToken);

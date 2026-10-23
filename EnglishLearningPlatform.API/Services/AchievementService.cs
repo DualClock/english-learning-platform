@@ -23,7 +23,9 @@ public record UserMetricsDto(
     int CategoriesLearned,
     int ActiveDays,
     int Streak,
-    int Xp);
+    int Xp,
+    int UntranslatedWords,
+    int BulkWords);
 
 public record UserProgressDto(
     int Xp,
@@ -141,7 +143,9 @@ public class AchievementService
                 metrics.Categories,
                 metrics.Days,
                 metrics.Streak,
-                metrics.Xp),
+                metrics.Xp,
+                metrics.Untranslated,
+                metrics.BulkWords),
             achievements,
             achievements.Count(a => a.Unlocked));
     }
@@ -170,6 +174,16 @@ public class AchievementService
         var days = await _context.DailyActivities
             .CountAsync(a => a.UserId == userId && a.GoalMet);
 
+        // Слово без перевода считается даже после того, как перевод добавили
+        // позже: достижение уже записано и повторно не снимается. Здесь метрика
+        // нужна для первого открытия в момент добавления.
+        var untranslated = await _context.UserWords
+            .CountAsync(uw => uw.UserId == userId
+                              && !uw.Word.Definitions.Any(d => d.Definition != ""));
+
+        var bulkWords = await _context.UserWords
+            .CountAsync(uw => uw.UserId == userId && uw.Source == "bulk");
+
         return new Metrics(
             Words: words,
             Reviews: reviews,
@@ -179,7 +193,9 @@ public class AchievementService
             Categories: categories,
             Days: days,
             Streak: Math.Max(user.CurrentStreak, user.LongestStreak),
-            Xp: user.TotalXp);
+            Xp: user.TotalXp,
+            Untranslated: untranslated,
+            BulkWords: bulkWords);
     }
 
     private static int MetricValue(string metric, Metrics m) => metric switch
@@ -193,6 +209,8 @@ public class AchievementService
         "days" => m.Days,
         "streak" => m.Streak,
         "xp" => m.Xp,
+        "untranslated" => m.Untranslated,
+        "bulk" => m.BulkWords,
         _ => 0
     };
 
@@ -205,5 +223,7 @@ public class AchievementService
         int Categories,
         int Days,
         int Streak,
-        int Xp);
+        int Xp,
+        int Untranslated,
+        int BulkWords);
 }

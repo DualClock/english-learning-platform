@@ -92,6 +92,38 @@ async function readError(res: Response): Promise<string> {
 }
 
 /**
+ * 401 от API — это не выход из аккаунта: сессия NextAuth может быть жива,
+ * а access-токен уже истёк. AppLayout по этому событию просит NextAuth
+ * обновить токен; на /login уводит только собственная проверка сессии.
+ */
+function notifyUnauthorized(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('lexicon:unauthorized'));
+}
+
+const ACHIEVEMENT_MUTATION_PATHS = [
+  /^\/api\/review\//,
+  /^\/api\/dictionary/,
+  /^\/api\/categories\//,
+  /^\/api\/grammar\//,
+  /^\/api\/practice\//,
+  /^\/api\/writing/,
+  /^\/api\/quiz/,
+  /^\/api\/reading\//,
+  /^\/api\/wordlists\//,
+  /^\/api\/books\//,
+];
+
+/**
+ * Действие могло открыть достижение. Слушатель в AppLayout проверит прогресс
+ * и покажет неблокирующий тост; здесь не знаем, что именно открылось.
+ */
+function notifyProgressChanged(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('lexicon:progress-changed'));
+}
+
+/**
  * GET с кэшем и дедупликацией параллельных запросов.
  */
 export async function apiGet<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
@@ -117,6 +149,7 @@ export async function apiGet<T>(path: string, options: ApiFetchOptions = {}): Pr
     });
 
     if (!res.ok) {
+      if (res.status === 401) notifyUnauthorized();
       throw new ApiError(res.status, await readError(res));
     }
 
@@ -157,11 +190,16 @@ export async function apiMutate<T = unknown>(path: string, options: ApiMutationO
   });
 
   if (!res.ok) {
+    if (res.status === 401) notifyUnauthorized();
     throw new ApiError(res.status, await readError(res));
   }
 
   if (invalidate?.length) {
     for (const prefix of invalidate) invalidateCache(prefix);
+  }
+
+  if (ACHIEVEMENT_MUTATION_PATHS.some((pattern) => pattern.test(path))) {
+    notifyProgressChanged();
   }
 
   const text = await res.text();

@@ -91,12 +91,6 @@ export default function WordListPage() {
   const items = list?.items ?? [];
   const returnedPage = list?.page;
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
-
   // Новая страница сборника — сбрасываем выбор слов
   useEffect(() => {
     setSelected(new Set());

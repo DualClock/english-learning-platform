@@ -3,6 +3,7 @@ using EnglishLearningPlatform.API.Models.DTOs;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EnglishLearningPlatform.API.Controllers;
 
@@ -12,10 +13,17 @@ namespace EnglishLearningPlatform.API.Controllers;
 public class DictionaryController : ControllerBase
 {
     private readonly DictionaryService _dictionaryService;
+    private readonly AchievementService _achievementService;
+    private readonly ILogger<DictionaryController> _logger;
 
-    public DictionaryController(DictionaryService dictionaryService)
+    public DictionaryController(
+        DictionaryService dictionaryService,
+        AchievementService achievementService,
+        ILogger<DictionaryController> logger)
     {
         _dictionaryService = dictionaryService;
+        _achievementService = achievementService;
+        _logger = logger;
     }
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
@@ -59,6 +67,21 @@ public class DictionaryController : ControllerBase
         var source = string.IsNullOrWhiteSpace(request.Source) ? "manual" : request.Source;
         var word = await _dictionaryService.AddWordAsync(GetUserId(), request, source);
         if (word == null) return Conflict(new { message = "Word already added" });
+
+        // Достижение «слово без перевода» лучше зафиксировать сразу на сервере:
+        // к моменту следующей проверки пользователь уже может добавить перевод.
+        if (word.Definitions.Count == 0)
+        {
+            try
+            {
+                await _achievementService.GetProgressAsync(GetUserId());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Не удалось проверить достижения после добавления слова");
+            }
+        }
+
         return CreatedAtAction(nameof(GetWord), new { id = word.Id }, word);
     }
 
@@ -70,11 +93,75 @@ public class DictionaryController : ControllerBase
         return Ok(word);
     }
 
+    [HttpPut("{id}/emoji")]
+    public async Task<ActionResult<WordResponse>> SetEmoji(int id, [FromBody] SetWordEmojiRequest request)
+    {
+        if (!WordVisualCatalog.IsAllowedEmoji(request.Emoji))
+        {
+            return BadRequest(new { message = "Выберите эмодзи из набора" });
+        }
+
+        var (word, removedImage) = await _dictionaryService.SetEmojiAsync(
+            GetUserId(),
+            id,
+            request.Emoji);
+
+        if (word == null) return NotFound();
+        WordImageService.DeleteUploadedImage(removedImage);
+        return Ok(word);
+    }
+
+    [HttpPost("{id}/image")]
+    [EnableRateLimiting("upload")]
+    public async Task<ActionResult<WordResponse>> UploadImage(int id, IFormFile? file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { message = "Выберите изображение" });
+        }
+
+        string newUrl;
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            newUrl = await WordImageService.SaveUploadedImageAsync(stream, file.Length);
+        }
+        catch (WordImageValidationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+
+        var (word, removedImage) = await _dictionaryService.SetImageAsync(GetUserId(), id, newUrl);
+
+        if (word == null)
+        {
+            WordImageService.DeleteUploadedImage(newUrl);
+            return NotFound();
+        }
+
+        WordImageService.DeleteUploadedImage(removedImage);
+        return Ok(word);
+    }
+
+    [HttpDelete("{id}/visual")]
+    public async Task<IActionResult> ClearVisual(int id)
+    {
+        var (cleared, removedImage) = await _dictionaryService.ClearVisualAsync(GetUserId(), id);
+        if (!cleared) return NotFound();
+        WordImageService.DeleteUploadedImage(removedImage);
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteWord(int id)
     {
-        var deleted = await _dictionaryService.DeleteWordAsync(GetUserId(), id);
+        var userId = GetUserId();
+        var existing = await _dictionaryService.GetWordAsync(userId, id);
+        var deleted = await _dictionaryService.DeleteWordAsync(userId, id);
         if (!deleted) return NotFound();
+        WordImageService.DeleteUploadedImage(existing?.ImageUrl);
         return NoContent();
     }
 }
+
+public record SetWordEmojiRequest(string? Emoji);

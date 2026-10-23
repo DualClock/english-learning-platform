@@ -89,9 +89,24 @@
 
   /* Читалка: значения переопределяются настройками чтения на контейнере текста */
   --reader-size: 1.25rem;
-  --reader-leading: 1.8;
+  --reader-leading: 1.85;
   --reader-measure: 68ch;
   --reader-ui-size: 0.9375rem;
+
+  /*
+   * Бумага и чернила читальни. Это отдельная семантическая пара: страница
+   * книги не равна интерфейсной поверхности. Тёплая бумага отделяет текст
+   * от холодного canvas и держит «тихую библиотеку» в светлой и тёмной теме.
+   */
+  --reader-paper: #FBF7ED;
+  --reader-paper-deep: #F4EDDF;
+  --reader-ink: #2B2620;
+  --reader-ink-soft: #6E6557;
+  --reader-hairline: rgba(43, 38, 32, 0.13);
+  --reader-wash: rgba(14, 124, 123, 0.10);
+  --reader-mark: #F5E6AE;
+  --reader-mark-strong: #ECD98C;
+  --reader-paper-glow: rgba(255, 255, 255, 0.55);
 
   /* Затемнение под плавающими слоями: drawer, bottom-sheet, диалог */
   --color-scrim: rgba(11, 37, 69, 0.35);
@@ -188,7 +203,65 @@
 
   /* В тёмной теме затемнение нейтрально-чёрное: синева поля его подсвечивает */
   --color-scrim: rgba(2, 8, 18, 0.66);
+
+  /* Читалка ночью: страница на тон светлее полки, с тёплыми чернилами */
+  --reader-paper: #122538;
+  --reader-paper-deep: #0C1C2D;
+  --reader-ink: #E9E2D4;
+  --reader-ink-soft: #A79D8B;
+  --reader-hairline: rgba(233, 226, 212, 0.14);
+  --reader-wash: rgba(127, 220, 213, 0.14);
+  --reader-mark: #3D3921;
+  --reader-mark-strong: #514A27;
+  --reader-paper-glow: rgba(255, 255, 255, 0.025);
 }
+
+/*
+ * Акцентные темы. Меняется только рабочий акцент и его мягкие поверхности:
+ * семантика успеха/ошибки, бумага читалки и navy остаются на месте.
+ */
+:root[data-accent='warm'] {
+  --color-primary: #A84F2A;
+  --color-primary-pressed: #8C3E1E;
+  --color-primary-deep: #6E2F16;
+  --color-tint-teal: #FCE8D7;
+  --on-accent: #7A3416;
+}
+
+:root[data-theme='dark'][data-accent='warm'] {
+  --color-primary: #E0A06A;
+  --color-primary-pressed: #F0B98E;
+  --color-primary-deep: #7A3A1C;
+  --color-tint-teal: #33221A;
+  --on-accent: #F1C39D;
+}
+
+:root[data-accent='ink'] {
+  --color-primary: #3E4E8D;
+  --color-primary-pressed: #2E3B66;
+  --color-primary-deep: #202A50;
+  --color-tint-teal: #E4E8F6;
+  --on-accent: #2E3B66;
+}
+
+:root[data-theme='dark'][data-accent='ink'] {
+  --color-primary: #9FB2E8;
+  --color-primary-pressed: #B8C8F5;
+  --color-primary-deep: #1B2747;
+  --color-tint-teal: #1C2540;
+  --on-accent: #C4D1F4;
+}
+
+/* Рамки аватара: отдельная косметика, не зависящая от акцента интерфейса */
+.avatar-frame-paper { background: #F0E3C9; box-shadow: inset 0 0 0 1px rgba(42, 37, 31, 0.14); }
+.avatar-frame-teal { background: linear-gradient(135deg, #0E7C7B, #7FDCD5); }
+.avatar-frame-ink { background: linear-gradient(135deg, #0B2545, #3E4E8D); }
+.avatar-frame-gold { background: linear-gradient(135deg, #F3D98B, #B8860B); }
+
+:root[data-theme='dark'] .avatar-frame-paper { background: #4A3B29; box-shadow: inset 0 0 0 1px rgba(233, 226, 212, 0.18); }
+:root[data-theme='dark'] .avatar-frame-teal { background: linear-gradient(135deg, #0F5D5B, #2FB0A8); }
+:root[data-theme='dark'] .avatar-frame-ink { background: linear-gradient(135deg, #1A2940, #5A6FA8); }
+:root[data-theme='dark'] .avatar-frame-gold { background: linear-gradient(135deg, #6B5A25, #D9B45A); }
 
 @layer base {
   body {
@@ -459,44 +532,214 @@
   .badge-tag-teal   { @apply badge-tag bg-surface-accent text-on-accent; }
   .badge-tag-red    { @apply badge-tag bg-surface-danger text-on-danger; }
 
-  /* Читалка: текст страницы и его слова-контролы */
-  .reader-text {
-    @apply mx-auto font-reading text-reading text-ink;
-    max-width: var(--reader-measure, 68ch);
+  /* Читалка: комната, бумага и текст страницы */
+  .reader-room {
+    background: var(--reader-paper);
+    color: var(--reader-ink);
   }
 
   /*
-   * Обычное слово: клик даёт перевод. Отклик — тон под словом, без сдвига строки.
-   * mr-1 — это разделитель: токены идут вплотную, пробелов между ними в разметке нет.
+   * Бумага занимает всё поле чтения. Свет идёт сверху и чуть сбоку, как от
+   * настольной лампы: без фотографий и текстур, только два мягких слоя.
+   */
+  .reader-paper {
+    background-color: var(--reader-paper);
+    background-image:
+      radial-gradient(120% 70% at 50% -12%, var(--reader-paper-glow), transparent 62%),
+      linear-gradient(180deg, var(--reader-paper) 0%, var(--reader-paper-deep) 100%);
+    color: var(--reader-ink);
+  }
+
+  .reader-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--reader-hairline) transparent;
+  }
+
+  .reader-text {
+    @apply mx-auto font-reading text-reading;
+    color: var(--reader-ink);
+    max-width: min(var(--reader-measure, 68ch), 100%);
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    letter-spacing: 0.002em;
+  }
+
+  .reader-text[data-parallel='true'] {
+    text-align: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  /*
+   * На узкой колонке выключка по формату рвёт строку широкими пробелами.
+   * Телефон читает неровный правый край — как бумажная книга в карманном издании.
+   */
+  @media (max-width: 639px) {
+    .reader-text {
+      text-align: left;
+    }
+  }
+
+  /*
+   * Слова идут в тексте, как в книге: пробелы остаются настоящими пробелами,
+   * поэтому выключка по формату работает. Фон и подчёркивание не двигают строку.
    */
   .reader-word {
-    @apply mr-1 inline-block cursor-pointer rounded px-0.5
-           transition-[background-color,color] duration-fast ease-soft hover:bg-tint-yellow;
+    @apply cursor-pointer rounded-[3px];
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .reader-word:hover {
+    background: var(--reader-wash);
   }
 
   .reader-word-selected {
-    @apply bg-tint-yellow-bold text-ink;
+    background: var(--reader-mark-strong);
+    color: var(--reader-ink);
   }
 
-  /*
-   * Слово-маркер: пунктир под словом вместо глифа в потоке текста.
-   * Собранное слово меняет начертание на сплошное и получает фон, поэтому
-   * состояние видно, но строка не разъезжается.
-   */
   .reader-marker {
-    @apply inline-block cursor-pointer rounded px-0.5 border-b border-dotted border-primary-pressed
-           transition-[background-color,color] duration-fast ease-soft hover:bg-tint-yellow;
+    @apply cursor-pointer rounded-[3px];
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--color-primary);
+    transition: background-color var(--duration-fast) var(--ease-out-soft);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .reader-marker:hover {
+    background: var(--reader-wash);
   }
 
   .reader-marker-collected {
-    @apply bg-tint-yellow-bold text-ink;
-    /* Tailwind задаёт стиль рамки сразу для всех сторон — нижнюю снимаем напрямую */
-    border-bottom-style: solid;
+    background: var(--reader-mark);
+    text-decoration: none;
   }
 
   /* Слово без букв (знаки препинания, дефисы) — не кликается */
   .reader-plain {
-    @apply mr-1 inline-block text-slate;
+    color: inherit;
+  }
+
+  /* Тихие кнопки верхней панели и подвала — цвет бумаги, а не приложения */
+  .reader-icon-btn {
+    @apply inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-md px-2 text-caption font-medium;
+    color: var(--reader-ink-soft);
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .reader-icon-btn:hover:not(:disabled) {
+    background: var(--reader-wash);
+    color: var(--reader-ink);
+  }
+
+  .reader-icon-btn:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+
+  .reader-icon-btn[aria-pressed='true'],
+  .reader-icon-btn[data-active='true'] {
+    background: var(--reader-mark);
+    color: var(--reader-ink);
+  }
+
+  /* Кнопки книжной полки: тёмный navy, светлые чернила */
+  .rail-icon-btn {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md;
+    color: var(--color-on-dark-muted);
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .rail-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-on-dark);
+  }
+
+  /* На тёмной полке фирменный teal в фокусе читается лучше светлой мяты */
+  aside[aria-label='Книжная полка'] :focus-visible {
+    outline-color: var(--color-tint-teal);
+  }
+
+  /* Ползунок страниц живёт на тёмной полке */
+  .rail-range {
+    --rail-progress: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .rail-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-tint-teal) 0%,
+      var(--color-tint-teal) var(--rail-progress),
+      rgba(255, 255, 255, 0.18) var(--rail-progress),
+      rgba(255, 255, 255, 0.18) 100%
+    );
+  }
+
+  .rail-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    margin-top: -5px;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+    box-shadow: 0 0 0 3px rgba(214, 239, 238, 0.14);
+  }
+
+  .rail-range::-moz-range-track {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .rail-range::-moz-range-progress {
+    height: 3px;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+  }
+
+  .rail-range::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+  }
+
+  /* Смена страницы в читалке — деликатное проявление текста */
+  .reader-page-enter {
+    animation: page-in var(--duration-page) var(--ease-out-soft) backwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reader-page-enter {
+      animation: none !important;
+    }
+
+    .reader-room,
+    .reader-room * {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* HTML теории из API: разметка приходит с сервера, поэтому стили здесь,

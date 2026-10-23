@@ -245,6 +245,7 @@ builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<AchievementService>();
+builder.Services.AddScoped<LeagueService>();
 builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<AuthEmailService>();
 builder.Services.AddScoped<ReminderService>();

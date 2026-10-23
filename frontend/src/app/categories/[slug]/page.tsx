@@ -3,7 +3,6 @@
 import AppLayout from '@/components/AppLayout';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { variants } from '@/lib/motion';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
@@ -70,7 +69,6 @@ function shuffle<T>(arr: T[]): T[] {
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const { data: session, status: authStatus } = useSession();
-  const router = useRouter();
   const token = session?.accessToken ?? null;
 
   const {
@@ -89,10 +87,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   // Ошибку показываем, только если данных ещё нет: если категория уже
   // отрисована из кэша, неудачное фоновое обновление её не перекрывает.
   const error = categoryError && categoryData === undefined ? 'Не удалось загрузить категорию.' : '';
-
-  useEffect(() => {
-    if (authStatus === 'unauthenticated') router.push('/login');
-  }, [authStatus, router]);
 
   // Кэш из useApiQuery — источник истины; локальная копия нужна для
   // оптимистичных обновлений статуса слов и «В мой словарь».

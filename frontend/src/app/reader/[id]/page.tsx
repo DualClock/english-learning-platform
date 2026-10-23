@@ -14,16 +14,14 @@ import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
 import Button from '@/components/ui/Button';
 import ErrorState from '@/components/ui/ErrorState';
-import LexiMascot from '@/components/brand/lexi/LexiMascot';
-import PageHeader from '@/components/ui/PageHeader';
 import ReaderDrawer from '@/components/reader/ReaderDrawer';
+import ReaderFooter from '@/components/reader/ReaderFooter';
+import ReaderRail from '@/components/reader/ReaderRail';
 import ReaderSkeleton from '@/components/reader/ReaderSkeleton';
 import ReaderText from '@/components/reader/ReaderText';
 import ReaderTutorial from '@/components/reader/ReaderTutorial';
 import ReaderToolbar from '@/components/reader/ReaderToolbar';
 import FinishReadingDialog from '@/components/reader/FinishReadingDialog';
-import NotesPopover from '@/components/reader/NotesPopover';
-import Pagination from '@/components/reader/Pagination';
 import ParallelText from '@/components/reader/ParallelText';
 import TranslationPanel from '@/components/reader/TranslationPanel';
 import { useReaderBook } from '@/hooks/useReaderBook';
@@ -44,14 +42,30 @@ import {
   TUTORIAL_STEPS,
   TUTORIAL_STORAGE_KEY,
   getSentenceContext,
+  stripRepeatedLeadingPhrase,
 } from '@/components/reader/types';
 import type {
   CollectedWord,
   FinishResult,
   ParallelChunk,
+  ReaderRailTab,
+  TocItem,
   TranslationResult,
   WordToken,
 } from '@/components/reader/types';
+
+/** Текущая глава — последний заголовок, который начался до открытой страницы. */
+function chapterTitleFor(tocItems: TocItem[], page: number): string {
+  let title = '';
+  for (const item of tocItems) {
+    if (item.page <= page) title = item.title;
+    else break;
+  }
+  return title || (tocItems[0]?.title ?? 'Начало книги');
+}
+
+// Служебные строки EPUB: обложка, титул, оглавление. В книжной полке они не нужны.
+const SERVICE_TOC_TITLE = /^(contents?|table of contents|оглавление|содержание|cover|обложка|title page|титульный лист|copyright)$/i;
 
 export default function ReaderPage() {
   const { data: session } = useSession();
@@ -87,6 +101,7 @@ export default function ReaderPage() {
   // Перевод
   const [selectedWord, setSelectedWord] = useState('');
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
+  const [selectedContext, setSelectedContext] = useState('');
   const [translation, setTranslation] = useState<TranslationResult | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState(false);
@@ -101,16 +116,13 @@ export default function ReaderPage() {
   const [lineWidth, setLineWidth] = useState(DEFAULT_LINE_WIDTH);
   const [showTextSettings, setShowTextSettings] = useState(false);
 
-  // Панель перевода: на десктопе сворачивается, на мобильных — bottom-sheet
-  const [panelOpen, setPanelOpen] = useState(true);
-
-  // Lexi у панели перевода: стоит, а когда читатель залип на странице — садится читать рядом
-  const [lexiPose, setLexiPose] = useState<'stand' | 'read'>('stand');
-  const [lexiLean, setLexiLean] = useState(0);
-  const lexiLeanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Панель перевода: на десктопе сворачивается, на мобильных — bottom-sheet.
+  // По умолчанию закрыта: бумага должна дышать, пока читатель не выбрал слово.
+  const [panelOpen, setPanelOpen] = useState(false);
 
   const requestIdRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const desktopRailRef = useRef<HTMLDivElement>(null);
 
   const { tooltip, showTooltip, hideTooltip, handleMarkerEnter, handleMarkerLeave } =
     useWordTooltip({ bookId, token: session?.accessToken });
@@ -127,8 +139,25 @@ export default function ReaderPage() {
   const collectedRef = useRef<Map<string, CollectedWord>>(new Map());
   const [collectedKeys, setCollectedKeys] = useState<string[]>([]);
 
-  // Поповер конспекта и завершение
-  const [showNotes, setShowNotes] = useState(false);
+  const collectedItems = useMemo(
+    () => collectedKeys
+      .map((key) => collectedRef.current.get(key))
+      .filter((item): item is CollectedWord => Boolean(item)),
+    [collectedKeys]
+  );
+
+  const visibleTocItems = useMemo(() => {
+    const filtered = tocItems.filter((item) => !SERVICE_TOC_TITLE.test(item.title.trim()));
+    // Если фильтр снял всё (книга-одностраничник), лучше показать исходное оглавление.
+    return filtered.length > 0 ? filtered : tocItems;
+  }, [tocItems]);
+
+  const chapterTitle = useMemo(
+    () => chapterTitleFor(visibleTocItems, currentPage),
+    [visibleTocItems, currentPage]
+  );
+
+  // Завершение чтения
   const [finishResult, setFinishResult] = useState<FinishResult | null>(null);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizAnswer, setQuizAnswer] = useState<number | null>(null);
@@ -150,9 +179,22 @@ export default function ReaderPage() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const tutorialCheckRef = useRef(false);
 
-  // Reader 2.0: оглавление и закладки
+  // Книжная полка: на десктопе постоянная, на телефоне — drawer
+  const [railOpen, setRailOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<'toc' | 'bookmarks'>('toc');
+  const [drawerTab, setDrawerTab] = useState<ReaderRailTab>('toc');
+
+  // На телефоне постоянной полки нет: не держим её «открытой» за кадром,
+  // иначе кнопка конспекта наверху остаётся подсвеченной без открытого drawer.
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 1023px)');
+    const sync = () => {
+      if (query.matches) setRailOpen(false);
+    };
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
 
   // Восстановление ИИ-режима перевода слов
   useEffect(() => {
@@ -253,13 +295,15 @@ export default function ReaderPage() {
 
   const closeTransientLayers = useCallback(() => {
     setShowTextSettings(false);
+    setDrawerOpen(false);
+    setPanelOpen(false);
     hideTooltip();
   }, [hideTooltip]);
 
   useReaderShortcuts({
     currentPage,
     onPage: goToPage,
-    blocked: Boolean(showTextSettings || showNotes || finishResult || tutorialStep !== null),
+    blocked: Boolean(showTextSettings || drawerOpen || finishResult || tutorialStep !== null),
     onEscape: closeTransientLayers,
   });
 
@@ -340,28 +384,6 @@ export default function ReaderPage() {
     }
   }, [currentPage, hideTooltip]);
 
-  // Залип на странице дольше 40 секунд — Lexi не дёргает, а тихо садится читать рядом
-  useEffect(() => {
-    if (!content) return;
-    setLexiPose('stand');
-    const timer = setTimeout(() => setLexiPose('read'), 40_000);
-    return () => clearTimeout(timer);
-  }, [currentPage, content]);
-
-  // Косится на панель перевода, когда слово ушло в словарь или конспект
-  const glanceAtPanel = useCallback(() => {
-    setLexiLean(1);
-    if (lexiLeanTimerRef.current) clearTimeout(lexiLeanTimerRef.current);
-    lexiLeanTimerRef.current = setTimeout(() => setLexiLean(0), 1400);
-  }, []);
-
-  useEffect(
-    () => () => {
-      if (lexiLeanTimerRef.current) clearTimeout(lexiLeanTimerRef.current);
-    },
-    []
-  );
-
   // Эффект печатания перевода: cleanup отменяет таймер при смене перевода
   useEffect(() => {
     if (!translation || isTranslating) return;
@@ -407,7 +429,20 @@ export default function ReaderPage() {
         throw new Error(`Ошибка загрузки перевода: ${res.status}`);
       }
       const data = await res.json();
-      setParallelPages(prev => ({ ...prev, [page]: Array.isArray(data?.chunks) ? data.chunks : [] }));
+      const chunks: ParallelChunk[] = Array.isArray(data?.chunks) ? data.chunks : [];
+      // На первой странице переведённый кусок часто начинается с названия дважды.
+      const cleaned =
+        page === 1 && chunks.length > 0
+          ? [
+              {
+                ...chunks[0],
+                en: stripRepeatedLeadingPhrase(chunks[0].en),
+                ru: chunks[0].ru ? stripRepeatedLeadingPhrase(chunks[0].ru) : null,
+              },
+              ...chunks.slice(1),
+            ]
+          : chunks;
+      setParallelPages(prev => ({ ...prev, [page]: cleaned }));
     } catch (err) {
       console.error('Load parallel error:', err);
       setParallelError(true);
@@ -457,7 +492,16 @@ export default function ReaderPage() {
 
     setSelectedWord(cleanWord);
     setSelectedWordIndex(wordIndex);
+    setSelectedContext(sentence);
     setPanelOpen(true);
+    // На 1024–1279 px полка и панель перевода вместе съедают строку:
+    // уступаем место переводу, полку можно вернуть той же кнопкой.
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 1024px) and (max-width: 1279px)').matches
+    ) {
+      setRailOpen(false);
+    }
     setShowTextSettings(false);
     hideTooltip();
     setIsTranslating(true);
@@ -517,13 +561,14 @@ export default function ReaderPage() {
         body: JSON.stringify({
           text: selectedWord,
           definition: translation.translation,
-          partOfSpeech: translation.partOfSpeech
+          partOfSpeech: translation.partOfSpeech,
+          source: 'reader',
+          context: selectedContext || undefined
         })
       });
 
       if (res.ok) {
         setAddedToDict(true);
-        glanceAtPanel();
         trackEvent('word_learned', selectedWord);
       }
     } catch (err) {
@@ -562,7 +607,6 @@ export default function ReaderPage() {
       : '';
     collectedRef.current.set(text, { text, page: currentPage, sentence });
     syncCollected();
-    glanceAtPanel();
     try {
       await fetch(`${API_URL}/api/reading/sessions/${readingSessionId}/words`, {
         method: 'POST',
@@ -576,7 +620,7 @@ export default function ReaderPage() {
     } catch (err) {
       console.error('Error collecting word:', err);
     }
-  }, [readingSessionId, content, currentPage, session, syncCollected, glanceAtPanel]);
+  }, [readingSessionId, content, currentPage, session, syncCollected]);
 
   const removeCollected = useCallback(async (text: string) => {
     if (!readingSessionId) return;
@@ -645,7 +689,6 @@ export default function ReaderPage() {
       setQuizAnswer(null);
       setQuizScore(0);
       setQuizDone(false);
-      setShowNotes(false);
     } catch (err) {
       console.error('Finish reading error:', err);
     } finally {
@@ -661,9 +704,68 @@ export default function ReaderPage() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const openMobileDrawer = useCallback((tab: ReaderRailTab) => {
+    setDrawerTab(tab);
+    setRailOpen(false);
+    setDrawerOpen(true);
+  }, []);
+
+  // На десктопе конспект — вкладка постоянной полки, на телефоне — drawer.
+  const openNotes = useCallback(() => {
+    setDrawerTab('notes');
+    const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+    if (isDesktop) setRailOpen(true);
+    else {
+      setRailOpen(false);
+      setDrawerOpen(true);
+    }
+  }, []);
+
+  // Свёрнутая полка остаётся в DOM ради анимации ширины, но не должна
+  // ловить фокус с клавиатуры: у неё нулевая ширина и обрезанное содержимое.
+  useEffect(() => {
+    const rail = desktopRailRef.current;
+    if (rail) (rail as HTMLDivElement & { inert: boolean }).inert = !railOpen;
+  }, [railOpen]);
+
+  const renderRail = (onClose?: () => void) => (
+    <ReaderRail
+      book={book!}
+      content={content!}
+      currentPage={currentPage}
+      pageDifficulty={currentPageDifficulty}
+      tocItems={visibleTocItems}
+      tocLoading={tocLoading}
+      bookmarks={bookmarks}
+      tab={drawerTab}
+      onTabChange={setDrawerTab}
+      collected={collectedItems}
+      canCollect={Boolean(readingSessionId)}
+      isFinishing={isFinishing}
+      onPage={(page) => {
+        goToPage(page);
+        onClose?.();
+      }}
+      onDeleteBookmark={(id) => {
+        const token = session?.accessToken;
+        if (!token) return;
+        void fetch(`${API_URL}/api/books/${bookId}/bookmarks/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        }).then(() => refreshBookmarks());
+      }}
+      onRemoveCollected={(word) => void removeCollected(word)}
+      onFinish={() => {
+        onClose?.();
+        void finishReading();
+      }}
+      onClose={onClose}
+    />
+  );
+
   if (isLoading) {
     return (
-      <AppLayout width="full">
+      <AppLayout immersive>
         <ReaderSkeleton />
       </AppLayout>
     );
@@ -671,17 +773,29 @@ export default function ReaderPage() {
 
   if (error || !book) {
     return (
-      <AppLayout width="full">
-        <ErrorState
-          title="Книга не открылась"
-          description={error || 'Книга с этим адресом не найдена в библиотеке.'}
-          onRetry={() => void loadBook()}
-          action={
-            <Button href="/books" variant="primary">
-              Назад к книгам
-            </Button>
-          }
-        />
+      <AppLayout immersive>
+        <div className="reader-room flex min-h-[100dvh] items-center justify-center px-5 py-10">
+          <div className="w-full max-w-md">
+            <ErrorState
+              title="Книга не открылась"
+              description={error || 'Книга с этим адресом не найдена в библиотеке.'}
+              onRetry={() => void loadBook()}
+              action={
+                <Button href="/books" variant="primary">
+                  Назад к книгам
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!content) {
+    return (
+      <AppLayout immersive>
+        <ReaderSkeleton />
       </AppLayout>
     );
   }
@@ -694,220 +808,201 @@ export default function ReaderPage() {
   // поэтому размер строки не превращается в набор inline-правил.
   const readerVars = {
     '--reader-size': `${fontSize}px`,
-    '--reader-leading': 1.75,
+    '--reader-leading': 1.85,
     '--reader-measure': `${lineWidth}ch`,
   } as CSSProperties;
 
   return (
-    <AppLayout width="full">
-      <PageHeader
-        title={book.title}
-        subtitle={book.author || undefined}
-        actions={
-          content ? (
-            <ReaderToolbar
-              content={content}
-              pageDifficulty={currentPageDifficulty}
-              hasBookmark={Boolean(currentBookmark)}
-              parallelMode={parallelMode}
-              panelOpen={panelOpen}
-              notesVisible={showNotes}
-              notesCount={collectedKeys.length}
-              canCollect={Boolean(readingSessionId)}
-              textSettings={{
-                open: showTextSettings,
-                onToggle: () => setShowTextSettings((v) => !v),
-                fontSize,
-                lineWidth,
-                onFontSizeChange: changeFontSize,
-                onLineWidthChange: changeLineWidth,
-                onReset: resetTextSettings,
-              }}
-              onOpenDrawer={() => {
-                setDrawerTab('toc');
-                setDrawerOpen(true);
-              }}
-              onToggleBookmark={() => void toggleBookmark()}
-              onToggleParallel={toggleParallelMode}
-              onTogglePanel={() => setPanelOpen((v) => !v)}
-              onToggleNotes={() => setShowNotes((v) => !v)}
-            />
-          ) : null
-        }
-      />
-
-      {/* Поповер конспекта */}
-      <AnimatePresence>
-        {showNotes && readingSessionId && (
-          <NotesPopover
-            key="notes"
-            items={collectedKeys.map((key) => collectedRef.current.get(key)!)}
-            isFinishing={isFinishing}
-            onRemove={(word) => void removeCollected(word)}
-            onFinish={() => void finishReading()}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Drawer: оглавление и закладки */}
-      <AnimatePresence>
-        {drawerOpen && (
-          <ReaderDrawer
-            key="drawer"
-            tab={drawerTab}
-            onTabChange={setDrawerTab}
-            onClose={() => setDrawerOpen(false)}
-            tocItems={tocItems}
-            tocLoading={tocLoading}
-            bookmarks={bookmarks}
-            onPage={goToPage}
-            onDeleteBookmark={async (id) => {
-              const token = session?.accessToken;
-              if (!token) return;
-              await fetch(`${API_URL}/api/books/${bookId}/bookmarks/${id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` },
-              });
-              await refreshBookmarks();
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      <div className="flex flex-col gap-4 md:flex-row">
-        {/* Текст книги */}
-        <div className="min-w-0 flex-1">
+    <AppLayout immersive>
+      <div className="reader-room flex h-[100dvh] w-full overflow-hidden">
+        {/* Постоянная книжная полка — только на десктопе */}
+        <div
+          className={`hidden shrink-0 overflow-hidden transition-[width] duration-base ease-soft motion-reduce:transition-none lg:block ${
+            railOpen ? 'w-[288px]' : 'w-0'
+          }`}
+        >
           <div
-            className="card p-4 sm:p-6 lg:p-8"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
+            ref={desktopRailRef}
+            aria-hidden={!railOpen}
+            className="h-full w-[288px]"
           >
-            {/* key по номеру страницы: при перелистывании блок перемонтируется и текст мягко проявляется */}
-            <div
-              key={currentPage}
-              data-reader-text
-              className="reader-text animate-page-in"
-              style={readerVars}
-            >
-              {parallelMode ? (
-                <ParallelText
-                  chunks={parallelPages[currentPage] ?? []}
-                  loading={parallelLoading}
-                  error={parallelError}
-                  showHint={showParallelHint}
-                  onRetry={() => void loadParallel(currentPage, true)}
-                />
-              ) : (
-                <ReaderText
-                  tokens={wordTokens}
-                  keyWords={keyWordsSet}
-                  selectedWordIndex={selectedWordIndex}
-                  tooltip={tooltip}
-                  readingSessionId={readingSessionId}
-                  isCollected={(word) => collectedRef.current.has(word)}
-                  onWordClick={(idx) => void handleWordClick(idx)}
-                  onMarkerEnter={handleMarkerEnter}
-                  onMarkerLeave={handleMarkerLeave}
-                  onMarkerFocus={showTooltip}
-                  onMarkerClick={(idx, word, token) => handleMarkerClick(idx, word, token)}
-                  onMarkerKeyDown={handleMarkerKeyDown}
-                  onCloseTooltip={hideTooltip}
-                  onCollect={(word, token) => void toggleCollected(word, token)}
-                />
-              )}
-            </div>
+            {renderRail()}
           </div>
-
-          {/* Пагинация */}
-          {content && content.totalPages > 1 && (
-            <Pagination page={currentPage} total={content.totalPages} onPage={goToPage} />
-          )}
-
-          {content && content.totalPages > 1 && (
-            <p className="mt-3 text-center text-caption text-slate md:hidden">
-              Свайп влево и вправо листает страницы
-            </p>
-          )}
         </div>
 
-        {/* Lexi — спутник у панели перевода. На телефоне прячется: там панель это bottom-sheet */}
-        <div className="hidden w-14 shrink-0 md:block">
-          <LexiMascot pose={lexiPose} lean={lexiLean} className="sticky top-8" />
-        </div>
-
-        {/* Панель перевода — скрыта в режиме параллельного перевода.
-            На телефоне это bottom-sheet, на десктопе — сворачиваемая колонка. */}
-        {!parallelMode && (
-          <TranslationPanel
-            open={panelOpen}
-            word={selectedWord}
-            translation={translation}
-            displayed={displayedTranslation}
-            isTyping={isTyping}
-            isLoading={isTranslating}
-            hasError={translationError}
-            aiMode={aiMode}
-            addedToDictionary={addedToDict}
-            isKnown={knownWords.has(selectedWord.trim().toLowerCase())}
-            knownBusy={knownBusy}
-            isInNotes={collectedRef.current.has(selectedWord)}
-            notesAvailable={Boolean(readingSessionId)}
-            onCollapse={() => setPanelOpen(false)}
-            onRetry={() => {
-              if (selectedWordIndex !== null) void handleWordClick(selectedWordIndex);
+        <div className="flex min-w-0 flex-1 flex-col">
+          <ReaderToolbar
+            bookTitle={book.title}
+            chapterTitle={chapterTitle}
+            hasBookmark={Boolean(currentBookmark)}
+            parallelMode={parallelMode}
+            panelOpen={panelOpen}
+            notesVisible={drawerTab === 'notes' && (railOpen || drawerOpen)}
+            notesCount={collectedKeys.length}
+            canCollect={Boolean(readingSessionId)}
+            railOpen={railOpen}
+            textSettings={{
+              open: showTextSettings,
+              onToggle: () => setShowTextSettings((v) => !v),
+              fontSize,
+              lineWidth,
+              onFontSizeChange: changeFontSize,
+              onLineWidthChange: changeLineWidth,
+              onReset: resetTextSettings,
             }}
-            onSpeak={speak}
-            onAddToDictionary={() => void addToDictionary()}
-            onToggleKnown={() => void toggleKnownWord(selectedWord)}
-            onToggleAiMode={toggleAiMode}
-            onCollect={(word) => void toggleCollected(word)}
+            onOpenDrawer={() => openMobileDrawer('toc')}
+            onToggleRail={() => setRailOpen((v) => !v)}
+            onToggleBookmark={() => void toggleBookmark()}
+            onToggleParallel={toggleParallelMode}
+            onTogglePanel={() => setPanelOpen((v) => !v)}
+            onToggleNotes={openNotes}
           />
-        )}
+
+          <div className="flex min-h-0 flex-1">
+            <main className="reader-paper relative flex min-w-0 flex-1 flex-col overflow-hidden">
+              <div
+                className="reader-scroll flex-1 overflow-y-auto"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div className="flex min-h-full justify-center px-5 pb-16 pt-9 sm:px-8 sm:pt-12 lg:px-12 lg:pt-16">
+                  {/* key по номеру страницы: при перелистывании блок перемонтируется и текст мягко проявляется */}
+                  <div
+                    key={currentPage}
+                    data-reader-text
+                    data-parallel={parallelMode ? 'true' : undefined}
+                    lang={parallelMode ? undefined : 'en'}
+                    className="reader-text reader-page-enter w-full"
+                    style={readerVars}
+                  >
+                    {parallelMode ? (
+                      <ParallelText
+                        chunks={parallelPages[currentPage] ?? []}
+                        loading={parallelLoading}
+                        error={parallelError}
+                        showHint={showParallelHint}
+                        onRetry={() => void loadParallel(currentPage, true)}
+                      />
+                    ) : (
+                      <ReaderText
+                        tokens={wordTokens}
+                        keyWords={keyWordsSet}
+                        selectedWordIndex={selectedWordIndex}
+                        tooltip={tooltip}
+                        readingSessionId={readingSessionId}
+                        isCollected={(word) => collectedRef.current.has(word)}
+                        onWordClick={(idx) => void handleWordClick(idx)}
+                        onMarkerEnter={handleMarkerEnter}
+                        onMarkerLeave={handleMarkerLeave}
+                        onMarkerFocus={showTooltip}
+                        onMarkerClick={(idx, word, token) => handleMarkerClick(idx, word, token)}
+                        onMarkerKeyDown={handleMarkerKeyDown}
+                        onCloseTooltip={hideTooltip}
+                        onCollect={(word, token) => void toggleCollected(word, token)}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Мягкий край страницы: строка, уходящая под подвал, тает, а не режется */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-14 h-8 bg-gradient-to-t from-[var(--reader-paper)] to-transparent"
+              />
+
+              <ReaderFooter
+                page={currentPage}
+                total={content.totalPages}
+                chapterTitle={chapterTitle}
+                progress={content.progress}
+                onPage={goToPage}
+              />
+            </main>
+
+            {/* Панель перевода — тихая страница справа, на телефоне bottom-sheet */}
+            {!parallelMode && (
+              <TranslationPanel
+                open={panelOpen}
+                word={selectedWord}
+                translation={translation}
+                displayed={displayedTranslation}
+                isTyping={isTyping}
+                isLoading={isTranslating}
+                hasError={translationError}
+                aiMode={aiMode}
+                addedToDictionary={addedToDict}
+                isKnown={knownWords.has(selectedWord.trim().toLowerCase())}
+                knownBusy={knownBusy}
+                isInNotes={collectedRef.current.has(selectedWord)}
+                notesAvailable={Boolean(readingSessionId)}
+                onCollapse={() => setPanelOpen(false)}
+                onRetry={() => {
+                  if (selectedWordIndex !== null) void handleWordClick(selectedWordIndex);
+                }}
+                onSpeak={speak}
+                onAddToDictionary={() => void addToDictionary()}
+                onToggleKnown={() => void toggleKnownWord(selectedWord)}
+                onToggleAiMode={toggleAiMode}
+                onCollect={(word) => void toggleCollected(word)}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Мобильная книжная полка */}
+        <AnimatePresence>
+          {drawerOpen && (
+            <ReaderDrawer key="drawer" onClose={() => setDrawerOpen(false)}>
+              {renderRail(() => setDrawerOpen(false))}
+            </ReaderDrawer>
+          )}
+        </AnimatePresence>
+
+        {/* Туториал для новичка */}
+        <AnimatePresence>
+          {tutorialStep !== null && (
+            <ReaderTutorial
+              key="tutorial"
+              step={tutorialStep}
+              visible={tutorialVisible}
+              onAdvance={() => {
+                if (tutorialStep === TUTORIAL_STEPS.length - 1) finishTutorial();
+                else setTutorialStep((s) => (s === null ? null : s + 1));
+              }}
+              onSkip={finishTutorial}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {finishResult && (
+            <FinishReadingDialog
+              key="finish"
+              result={finishResult}
+              questions={quizQuestions}
+              index={quizIndex}
+              answer={quizAnswer}
+              score={quizScore}
+              done={quizDone}
+              onAnswer={(choice) => {
+                setQuizAnswer(choice);
+                if (choice === quizCurrent?.correctIndex) setQuizScore((s) => s + 1);
+              }}
+              onNext={() => {
+                if (quizIndex + 1 < quizQuestions.length) {
+                  setQuizIndex((i) => i + 1);
+                  setQuizAnswer(null);
+                } else {
+                  setQuizDone(true);
+                }
+              }}
+              onClose={() => setFinishResult(null)}
+              onGoToDictionary={() => router.push('/dictionary')}
+            />
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* Туториал для новичка */}
-      <AnimatePresence>
-        {tutorialStep !== null && (
-          <ReaderTutorial
-            key="tutorial"
-            step={tutorialStep}
-            visible={tutorialVisible}
-            onAdvance={() => {
-              if (tutorialStep === TUTORIAL_STEPS.length - 1) finishTutorial();
-              else setTutorialStep((s) => (s === null ? null : s + 1));
-            }}
-            onSkip={finishTutorial}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {finishResult && (
-          <FinishReadingDialog
-            key="finish"
-            result={finishResult}
-            questions={quizQuestions}
-            index={quizIndex}
-            answer={quizAnswer}
-            score={quizScore}
-            done={quizDone}
-            onAnswer={(choice) => {
-              setQuizAnswer(choice);
-              if (choice === quizCurrent?.correctIndex) setQuizScore((s) => s + 1);
-            }}
-            onNext={() => {
-              if (quizIndex + 1 < quizQuestions.length) {
-                setQuizIndex((i) => i + 1);
-                setQuizAnswer(null);
-              } else {
-                setQuizDone(true);
-              }
-            }}
-            onClose={() => setFinishResult(null)}
-            onGoToDictionary={() => router.push('/dictionary')}
-          />
-        )}
-      </AnimatePresence>
     </AppLayout>
   );
 }

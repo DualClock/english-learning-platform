@@ -13,6 +13,16 @@ namespace EnglishLearningPlatform.API.Controllers;
 [Authorize]
 public class ProfileController : ControllerBase
 {
+    private static readonly HashSet<string> AllowedAvatarFrames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "none", "paper", "teal", "ink", "gold"
+    };
+
+    private static readonly HashSet<string> AllowedAccentThemes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "teal", "warm", "ink"
+    };
+
     private readonly UserManager<User> _userManager;
 
     public ProfileController(UserManager<User> userManager)
@@ -74,6 +84,41 @@ public class ProfileController : ControllerBase
 
         if (dto.NotifyEnabled.HasValue) user.NotifyEnabled = dto.NotifyEnabled.Value;
         if (dto.ReminderHour.HasValue) user.ReminderHour = Math.Clamp(dto.ReminderHour.Value, 0, 23);
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok(ToDto(user));
+    }
+
+    // PUT: api/profile/customization
+    // Косметика не влияет на обучение; сервер принимает только известные значения,
+    // чтобы в профиль не попал произвольный CSS-ключ.
+    [HttpPut("customization")]
+    public async Task<IActionResult> UpdateCustomization(UpdateCustomizationDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(GetUserId());
+        if (user == null) return NotFound();
+
+        if (dto.AvatarFrame != null)
+        {
+            var frame = dto.AvatarFrame.Trim().ToLowerInvariant();
+            if (!AllowedAvatarFrames.Contains(frame))
+            {
+                return BadRequest(new { message = "Неизвестная рамка" });
+            }
+            user.AvatarFrame = frame;
+        }
+
+        if (dto.AccentTheme != null)
+        {
+            var accent = dto.AccentTheme.Trim().ToLowerInvariant();
+            if (!AllowedAccentThemes.Contains(accent))
+            {
+                return BadRequest(new { message = "Неизвестный акцент" });
+            }
+            user.AccentTheme = accent;
+        }
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) return BadRequest(result.Errors);
@@ -172,6 +217,8 @@ public class ProfileController : ControllerBase
         emailConfirmed = user.EmailConfirmed,
         displayName = user.DisplayName,
         avatarUrl = user.AvatarUrl,
+        avatarFrame = user.AvatarFrame,
+        accentTheme = user.AccentTheme,
         cefrLevel = user.CefrLevel,
         studyGoal = user.StudyGoal,
         dailyGoalMinutes = user.DailyGoalMinutes,
@@ -196,6 +243,7 @@ public record UpdateProfileDto(
     bool? NotifyEnabled = null,
     int? ReminderHour = null,
     int? DailyNewWords = null);
+public record UpdateCustomizationDto(string? AvatarFrame, string? AccentTheme);
 public record SetDefaultAvatarDto(string Name);
 public record PlacementAnswerDto(int Id, int Choice);
 public record PlacementResultDto(List<PlacementAnswerDto>? Answers);

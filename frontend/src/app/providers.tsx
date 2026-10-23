@@ -8,7 +8,7 @@ import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider refetchWhenOffline={false}>
       {/* Единая политика доступности анимаций: при prefers-reduced-motion
           движок сам отключает transform- и layout-переходы во всём дереве. */}
       <MotionConfig reducedMotion="user">

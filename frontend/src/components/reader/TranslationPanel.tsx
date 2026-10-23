@@ -11,7 +11,6 @@ import {
   StarIcon,
   VolumeIcon,
 } from '@/components/ui/icons';
-import { Tag } from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import ErrorState from '@/components/ui/ErrorState';
 import type { TranslationResult } from './types';
@@ -69,12 +68,20 @@ export default function TranslationPanel({
   // На телефоне лист поднимается только когда есть что показывать: иначе пустая
   // панель закрывала бы текст сразу после открытия книги.
   const sheetUp = open && Boolean(word);
+  // Служебные коды источников (LEVEL_MAP, level_map и подобные) читателю ничего не говорят.
+  const sourceValue = translation?.source?.trim() ?? '';
+  const sourceLabel =
+    sourceValue &&
+    !/^[A-Z0-9_]+$/.test(sourceValue) &&
+    !/^[a-z0-9]+(?:_[a-z0-9]+)+$/.test(sourceValue)
+      ? sourceValue
+      : null;
 
   return (
     <>
-      {/* Затемнение под bottom-sheet, только мобильные */}
+      {/* Затемнение под bottom-sheet, только до планшета */}
       <div
-        className={`fixed inset-0 z-40 bg-scrim transition-opacity duration-base ease-soft md:hidden ${
+        className={`fixed inset-0 z-40 bg-scrim transition-opacity duration-base ease-soft lg:hidden ${
           sheetUp ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={onCollapse}
@@ -84,40 +91,46 @@ export default function TranslationPanel({
       <div
         data-translation-panel
         className={`fixed inset-x-0 bottom-0 z-50 transition-transform duration-base ease-soft
-                    md:static md:z-auto md:w-72 md:shrink-0 md:translate-y-0
-                    ${sheetUp ? 'translate-y-0' : 'translate-y-full'} ${open ? '' : 'md:hidden'}`}
+                    lg:static lg:z-auto lg:flex lg:h-full lg:w-[340px] lg:shrink-0 lg:translate-y-0
+                    ${sheetUp ? 'translate-y-0' : 'translate-y-full'} ${open ? '' : 'lg:hidden'}`}
       >
-        <div className="card max-h-[72vh] overflow-y-auto rounded-b-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-card md:sticky md:top-8 md:max-h-none md:rounded-b-lg md:p-5 md:shadow-none">
+        <div className="reader-paper reader-scroll flex max-h-[78dvh] flex-col overflow-y-auto rounded-t-2xl border-t border-[var(--reader-hairline)] px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-modal lg:h-full lg:max-h-none lg:w-full lg:rounded-none lg:border-l lg:border-t-0 lg:px-6 lg:py-5 lg:shadow-none">
           {/* Ручка bottom-sheet и заголовок панели */}
-          <div className="mb-3">
-            <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-hairline-strong md:hidden" />
+          <div className="mb-4">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--reader-hairline)] lg:hidden" />
             <div className="flex items-center justify-between">
-              <span className="text-caption font-medium uppercase tracking-wide text-slate">Перевод</span>
+              <span className="text-caption font-semibold uppercase tracking-[0.16em] text-[var(--reader-ink-soft)]">
+                Перевод
+              </span>
               <button
                 type="button"
                 onClick={onCollapse}
                 aria-label="Свернуть панель перевода"
-                className="rounded p-1 text-slate transition-colors duration-fast ease-soft hover:bg-surface hover:text-ink"
+                className="rounded p-1 text-[var(--reader-ink-soft)] transition-colors duration-fast ease-soft hover:bg-[var(--reader-wash)] hover:text-[var(--reader-ink)]"
               >
-                <span className="md:hidden"><CloseIcon size={20} /></span>
-                <span className="hidden md:inline"><ChevronRightIcon size={20} /></span>
+                <span className="lg:hidden"><CloseIcon size={20} /></span>
+                <span className="hidden lg:inline"><ChevronRightIcon size={20} /></span>
               </button>
             </div>
           </div>
 
           {word ? (
             <>
-              <div className="mb-5 flex items-start justify-between gap-2">
+              <div className="mb-6 flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h2 className="break-words text-h2 text-ink">{word}</h2>
-                  {translation?.partOfSpeech && <Tag tone="accent" className="mt-1">{translation.partOfSpeech}</Tag>}
+                  <h2 className="break-words font-reading text-[2rem] leading-tight text-[var(--reader-ink)]">{word}</h2>
+                  {translation?.partOfSpeech && (
+                    <span className="mt-2 inline-block text-caption uppercase tracking-[0.12em] text-[var(--reader-ink-soft)]">
+                      {translation.partOfSpeech}
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={() => onSpeak(word)}
                   aria-label="Произнести слово"
                   title="Произнести"
-                  className="shrink-0 rounded p-2 text-slate transition-colors duration-fast ease-soft hover:bg-surface hover:text-primary"
+                  className="shrink-0 rounded p-2 text-[var(--reader-ink-soft)] transition-colors duration-fast ease-soft hover:bg-[var(--reader-wash)] hover:text-primary"
                 >
                   <VolumeIcon size={20} />
                 </button>
@@ -139,7 +152,7 @@ export default function TranslationPanel({
                       <span className="typing-dot h-2 w-2 rounded-full bg-primary" />
                       <span className="sr-only">Переводим слово</span>
                     </div>
-                    {aiMode && <p className="text-body-sm text-slate">ИИ анализирует контекст…</p>}
+                    {aiMode && <p className="text-body-sm text-[var(--reader-ink-soft)]">ИИ анализирует контекст…</p>}
                   </motion.div>
                 ) : hasError ? (
                   <motion.div key="error" variants={variants.overlay} initial="hidden" animate="visible" exit="exit">
@@ -159,27 +172,30 @@ export default function TranslationPanel({
                     className="space-y-4"
                   >
                     <div>
-                      <p className="min-h-8 text-body-lg font-medium text-primary">
+                      <p className="min-h-8 font-reading text-[1.25rem] font-medium leading-snug text-primary">
                         {displayed}
                         {isTyping && (
                           <span className="typing-cursor ml-1 inline-block h-5 w-0.5 bg-primary align-middle" />
                         )}
                       </p>
-                      {!isTyping && translation.source && (
-                        <span className="mt-1 inline-block text-caption uppercase tracking-wide text-slate">
-                          {translation.source}
+                      {!isTyping && sourceLabel && (
+                        <span className="mt-2 inline-block text-caption uppercase tracking-[0.12em] text-[var(--reader-ink-soft)]">
+                          {sourceLabel}
                         </span>
                       )}
                     </div>
 
                     {!isTyping && translation.alternatives && translation.alternatives.length > 0 && (
                       <div>
-                        <h3 className="mb-2 text-caption font-medium text-slate">Варианты</h3>
-                        <div className="flex flex-wrap gap-2">
+                        <h3 className="mb-2 text-caption font-semibold text-[var(--reader-ink-soft)]">Варианты</h3>
+                        <div className="flex flex-wrap gap-1.5">
                           {translation.alternatives.map((alt, idx) => (
-                            <Tag key={`${alt}-${idx}`} tone="success">
+                            <span
+                              key={`${alt}-${idx}`}
+                              className="rounded-full border border-[var(--reader-hairline)] px-2.5 py-1 text-caption text-[var(--reader-ink)]"
+                            >
                               {alt}
-                            </Tag>
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -187,19 +203,22 @@ export default function TranslationPanel({
 
                     {!isTyping && translation.examples && translation.examples.length > 0 && (
                       <div>
-                        <h3 className="mb-2 text-caption font-medium text-slate">Примеры</h3>
+                        <h3 className="mb-2 text-caption font-semibold text-[var(--reader-ink-soft)]">Примеры</h3>
                         <ul className="space-y-2">
                           {translation.examples.slice(0, 2).map((ex, idx) => (
-                            <li key={`${ex.english}-${idx}`} className="rounded-md border border-hairline bg-surface p-3">
+                            <li
+                              key={`${ex.english}-${idx}`}
+                              className="rounded-md border border-[var(--reader-hairline)] bg-[var(--reader-paper-deep)] p-3"
+                            >
                               <button
                                 type="button"
                                 onClick={() => onSpeak(ex.english)}
                                 className="group w-full text-left"
                               >
-                                <span className="block text-body-sm font-medium text-ink transition-colors duration-fast ease-soft group-hover:text-primary">
+                                <span className="block font-reading text-body-sm leading-relaxed text-[var(--reader-ink)] transition-colors duration-fast ease-soft group-hover:text-primary">
                                   {ex.english}
                                 </span>
-                                <span className="mt-1 block text-caption text-slate">{ex.translation}</span>
+                                <span className="mt-1 block text-caption text-[var(--reader-ink-soft)]">{ex.translation}</span>
                               </button>
                             </li>
                           ))}
@@ -223,7 +242,7 @@ export default function TranslationPanel({
                         onClick={onToggleKnown}
                         disabled={isTyping || knownBusy}
                         title="Слово не попадёт в «новые» при подсчёте сложности"
-                        className="w-full border border-hairline-strong"
+                        className="w-full border border-[var(--reader-hairline)]"
                       >
                         <StarIcon size={16} />
                         {isKnown ? 'Знакомое слово' : 'Уже знаю'}
@@ -234,8 +253,8 @@ export default function TranslationPanel({
                           variant="ghost"
                           onClick={() => onCollect(word)}
                           disabled={isTyping || isInNotes}
-                          className={`w-full border border-hairline-strong ${
-                            isInNotes ? 'bg-surface-warning text-ink' : ''
+                          className={`w-full border border-[var(--reader-hairline)] ${
+                            isInNotes ? 'bg-[var(--reader-mark)] text-[var(--reader-ink)]' : ''
                           }`}
                         >
                           {isInNotes ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
@@ -248,18 +267,18 @@ export default function TranslationPanel({
               </AnimatePresence>
             </>
           ) : (
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-surface-accent text-on-accent">
+            <div className="py-10 text-center">
+              <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--reader-hairline)] text-[var(--reader-ink-soft)]">
                 <VolumeIcon size={20} />
               </div>
-              <p className="text-body-sm text-slate">
-                Нажми на слово в тексте — перевод появится здесь
+              <p className="mx-auto max-w-[22ch] font-reading text-body-sm leading-relaxed text-[var(--reader-ink-soft)]">
+                Нажмите на слово в тексте — перевод появится здесь
               </p>
             </div>
           )}
 
           {/* Переключатель ИИ-перевода с контекстом: отделён тоном, а не линией */}
-          <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-md bg-surface p-3">
+          <label className="mt-5 flex cursor-pointer items-start gap-2.5 rounded-md border border-[var(--reader-hairline)] p-3">
             <input
               type="checkbox"
               checked={aiMode}
@@ -267,11 +286,13 @@ export default function TranslationPanel({
               className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
             />
             <span className="min-w-0">
-              <span className="flex items-center gap-1.5 text-body-sm font-medium text-ink">
+              <span className="flex items-center gap-1.5 text-body-sm font-medium text-[var(--reader-ink)]">
                 <SparklesIcon size={16} />
                 ИИ-перевод с контекстом
               </span>
-              <span className="block text-caption text-slate">Медленнее, но понимает смысл в контексте</span>
+              <span className="block text-caption leading-snug text-[var(--reader-ink-soft)]">
+                Медленнее, но понимает смысл в контексте
+              </span>
             </span>
           </label>
         </div>

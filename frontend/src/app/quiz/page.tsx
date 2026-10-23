@@ -2,10 +2,12 @@
 
 import AppLayout from '@/components/AppLayout';
 import LexiPeek from '@/components/brand/lexi/LexiPeek';
-import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
+import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
 import { useTts } from '@/hooks/useTts';
 import { pluralQuestions, pluralWords } from '@/lib/plural';
@@ -13,6 +15,7 @@ import { slideVariants, variants } from '@/lib/motion';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
+import Notice from '@/components/ui/Notice';
 import ProgressBar from '@/components/ui/ProgressBar';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { Skeleton } from '@/components/ui/LoadingState';
@@ -35,6 +38,7 @@ interface Question {
 
 interface QuizResponse {
   questions?: Question[];
+  quizToken?: string;
   // Поля чекпоинта: обычный quiz их не присылает
   level?: string;
   reason?: string;
@@ -44,7 +48,15 @@ interface QuizResponse {
   dictionaryWords?: number;
 }
 
+interface QuizResultResponse {
+  xpEarned: number;
+  goalBonus: number;
+  total: number;
+  correct: number;
+}
+
 type QuizMode = 'reading' | 'listening';
+type ResultState = 'idle' | 'saving' | 'saved' | 'error';
 
 const LEVEL_LABELS: Record<string, string> = {
   a1: 'A1',
@@ -54,13 +66,21 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 function QuizContent() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Отдельный маршрут /listening открывает то же упражнение сразу в режиме
+  // аудирования. Чекпоинт остаётся только у /quiz — там это чтение уровня.
+  const isListeningRoute = pathname === '/listening';
+  const mode: QuizMode = isListeningRoute ? 'listening' : 'reading';
 
   // ?checkpoint=b1 переключает страницу в режим чекпоинт-теста уровня:
   // те же вопросы quiz, но отобранные по CEFR-уровню слов пользователя
-  const checkpointLevel = (searchParams.get('checkpoint') ?? '').trim().toLowerCase() || null;
+  const checkpointLevel = !isListeningRoute
+    ? (searchParams.get('checkpoint') ?? '').trim().toLowerCase() || null
+    : null;
   const levelLabel = checkpointLevel ? LEVEL_LABELS[checkpointLevel] ?? checkpointLevel.toUpperCase() : null;
 
   // Колода теста всегда запрашивается свежей: maxAgeMs: 0. Ответы нигде
@@ -83,7 +103,11 @@ function QuizContent() {
   const [nod, setNod] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [deckLocked, setDeckLocked] = useState(false);
-  const [mode, setMode] = useState<QuizMode>('reading');
+  const [quizToken, setQuizToken] = useState<string | null>(null);
+  const [resultState, setResultState] = useState<ResultState>('idle');
+  const [resultXp, setResultXp] = useState(0);
+  const [resultError, setResultError] = useState('');
+  const resultInFlightRef = useRef(false);
 
   const { play, isLoading: audioLoading } = useTts();
 
@@ -92,11 +116,15 @@ function QuizContent() {
   useEffect(() => {
     if (!data || deckLocked) return;
     setQuestions(data.questions ?? []);
+    setQuizToken(data.quizToken ?? null);
   }, [data, deckLocked]);
 
-  const deck = questions ?? data?.questions ?? [];
+  const deck = useMemo(
+    () => questions ?? data?.questions ?? [],
+    [questions, data?.questions],
+  );
 
-  const handleAnswer = (index: number) => {
+  const handleAnswer = useCallback((index: number) => {
     if (showResult) return;
 
     // Дальше колода зафиксирована — поздний ответ сети её не заменит.
@@ -104,31 +132,63 @@ function QuizContent() {
     setSelectedAnswer(index);
     setShowResult(true);
 
-    if (index === deck[currentIndex].correctIndex) {
-      setScore(score + 1);
-      setNod((n) => n + 1);
+    if (index === deck[currentIndex]?.correctIndex) {
+      setScore((value) => value + 1);
+      setNod((value) => value + 1);
     }
-  };
+  }, [showResult, deck, currentIndex]);
 
-  const handleNext = () => {
+  const saveResult = useCallback(async () => {
+    if (!quizToken || resultInFlightRef.current || resultState === 'saved') return;
+
+    resultInFlightRef.current = true;
+    setResultState('saving');
+    setResultError('');
+
+    try {
+      const result = await apiMutate<QuizResultResponse>('/api/review/quiz/result', {
+        token: session?.accessToken,
+        method: 'POST',
+        body: {
+          token: quizToken,
+          correct: score,
+          mode,
+        },
+        invalidate: ['/api/review/quiz/history'],
+      });
+
+      setResultXp((result?.xpEarned ?? 0) + (result?.goalBonus ?? 0));
+      setResultState('saved');
+    } catch (error) {
+      setResultError(
+        error instanceof ApiError
+          ? error.message
+          : 'Результат не сохранился. Проверьте соединение и попробуйте ещё раз.',
+      );
+      setResultState('error');
+    } finally {
+      resultInFlightRef.current = false;
+    }
+  }, [quizToken, resultState, score, mode, session?.accessToken]);
+
+  const handleNext = useCallback(() => {
     if (currentIndex < deck.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((index) => index + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
       setIsFinished(true);
+      // Один завершённый тест — один серверный результат. Токен выдаётся
+      // вместе с колодой и принимается только один раз.
+      void saveResult();
     }
-  };
+  }, [currentIndex, deck.length, saveResult]);
 
-  const restartQuiz = () => {
-    setCurrentIndex(0);
-    setScore(0);
-    setIsFinished(false);
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setDeckLocked(false);
-    refreshQuiz();
-  };
+  const restartHref = checkpointLevel
+    ? `/quiz?checkpoint=${encodeURIComponent(checkpointLevel)}`
+    : mode === 'listening'
+      ? '/listening'
+      : '/quiz';
 
   // Режим аудирования: слово не показываем — звучит озвучка, варианты остаются
   // переводами. Переозвучиваем при переходе к следующему вопросу.
@@ -142,6 +202,40 @@ function QuizContent() {
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, currentIndex, isFinished, deck.length]);
+
+  // Ответы с клавиатуры: 1–4 выбирают вариант, Enter продолжает,
+  // пробел в аудировании повторяет слово, пока ответ не выбран.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (isFinished) return;
+
+      if (!showResult && /^[1-4]$/.test(event.key)) {
+        event.preventDefault();
+        handleAnswer(Number(event.key) - 1);
+        return;
+      }
+
+      if (!showResult && mode === 'listening' && event.key === ' ') {
+        const question = deck[currentIndex];
+        if (!question) return;
+        event.preventDefault();
+        void play(question.text);
+        return;
+      }
+
+      if (showResult && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        handleNext();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [deck, currentIndex, handleAnswer, handleNext, isFinished, mode, play, showResult]);
 
   // Скелет — только пока данных ещё нет
   if (isLoading && data === undefined) {
@@ -183,10 +277,18 @@ function QuizContent() {
       <AppLayout>
         <EmptyState
           icon={<InboxIcon size={24} />}
-          title={checkpointLevel ? `Чекпоинт ${levelLabel} пока недоступен` : 'Пока нечего тестировать'}
+          title={
+            checkpointLevel
+              ? `Чекпоинт ${levelLabel} пока недоступен`
+              : mode === 'listening'
+                ? 'Пока нечего слушать'
+                : 'Пока нечего тестировать'
+          }
           description={(checkpointLevel
             ? 'Для чекпоинта нужно хотя бы 4 слова с переводами в словаре — иначе не собрать варианты ответов.'
-            : 'Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.') + checkpointStats}
+            : mode === 'listening'
+              ? 'Для аудирования нужно хотя бы 4 слова с переводами в словаре — иначе не собрать варианты. Добавьте слова из книги или сборника.'
+              : 'Для теста нужно хотя бы 4 слова в словаре. Добавьте слова из книги или готового сборника — и возвращайтесь.') + checkpointStats}
           action={
             <>
               <Button href="/dictionary?tab=lists">Открыть сборники</Button>
@@ -224,7 +326,11 @@ function QuizContent() {
             {passed ? <CheckCircleIcon size={24} /> : <CloseCircleIcon size={24} />}
           </div>
           <h1 className="mb-2 text-h1 text-ink">
-            {checkpointLevel ? `Чекпоинт ${levelLabel}: ${passed ? 'сдан' : 'не сдан'}` : 'Тест завершён'}
+            {checkpointLevel
+              ? `Чекпоинт ${levelLabel}: ${passed ? 'сдан' : 'не сдан'}`
+              : mode === 'listening'
+                ? 'Аудирование завершено'
+                : 'Тест завершён'}
           </h1>
           <p className={`my-4 text-h1 tabular-nums ${numberTone}`}>
             <AnimatedNumber value={percentage} />%
@@ -239,9 +345,54 @@ function QuizContent() {
                 : `Для зачёта нужно ${passScore} верных ответов из ${deck.length}. Повторите слова уровня и попробуйте снова.`}
             </p>
           )}
-          <div className="mt-8 flex justify-center gap-3">
-            <Button onClick={restartQuiz}>Ещё раз</Button>
-            <Button variant="secondary" onClick={() => router.push('/dashboard')}>
+
+          {quizToken && (
+            <div className="mb-8 mt-4">
+              {resultState === 'saving' && (
+                <p role="status" className="flex items-center justify-center gap-2 text-body-sm text-slate">
+                  <SpinnerIcon size={16} />
+                  Сохраняем результат…
+                </p>
+              )}
+              {resultState === 'saved' && (
+                <p role="status" className="text-body-sm font-medium text-semantic-success">
+                  Результат сохранён{resultXp > 0 ? ` · +${resultXp} XP` : ''}
+                </p>
+              )}
+              {resultState === 'error' && (
+                <div className="space-y-2 text-left">
+                  <Notice tone="danger">{resultError}</Notice>
+                  <div className="text-center">
+                    <Button
+                      variant="secondary"
+                      className="min-h-11"
+                      onClick={() => {
+                        setResultError('');
+                        void saveResult();
+                      }}
+                    >
+                      Повторить сохранение
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button
+              className="min-h-11"
+              onClick={() => window.location.assign(restartHref)}
+              disabled={resultState === 'saving'}
+            >
+              Ещё раз
+            </Button>
+            <Button
+              variant="secondary"
+              className="min-h-11"
+              onClick={() => router.push('/dashboard')}
+              disabled={resultState === 'saving'}
+            >
               На главную
             </Button>
           </div>
@@ -278,23 +429,24 @@ function QuizContent() {
         )}
 
         {/* Режим: чтение или аудирование */}
-        <div className="mb-6 flex justify-center gap-2" role="tablist" aria-label="Режим теста">
-          {([
-            { id: 'reading', label: 'Чтение', icon: <BookOpenIcon size={16} /> },
-            { id: 'listening', label: 'Аудирование', icon: <HeadphonesIcon size={16} /> },
-          ] as const).map((option) => (
-            <button
-              key={option.id}
-              role="tab"
-              aria-selected={mode === option.id}
-              onClick={() => setMode(option.id)}
-              className={mode === option.id ? 'pill-tab-active' : 'pill-tab'}
-            >
-              {option.icon}
-              {option.label}
-            </button>
-          ))}
-        </div>
+        {!checkpointLevel && (
+          <nav className="mb-6 flex justify-center gap-2" aria-label="Режим теста">
+            {([
+              { id: 'reading', href: '/quiz', label: 'Чтение', icon: <BookOpenIcon size={16} /> },
+              { id: 'listening', href: '/listening', label: 'Аудирование', icon: <HeadphonesIcon size={16} /> },
+            ] as const).map((option) => (
+              <Link
+                key={option.id}
+                href={option.href}
+                aria-current={mode === option.id ? 'page' : undefined}
+                className={`${mode === option.id ? 'pill-tab-active' : 'pill-tab'} min-h-11`}
+              >
+                {option.icon}
+                {option.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         {/* Прогресс */}
         <div className="mb-8 flex items-end gap-3">
@@ -347,7 +499,7 @@ function QuizContent() {
                 </button>
                 <button
                   onClick={() => play(currentQuestion.text)}
-                  className="mt-3 text-body-sm text-slate transition-colors duration-fast hover:text-primary"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-md px-3 text-body-sm text-slate transition-colors duration-fast hover:text-primary"
                 >
                   Прослушать ещё раз
                 </button>
@@ -393,13 +545,32 @@ function QuizContent() {
                     onClick={() => handleAnswer(index)}
                     disabled={showResult}
                     whileTap={{ scale: 0.99 }}
-                    className={`w-full rounded-lg border-2 p-4 text-left transition-[background-color,border-color,color] duration-fast ease-soft ${tone}`}
+                    aria-keyshortcuts={String(index + 1)}
+                    className={`flex min-h-14 w-full items-center gap-3 rounded-lg border-2 p-4 text-left transition-[background-color,border-color,color] duration-fast ease-soft ${tone}`}
                   >
-                    <span className="font-medium">{option}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-caption font-semibold ${
+                        showResult && isCorrect
+                          ? 'border-semantic-success'
+                          : showResult && isChosen
+                            ? 'border-semantic-error'
+                            : 'border-current opacity-60'
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 font-medium">{option}</span>
                   </motion.button>
                 );
               })}
             </div>
+
+            <p className="mt-4 text-center text-caption text-slate">
+              {showResult
+                ? 'Enter — следующий вопрос'
+                : `1–4 — выбрать ответ${mode === 'listening' ? ' · Пробел — повторить слово' : ''}`}
+            </p>
 
             {/* Результат ответа */}
             <AnimatePresence>

@@ -1,6 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
+import { Fragment } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { variants } from '@/lib/motion';
 import { CheckIcon, CloseIcon, PlusIcon } from '@/components/ui/icons';
@@ -51,8 +52,8 @@ function Tooltip({
     <motion.div
       data-word-tooltip
       // На телефоне карточка прижата к низу экрана — так она не уезжает за край
-      className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-hairline bg-canvas p-3 shadow-modal
-                  md:absolute md:inset-x-auto md:left-0 md:w-60 ${
+      className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl border border-[var(--reader-hairline)] bg-[var(--reader-paper)] p-4 text-[var(--reader-ink)] shadow-modal
+                  md:absolute md:inset-x-auto md:left-0 md:w-64 ${
                     tooltip.below ? 'md:top-full md:mt-2 md:bottom-auto' : 'md:bottom-full md:mb-2 md:top-auto'
                   }`}
       variants={variants.overlay}
@@ -62,7 +63,7 @@ function Tooltip({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="min-w-0 break-words text-body-sm font-semibold text-ink">
+          <span className="min-w-0 break-words font-reading text-body-sm font-semibold text-[var(--reader-ink)]">
             {t?.word ?? tooltip.word}
           </span>
           {t?.cefrLevel && <Tag tone="success">{t.cefrLevel}</Tag>}
@@ -71,7 +72,7 @@ function Tooltip({
           type="button"
           onClick={onClose}
           aria-label="Закрыть подсказку"
-          className="-mr-1 -mt-1 shrink-0 rounded p-1 text-slate transition-colors duration-fast ease-soft hover:bg-surface hover:text-ink"
+          className="-mr-1 -mt-1 shrink-0 rounded p-1 text-[var(--reader-ink-soft)] transition-colors duration-fast ease-soft hover:bg-[var(--reader-wash)] hover:text-[var(--reader-ink)]"
         >
           <CloseIcon size={16} />
         </button>
@@ -86,9 +87,9 @@ function Tooltip({
       ) : (
         <>
           {translationText ? (
-            <p className="mt-2 text-body-sm text-ink">{translationText}</p>
+            <p className="mt-2 text-body-sm leading-relaxed text-[var(--reader-ink)]">{translationText}</p>
           ) : (
-            <p className="mt-2 text-body-sm italic text-slate">перевод появится позже</p>
+            <p className="mt-2 text-body-sm italic text-[var(--reader-ink-soft)]">перевод появится позже</p>
           )}
           {readingSessionId && (
             <Button
@@ -140,60 +141,62 @@ export default function ReaderText({
 
         if (isMarker) {
           return (
-            <span
-              key={idx}
-              data-marker-word
-              className="relative inline-block mr-1"
-              onMouseEnter={() => onMarkerEnter(idx, lower)}
-              onMouseLeave={onMarkerLeave}
-              onBlur={(e) => {
-                // Фокус ушёл за пределы слова и карточки — закрываем подсказку
-                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                  onCloseTooltip();
-                }
-              }}
-            >
+            <Fragment key={idx}>
               <span
-                role="button"
-                tabIndex={0}
-                aria-label={`${lower}: перевод и добавление в конспект`}
-                aria-expanded={tooltip?.idx === idx}
-                onClick={() => onMarkerClick(idx, lower, token)}
-                onKeyDown={(e) => onMarkerKeyDown(e, lower, token)}
-                onFocus={() => onMarkerFocus(idx, lower)}
-                className={`reader-marker${collected ? ' reader-marker-collected' : ''}`}
+                data-marker-word
+                className="relative inline-block"
+                onMouseEnter={() => onMarkerEnter(idx, lower)}
+                onMouseLeave={onMarkerLeave}
+                onBlur={(e) => {
+                  // Фокус ушёл за пределы слова и карточки — закрываем подсказку
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                    onCloseTooltip();
+                  }
+                }}
               >
-                {token.word}
-              </span>
-              <AnimatePresence>
-                {tooltip?.idx === idx && (
-                  <Tooltip
-                    tooltip={tooltip}
-                    readingSessionId={readingSessionId}
-                    isCollected={isCollected}
-                    onClose={onCloseTooltip}
-                    onCollect={(word) => onCollect(word, token)}
-                  />
-                )}
-              </AnimatePresence>
-            </span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${lower}: перевод и добавление в конспект`}
+                  aria-expanded={tooltip?.idx === idx}
+                  onClick={() => onMarkerClick(idx, lower, token)}
+                  onKeyDown={(e) => onMarkerKeyDown(e, lower, token)}
+                  onFocus={() => onMarkerFocus(idx, lower)}
+                  className={`reader-marker${collected ? ' reader-marker-collected' : ''}`}
+                >
+                  {token.word}
+                </span>
+                <AnimatePresence>
+                  {tooltip?.idx === idx && (
+                    <Tooltip
+                      tooltip={tooltip}
+                      readingSessionId={readingSessionId}
+                      isCollected={isCollected}
+                      onClose={onCloseTooltip}
+                      onCollect={(word) => onCollect(word, token)}
+                    />
+                  )}
+                </AnimatePresence>
+              </span>{' '}
+            </Fragment>
           );
         }
 
         return (
-          <span
-            key={idx}
-            onClick={() => isClickable && onWordClick(idx)}
-            className={
-              isSelected
-                ? 'reader-word reader-word-selected'
-                : isClickable
-                  ? 'reader-word'
-                  : 'reader-plain'
-            }
-          >
-            {token.word}
-          </span>
+          <Fragment key={idx}>
+            <span
+              onClick={() => isClickable && onWordClick(idx)}
+              className={
+                isSelected
+                  ? 'reader-word reader-word-selected'
+                  : isClickable
+                    ? 'reader-word'
+                    : 'reader-plain'
+              }
+            >
+              {token.word}
+            </span>{' '}
+          </Fragment>
         );
       })}
     </div>

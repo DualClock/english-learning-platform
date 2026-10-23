@@ -14,6 +14,7 @@ public static partial class AvatarService
     public const int MaxFileSizeBytes = 2 * 1024 * 1024;
     public const int AvatarSize = 256;
     public const string UploadedUrlPrefix = "/uploads/avatars/";
+    private const long MaxPixels = 25_000_000;
 
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
@@ -64,14 +65,24 @@ public static partial class AvatarService
         var fileName = $"{Guid.NewGuid():N}{extension}";
         var path = Path.Combine(avatarsDir, fileName);
 
-        memory.Position = 0;
-        using (var image = await Image.LoadAsync(memory))
+        try
         {
+            memory.Position = 0;
+            var info = await Image.IdentifyAsync(memory);
+            if (info == null || (long)info.Width * info.Height > MaxPixels)
+                throw new AvatarValidationException("Изображение слишком большое по размеру.");
+
+            memory.Position = 0;
+            using var image = await Image.LoadAsync(memory);
             var side = Math.Min(image.Width, image.Height);
             image.Mutate(x => x
                 .Crop(new Rectangle((image.Width - side) / 2, (image.Height - side) / 2, side, side))
                 .Resize(AvatarSize, AvatarSize));
             await image.SaveAsync(path);
+        }
+        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException)
+        {
+            throw new AvatarValidationException("Не удалось прочитать изображение.");
         }
 
         return UploadedUrlPrefix + fileName;

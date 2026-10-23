@@ -83,6 +83,7 @@ public class AuthController : ControllerBase
         }
 
         var token = GenerateJwtToken(user);
+        var refreshToken = GenerateRefreshJwtToken(user);
 
         // Письмо-подтверждение не должно ломать регистрацию: если SMTP недоступен,
         // пользователь всё равно попадёт в приложение и сможет переслать письмо позже.
@@ -99,10 +100,13 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             token,
+            refreshToken,
             userId = user.Id,
             email = user.Email,
             displayName = user.DisplayName,
             avatarUrl = user.AvatarUrl,
+            avatarFrame = user.AvatarFrame,
+            accentTheme = user.AccentTheme,
             emailConfirmed = user.EmailConfirmed
         });
     }
@@ -141,6 +145,7 @@ public class AuthController : ControllerBase
 
         // Генерируем JWT
         var token = GenerateJwtToken(user);
+        var refreshToken = GenerateRefreshJwtToken(user);
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -148,12 +153,78 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             token,
+            refreshToken,
             userId = user.Id,
             email = user.Email,
             displayName = user.DisplayName,
             avatarUrl = user.AvatarUrl,
+            avatarFrame = user.AvatarFrame,
+            accentTheme = user.AccentTheme,
             emailConfirmed = user.EmailConfirmed
         });
+    }
+
+    // POST: api/auth/refresh
+    // Обновляет короткоживущий access-токен по refresh-токену из зашифрованной
+    // сессии NextAuth. Refresh-токен подписан отдельной аудиторией, поэтому его
+    // нельзя использовать как обычный bearer для API.
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+    {
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var validation = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                // Своя проверка аудитории: refresh-токен не должен приниматься
+                // обычным JWT-bearer middleware и наоборот.
+                AudienceValidator = (audiences, _, _) =>
+                    audiences.Contains(RefreshAudience, StringComparer.Ordinal),
+                ValidateLifetime = true,
+                RequireExpirationTime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+
+            // MapInboundClaims=false сохраняет sub и typ в исходном виде:
+            // иначе sub превращается в NameIdentifier и пользователь не находится.
+            var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+            var principal = handler.ValidateToken(
+                dto.RefreshToken,
+                validation,
+                out var validatedToken);
+            if (validatedToken is not JwtSecurityToken jwt ||
+                !string.Equals(jwt.Header.Alg, SecurityAlgorithms.HmacSha256, StringComparison.Ordinal) ||
+                !string.Equals(principal.FindFirst("typ")?.Value, "refresh", StringComparison.Ordinal))
+            {
+                return Unauthorized(new { message = "Invalid refresh token" });
+            }
+
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var user = string.IsNullOrWhiteSpace(userId)
+                ? null
+                : await _userManager.FindByIdAsync(userId);
+
+            if (user == null || await _userManager.IsLockedOutAsync(user))
+            {
+                return Unauthorized(new { message = "Invalid refresh token" });
+            }
+
+            return Ok(new
+            {
+                token = GenerateJwtToken(user),
+                refreshToken = GenerateRefreshJwtToken(user)
+            });
+        }
+        catch (SecurityTokenException ex)
+        {
+            _logger.LogInformation(ex, "Отклонён refresh-токен");
+            return Unauthorized(new { message = "Invalid refresh token" });
+        }
     }
 
     // POST: api/auth/forgot-password
@@ -273,6 +344,35 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Password reset successfully" });
     }
 
+    private string RefreshAudience => $"{_configuration["Jwt:Audience"]}.Refresh";
+
+    private string GenerateRefreshJwtToken(User user)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var days = Math.Clamp(
+            Convert.ToDouble(_configuration["Jwt:RefreshExpiryDays"] ?? "60"),
+            1,
+            365);
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("typ", "refresh")
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: RefreshAudience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(days),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
     private string GenerateJwtToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
@@ -311,6 +411,8 @@ public record RegisterDto(
 public record LoginDto(
     [property: Required, EmailAddress, MaxLength(256)] string Email,
     [property: Required, MaxLength(128)] string Password);
+public record RefreshTokenDto(
+    [property: Required, MaxLength(4096)] string RefreshToken);
 public record ForgotPasswordDto(
     [property: Required, EmailAddress, MaxLength(256)] string Email);
 public record ResetPasswordDto(

@@ -17,6 +17,20 @@ interface UseReaderBookOptions {
 }
 
 /**
+ * EPUB иногда начинает первую страницу с названия книги — дважды подряд.
+ * Название уже живёт в полке и верхней панели, поэтому повтор в тексте лишний.
+ * Снимаем только явный повтор (минимум два раза), чтобы не отрезать короткое
+ * название, с которого честно начинается первая фраза.
+ */
+function stripLeadingBookTitle(text: string, title: string): string {
+  const cleanTitle = title.trim();
+  if (!cleanTitle) return text;
+  const escaped = cleanTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const repeated = new RegExp(`^\\s*(?:${escaped})(?:\\s+${escaped})+\\s*`, 'i');
+  return text.replace(repeated, '');
+}
+
+/**
  * Данные книги и всё, что подгружается к ней при открытии: страница,
  * оглавление, закладки, сложность и знакомые слова. Любая из
  * дополнительных частей может не прийти — чтение остаётся рабочим.
@@ -38,10 +52,15 @@ export function useReaderBook({ bookId, token, onBookOpened }: UseReaderBookOpti
   const pageRequestRef = useRef(0);
   const readerDataLoadedRef = useRef(false);
   const onBookOpenedRef = useRef(onBookOpened);
+  const bookTitleRef = useRef('');
 
   useEffect(() => {
     onBookOpenedRef.current = onBookOpened;
   });
+
+  useEffect(() => {
+    bookTitleRef.current = book?.title?.trim() ?? '';
+  }, [book?.title]);
 
   const loadBook = useCallback(async () => {
     try {
@@ -87,8 +106,10 @@ export function useReaderBook({ bookId, token, onBookOpened }: UseReaderBookOpti
       if (requestId !== pageRequestRef.current) return;
       const totalWords = Number(data?.totalWords) || 0;
       const wordsRead = Number(data?.wordsRead) || 0;
+      const rawText = typeof data?.text === 'string' ? data.text : '';
       setContent({
         ...data,
+        text: page === 1 ? stripLeadingBookTitle(rawText, bookTitleRef.current) : rawText,
         progress: totalWords > 0 ? Math.round((wordsRead / totalWords) * 100) : 0,
       });
       setError('');

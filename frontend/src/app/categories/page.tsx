@@ -12,9 +12,6 @@ import { FoldersIcon } from '@/components/ui/icons';
 import CategoryIcon from '@/components/dictionary/CategoryIcon';
 import { motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 interface CategorySummary {
   id: number;
@@ -30,21 +27,12 @@ interface CategorySummary {
 }
 
 export default function CategoriesPage() {
-  const { status } = useSession();
-  const router = useRouter();
-
   const {
     data: categoriesData,
     error: categoriesError,
     isLoading,
     refresh,
   } = useApiQuery<CategorySummary[]>('/api/categories');
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
 
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
   // Ошибку показываем, только если данных нет: устаревший кэш при неудачном

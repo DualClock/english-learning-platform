@@ -55,13 +55,15 @@ export default function ParallelText({ chunks, loading, error, showHint, onRetry
   return (
     <div>
       {showHint && (
-        <p className="mb-4 text-caption italic text-slate">Кликайте по словам в обычном режиме EN</p>
+        <p className="mb-4 font-reading text-caption italic text-[var(--reader-ink-soft)]">
+          Кликайте по словам в обычном режиме EN
+        </p>
       )}
-      <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 md:items-start">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-2 lg:items-start">
         {chunks.map((chunk, i) => (
           <Fragment key={i}>
-            <p className="text-ink">{chunk.en}</p>
-            <p className="text-charcoal">{chunk.ru ?? ''}</p>
+            <p className="leading-relaxed text-[var(--reader-ink)]">{chunk.en}</p>
+            <p className="leading-relaxed text-[var(--reader-ink-soft)]">{chunk.ru ?? ''}</p>
           </Fragment>
         ))}
       </div>

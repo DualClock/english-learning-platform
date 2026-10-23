@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import LexiSign from './brand/lexi/LexiSign';
 import FeedbackTrigger from './feedback/FeedbackTrigger';
-import { resolveAvatarSrc } from '@/app/lib/avatars';
+import UserAvatar from './UserAvatar';
 import { prefetchApi } from '@/app/lib/api-client';
 import { useCallback, type ComponentType } from 'react';
 import {
@@ -23,6 +23,8 @@ import {
   SlidersIcon,
   TestIcon,
   TrendUpIcon,
+  UserIcon,
+  VolumeIcon,
   type IconProps,
 } from './ui/icons';
 
@@ -34,6 +36,7 @@ const ROUTE_PREFETCH: Record<string, string[]> = {
   '/categories': ['/api/categories'],
   '/review': ['/api/review/today'],
   '/progress': ['/api/progress/achievements', '/api/progress/streak'],
+  '/profile': ['/api/profile', '/api/progress/achievements', '/api/progress/streak', '/api/progress/leaderboard', '/api/books'],
   '/grammar': ['/api/grammar/units'],
   '/translator': ['/api/profile'],
   '/writing': ['/api/profile'],
@@ -49,9 +52,11 @@ const navigation: { name: string; href: string; Icon: ComponentType<IconProps> }
   { name: 'Категории', href: '/categories', Icon: FoldersIcon },
   { name: 'Повторение', href: '/review', Icon: RepeatIcon },
   { name: 'Прогресс', href: '/progress', Icon: TrendUpIcon },
+  { name: 'Профиль', href: '/profile', Icon: UserIcon },
   { name: 'Грамматика', href: '/grammar', Icon: BookOpenIcon },
   { name: 'Тест', href: '/quiz', Icon: TestIcon },
-  { name: 'Аудирование', href: '/practice/dictation', Icon: HeadphonesIcon },
+  { name: 'Аудирование', href: '/listening', Icon: HeadphonesIcon },
+  { name: 'Диктант', href: '/practice/dictation', Icon: VolumeIcon },
   { name: 'Произношение', href: '/practice/pronunciation', Icon: MicIcon },
   { name: 'Письмо', href: '/writing', Icon: PenIcon },
   { name: 'AI Собеседник', href: '/translator', Icon: BotIcon },
@@ -156,25 +161,31 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
             Настройки
           </Link>
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={resolveAvatarSrc(session?.avatarUrl)}
-                alt="Аватар"
-                className="w-full h-full object-cover"
+            <Link
+              href="/profile"
+              onClick={onClose}
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-md transition-colors duration-fast ease-soft hover:bg-white/5"
+              aria-label="Открыть профиль"
+            >
+              <UserAvatar
+                avatarUrl={session?.avatarUrl}
+                frame={session?.avatarFrame}
+                name={session?.user?.email ?? undefined}
+                className="h-11 w-11 shrink-0"
               />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-body-sm font-medium text-on-dark truncate">
-                {session?.user?.email}
-              </p>
-              <Link
-                href="/api/auth/signout"
-                className="text-caption text-on-dark-muted hover:text-on-dark transition-colors duration-fast ease-soft"
-              >
-                Выйти
-              </Link>
-            </div>
+              <div className="min-w-0">
+                <p className="truncate text-body-sm font-medium text-on-dark">
+                  {session?.user?.email}
+                </p>
+                <span className="text-caption text-on-dark-muted">Профиль</span>
+              </div>
+            </Link>
+            <Link
+              href="/api/auth/signout"
+              className="shrink-0 text-caption text-on-dark-muted transition-colors duration-fast ease-soft hover:text-on-dark"
+            >
+              Выйти
+            </Link>
           </div>
         </div>
       </aside>

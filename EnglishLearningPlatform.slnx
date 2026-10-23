@@ -4,4 +4,5 @@
   </Folder>
   <Project Path="EnglishLearningPlatform.API.Tests/EnglishLearningPlatform.API.Tests.csproj" />
   <Project Path="EnglishLearningPlatform.API/EnglishLearningPlatform.API.csproj" />
+  <Project Path="EnglishLearningPlatform.TestRunner/EnglishLearningPlatform.TestRunner.csproj" />
 </Solution>

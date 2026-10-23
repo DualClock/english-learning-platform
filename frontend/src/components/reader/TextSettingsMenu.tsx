@@ -34,7 +34,7 @@ export default function TextSettingsMenu({
         aria-label="Настройки текста"
         aria-expanded={open}
         title="Настройки текста"
-        className="icon-chip font-semibold"
+        className="reader-icon-btn font-semibold"
       >
         Aa
       </button>
@@ -48,39 +48,39 @@ export default function TextSettingsMenu({
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="card fixed left-4 right-4 top-24 z-50 p-4 shadow-modal sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72"
+              className="reader-paper fixed left-4 right-4 top-20 z-50 rounded-lg border border-[var(--reader-hairline)] p-4 shadow-modal sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72"
             >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-body-sm font-semibold text-ink">Текст</h2>
+                <h2 className="font-reading text-body-sm font-semibold text-[var(--reader-ink)]">Текст</h2>
                 <button
                   type="button"
                   onClick={onToggle}
                   aria-label="Закрыть настройки текста"
-                  className="rounded p-1 text-slate transition-colors duration-fast ease-soft hover:bg-surface hover:text-ink"
+                  className="rounded p-1 text-[var(--reader-ink-soft)] transition-colors duration-fast ease-soft hover:bg-[var(--reader-wash)] hover:text-[var(--reader-ink)]"
                 >
                   <CloseIcon size={16} />
                 </button>
               </div>
 
               <div className="flex items-center justify-between gap-3">
-                <span className="text-body-sm text-slate">Размер</span>
+                <span className="text-body-sm text-[var(--reader-ink-soft)]">Размер</span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => onFontSizeChange(-1)}
                     disabled={fontSize <= MIN_FONT_SIZE}
                     aria-label="Уменьшить текст"
-                    className="icon-chip h-9 w-9 font-semibold"
+                    className="reader-icon-btn h-9 min-w-9 border border-[var(--reader-hairline)] font-semibold"
                   >
                     A−
                   </button>
-                  <span className="w-8 text-center text-body-sm tabular-nums text-ink">{fontSize}</span>
+                  <span className="w-8 text-center text-body-sm tabular-nums text-[var(--reader-ink)]">{fontSize}</span>
                   <button
                     type="button"
                     onClick={() => onFontSizeChange(1)}
                     disabled={fontSize >= MAX_FONT_SIZE}
                     aria-label="Увеличить текст"
-                    className="icon-chip h-9 w-9 font-semibold"
+                    className="reader-icon-btn h-9 min-w-9 border border-[var(--reader-hairline)] font-semibold"
                   >
                     A+
                   </button>
@@ -88,9 +88,9 @@ export default function TextSettingsMenu({
               </div>
 
               <label className="mt-4 block">
-                <span className="mb-1 flex items-center justify-between text-body-sm text-slate">
+                <span className="mb-1 flex items-center justify-between text-body-sm text-[var(--reader-ink-soft)]">
                   <span>Ширина строки</span>
-                  <span className="tabular-nums text-ink">{lineWidth}</span>
+                  <span className="tabular-nums text-[var(--reader-ink)]">{lineWidth}</span>
                 </span>
                 <input
                   type="range"

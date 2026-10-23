@@ -1,30 +1,20 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { motion } from 'motion/react';
-import { transition } from '@/lib/motion';
-import { formatNumber } from '@/lib/format';
-import ProgressBar from '@/components/ui/ProgressBar';
-import {
-  BookmarkFilledIcon,
-  BookmarkIcon,
-  ChevronRightIcon,
-  MenuIcon,
-  NotebookIcon,
-} from '@/components/ui/icons';
+import { BookmarkFilledIcon, BookmarkIcon, ChevronRightIcon, MenuIcon, NotebookIcon } from '@/components/ui/icons';
 import type { IconProps } from '@/components/ui/icons';
-import type { BookContent, PageDifficulty } from './types';
 import TextSettingsMenu from './TextSettingsMenu';
 
 interface Props {
-  content: BookContent;
-  pageDifficulty: PageDifficulty | null;
+  bookTitle: string;
+  chapterTitle: string;
   hasBookmark: boolean;
   parallelMode: boolean;
   panelOpen: boolean;
   notesVisible: boolean;
   notesCount: number;
   canCollect: boolean;
+  railOpen: boolean;
   textSettings: {
     open: boolean;
     onToggle: () => void;
@@ -35,6 +25,7 @@ interface Props {
     onReset: () => void;
   };
   onOpenDrawer: () => void;
+  onToggleRail: () => void;
   onToggleBookmark: () => void;
   onToggleParallel: () => void;
   onTogglePanel: () => void;
@@ -42,20 +33,23 @@ interface Props {
 }
 
 /**
- * Панель управления чтением. Полоса прогресса тянется от ответа сервера,
- * остальные контролы — обычные чипы: отклик нажатием, без тени в покое.
+ * Верхняя панель читальни: глава слева, инструменты справа. На телефоне
+ * остаются только полка, закладка, кегль и RU — остальное живёт в полке,
+ * чтобы текст начинался выше и дышал.
  */
 export default function ReaderToolbar({
-  content,
-  pageDifficulty,
+  bookTitle,
+  chapterTitle,
   hasBookmark,
   parallelMode,
   panelOpen,
   notesVisible,
   notesCount,
   canCollect,
+  railOpen,
   textSettings,
   onOpenDrawer,
+  onToggleRail,
   onToggleBookmark,
   onToggleParallel,
   onTogglePanel,
@@ -64,46 +58,36 @@ export default function ReaderToolbar({
   const BookmarkIconType: ComponentType<IconProps> = hasBookmark ? BookmarkFilledIcon : BookmarkIcon;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-      <div className="w-full sm:w-48">
-        <div className="mb-1 flex justify-between text-caption text-slate">
-          <span className="tabular-nums text-primary">{content.progress}%</span>
-          <span className="tabular-nums">
-            {formatNumber(content.wordsRead)} / {formatNumber(content.totalWords)}
-          </span>
-        </div>
-        <ProgressBar value={content.progress} label="Прогресс чтения" />
-      </div>
-
-      <span className="text-body-sm tabular-nums text-slate">
-        {content.currentPage} / {content.totalPages}
-      </span>
-
-      {/* Доля знакомых слов на текущей странице */}
-      {pageDifficulty && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={transition.fast}
-          className="inline-flex h-10 items-center gap-1.5 rounded-md border border-hairline-strong bg-canvas px-2.5 text-body-sm text-slate"
-          title={`Знакомых: ${pageDifficulty.knownPercent}% · изучаемых: ${pageDifficulty.learningPercent}% · новых: ${pageDifficulty.newPercent}%`}
-        >
-          <span className="font-semibold tabular-nums text-primary">
-            {Math.round(pageDifficulty.knownPercent)}%
-          </span>
-          <span className="hidden sm:inline">знакомых</span>
-        </motion.span>
-      )}
-
+    <header className="flex h-14 shrink-0 items-center gap-1 border-b border-[var(--reader-hairline)] bg-[var(--reader-paper)] px-2 sm:px-4">
       <button
         type="button"
         onClick={onOpenDrawer}
-        title="Оглавление"
+        title="Оглавление и заметки"
         aria-label="Оглавление"
-        className="icon-chip"
+        className="reader-icon-btn lg:hidden"
       >
         <MenuIcon size={20} />
       </button>
+
+      <button
+        type="button"
+        onClick={onToggleRail}
+        title={railOpen ? 'Скрыть книжную полку' : 'Показать книжную полку'}
+        aria-label="Оглавление"
+        aria-expanded={railOpen}
+        className="reader-icon-btn hidden lg:inline-flex"
+      >
+        <MenuIcon size={20} />
+      </button>
+
+      <div className="min-w-0 flex-1 px-1">
+        <p className="truncate font-heading text-body-sm font-medium text-[var(--reader-ink)] lg:hidden">
+          {bookTitle}
+        </p>
+        <p className="hidden truncate font-reading text-body-sm text-[var(--reader-ink)] lg:block">
+          {chapterTitle}
+        </p>
+      </div>
 
       <button
         type="button"
@@ -111,10 +95,25 @@ export default function ReaderToolbar({
         title={hasBookmark ? 'Убрать закладку' : 'Поставить закладку'}
         aria-label={hasBookmark ? 'Убрать закладку' : 'Поставить закладку'}
         aria-pressed={hasBookmark}
-        className={hasBookmark ? 'icon-chip border-transparent bg-surface text-ink' : 'icon-chip'}
+        className="reader-icon-btn"
       >
         <BookmarkIconType size={20} />
       </button>
+
+      {canCollect && (
+        <button
+          type="button"
+          onClick={onToggleNotes}
+          aria-label={`Конспект, слов: ${notesCount}`}
+          aria-expanded={notesVisible}
+          title="Конспект"
+          data-active={notesVisible}
+          className="reader-icon-btn"
+        >
+          <NotebookIcon size={20} />
+          <span className="tabular-nums">{notesCount}</span>
+        </button>
+      )}
 
       <TextSettingsMenu
         open={textSettings.open}
@@ -127,15 +126,16 @@ export default function ReaderToolbar({
       />
 
       <button
+        type="button"
         onClick={onToggleParallel}
         title="Параллельный перевод"
+        aria-label="Параллельный перевод"
         aria-pressed={parallelMode}
-        className={parallelMode ? 'icon-chip-active font-semibold' : 'icon-chip font-semibold'}
+        className="reader-icon-btn font-semibold"
       >
         {parallelMode ? 'RU' : 'EN'}
       </button>
 
-      {/* Свернуть/развернуть панель перевода — только на десктопе */}
       {!parallelMode && (
         <button
           type="button"
@@ -143,23 +143,12 @@ export default function ReaderToolbar({
           title={panelOpen ? 'Свернуть перевод' : 'Показать перевод'}
           aria-label={panelOpen ? 'Свернуть панель перевода' : 'Показать панель перевода'}
           aria-expanded={panelOpen}
-          className="icon-chip hidden md:inline-flex"
+          data-active={panelOpen}
+          className="reader-icon-btn hidden lg:inline-flex"
         >
           <ChevronRightIcon size={20} className={panelOpen ? '' : 'rotate-180'} />
         </button>
       )}
-
-      {canCollect && (
-        <button
-          onClick={onToggleNotes}
-          aria-label={`Конспект, слов: ${notesCount}`}
-          aria-expanded={notesVisible}
-          className={notesVisible ? 'icon-chip-active' : 'icon-chip'}
-        >
-          <NotebookIcon size={20} />
-          <span className="tabular-nums">{notesCount}</span>
-        </button>
-      )}
-    </div>
+    </header>
   );
 }

@@ -79,6 +79,9 @@ export interface TocItem {
   level: number;
 }
 
+/** Три кармана книжной полки: содержание, закладки и конспект */
+export type ReaderRailTab = 'toc' | 'bookmarks' | 'notes';
+
 export interface PageDifficulty {
   page: number;
   totalWords: number;
@@ -116,6 +119,17 @@ export function getSentenceContext(text: string, start: number, end: number): st
   return text.slice(s + 1, e).trim();
 }
 
+/**
+ * EPUB-разметка иногда дублирует название главы в первом абзаце. Для
+ * параллельного перевода оригинал и перевод приходят отдельными кусками,
+ * поэтому повтор ищем как одинаковую фразу в начале строки — на любом языке.
+ */
+export function stripRepeatedLeadingPhrase(text: string): string {
+  if (!text) return text;
+  const repeatedPhrase = /^((?:\S+\s+){1,6}?\S+)\s+\1(?=\s|$|[.,!?;:])/i;
+  return text.replace(repeatedPhrase, '').trimStart();
+}
+
 export const TOOLTIP_DELAY = 250;
 
 export const TUTORIAL_STORAGE_KEY = 'reader_tutorial_seen';
@@ -128,7 +142,7 @@ export const MAX_FONT_SIZE = 28;
 export const DEFAULT_FONT_SIZE = 20;
 export const MIN_LINE_WIDTH = 45;
 export const MAX_LINE_WIDTH = 90;
-export const DEFAULT_LINE_WIDTH = 68;
+export const DEFAULT_LINE_WIDTH = 64;
 
 // Свайп должен быть заметно горизонтальным, иначе это скролл или тап по слову
 export const SWIPE_MIN_DISTANCE = 60;
@@ -136,27 +150,45 @@ export const SWIPE_DIRECTION_RATIO = 1.5;
 
 export const TUTORIAL_STEPS: {
   text: string;
-  circle: { top: string; left: string; size: number };
-  card: { top: string; left: string };
+  circle: { top: string; left: string; size: number; mobile?: { top: string; left: string; size: number } };
+  card: { top: string; left: string; mobile?: { top: string; left: string } };
 }[] = [
   {
     text: 'Кликните на любое слово — получите мгновенный перевод',
-    circle: { top: '48%', left: '40%', size: 110 },
-    card: { top: '62%', left: '40%' },
+    circle: { top: '48%', left: '50%', size: 120 },
+    card: { top: '62%', left: '50%' },
   },
   {
     text: 'Слова с пунктиром под строкой — маркеры: кликните, чтобы собрать в конспект. В конце чтения — мини-тест',
-    circle: { top: '56%', left: '44%', size: 110 },
-    card: { top: '70%', left: '44%' },
+    circle: { top: '56%', left: '46%', size: 120 },
+    card: { top: '68%', left: '46%', mobile: { top: '66%', left: '50%' } },
   },
   {
-    text: 'Включите RU — увидите параллельный перевод страницы',
-    circle: { top: '13%', left: '76%', size: 90 },
-    card: { top: '22%', left: '70%' },
+    text: 'Кнопка EN / RU — параллельный перевод всей страницы',
+    circle: {
+      top: '3.5%',
+      left: '91%',
+      size: 76,
+      mobile: { top: '3.5%', left: '93%', size: 72 },
+    },
+    card: {
+      top: '16%',
+      left: '80%',
+      mobile: { top: '18%', left: '50%' },
+    },
   },
   {
-    text: 'Здесь ваш конспект. Завершите чтение — и получите тест + новые слова в словарь',
-    circle: { top: '13%', left: '86%', size: 90 },
-    card: { top: '22%', left: '80%' },
+    text: 'Слева — книжная полка: главы, закладки, конспект и завершение чтения. На телефоне её открывает меню',
+    circle: {
+      top: '22%',
+      left: '12%',
+      size: 110,
+      mobile: { top: '4%', left: '7%', size: 68 },
+    },
+    card: {
+      top: '32%',
+      left: '34%',
+      mobile: { top: '18%', left: '50%' },
+    },
   },
 ];

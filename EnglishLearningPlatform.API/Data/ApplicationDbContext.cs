@@ -39,10 +39,16 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<UserErrorBankEntry> UserErrorBankEntries => Set<UserErrorBankEntry>();
     public DbSet<UserKnownWord> UserKnownWords => Set<UserKnownWord>();
     public DbSet<BookBookmark> BookBookmarks => Set<BookBookmark>();
+    public DbSet<LeagueWeekState> LeagueWeekStates => Set<LeagueWeekState>();
+    public DbSet<LeagueHistory> LeagueHistories => Set<LeagueHistory>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<LeagueHistory>()
+            .HasIndex(h => new { h.UserId, h.WeekStart })
+            .IsUnique();
 
         // Квоты и учёт токенов: выборка usage за день по пользователю
         builder.Entity<AiUsageLog>()
@@ -137,6 +143,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Недельная лига читает XP за интервал по всем пользователям.
+        builder.Entity<XpEvent>()
+            .HasIndex(x => x.CreatedAt);
 
         // BookKeyWord конфигурация
         builder.Entity<BookKeyWord>()

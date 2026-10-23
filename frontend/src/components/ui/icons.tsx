@@ -153,6 +153,9 @@ export const LogOutIcon = (p: P) => (
 export const UserIcon = (p: P) => (
   <Icon {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></Icon>
 );
+export const LockIcon = (p: P) => (
+  <Icon {...p}><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></Icon>
+);
 export const PlayIcon = (p: P) => <Icon {...p}><path d="M6 4l14 8-14 8z" fill="currentColor" /></Icon>;
 export const PauseIcon = (p: P) => <Icon {...p}><path d="M7 4v16M17 4v16" /></Icon>;
 export const StopIcon = (p: P) => <Icon {...p}><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></Icon>;

@@ -2,14 +2,15 @@
 
 import AppLayout from '@/components/AppLayout';
 import Link from 'next/link';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import WordListsSection from '@/components/dictionary/WordListsSection';
 import DictionarySkeleton from '@/components/dictionary/DictionarySkeleton';
+import DictionaryWordRow from '@/components/dictionary/DictionaryWordRow';
+import type { DictionaryWord } from '@/components/dictionary/types';
 import Pager from '@/components/Pager';
-import { useSpeech } from '@/hooks/useSpeech';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { isPaged, type Paged } from '@/app/lib/paged';
@@ -17,30 +18,14 @@ import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 import {
   AlertIcon,
   PlusIcon,
+  RepeatIcon,
   SearchIcon,
-  TrashIcon,
-  VolumeIcon,
 } from '@/components/ui/icons';
-import { transition } from '@/lib/motion';
 import { pluralWords } from '@/lib/plural';
 import { formatNumber } from '@/lib/format';
-
-interface Word {
-  id: number;
-  text: string;
-  language?: string;
-  definitions: {
-    id: number;
-    definition: string;
-    partOfSpeech?: string;
-    example?: string;
-  }[];
-  createdAt: string;
-}
 
 function DictionaryTabs() {
   const searchParams = useSearchParams();
@@ -75,7 +60,6 @@ function DictionaryTabs() {
 
 function DictionaryContent() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
@@ -96,13 +80,13 @@ function DictionaryContent() {
     error: wordsError,
     isLoading: wordsLoading,
     refresh: refreshWords
-  } = useApiQuery<Paged<Word> | Word[]>(
+  } = useApiQuery<Paged<DictionaryWord> | DictionaryWord[]>(
     wordsPath,
     { enabled: status === 'authenticated' }
   );
 
-  const paged = isPaged<Word>(wordsData) ? wordsData : null;
-  const words: Word[] = paged ? paged.items : Array.isArray(wordsData) ? wordsData : [];
+  const paged = isPaged<DictionaryWord>(wordsData) ? wordsData : null;
+  const words: DictionaryWord[] = paged ? paged.items : Array.isArray(wordsData) ? wordsData : [];
   const totalCount = paged ? paged.totalCount : words.length;
   const totalPages = paged ? paged.totalPages : 1;
   const isInitialLoading = wordsLoading && wordsData === undefined;
@@ -110,12 +94,6 @@ function DictionaryContent() {
   // Ошибка загрузки показывается баннером только если слова на экране остались:
   // пустой список с той же ошибкой — это уже состояние ErrorState.
   const bannerError = actionError || (words.length > 0 ? loadError : '');
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
 
   const searchWords = () => {
     const nextQuery = searchQuery.trim();
@@ -155,8 +133,6 @@ function DictionaryContent() {
     }
   };
 
-  const { speak } = useSpeech();
-
   if (status === 'loading' || (activeTab === 'my' && isInitialLoading)) {
     return (
       <AppLayout>
@@ -183,10 +159,16 @@ function DictionaryContent() {
         title="Словарь"
         subtitle={`${formatNumber(totalCount)} ${pluralWords(totalCount)} сохранено`}
         actions={
-          <Button href="/dictionary/add" variant="primary">
-            <PlusIcon size={16} />
-            Добавить слово
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button href="/review" variant="secondary">
+              <RepeatIcon size={16} />
+              Учить слова
+            </Button>
+            <Button href="/dictionary/add" variant="primary">
+              <PlusIcon size={16} />
+              Добавить слово
+            </Button>
+          </div>
         }
       />
 
@@ -279,45 +261,13 @@ function DictionaryContent() {
         <motion.ul className="stagger space-y-3" initial={false}>
           <AnimatePresence initial={false}>
             {words.map((word) => (
-              <motion.li
+              <DictionaryWordRow
                 key={word.id}
-                exit={{ opacity: 0, x: -12, transition: transition.fast }}
-                className="card flex items-center justify-between gap-4 p-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={() => speak(word.text)}
-                      className="text-body-lg font-semibold text-ink transition-colors duration-fast hover:text-primary"
-                    >
-                      {word.text}
-                    </button>
-                    <button
-                      onClick={() => speak(word.text)}
-                      className="icon-chip h-8 min-w-8 px-2"
-                      title="Произнести"
-                      aria-label={`Произнести ${word.text}`}
-                    >
-                      <VolumeIcon size={16} />
-                    </button>
-                    {word.definitions[0]?.partOfSpeech && (
-                      <Badge tone="neutral">{word.definitions[0].partOfSpeech}</Badge>
-                    )}
-                  </div>
-                  <p className="mt-1 text-body-sm text-slate">{word.definitions[0]?.definition}</p>
-                  {word.definitions[0]?.example && (
-                    <p className="mt-1 text-body-sm italic text-slate">«{word.definitions[0].example}»</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => deleteWord(word.id)}
-                  className="icon-chip h-10 w-10 shrink-0 border-transparent bg-transparent text-semantic-error hover:bg-surface-danger"
-                  title="Удалить слово"
-                  aria-label={`Удалить ${word.text}`}
-                >
-                  <TrashIcon size={20} />
-                </button>
-              </motion.li>
+                word={word}
+                token={session?.accessToken}
+                onDelete={deleteWord}
+                onUpdated={refreshWords}
+              />
             ))}
           </AnimatePresence>
         </motion.ul>

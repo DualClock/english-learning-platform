@@ -33,9 +33,13 @@ public partial class FilesController : ControllerBase
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
-    // Имя загруженного аватара — GUID без дефисов + расширение (см. AvatarService)
+    // Имя загруженного файла — GUID без дефисов + расширение (см. AvatarService
+    // и WordImageService).
     [GeneratedRegex(@"^[a-f0-9]{32}\.(jpg|png|webp)$")]
     private static partial Regex AvatarFileNameRegex();
+
+    [GeneratedRegex(@"^[a-f0-9]{32}\.(jpg|png|webp)$")]
+    private static partial Regex WordImageFileNameRegex();
 
     // GET: api/files/avatars/{fileName}
     [HttpGet("avatars/{fileName}")]
@@ -59,6 +63,32 @@ public partial class FilesController : ControllerBase
         var contentType = AvatarContentTypes.TryGetValue(extension, out var type) ? type : "application/octet-stream";
 
         // Аватар личный: кэшировать можно только в браузере, не в общих прокси
+        Response.Headers.CacheControl = "private, max-age=300";
+        return PhysicalFile(path, contentType);
+    }
+
+    // GET: api/files/word-images/{fileName}
+    // Картинка слова личная: доступна только владельцу UserWord.
+    [HttpGet("word-images/{fileName}")]
+    public async Task<IActionResult> GetWordImage(string fileName)
+    {
+        if (!WordImageFileNameRegex().IsMatch(fileName)) return NotFound();
+
+        var userId = GetUserId();
+        var imageUrl = $"/uploads/word-images/{fileName}";
+        var isOwner = await _context.UserWords
+            .AsNoTracking()
+            .AnyAsync(uw => uw.UserId == userId && uw.ImageUrl == imageUrl);
+        if (!isOwner) return NotFound();
+
+        var path = Path.Combine(WordImagesDirectory(), fileName);
+        if (!System.IO.File.Exists(path)) return NotFound();
+
+        var extension = Path.GetExtension(fileName);
+        var contentType = AvatarContentTypes.TryGetValue(extension, out var type)
+            ? type
+            : "application/octet-stream";
+
         Response.Headers.CacheControl = "private, max-age=300";
         return PhysicalFile(path, contentType);
     }
@@ -92,6 +122,9 @@ public partial class FilesController : ControllerBase
 
     private string AvatarDirectory() =>
         Path.Combine(UploadsDirectory(), "avatars");
+
+    private string WordImagesDirectory() =>
+        Path.Combine(UploadsDirectory(), "word-images");
 
     private string BooksDirectory() =>
         Path.Combine(UploadsDirectory(), "books");

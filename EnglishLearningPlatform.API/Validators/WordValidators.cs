@@ -15,8 +15,8 @@ public class AddWordRequestValidator : AbstractValidator<AddWordRequest>
             .Matches(@"^[a-zA-Z\s\-']+$").WithMessage("Только английские буквы, пробелы, дефисы и апострофы");
 
         RuleFor(x => x.Definition)
-            .NotEmpty().WithMessage("Перевод обязателен")
-            .MaximumLength(500).WithMessage("Перевод не может быть длиннее 500 символов");
+            .MaximumLength(500).WithMessage("Перевод не может быть длиннее 500 символов")
+            .When(x => !string.IsNullOrWhiteSpace(x.Definition));
 
         RuleFor(x => x.PartOfSpeech)
             .MaximumLength(50).WithMessage("Часть речи не может быть длиннее 50 символов")
@@ -29,8 +29,12 @@ public class AddWordRequestValidator : AbstractValidator<AddWordRequest>
         RuleFor(x => x.Source)
             .MaximumLength(20).WithMessage("Источник не может быть длиннее 20 символов")
             .Must(s => s == null || DictionaryService.AllowedSources.Contains(s))
-            .WithMessage("Источник должен быть одним из: manual, reader, key_word, grammar, list, quiz")
+            .WithMessage("Источник должен быть одним из: manual, reader, key_word, grammar, list, quiz, category, bulk")
             .When(x => !string.IsNullOrEmpty(x.Source));
+
+        RuleFor(x => x.Context)
+            .MaximumLength(500).WithMessage("Контекст не может быть длиннее 500 символов")
+            .When(x => !string.IsNullOrEmpty(x.Context));
     }
 }
 

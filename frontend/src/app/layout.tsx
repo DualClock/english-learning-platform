@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope, Inter } from 'next/font/google';
+import { Manrope, Inter, Literata } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 import { THEME_PREPAINT_SCRIPT } from '@/lib/theme';
@@ -13,6 +13,17 @@ const manrope = Manrope({
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+/*
+ * Literata — наборный шрифт для длинного чтения: крупный овал, спокойные
+ * засечки, кириллица. В интерфейсе остаются Manrope и Inter, поэтому
+ * «книга» и «приложение» звучат по-разному.
+ */
+const literata = Literata({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-literata',
   display: 'swap',
 });
 
@@ -71,7 +82,7 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${manrope.variable} ${inter.variable}`}
+      className={`${manrope.variable} ${inter.variable} ${literata.variable}`}
       // Скрипт до первой отрисовки ставит на <html> data-theme, которого React
       // на сервере не знает. Это единственный узел, где такое расхождение
       // намеренное, поэтому предупреждение гидрации глушим здесь, а не в токенах.

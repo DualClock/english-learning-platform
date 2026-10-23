@@ -7,15 +7,29 @@ import ErrorState from '@/components/ui/ErrorState';
 import LoadingState from '@/components/ui/LoadingState';
 import { Tag } from '@/components/ui/Badge';
 import { useTheme } from '@/components/ThemeProvider';
-import { THEME_MODES } from '@/lib/theme';
-import { CheckIcon } from '@/components/ui/icons';
+import {
+  ACCENT_THEMES,
+  THEME_MODES,
+  applyAccent,
+  normalizeAccent,
+  writeAccent,
+  type AccentTheme,
+} from '@/lib/theme';
+import {
+  AVATAR_FRAMES,
+  frameLabel,
+  frameUnlocked,
+  normalizeFrame,
+  type AvatarFrame,
+} from '@/lib/customization';
+import UserAvatar from '@/components/UserAvatar';
+import { CheckIcon, LockIcon } from '@/components/ui/icons';
 import Notice from '@/components/ui/Notice';
 import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
-import { resolveAvatarSrc } from '@/app/lib/avatars';
 import AvatarPicker from '@/components/AvatarPicker';
 
 interface Profile {
@@ -23,6 +37,8 @@ interface Profile {
   emailConfirmed?: boolean;
   displayName: string;
   avatarUrl: string | null;
+  avatarFrame?: string | null;
+  accentTheme?: string | null;
   cefrLevel: string | null;
   studyGoal: string | null;
   dailyGoalMinutes: number;
@@ -30,6 +46,15 @@ interface Profile {
   notifyEnabled?: boolean;
   reminderHour?: number;
   timeZoneId?: string | null;
+}
+
+interface AchievementLite {
+  code: string;
+  unlocked: boolean;
+}
+
+interface ProgressLite {
+  achievements: AchievementLite[];
 }
 
 const LEVELS = ['a1', 'a2', 'b1', 'b2', 'c1'];
@@ -115,6 +140,7 @@ function ThemePicker() {
 
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
+  const { mode } = useTheme();
   const router = useRouter();
 
   const {
@@ -126,6 +152,10 @@ export default function SettingsPage() {
     enabled: status === 'authenticated',
   });
 
+  const { data: progressData } = useApiQuery<ProgressLite>('/api/progress/achievements', {
+    enabled: status === 'authenticated',
+  });
+
   const [displayName, setDisplayName] = useState('');
   const [cefrLevel, setCefrLevel] = useState<string>('');
   const [dailyGoalMinutes, setDailyGoalMinutes] = useState(10);
@@ -134,6 +164,13 @@ export default function SettingsPage() {
   const [reminderHour, setReminderHour] = useState(9);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+  const [selectedFrame, setSelectedFrame] = useState<AvatarFrame>('none');
+  const [savedFrame, setSavedFrame] = useState<AvatarFrame>('none');
+  const [selectedAccent, setSelectedAccent] = useState<AccentTheme>('teal');
+  const [savedAccent, setSavedAccent] = useState<AccentTheme>('teal');
+  const [isSavingCustomization, setIsSavingCustomization] = useState(false);
+  const [customizationNotice, setCustomizationNotice] = useState('');
+  const [customizationError, setCustomizationError] = useState('');
 
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileToast, setProfileToast] = useState('');
@@ -150,12 +187,6 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
-
   // Заполняем форму, когда профиль пришёл из кэша или с сервера.
   useEffect(() => {
     if (!profileData) return;
@@ -166,10 +197,26 @@ export default function SettingsPage() {
     setNotifyEnabled(profileData.notifyEnabled ?? false);
     setReminderHour(profileData.reminderHour ?? 9);
     setAvatarUrl(profileData.avatarUrl ?? null);
+    const frame = normalizeFrame(profileData.avatarFrame);
+    const accent = normalizeAccent(profileData.accentTheme);
+    setSelectedFrame(frame);
+    setSavedFrame(frame);
+    setSelectedAccent(accent);
+    setSavedAccent(accent);
   }, [profileData]);
 
   // Уровень из профиля сравниваем без регистра: чипы хранят ключи строчными
   const activeLevel = (cefrLevel || '').toLowerCase();
+  const unlockedCodes = new Set(
+    (progressData?.achievements ?? [])
+      .filter((achievement) => achievement.unlocked)
+      .map((achievement) => achievement.code)
+  );
+
+  const hasCustomizationChanges =
+    selectedFrame !== savedFrame || selectedAccent !== savedAccent;
+  const accentPreview = ACCENT_THEMES.find((accent) => accent.value === selectedAccent)?.swatch[mode]
+    ?? ACCENT_THEMES[0].swatch[mode];
 
   // Уведомление живёт дольше, чем одно нажатие: таймер снимаем при размонтировании
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -215,6 +262,38 @@ export default function SettingsPage() {
       setProfileError('Не удалось сохранить профиль. Попробуйте ещё раз.');
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const saveCustomization = async () => {
+    setIsSavingCustomization(true);
+    setCustomizationNotice('');
+    setCustomizationError('');
+
+    try {
+      await apiMutate('/api/profile/customization', {
+        token: session?.accessToken,
+        method: 'PUT',
+        body: { avatarFrame: selectedFrame, accentTheme: selectedAccent },
+        invalidate: ['/api/profile'],
+      });
+
+      setSavedFrame(selectedFrame);
+      setSavedAccent(selectedAccent);
+      applyAccent(selectedAccent);
+      writeAccent(selectedAccent);
+
+      try {
+        await update({ avatarFrame: selectedFrame, accentTheme: selectedAccent });
+      } catch {
+        // сервер уже сохранил; сессия подтянется при следующем входе
+      }
+
+      setCustomizationNotice('Оформление применено');
+    } catch {
+      setCustomizationError('Не удалось применить оформление. Попробуйте ещё раз.');
+    } finally {
+      setIsSavingCustomization(false);
     }
   };
 
@@ -338,11 +417,11 @@ export default function SettingsPage() {
           <div className="space-y-5">
             {/* Аватар */}
             <div className="flex items-center gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={resolveAvatarSrc(avatarUrl)}
-                alt="Текущий аватар"
-                className="h-16 w-16 shrink-0 rounded-full object-cover"
+              <UserAvatar
+                avatarUrl={avatarUrl}
+                frame={selectedFrame}
+                name={displayName || session?.user?.email}
+                className="h-16 w-16 shrink-0"
               />
               <div>
                 <p className="text-body-sm font-medium text-ink">
@@ -522,7 +601,190 @@ export default function SettingsPage() {
         {/* Оформление */}
         <section className="card">
           <h2 className="mb-5 text-h3 text-ink">Оформление</h2>
-          <ThemePicker />
+
+          <div className="space-y-6">
+            <ThemePicker />
+
+            <div>
+              <h3 className="text-body-lg font-semibold text-ink">Акцент</h3>
+              <p className={hintCls}>
+                Меняет кнопки и мягкие акцентные поверхности. Светлая и тёмная тема
+                остаются отдельным выбором.
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3" role="group" aria-label="Акцентная тема">
+                {ACCENT_THEMES.map((accent) => {
+                  const swatch = accent.swatch[mode];
+                  const active = selectedAccent === accent.value;
+                  return (
+                    <button
+                      key={accent.value}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        setSelectedAccent(accent.value);
+                        setCustomizationNotice('');
+                        setCustomizationError('');
+                      }}
+                      className={`rounded-lg border p-3 text-left transition-[border-color,box-shadow,transform] duration-fast ease-soft ${
+                        active
+                          ? 'border-primary shadow-card'
+                          : 'border-hairline hover:border-hairline-strong'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-4 w-4 shrink-0 rounded-full"
+                          style={{ background: swatch.primary }}
+                          aria-hidden="true"
+                        />
+                        <span className="text-body-sm font-medium text-ink">{accent.label}</span>
+                        {active && <CheckIcon size={16} className="ml-auto text-primary" />}
+                      </span>
+                      <span className="mt-1 block text-caption leading-snug text-slate">
+                        {accent.description}
+                      </span>
+                      <span className="mt-3 flex flex-wrap items-center gap-2">
+                        <span
+                          className="rounded-md px-2 py-1 text-caption font-medium"
+                          style={{
+                            background: swatch.primary,
+                            color: mode === 'dark' ? '#06202B' : '#FFFFFF',
+                          }}
+                        >
+                          Читать
+                        </span>
+                        <span
+                          className="rounded-full px-2 py-0.5 text-caption font-semibold"
+                          style={{ background: swatch.soft, color: swatch.onSoft }}
+                        >
+                          XP
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-body-lg font-semibold text-ink">Рамка аватара</h3>
+              <p className={hintCls}>
+                Открывается за достижения. Рамка видна в сайдбаре, профиле и здесь.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="Рамка аватара">
+                {AVATAR_FRAMES.map((frame) => {
+                  const unlocked = frameUnlocked(frame.id, unlockedCodes);
+                  const active = selectedFrame === frame.id;
+                  return (
+                    <button
+                      key={frame.id}
+                      type="button"
+                      aria-pressed={active}
+                      disabled={!unlocked}
+                      onClick={() => {
+                        setSelectedFrame(frame.id);
+                        setCustomizationNotice('');
+                        setCustomizationError('');
+                      }}
+                      className={`rounded-lg border p-3 text-left transition-[border-color,box-shadow,transform] duration-fast ease-soft ${
+                        active
+                          ? 'border-primary shadow-card'
+                          : 'border-hairline hover:border-hairline-strong'
+                      } ${unlocked ? '' : 'cursor-not-allowed opacity-60'}`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <UserAvatar
+                          avatarUrl={avatarUrl}
+                          frame={frame.id}
+                          name={displayName || session?.user?.email}
+                          className="h-12 w-12 shrink-0"
+                        />
+                        <span className="min-w-0">
+                          <span className="flex items-center gap-1 text-body-sm font-medium text-ink">
+                            {frame.label}
+                            {!unlocked && <LockIcon size={16} className="shrink-0 text-slate" />}
+                          </span>
+                          <span className="mt-0.5 block text-caption leading-snug text-slate">
+                            {unlocked ? (active ? 'Выбрана' : 'Доступна') : frame.condition}
+                          </span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-hairline bg-surface p-4">
+              <p className="text-caption font-semibold uppercase tracking-wide text-slate">
+                Предпросмотр
+              </p>
+              <div className="mt-3 flex items-center gap-4">
+                <UserAvatar
+                  avatarUrl={avatarUrl}
+                  frame={selectedFrame}
+                  name={displayName || session?.user?.email}
+                  className="h-14 w-14 shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-body-sm font-semibold text-ink">
+                    {displayName || session?.user?.email}
+                  </p>
+                  <p className="mt-0.5 text-caption text-slate">
+                    {frameLabel(selectedFrame)} ·{' '}
+                    {ACCENT_THEMES.find((accent) => accent.value === selectedAccent)?.label}
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span
+                      className="rounded-md px-2.5 py-1 text-caption font-medium"
+                      style={{
+                        background: accentPreview.primary,
+                        color: mode === 'dark' ? '#06202B' : '#FFFFFF',
+                      }}
+                    >
+                      Продолжить
+                    </span>
+                    <span
+                      className="rounded-full px-2 py-0.5 text-caption font-semibold"
+                      style={{ background: accentPreview.soft, color: accentPreview.onSoft }}
+                    >
+                      XP
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {customizationNotice && <Notice>{customizationNotice}</Notice>}
+            {customizationError && <Notice tone="danger">{customizationError}</Notice>}
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={saveCustomization}
+                disabled={isSavingCustomization || !hasCustomizationChanges}
+                className="h-11"
+              >
+                {isSavingCustomization ? 'Применяем…' : 'Применить оформление'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSelectedFrame(savedFrame);
+                  setSelectedAccent(savedAccent);
+                  setCustomizationNotice('');
+                  setCustomizationError('');
+                }}
+                disabled={!hasCustomizationChanges}
+                className="h-11"
+              >
+                Отменить выбор
+              </Button>
+            </div>
+
+            <p className={hintCls}>
+              Рамка и акцент сохраняются в профиле и переживают перезагрузку.
+            </p>
+          </div>
         </section>
 
         {/* Смена пароля */}

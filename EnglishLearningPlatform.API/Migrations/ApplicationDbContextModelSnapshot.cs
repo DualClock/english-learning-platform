@@ -537,6 +537,72 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("Interactions");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.LeagueHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("League")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("NextLeague")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Participants")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("WeekStart")
+                        .HasColumnType("date");
+
+                    b.Property<int>("WeeklyXp")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "WeekStart")
+                        .IsUnique();
+
+                    b.ToTable("LeagueHistories");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.LeagueWeekState", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LastProcessedWeekStart")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LeagueWeekStates");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.ReviewLog", b =>
                 {
                     b.Property<long>("Id")
@@ -581,8 +647,18 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string>("AccentTheme")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
+
+                    b.Property<string>("AvatarFrame")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("AvatarUrl")
                         .HasMaxLength(300)
@@ -625,6 +701,11 @@ namespace EnglishLearningPlatform.API.Migrations
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("League")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -869,6 +950,14 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Property<double>("EaseFactor")
                         .HasColumnType("double precision");
 
+                    b.Property<string>("Emoji")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<int>("Interval")
                         .HasColumnType("integer");
 
@@ -1094,6 +1183,8 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("UserId");
 
@@ -1329,6 +1420,17 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.LeagueHistory", b =>
+                {
+                    b.HasOne("EnglishLearningPlatform.API.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.ReviewLog", b =>

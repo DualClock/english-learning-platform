@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -22,7 +22,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSessionExpired(params.get('reason') === 'session-expired');
+  }, []);
+
+  const nextPath = (): string => {
+    const callback = new URLSearchParams(window.location.search).get('callbackUrl');
+    // Только внутренний путь: протокол-относительные //host и внешние URL отсекаем.
+    return callback && callback.startsWith('/') && !callback.startsWith('//')
+      ? callback
+      : '/dashboard';
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +58,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError(await describeFailure());
     } else {
-      router.push('/dashboard');
+      router.push(nextPath());
     }
 
     setIsLoading(false);
@@ -74,7 +88,15 @@ export default function LoginPage() {
     <AuthLayout>
       <div className="card animate-pop-in p-8">
         <h1 className="mb-2 text-center text-h2 text-ink">С возвращением</h1>
-        <p className="mb-8 text-center text-body text-slate">Продолжим читать?</p>
+        <p className="mb-6 text-center text-body text-slate">Продолжим читать?</p>
+
+        {sessionExpired && (
+          <div className="mb-5">
+            <Notice tone="info">
+              Сессия истекла. Войдите снова — книги, слова и прогресс на месте.
+            </Notice>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input

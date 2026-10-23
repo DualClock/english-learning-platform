@@ -95,7 +95,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
         heading: ['var(--font-manrope)', 'Inter', 'system-ui', 'sans-serif'],
-        reading: ['var(--font-manrope)', 'Georgia', 'serif'],
+        reading: ['var(--font-literata)', 'Literata', 'Georgia', 'Cambria', 'serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       borderRadius: {

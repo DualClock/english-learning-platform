@@ -36,6 +36,14 @@ public class UserWord
     [MaxLength(20)]
     public string Source { get; set; } = "manual";
 
+    // Личный визуал слова: эмодзи или приватная картинка. Хранится на UserWord,
+    // а не на общем Word, чтобы чужие карточки не менялись.
+    [MaxLength(32)]
+    public string? Emoji { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageUrl { get; set; }
+
     // Навигационные свойства
     public User User { get; set; } = null!;
     public Word Word { get; set; } = null!;
