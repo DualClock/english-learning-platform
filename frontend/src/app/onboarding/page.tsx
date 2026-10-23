@@ -27,6 +27,12 @@ import { signIn } from 'next-auth/react';
 import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
 import { getActiveAttribution, registrationPayload } from '@/lib/attribution';
+import {
+  HONEYPOT_WRAPPER_STYLE,
+  buildRegistrationPayload,
+  detectTimeZoneId,
+  honeypotInputProps,
+} from '@/lib/signup-payload';
 
 type Step = 'level' | 'placement' | 'goal' | 'time' | 'account' | 'processing' | 'welcome';
 
@@ -138,6 +144,10 @@ export default function OnboardingPage() {
     email: '',
     password: '',
     notifications: false,
+    // Honeypot (W1.4.4): поле «website» для ботов-автозаполнителей. Человек его
+    // не видит и не трогает, поэтому для живого пользователя это всегда ''.
+    // Сервер отбивает непустое значение в AuthController.Register.
+    website: '',
   });
   const [accountError, setAccountError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
@@ -249,24 +259,26 @@ export default function OnboardingPage() {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          displayName: data.name || undefined,
-          cefrLevel: data.level || undefined,
-          studyGoal: data.goals.length > 0 ? data.goals.join(',') : undefined,
-          dailyGoalMinutes: timeOption?.minutes,
-          // Часовой пояс нужен, чтобы стрик и дневная цель считались по местному времени
-          timeZoneId: (() => {
-            try {
-              return Intl.DateTimeFormat().resolvedOptions().timeZone;
-            } catch {
-              return undefined;
-            }
-          })(),
-          notifyEnabled: data.notifications,
-          ...attribution,
-        }),
+        // Тело собирается в одном месте (src/lib/signup-payload.ts), потому что
+        // имена ключей — это контракт с серверным RegisterDto: опечатку MVC не
+        // показывает, поле просто перестаёт приходить
+        body: JSON.stringify(
+          buildRegistrationPayload(
+            {
+              email: data.email,
+              password: data.password,
+              name: data.name,
+              level: data.level,
+              goals: data.goals,
+              minutes: timeOption?.minutes,
+              notifications: data.notifications,
+              // Часовой пояс нужен, чтобы стрик и дневная цель считались по местному времени
+              timezone: detectTimeZoneId(),
+              website: data.website,
+            },
+            attribution
+          )
+        ),
       });
 
       if (!res.ok) {
@@ -684,6 +696,23 @@ export default function OnboardingPage() {
                         Я согласен получать уведомления о прогрессе и напоминания о занятиях
                       </span>
                     </label>
+
+                    {/* Honeypot (W1.4.4, SECURITY_GATE R-09): автозаполнитель
+                        бота заполняет всё, что видит в разметке, — человек это
+                        поле не видит и не трогает. Спрятано смещением и
+                        clipping-ом вокруг самого поля, а не display:none над
+                        блоком полей: во втором случае из доступности выпадала бы
+                        вся форма. tabIndex={-1} и aria-hidden выносят поле из
+                        клавиатурной обходки и из озвучки скринридером. */}
+                    <div aria-hidden="true" style={HONEYPOT_WRAPPER_STYLE}>
+                      <label htmlFor="onboarding-website">Website</label>
+                      <input
+                        id="onboarding-website"
+                        {...honeypotInputProps(data.website, (event) =>
+                          setData({ ...data, website: event.target.value })
+                        )}
+                      />
+                    </div>
 
                     {/* Кнопки внутри формы: submit уходит один раз, Enter в поле тоже работает */}
                     <div className="flex items-center justify-between gap-3 pt-1">

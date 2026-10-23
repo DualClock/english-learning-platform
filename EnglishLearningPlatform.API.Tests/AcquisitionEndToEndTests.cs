@@ -262,4 +262,24 @@ public class AcquisitionWireFormatTests
         Assert.Null(dto.UtmMedium);
         Assert.Null(dto.UtmContent);
     }
+
+    /// <summary>
+    /// W1.4.4: вторая половина контракта honeypot-а. Сервер ждёт `Website`,
+    /// фронтенд (src/lib/signup-payload.ts) отправляет `website` всегда — пустым
+    /// у живого человека и заполненным у бота. Пока ключ не совпадает, бэкенд
+    /// молча получает null, и защита превращается в декорацию (R-09).
+    /// </summary>
+    [Fact]
+    public void RegisterDto_BindsTheHoneypotFieldTheFrontendSends()
+    {
+        var untouched = JsonSerializer.Deserialize<RegisterDto>(
+            """{"email":"pupil@example.com","password":"Password1","website":""}""",
+            WebJson);
+        var filledByBot = JsonSerializer.Deserialize<RegisterDto>(
+            """{"email":"bot@example.com","password":"Password1","website":"https://spam.example"}""",
+            WebJson);
+
+        Assert.Equal(string.Empty, untouched!.Website);
+        Assert.Equal("https://spam.example", filledByBot!.Website);
+    }
 }
