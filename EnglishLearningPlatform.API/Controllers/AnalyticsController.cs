@@ -25,7 +25,13 @@ public class AnalyticsEventDto
 [Authorize]
 public class AnalyticsController : ControllerBase
 {
-    private static readonly HashSet<string> AllowedEvents = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>
+    /// События аутентифицированного пути. Публично — чтобы тест сверял два
+    /// набора событий (здесь и в AnonymousAnalyticsController) и не давал
+    /// гостевым именам утечь в прод-аналитику читателя, а читательским — в
+    /// анонимный write-путь.
+    /// </summary>
+    public static readonly IReadOnlySet<string> AllowedEvents = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "login", "register", "book_opened", "page_read", "word_translated",
         "word_learned", "word_reviewed", "session_finished", "lesson_completed",
@@ -114,12 +120,39 @@ public class AnalyticsController : ControllerBase
 
     public sealed record AcquisitionTotals(int Registrations, int Activated);
 
+    /// <summary>
+    /// Верх воронки за день: то, что видит менеджер одним взглядом — сколько
+    /// гостей открыли тест, сколько дошли до результата, сколько зарегистрировалось
+    /// и сколько из них открыло первую главу.
+    ///
+    /// Гостевые колонки считаются по проходам /test (у гостя нет аккаунта, по
+    /// которому можно было бы построить когорту), регистрационные — по когорте
+    /// этого дня, ровно как в <see cref="AcquisitionRow"/>. Числа `rows` и `funnel`
+    /// сходятся: funnel — это сумма строк дня по всем каналам плюс гостевые события.
+    /// </summary>
+    public sealed record FunnelRow(
+        string Date,
+        int GuestStarts,
+        int GuestCompletions,
+        int GuestVisitors,
+        int Registrations,
+        int Activated);
+
+    /// <summary>Распределение гостевых результатов по уровням — зачем человек пришёл и что ему предлагать дальше.</summary>
+    public sealed record GuestLevelRow(string Level, int Completions);
+
+    /// <summary>Гостевые итоги за окно. `Visitors` — разных хешей IP, а не людей: семья за одним NAT = один гость.</summary>
+    public sealed record GuestTotals(int Starts, int Completions, int Visitors);
+
     public sealed record AcquisitionReport(
         int Days,
         string Since,
         AcquisitionRow[] Rows,
         AcquisitionChannel[] ByChannel,
-        AcquisitionTotals Totals);
+        AcquisitionTotals Totals,
+        FunnelRow[] Funnel,
+        GuestLevelRow[] ByLevel,
+        GuestTotals Guest);
 
     public const int DefaultAcquisitionDays = 14;
     private const int MinAcquisitionDays = 1;
@@ -232,6 +265,71 @@ public class AnalyticsController : ControllerBase
             .OrderByDescending(c => c.Registrations)
             .ToArray();
 
+        // ---- Гостевая половина воронки (W2.4) -------------------------------
+        // До этого момента выгрузка начиналась с регистрации, то есть самый
+        // верх воронки — «сколько людей вообще дошли до результата на /test» —
+        // был неизмерим. Гостевые события берутся из своей таблицы: в
+        // AnalyticsEvents их не было и быть не могло ([Authorize] + свободная
+        // meta), поэтому здесь просто второй источник тех же суток.
+        var guestSinceDay = DateOnly.FromDateTime(since);
+        var guestEvents = await _context.GuestAnalyticsEvents
+            .Where(g => g.Day >= guestSinceDay)
+            .Select(g => new { g.Event, g.Day, g.Level, g.IpHash })
+            .ToListAsync();
+
+        var guestStarts = guestEvents
+            .Where(g => g.Event == AnonymousAnalyticsController.StartedEvent)
+            .ToArray();
+        var guestCompletions = guestEvents
+            .Where(g => g.Event == AnonymousAnalyticsController.CompletedEvent)
+            .ToArray();
+
+        var startsByDay = guestStarts
+            .GroupBy(g => g.Day)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var completionsByDay = guestCompletions
+            .GroupBy(g => g.Day)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var visitorsByDay = guestEvents
+            .GroupBy(g => g.Day)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.IpHash).Distinct().Count());
+
+        var registrationsByDay = registrants
+            .GroupBy(r => DateOnly.FromDateTime(r.CreatedAt))
+            .ToDictionary(
+                g => g.Key,
+                g => (Count: g.Count(), Activated: g.Count(r => activatedIds.Contains(r.Id))));
+
+        // День воронки = любой день, в котором случилось что-то из четырёх
+        // шагов. Иначе дни, где тест качали, но никто не зарегистрировался,
+        // пропадали бы из ответа — а именно они и есть интерес менеджера.
+        var funnelDays = startsByDay.Keys
+            .Union(completionsByDay.Keys)
+            .Union(visitorsByDay.Keys)
+            .Union(registrationsByDay.Keys)
+            .OrderBy(d => d)
+            .Select(day =>
+            {
+                // Дня нет в регистрациях — TryGetValue оставляет кортеж нулями.
+                registrationsByDay.TryGetValue(day, out var dayRegistrations);
+
+                return new FunnelRow(
+                    day.ToString("yyyy-MM-dd"),
+                    startsByDay.TryGetValue(day, out var s) ? s : 0,
+                    completionsByDay.TryGetValue(day, out var c) ? c : 0,
+                    visitorsByDay.TryGetValue(day, out var v) ? v : 0,
+                    dayRegistrations.Count,
+                    dayRegistrations.Activated);
+            })
+            .ToArray();
+
+        var byLevel = guestCompletions
+            .Where(g => g.Level != null)
+            .GroupBy(g => g.Level!)
+            .Select(g => new GuestLevelRow(g.Key, g.Count()))
+            .OrderBy(l => l.Level, StringComparer.Ordinal)
+            .ToArray();
+
         return Ok(new AcquisitionReport(
             days,
             since.ToString("yyyy-MM-dd"),
@@ -239,6 +337,12 @@ public class AnalyticsController : ControllerBase
             byChannel,
             new AcquisitionTotals(
                 registrants.Count,
-                registrants.Count(r => activatedIds.Contains(r.Id)))));
+                registrants.Count(r => activatedIds.Contains(r.Id))),
+            funnelDays,
+            byLevel,
+            new GuestTotals(
+                guestStarts.Length,
+                guestCompletions.Length,
+                guestEvents.Select(g => g.IpHash).Distinct().Count())));
     }
 }

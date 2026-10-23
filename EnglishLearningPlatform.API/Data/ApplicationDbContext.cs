@@ -26,6 +26,7 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<XpEvent> XpEvents => Set<XpEvent>();
     public DbSet<BookKeyWord> BookKeyWords => Set<BookKeyWord>();
     public DbSet<AnalyticsEvent> AnalyticsEvents => Set<AnalyticsEvent>();
+    public DbSet<GuestAnalyticsEvent> GuestAnalyticsEvents => Set<GuestAnalyticsEvent>();
     public DbSet<GrammarUnit> GrammarUnits => Set<GrammarUnit>();
     public DbSet<GrammarExercise> GrammarExercises => Set<GrammarExercise>();
     public DbSet<UserGrammarProgress> UserGrammarProgresses => Set<UserGrammarProgress>();
@@ -190,6 +191,32 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .WithMany()
             .HasForeignKey(ae => ae.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // GuestAnalyticsEvent конфигурация (W2.4).
+        // Единственный внешний ключ здесь — тот, которого нет: гостевые события
+        // не привязаны к пользователю, поэтому таблица физически не может
+        // содержать PII даже при баге в коде.
+        builder.Entity<GuestAnalyticsEvent>()
+            .Property(g => g.IpHash)
+            .HasMaxLength(64);
+
+        builder.Entity<GuestAnalyticsEvent>()
+            .Property(g => g.DedupeKey)
+            .HasMaxLength(64);
+
+        // Антидубль: одна и та же отправка (тот же nonce клиента) не может
+        // создать вторую строку. Вежливая проверка в контроллере закрывает
+        // обычный повтор, этот индекс — гонку двух параллельных повторов, ровно
+        // как частичный индекс у chapter_opened_first.
+        builder.Entity<GuestAnalyticsEvent>()
+            .HasIndex(g => new { g.Event, g.DedupeKey })
+            .HasDatabaseName("IX_GuestAnalyticsEvents_Event_DedupeKey")
+            .IsUnique();
+
+        // Выгрузка воронки: срез «событие × сутки» — то, чем живёт /acquisition.
+        builder.Entity<GuestAnalyticsEvent>()
+            .HasIndex(g => new { g.Event, g.Day })
+            .HasDatabaseName("IX_GuestAnalyticsEvents_Event_Day");
 
         // Grammar конфигурация
         builder.Entity<GrammarUnit>()

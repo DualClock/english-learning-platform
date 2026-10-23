@@ -27,6 +27,12 @@ public static class RateLimitPolicies
     public const int SignupIpPermitLimit = 50;
     public static readonly TimeSpan SignupWindow = TimeSpan.FromHours(1);
 
+    /// <summary>Аутентифицированная аналитика: читатель генерирует события активно.</summary>
+    public const int AnalyticsPermitLimit = 120;
+
+    /// <summary>Гостевая воронка /test: легальный burst — 2 события на проход.</summary>
+    public const int GuestAnalyticsPermitLimit = 20;
+
     /// <summary>Путь регистрации: его партицируем по IP отдельным лимитером.</summary>
     public const string RegistrationPath = "/api/auth/register";
 
@@ -74,7 +80,19 @@ public static class RateLimitPolicies
 
             // Клиентская аналитика пишется в БД на каждый запрос — ограничиваем
             // частоту, чтобы один клиент не залил таблицу событиями.
-            ["analytics"] = ctx => IpPartition(ctx, permit: 120, window: TimeSpan.FromMinutes(1)),
+            ["analytics"] = ctx => IpPartition(ctx, permit: AnalyticsPermitLimit, window: TimeSpan.FromMinutes(1)),
+
+            // Гостевая воронка /test (W2.4). Отдельная политика, а не «analytics»,
+            // по двум причинам:
+            //  1. это другой лимитер: общий с аутентифицированным путём бюджет
+            //     означал бы, что анонимный скрипт выжигает корзину читателя с тем
+            //     же адресом;
+            //  2. легальный burst гостя на /test — 2 события на проход (старт и
+            //     результат). 120/мин означают, что флудер пишет в шесть раз
+            //     быстрее, чем лимитер успевает его остановить.
+            // 20/мин на IP: щедро для человека за роутером (несколько тестов в
+            // минуту), тесно для скрипта.
+            ["guest-analytics"] = ctx => IpPartition(ctx, permit: GuestAnalyticsPermitLimit, window: TimeSpan.FromMinutes(1)),
         };
 
     // Два адреса из TEST-NET-2/TEST-NET-3: партиции проверяются прогоном на них,

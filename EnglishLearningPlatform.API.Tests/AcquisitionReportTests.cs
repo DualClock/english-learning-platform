@@ -238,4 +238,149 @@ public class AcquisitionReportTests
         Assert.Equal(90, hugeWindow.Days);
         Assert.Single(hugeWindow.Rows);
     }
+
+    // ---- W2.4: гостевой верх воронки в том же ответе ------------------------
+
+    private static void GuestEvent(
+        ApplicationDbContext context,
+        string eventName,
+        DateOnly day,
+        string ipHash,
+        string? level = null)
+    {
+        context.GuestAnalyticsEvents.Add(new GuestAnalyticsEvent
+        {
+            Event = eventName,
+            Day = day,
+            Hour = 12,
+            IpHash = ipHash,
+            Level = level,
+            // отдельный nonce на каждую строку теста: иначе антидубль склеил бы их
+            DedupeKey = $"{eventName}-{ipHash}-{day:yyyyMMdd}-{level}"
+        });
+    }
+
+    [Fact]
+    public async Task Acquisition_FunnelCarriesGuestStartsAndCompletionsPerDay()
+    {
+        using var context = CreateContext();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var yesterday = today.AddDays(-1);
+
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, yesterday, "ip-1");
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, yesterday, "ip-2");
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, yesterday, "ip-1", "b1");
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, today, "ip-3");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        var day = report.Funnel.Single(f => f.Date == yesterday.ToString("yyyy-MM-dd"));
+        Assert.Equal(2, day.GuestStarts);
+        Assert.Equal(1, day.GuestCompletions);
+        Assert.Equal(2, day.GuestVisitors);
+        // Регистраций в этот день не было — воронка всё равно обязана показать день:
+        // «тест качают, но не регистрируются» и есть предмет разговора с менеджером.
+        Assert.Equal(0, day.Registrations);
+
+        Assert.Equal(3, report.Guest.Starts);
+        Assert.Equal(1, report.Guest.Completions);
+        Assert.Equal(3, report.Guest.Visitors);
+    }
+
+    [Fact]
+    public async Task Acquisition_FunnelRegistrationsMatchChannelRows()
+    {
+        using var context = CreateContext();
+        var twoDaysAgo = DateTime.UtcNow.AddDays(-2);
+        var day = DateOnly.FromDateTime(twoDaysAgo);
+
+        context.Users.AddRange(
+            MakeUser("vk-1", "vk", "post-1", twoDaysAgo),
+            MakeUser("vk-2", "vk", "post-2", twoDaysAgo));
+        Activate(context, "vk-1");
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, day, "ip-9");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        var funnel = report.Funnel.Single();
+        Assert.Equal(report.Rows.Sum(r => r.Registrations), funnel.Registrations);
+        Assert.Equal(report.Rows.Sum(r => r.Activated), funnel.Activated);
+        Assert.Equal(1, funnel.GuestStarts);
+    }
+
+    [Fact]
+    public async Task Acquisition_FunnelBreaksCompletionsDownByLevel()
+    {
+        using var context = CreateContext();
+        var day = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, day, "ip-1", "a2");
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, day, "ip-2", "b1");
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, day, "ip-3", "b1");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        Assert.Equal(
+            new[] { ("a2", 1), ("b1", 2) },
+            report.ByLevel.Select(l => (l.Level, l.Completions)));
+    }
+
+    [Fact]
+    public async Task Acquisition_GuestVisitorsCountHashesNotRawIps()
+    {
+        using var context = CreateContext();
+        var day = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // Две отправки одного гостя (тот же хеш) = один посетитель; при этом
+        // стартов и завершений в воронке ровно столько, сколько событий.
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, day, "ip-same");
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, day, "ip-same", "c1");
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, day, "ip-other");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        Assert.Equal(2, report.Guest.Visitors);
+        Assert.Equal(2, report.Guest.Starts);
+        Assert.Equal(1, report.Guest.Completions);
+    }
+
+    [Fact]
+    public async Task Acquisition_IgnoresGuestEventsFromBeforeTheWindow()
+    {
+        using var context = CreateContext();
+
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent,
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-40)), "ip-old");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret", 14)).Value!;
+
+        Assert.Empty(report.Funnel);
+        Assert.Equal(0, report.Guest.Starts);
+    }
+
+    [Fact]
+    public async Task Acquisition_EmptyEverything_IsStillAValidFlatReport()
+    {
+        // Окно без событий: менеджер должен получить нули, а не падение —
+        // выгрузка читается скриптом, а не глазами.
+        using var context = CreateContext();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        Assert.Empty(report.Funnel);
+        Assert.Empty(report.ByLevel);
+        Assert.Equal(0, report.Guest.Starts);
+        Assert.Equal(0, report.Totals.Registrations);
+    }
 }

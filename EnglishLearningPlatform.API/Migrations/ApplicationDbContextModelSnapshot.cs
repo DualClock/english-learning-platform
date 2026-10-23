@@ -501,6 +501,51 @@ namespace EnglishLearningPlatform.API.Migrations
                     b.ToTable("GrammarUnits");
                 });
 
+            modelBuilder.Entity("EnglishLearningPlatform.API.Models.GuestAnalyticsEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Day")
+                        .HasColumnType("date");
+
+                    b.Property<string>("DedupeKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Event")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Hour")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Level")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Event", "Day")
+                        .HasDatabaseName("IX_GuestAnalyticsEvents_Event_Day");
+
+                    b.HasIndex("Event", "DedupeKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_GuestAnalyticsEvents_Event_DedupeKey");
+
+                    b.ToTable("GuestAnalyticsEvents");
+                });
+
             modelBuilder.Entity("EnglishLearningPlatform.API.Models.Interaction", b =>
                 {
                     b.Property<int>("Id")
