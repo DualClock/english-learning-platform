@@ -63,6 +63,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    // Личная библиотека пользователя: без сессии там нечего показывать, а
+    // AppLayout гейтал её только в браузере — краулер видел 200 со спиннером
+    // «Проверяем сессию». Публичная полка живёт на /library и в этот matcher
+    // не входит (проверено curl'ом: /library отдаёт 200 анонимно).
+    '/books/:path*',
     '/categories/:path*',
     '/dashboard/:path*',
     '/dictionary/:path*',
