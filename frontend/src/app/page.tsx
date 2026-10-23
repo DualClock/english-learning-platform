@@ -210,6 +210,18 @@ export default function HomePage() {
               <FeedbackTrigger className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Обратная связь
               </FeedbackTrigger>
+              {/*
+               * Правовые страницы (W2.5.1/W2.5.2) должны быть видны до
+               * регистрации: человек приводит в бету свою группу и хочет
+               * прочитать «что с данными», не заводя аккаунт. Ссылки в
+               * футере — единственное место, где их ищут краулер и человек.
+               */}
+              <Link
+                href="/privacy"
+                className="transition-colors duration-fast ease-soft hover:text-on-dark"
+              >
+                Конфиденциальность
+              </Link>
               <Link href="/login" className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Войти
               </Link>
