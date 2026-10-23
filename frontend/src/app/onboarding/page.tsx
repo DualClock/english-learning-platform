@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import ChoiceCard from '@/components/ui/ChoiceCard';
 import LexiMascot from '@/components/brand/lexi/LexiMascot';
@@ -686,6 +687,30 @@ export default function OnboardingPage() {
                         )}
                       </Button>
                     </div>
+
+                    {/*
+                     * Согласие просим в тот момент, когда его действительно
+                     * дают: человек вводит email и пароль. Ссылки ведут на
+                     * /privacy (что делаем с данными) и /terms (правила беты) —
+                     * обе страницы публичные и открываются без аккаунта.
+                     */}
+                    <p className="text-caption leading-snug text-slate">
+                      Создавая аккаунт, вы принимаете{' '}
+                      <Link
+                        href="/terms"
+                        className="underline decoration-hairline-strong underline-offset-2 hover:text-ink"
+                      >
+                        правила беты
+                      </Link>{' '}
+                      и ознакомляетесь с{' '}
+                      <Link
+                        href="/privacy"
+                        className="underline decoration-hairline-strong underline-offset-2 hover:text-ink"
+                      >
+                        политикой конфиденциальности
+                      </Link>
+                      . Удалить аккаунт и все данные можно в настройках.
+                    </p>
                   </form>
 
                   {accountError && <Notice tone="danger">{accountError}</Notice>}
