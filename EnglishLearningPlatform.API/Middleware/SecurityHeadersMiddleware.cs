@@ -19,6 +19,16 @@ public sealed class SecurityHeadersMiddleware
         headers["Referrer-Policy"] = "no-referrer";
         headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
         headers["Cross-Origin-Resource-Policy"] = "same-site";
+        // Полный CSP сломал бы inline-стили и шрифты фронтенда, поэтому
+        // ограничиваемся frame-ancestors: API нельзя встроить в чужой iframe.
+        headers["Content-Security-Policy"] = "frame-ancestors 'none'";
+
+        // HSTS только по HTTPS: отправленный по незащищённому соединению,
+        // он мог бы быть подменён MITM, а браузеры игнорируют HSTS с http-ответов.
+        if (context.Request.IsHttps)
+        {
+            headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+        }
 
         await _next(context);
     }
