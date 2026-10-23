@@ -7,6 +7,7 @@ import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import LevelChip from '@/components/ui/LevelChip';
 import { ArrowRightIcon, CheckIcon } from '@/components/ui/icons';
 import { siteUrl, siteDescription } from '@/lib/site';
+import { LIBRARY_PATH, bookHref, slugFromTitle } from '@/lib/library';
 
 /*
  * canonical на чистый адрес: ссылка-код /t/<код> ведёт на /?ref=<код>, и без
@@ -31,7 +32,10 @@ const BOOKS = [
   { title: 'The Lost Kitten', author: 'Lexicon Stories', level: 'A1' },
   { title: 'Alice’s Adventures in Wonderland', author: 'Lewis Carroll', level: 'A2' },
   { title: 'The Adventures of Sherlock Holmes', author: 'Arthur Conan Doyle', level: 'B1' },
-  { title: 'Moby-Dick', author: 'Herman Melville', level: 'B1' },
+  // Уровень Moby-Dick — C1, как в сиде PopularBooksService: раньше карточка
+  // обещала B1, и клик вёл на страницу, которая противоречит ссылке, с которой
+  // человек пришёл.
+  { title: 'Moby-Dick', author: 'Herman Melville', level: 'C1' },
 ];
 
 export default function HomePage() {
@@ -136,7 +140,7 @@ export default function HomePage() {
               словом, глава за главой.
             </p>
             <Link
-              href="/books"
+              href={LIBRARY_PATH}
               className="mt-8 inline-flex items-center gap-2 text-body-sm font-medium text-ink underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:decoration-primary"
             >
               Вся библиотека
@@ -148,7 +152,7 @@ export default function HomePage() {
             {BOOKS.map((book) => (
               <RevealItem key={book.title}>
                 <Link
-                  href="/books"
+                  href={bookHref(slugFromTitle(book.title))}
                   className="group -mx-4 flex items-center justify-between gap-4 rounded-lg px-4 py-4 transition-colors duration-fast ease-soft hover:bg-canvas"
                 >
                   <span className="min-w-0">

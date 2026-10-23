@@ -1,14 +1,16 @@
 import type { MetadataRoute } from 'next';
 import { siteUrl } from '@/lib/site';
+import { bookHref } from '@/lib/library';
+import { loadPublicCatalog } from '@/lib/library-catalog';
 
 /*
  * Только те URL, которые реально отдаются без JavaScript и доступны
  * неавторизованному краулеру. Всё остальное сюда добавлять нельзя:
  *
- *   /books        — клиентский раздел, без JS это спиннер «Проверяем сессию»,
- *                   а затем редирект на /login. Публичная витрина книг —
- *                   следующая задача (W2.2c): как только страница станет
- *                   серверной, её строку сюда добавляют вместе с /books/[slug].
+ *   /books        — приватная библиотека пользователя: без JS это спиннер
+ *                   «Проверяем сессию», а затем 307 на /login. Сюда она попасть
+ *                   не может, и не должна: публичная витрина живёт на /library
+ *                   (W2.2), а /books остаётся внутренним разделом.
  *   /login, /onboarding, /forgot-password, /reset-password, /confirm-email,
  *   /admin, /dashboard и остальные приватные разделы — служебные, в индекс
  *                   им не место (см. robots.ts и X-Robots-Tag в middleware).
@@ -29,12 +31,22 @@ import { siteUrl } from '@/lib/site';
  * ссылка для краулера. Это тоже серверная страница без авторизации: в matcher
  * приватных разделов её добавлять нельзя (проверено юнитом `beta.test.mjs`).
  */
-const publicPaths: string[] = ['/', '/test', '/beta', '/privacy', '/terms'];
+/*
+ * /library и страницы книг (W2.2) — здесь потому, что это первый контент
+ * продукта, который открывается без сессии: серверный HTML, ни одного
+ * клиентского fetch. Список строится из того же каталога, что и витрина
+ * (src/lib/library-catalog.ts), поэтому адрес книги попадает в индекс ровно
+ * тогда, когда он реально отдаёт 200, а не тогда, когда нам так захотелось.
+ * Бэкенда под сборкой нет — каталог отдаёт зеркало сида, и его адреса сверены
+ * с правилом бэкенда тестом.
+ */
+const publicPaths: string[] = ['/', '/test', '/library', '/beta', '/privacy', '/terms'];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const { books } = await loadPublicCatalog();
 
-  return publicPaths.map((path) => ({
+  const sections: MetadataRoute.Sitemap = publicPaths.map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified: now,
     // Правовые страницы — не контент для чтения: они меняются редко, и
@@ -42,6 +54,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: path === '/privacy' || path === '/terms' ? 'yearly' : 'weekly',
     // Когорта — страница с дедлайном: до старта она важнее почти всего, кроме
     // самой главной, и теряет смысл после 15 ноября.
-    priority: path === '/' ? 1 : path === '/test' ? 0.8 : path === '/beta' ? 0.7 : 0.4,
+    // /library — 0.8 наравне с /test: полка и тест уровня это две точки входа,
+    // и понижать одну ради другой смысла нет.
+    priority:
+      path === '/'
+        ? 1
+        : path === '/test' || path === '/library'
+          ? 0.8
+          : path === '/beta'
+            ? 0.7
+            : 0.4,
   }));
+
+  /*
+   * Книги — leaf-контент: их читают, а не пересобирают, поэтому monthly, а
+   * priority ниже полки (конкретную книгу находят и по ссылке из поста, и по
+   * переходу с /library).
+   */
+  const bookPages: MetadataRoute.Sitemap = books.map((book) => ({
+    url: `${siteUrl}${bookHref(book.slug)}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }));
+
+  return [...sections, ...bookPages];
 }
