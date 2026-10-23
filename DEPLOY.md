@@ -124,6 +124,7 @@
 | Переменная | Значение |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | `https://lexicon-api.onrender.com` (адрес API из шага 2) |
+| `NEXT_PUBLIC_SITE_URL` | публичный адрес сайта (`https://....vercel.app` из шага 5). Нужен для SEO: от него строятся `metadataBase`, `og:image`/`twitter:image`, `sitemap.xml` и `robots.txt`. Если не задать — фолбэк на `NEXTAUTH_URL`, затем на `http://localhost:3000`, и превью ссылок в Telegram/VK будут битыми. Значение без завершающего слэша, секретов внутри нет |
 | `NEXTAUTH_URL` | адрес сайта Vercel (например `https://english-learning-platform-xxx.vercel.app`) |
 | `NEXTAUTH_SECRET` | сгенерируйте свой: `openssl rand -base64 32` (в git не хранить) |
 

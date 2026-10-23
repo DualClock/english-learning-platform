@@ -3,6 +3,7 @@ import { Manrope, Inter, Literata } from 'next/font/google';
 import './globals.css';
 import Providers from './providers';
 import { THEME_PREPAINT_SCRIPT } from '@/lib/theme';
+import { siteUrl, siteName, siteDescription } from '@/lib/site';
 
 const manrope = Manrope({
   subsets: ['latin', 'cyrillic'],
@@ -27,19 +28,24 @@ const literata = Literata({
   display: 'swap',
 });
 
-const siteUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-const description =
-  'Читай, разбирай слова, тренируй грамматику, произношение и письмо. Lexicon возвращает пройденное в нужный момент.';
+/*
+ * Боевой адрес сайта берётся из NEXT_PUBLIC_SITE_URL (фолбэки — в src/lib/site.ts).
+ * От него metadataBase строит абсолютные URL для og:image и twitter:image:
+ * с localhost превью в Telegram и VK остаются битыми, а каждый пост из
+ * outreach-кита теряет клики.
+ */
+const description = siteDescription;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: 'Lexicon — английский без зубрёжки',
   description,
-  applicationName: 'Lexicon',
+  applicationName: siteName,
   openGraph: {
     type: 'website',
     locale: 'ru_RU',
-    siteName: 'Lexicon',
+    siteName,
+    url: siteUrl,
     title: 'Lexicon — английский без зубрёжки',
     description,
     images: [
