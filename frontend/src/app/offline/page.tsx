@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Нет подключения — Lexicon',
+  // Бренд дописывает title.template из src/app/layout.tsx
+  title: 'Нет подключения',
   robots: { index: false, follow: false },
 };
 

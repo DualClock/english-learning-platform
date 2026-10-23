@@ -38,7 +38,13 @@ const description = siteDescription;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Lexicon — английский без зубрёжки',
+  title: {
+    default: 'Lexicon — английский без зубрёжки',
+    // Дочерние страницы объявляют title строкой и получают бренд в конце:
+    // «Вход — Lexicon». Без шаблона все разделы наследовали бы заголовок
+    // главной, и поисковик считал бы их дублями.
+    template: '%s — Lexicon',
+  },
   description,
   applicationName: siteName,
   openGraph: {

@@ -1,10 +1,23 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import ReaderDemo from '@/components/landing/ReaderDemo';
 import SkillsGrid from '@/components/landing/SkillsGrid';
 import { Reveal, RevealGroup, RevealItem } from '@/components/landing/Reveal';
 import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import LevelChip from '@/components/ui/LevelChip';
 import { ArrowRightIcon, CheckIcon } from '@/components/ui/icons';
+import { siteUrl, siteDescription } from '@/lib/site';
+
+/*
+ * canonical на чистый адрес: ссылка-код /t/<код> ведёт на /?ref=<код>, и без
+ * canonical Яндекс склеивает десятки дублей главной с разными ref/utm.
+ * absolute — чтобы на главной бренд остался в начале заголовка, как в OG.
+ */
+export const metadata: Metadata = {
+  title: { absolute: 'Lexicon — английский без зубрёжки' },
+  description: siteDescription,
+  alternates: { canonical: siteUrl },
+};
 
 const HEADLINE_LINES = ['Английский', 'без зубрёжки'];
 
