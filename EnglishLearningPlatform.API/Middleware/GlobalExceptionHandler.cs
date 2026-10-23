@@ -52,6 +52,20 @@ public class GlobalExceptionHandler : IExceptionHandler
             return true;
         }
 
+        // Превышена частота AI-вызовов за минуту (R-07) — то же 429, но
+        // короткое: окно сбрасывается через минуту, поэтому клиенту нужен
+        // Retry-After, а не «ждите до полуночи».
+        if (exception is AiRateLimitExceededException)
+        {
+            httpContext.Response.Headers["Retry-After"] = "60";
+            await Results.Problem(
+                statusCode: StatusCodes.Status429TooManyRequests,
+                title: "Слишком частые обращения к ИИ",
+                detail: AiQuotaService.RateLimitedMessage
+            ).ExecuteAsync(httpContext);
+            return true;
+        }
+
         // Упавший Postgres/Docker — не «ошибка кода», а недоступность зависимости:
         // 503 с подсказкой, что именно проверить, вместо сырого 500
         if (IsDatabaseUnavailable(exception))

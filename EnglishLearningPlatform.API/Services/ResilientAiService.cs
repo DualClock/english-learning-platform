@@ -27,6 +27,14 @@ public class AiGlobalBudgetExceededException : Exception
     public AiGlobalBudgetExceededException() : base(AiQuotaService.GlobalBudgetExceededMessage) { }
 }
 
+// Превышена частота AI-вызовов одного пользователя за минуту (R-07):
+// дневной бюджет — слишком грубая защита от burst-а, который успевает
+// сходить к провайдеру до того, как счётчик обновится.
+public class AiRateLimitExceededException : Exception
+{
+    public AiRateLimitExceededException() : base(AiQuotaService.RateLimitedMessage) { }
+}
+
 // Единый слой вызовов Gemini: таймаут из конфига ("Ai:TimeoutSeconds"),
 // retry с экспоненциальной задержкой (429, 5xx, сеть, таймаут, пустой/битый ответ),
 // опциональный fallback-провайдер ("Ai:FallbackApiKey"/"Ai:FallbackModel").
@@ -97,6 +105,15 @@ public class ResilientAiService : IAiBackedService
                 _logger.LogWarning("AI quota exceeded (requestType={RequestType}, userId={UserId})",
                     requestType, userId);
                 throw new AiQuotaExceededException();
+            }
+
+            // Частота проверяется последней и тоже до сети: burst из одного
+            // аккаунта не должен доходить до провайдера.
+            if (userId != null && !quotaSession.Service.TryReservePerMinuteRequest(userId))
+            {
+                _logger.LogWarning("AI per-minute rate limit exceeded (requestType={RequestType}, userId={UserId})",
+                    requestType, userId);
+                throw new AiRateLimitExceededException();
             }
         }
 

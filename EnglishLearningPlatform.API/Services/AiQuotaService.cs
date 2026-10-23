@@ -17,7 +17,20 @@ public class AiQuotaService
     public const string GlobalBudgetExceededMessage =
         "Дневной лимит обращений к ИИ исчерпан у всего сервиса. Попробуйте завтра после 00:00 UTC.";
 
+    // R-07: отказ по частоте запросов за минуту (отдельный от дневной квоты).
+    public const string RateLimitedMessage =
+        "Слишком много обращений к ИИ подряд. Подождите минуту.";
+
     private static readonly TimeSpan CounterCacheTtl = TimeSpan.FromSeconds(60);
+
+    // R-07: окно частоты = одна минута; ключ счётчика содержит номер минуты,
+    // поэтому запись в кэше нужна только чтобы не расти бесконечно.
+    private static readonly TimeSpan RateWindowTtl = TimeSpan.FromMinutes(2);
+
+    // Лок обязан быть статическим: AiQuotaService регистрируется как scoped,
+    // и экземплярный лок не сериализовал бы параллельные запросы одного
+    // пользователя между собой.
+    private static readonly object RateCounterLock = new();
 
     // Предупреждение об исчерпании глобального бюджета пишем один раз в сутки
     // на порог (80% / 100%), чтобы не засорять журнал на каждом запросе.
@@ -54,6 +67,41 @@ public class AiQuotaService
         var (requests, tokens) = await GetTodayUsageAsync(userId);
         return requests < RequestLimit && tokens < TokenLimit;
     }
+
+    // R-07: сколько AI-вызовов подряд разрешено одному аккаунту за минуту.
+    // Дневная квота её не заменяет: счётчик дневных вызовов кэшируется на 60
+    // секунд, поэтому параллельный всплеск проходит IsWithinQuotaAsync «до»
+    // записи лога и успевает потратить бюджет до появления отказа.
+    public int PerMinuteRequestLimit =>
+        Math.Clamp(_configuration.GetValue("Ai:PerMinuteUserRequestLimit", 30), 1, 10_000);
+
+    /// <summary>
+    /// Бронирует один AI-вызов пользователя в текущей минуте UTC.
+    /// False — частота превышена, к провайдеру идти нельзя.
+    /// </summary>
+    public bool TryReservePerMinuteRequest(string userId)
+    {
+        var limit = PerMinuteRequestLimit;
+        var key = $"ai-rate:{userId}:{MinuteOfUtcDay(DateTime.UtcNow)}";
+
+        // Счётчик живёт в singleton-кэше (сам AiQuotaService — scoped), иначе
+        // каждый запрос начинал бы счёт с нуля. Инкремент под статической
+        // блокировкой: без неё два параллельных вызова читают одно и то же
+        // «used» и оба бронят слот, которого не хватает.
+        lock (RateCounterLock)
+        {
+            var used = _cache.TryGetValue(key, out int stored) ? stored : 0;
+            if (used >= limit)
+            {
+                return false;
+            }
+
+            _cache.Set(key, used + 1, RateWindowTtl);
+            return true;
+        }
+    }
+
+    public static int MinuteOfUtcDay(DateTime now) => now.Hour * 60 + now.Minute;
 
     // Возвращает false, когда глобальный дневной бюджет Gemini исчерпан.
     // На 80% порога — предупреждение в лог (алерт для владельца).

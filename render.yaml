@@ -38,6 +38,11 @@ services:
       # Общий дневной бюджет обращений к Gemini на весь сервис (по умолчанию 2000).
       - key: Ai__GlobalDailyRequestLimit
         sync: false
+      # Сколько AI-вызовов подряд разрешено одному аккаунту за минуту
+      # (по умолчанию 30) — тормозит burst, который успевает дойти до
+      # провайдера между обновлениями дневного счётчика.
+      - key: Ai__PerMinuteUserRequestLimit
+        sync: false
       # Куда присылать отзывы беты. Если пусто — на Email__From.
       - key: Feedback__ToEmail
         sync: false
