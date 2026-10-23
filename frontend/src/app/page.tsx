@@ -89,6 +89,14 @@ export default function HomePage() {
                   Начать бесплатно
                   <ArrowRightIcon size={20} aria-hidden />
                 </Link>
+                {/*
+                 * Точка входа для холодного трафика (W2.2a): тест уровня — то, что
+                 * человек готов сделать без аккаунта. Ссылка из Telegram, VK и Дзена
+                 * ведёт сюда, а не на регистрацию.
+                 */}
+                <Link href="/test" className="btn-secondary px-6 py-3 text-body">
+                  Проверить уровень за 3 минуты
+                </Link>
                 <span className="text-body-sm text-charcoal">Без карты</span>
               </div>
             </div>
