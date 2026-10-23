@@ -23,11 +23,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [accountDeleted, setAccountDeleted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setSessionExpired(params.get('reason') === 'session-expired');
+    setAccountDeleted(params.get('reason') === 'account-deleted');
   }, []);
 
   const nextPath = (): string => {
@@ -94,6 +96,20 @@ export default function LoginPage() {
           <div className="mb-5">
             <Notice tone="info">
               Сессия истекла. Войдите снова — книги, слова и прогресс на месте.
+            </Notice>
+          </div>
+        )}
+
+        {/*
+         * Финал пути удаления аккаунта (W2.5.3): сюда попадает человек после
+         * «Удалить аккаунт и все данные». Сообщить нужно здесь, а не в
+         * настройках, — аккаунта уже нет, и форма настроек больше не откроется.
+         */}
+        {accountDeleted && (
+          <div className="mb-5">
+            <Notice tone="info">
+              Аккаунт удалён вместе со словами, прогрессом и загруженными книгами. Если это было ошибкой —
+              напишите на hello@lexicon.app, а новый профиль можно завести заново этим же адресом.
             </Notice>
           </div>
         )}

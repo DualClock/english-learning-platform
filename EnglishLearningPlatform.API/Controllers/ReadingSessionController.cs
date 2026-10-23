@@ -60,9 +60,12 @@ public class ReadingSessionController : ControllerBase
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
 
-    private static string SessionKey(Guid id) => $"readingsession:{id}";
+    // Ключи кэша видимы сборке: AccountController обязан вычистить сессии
+    // удаления, а второй copies формата ключа — это гарантированная дыра,
+    // когда кто-то поправит префикс здесь и забудет там.
+    internal static string SessionKey(Guid id) => $"readingsession:{id}";
 
-    private static string UserSessionsKey(string userId) => $"readingsessions:{userId}";
+    internal static string UserSessionsKey(string userId) => $"readingsessions:{userId}";
 
     private ReadingSession? GetSession(Guid id, string userId)
     {

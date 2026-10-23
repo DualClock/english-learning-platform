@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import Button from '@/components/ui/Button';
@@ -187,6 +188,14 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
+  // Удаление аккаунта: два подтверждения (ввод email + ввод пароля), потому
+  // что запрос необратим и забирает ещё и загруженные файлы.
+  const [isConfirmingDeletion, setIsConfirmingDeletion] = useState(false);
+  const [deletionEmail, setDeletionEmail] = useState('');
+  const [deletionPassword, setDeletionPassword] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deletionError, setDeletionError] = useState('');
+
   // Заполняем форму, когда профиль пришёл из кэша или с сервера.
   useEffect(() => {
     if (!profileData) return;
@@ -372,6 +381,48 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     await signOut({ redirect: false });
     router.push('/login');
+  };
+
+  const accountEmail = (profileData?.email || session?.user?.email || '').trim();
+  // Регистр и пробелы в адресе не считаем: человек печатает свою почту руками.
+  const deletionEmailMatches =
+    accountEmail.length > 0 && deletionEmail.trim().toLowerCase() === accountEmail.toLowerCase();
+
+  const resetDeletionForm = () => {
+    setIsConfirmingDeletion(false);
+    setDeletionEmail('');
+    setDeletionPassword('');
+    setDeletionError('');
+  };
+
+  const deleteAccount = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!deletionEmailMatches || deletionPassword.length === 0 || isDeletingAccount) return;
+
+    setIsDeletingAccount(true);
+    setDeletionError('');
+    try {
+      await apiMutate('/api/account', {
+        token: session?.accessToken,
+        method: 'DELETE',
+        body: { password: deletionPassword },
+      });
+
+      // Кэш сбрасываем целиком: с удалённым аккаунтом не должен остаться в
+      // памяти ни профиль, ни словарь, ни прогресс.
+      invalidateCache();
+      await signOut({ redirect: false });
+      router.push('/login?reason=account-deleted');
+    } catch (err) {
+      setDeletionError(
+        err instanceof ApiError
+          ? err.message && !err.message.startsWith('Ошибка запроса')
+            ? err.message
+            : 'Не удалось удалить аккаунт. Попробуйте ещё раз.'
+          : 'Сервер недоступен. Аккаунт не удалён.'
+      );
+      setIsDeletingAccount(false);
+    }
   };
 
   // Данные профиля не пришли вообще — форма была бы пустой и обманчивой
@@ -873,6 +924,97 @@ export default function SettingsPage() {
           <Button variant="danger" onClick={handleLogout}>
             Выйти
           </Button>
+
+          {/*
+           * Удаление данных (W2.5.3). Отдельный блок с двумя подтверждениями,
+           * а не одна «смертельная» кнопка: запрос забирает очередь повторения,
+           * заметки и загруженные EPUB без возможности восстановить, поэтому
+           * сначала совпадение email, потом пароль.
+           */}
+          <div className="mt-6 border-t border-hairline pt-5">
+            <h3 className="text-body-sm font-semibold text-ink">Удаление аккаунта</h3>
+            <p className="mt-2 max-w-measure text-caption text-slate">
+              Удаляются профиль, словарь и очередь повторения, прогресс по грамматике и темам, закладки и
+              заметки, история повторений, события, копия писем и отзывов, а также все загруженные вами
+              книги, обложки и аватар. Отменить нельзя.{' '}
+              <Link href="/privacy" className="underline decoration-hairline-strong underline-offset-4 hover:text-ink">
+                Что именно хранится
+              </Link>
+              .
+            </p>
+
+            {!isConfirmingDeletion ? (
+              <Button
+                variant="danger"
+                className="mt-4"
+                onClick={() => setIsConfirmingDeletion(true)}
+              >
+                Удалить аккаунт
+              </Button>
+            ) : (
+              <form onSubmit={deleteAccount} className="mt-4 space-y-4 rounded-lg border border-hairline bg-canvas p-4">
+                <p role="status" className="text-body-sm text-charcoal">
+                  Шаг 1 из 2 — подтвердите адрес. Это удаление, а не выход: после него словари и прогресс
+                  не восстановить.
+                </p>
+
+                <div>
+                  <label htmlFor="delete-email" className={labelCls}>
+                    Введите свой email: {accountEmail}
+                  </label>
+                  <input
+                    id="delete-email"
+                    type="email"
+                    value={deletionEmail}
+                    onChange={(e) => setDeletionEmail(e.target.value)}
+                    autoComplete="off"
+                    placeholder="точь-в-точь как в профиле"
+                    className="input"
+                    aria-invalid={deletionEmail.length > 0 && !deletionEmailMatches ? true : undefined}
+                  />
+                </div>
+
+                {/*
+                 * Поле с паролем появляется только когда адрес совпал: два
+                 * шага читаются как «подумай», а не как форма на пять строк,
+                 * которую прокликают не глядя.
+                 */}
+                {deletionEmailMatches && (
+                  <div>
+                    <label htmlFor="delete-password" className={labelCls}>
+                      Шаг 2 — текущий пароль
+                    </label>
+                    <input
+                      id="delete-password"
+                      type="password"
+                      value={deletionPassword}
+                      onChange={(e) => setDeletionPassword(e.target.value)}
+                      autoComplete="current-password"
+                      className="input"
+                    />
+                    <p className={hintCls}>
+                      Пароль нужен, чтобы удаление не случилось с чужой незакрытой вкладкой.
+                    </p>
+                  </div>
+                )}
+
+                {deletionError && <Notice tone="danger">{deletionError}</Notice>}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    type="submit"
+                    variant="danger"
+                    disabled={!deletionEmailMatches || deletionPassword.length === 0 || isDeletingAccount}
+                  >
+                    {isDeletingAccount ? 'Удаляем…' : 'Удалить аккаунт и все данные'}
+                  </Button>
+                  <Button variant="ghost" onClick={resetDeletionForm} disabled={isDeletingAccount}>
+                    Отмена
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
         </section>
       </div>
     </AppLayout>
