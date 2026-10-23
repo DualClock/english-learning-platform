@@ -201,6 +201,8 @@ builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<AuthEmailService>();
 builder.Services.AddScoped<ReminderService>();
 builder.Services.AddHostedService<ReminderBackgroundService>();
+builder.Services.AddScoped<GuestAnalyticsCleanupService>();
+builder.Services.AddHostedService<GuestAnalyticsCleanupBackgroundService>();
 builder.Services.AddScoped<BookAnalyzerService>();
 builder.Services.AddScoped<WordListSeeder>();
 builder.Services.AddScoped<CategorySeeder>();
