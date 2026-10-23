@@ -40,6 +40,18 @@ public class GlobalExceptionHandler : IExceptionHandler
             return true;
         }
 
+        // Глобальный дневной бюджет Gemini исчерпан (A6) — тоже 429,
+        // но сообщение про сервис, а не про конкретного пользователя
+        if (exception is AiGlobalBudgetExceededException)
+        {
+            await Results.Problem(
+                statusCode: StatusCodes.Status429TooManyRequests,
+                title: "Дневной лимит ИИ-запросов исчерпан",
+                detail: AiQuotaService.GlobalBudgetExceededMessage
+            ).ExecuteAsync(httpContext);
+            return true;
+        }
+
         // Упавший Postgres/Docker — не «ошибка кода», а недоступность зависимости:
         // 503 с подсказкой, что именно проверить, вместо сырого 500
         if (IsDatabaseUnavailable(exception))

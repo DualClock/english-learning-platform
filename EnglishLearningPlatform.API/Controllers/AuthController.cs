@@ -55,9 +55,18 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/register
     [HttpPost("register")]
+    [EnableRateLimiting("signup")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         var email = dto.Email.Trim();
+
+        // Honeypot: невидимое поля формы. Человек его не видит и не заполняет,
+        // бот-автозаполнитель — да. Дешевле капчи и не ломает UX.
+        if (!string.IsNullOrWhiteSpace(dto.Website))
+        {
+            _logger.LogWarning("Регистрация отклонена honeypot-полем: {Email}", email);
+            return BadRequest(new { message = "Invalid sign-up request" });
+        }
 
         var user = new User
         {
@@ -407,7 +416,9 @@ public record RegisterDto(
     int? DailyGoalMinutes,
     [property: MaxLength(64)] string? TimeZoneId = null,
     bool? NotifyEnabled = null,
-    int? ReminderHour = null);
+    int? ReminderHour = null,
+    // Honeypot-поле: всегда null/пусто для живого пользователя
+    [property: MaxLength(200)] string? Website = null);
 public record LoginDto(
     [property: Required, EmailAddress, MaxLength(256)] string Email,
     [property: Required, MaxLength(128)] string Password);

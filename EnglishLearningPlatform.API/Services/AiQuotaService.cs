@@ -14,7 +14,14 @@ public class AiQuotaService
     public const string QuotaExceededMessage =
         "Дневной лимит обращений к ИИ исчерпан. Лимит обновится в 00:00 UTC.";
 
+    public const string GlobalBudgetExceededMessage =
+        "Дневной лимит обращений к ИИ исчерпан у всего сервиса. Попробуйте завтра после 00:00 UTC.";
+
     private static readonly TimeSpan CounterCacheTtl = TimeSpan.FromSeconds(60);
+
+    // Предупреждение об исчерпании глобального бюджета пишем один раз в сутки
+    // на порог (80% / 100%), чтобы не засорять журнал на каждом запросе.
+    private const int GlobalBudgetWarnPercent = 80;
 
     private readonly ApplicationDbContext _context;
     private readonly IMemoryCache _cache;
@@ -37,11 +44,43 @@ public class AiQuotaService
 
     public long TokenLimit => _configuration.GetValue("Ai:DailyUserTokenLimit", 300_000);
 
+    // A6: общий дневной бюджет обращений к Gemini на весь сервис.
+    // Настраивается через Ai__GlobalDailyRequestLimit, по умолчанию 2000/сутки.
+    public int GlobalRequestLimit => _configuration.GetValue("Ai:GlobalDailyRequestLimit", 2000);
+
     // Возвращает true, если пользователь может сделать ещё один AI-вызов
     public async Task<bool> IsWithinQuotaAsync(string userId)
     {
         var (requests, tokens) = await GetTodayUsageAsync(userId);
         return requests < RequestLimit && tokens < TokenLimit;
+    }
+
+    // Возвращает false, когда глобальный дневной бюджет Gemini исчерпан.
+    // На 80% порога — предупреждение в лог (алерт для владельца).
+    public async Task<bool> IsWithinGlobalBudgetAsync()
+    {
+        var requests = await GetGlobalTodayRequestsAsync();
+        var limit = GlobalRequestLimit;
+        if (limit <= 0)
+        {
+            return true;
+        }
+
+        var percent = (int)(requests * 100.0 / limit);
+        if (requests >= limit)
+        {
+            WarnOncePerDay("budget-100",
+                "Глобальный дневной бюджет ИИ исчерпан: {Used}% ({Requests}/{Limit})", percent, requests, limit);
+            return false;
+        }
+
+        if (percent >= GlobalBudgetWarnPercent)
+        {
+            WarnOncePerDay("budget-80",
+                "Глобальный дневной бюджет ИИ использован на {Used}% ({Requests}/{Limit})", percent, requests, limit);
+        }
+
+        return true;
     }
 
     public async Task<(int Requests, long Tokens)> GetTodayUsageAsync(string userId)
@@ -62,6 +101,23 @@ public class AiQuotaService
 
         _cache.Set(cacheKey, (requests, tokens), CounterCacheTtl);
         return (requests, tokens);
+    }
+
+    private async Task<int> GetGlobalTodayRequestsAsync()
+    {
+        var cacheKey = $"ai-global-usage:{DateTime.UtcNow:yyyyMMdd}";
+        if (_cache.TryGetValue(cacheKey, out int cached))
+        {
+            return cached;
+        }
+
+        var dayStart = DateTime.UtcNow.Date;
+        var requests = await _context.AiUsageLogs
+            .AsNoTracking()
+            .CountAsync(l => l.CreatedAt >= dayStart);
+
+        _cache.Set(cacheKey, requests, CounterCacheTtl);
+        return requests;
     }
 
     // Записывает одну AI-операцию. userId может быть null (системные вызовы
@@ -89,6 +145,10 @@ public class AiQuotaService
             });
             await _context.SaveChangesAsync();
 
+            // В глобальный бюджет идут все обращения к провайдеру, включая
+            // системные (userId == null): они тоже стоят денег.
+            BumpCachedGlobalCounter();
+
             if (userId != null)
             {
                 BumpCachedCounters(userId, promptTokens + completionTokens);
@@ -99,6 +159,25 @@ public class AiQuotaService
             // Учёт не должен ломать сам AI-запрос
             _logger.LogWarning(ex, "Failed to write AI usage log");
         }
+    }
+
+    private void BumpCachedGlobalCounter()
+    {
+        var cacheKey = $"ai-global-usage:{DateTime.UtcNow:yyyyMMdd}";
+        var current = _cache.TryGetValue(cacheKey, out int cached) ? cached : 0;
+        _cache.Set(cacheKey, current + 1, CounterCacheTtl);
+    }
+
+    private void WarnOncePerDay(string thresholdKey, string messageTemplate, params object[] args)
+    {
+        var warnKey = $"ai-global-warn:{thresholdKey}:{DateTime.UtcNow:yyyyMMdd}";
+        if (_cache.TryGetValue(warnKey, out _))
+        {
+            return;
+        }
+
+        _cache.Set(warnKey, true, TimeSpan.FromHours(24));
+        _logger.LogWarning(messageTemplate, args);
     }
 
     private void BumpCachedCounters(string userId, int totalTokens)

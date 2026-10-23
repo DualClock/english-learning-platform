@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ namespace EnglishLearningPlatform.API.Controllers;
 [ApiController]
 [Route("api/audio")]
 [Authorize]
+[RequireConfirmedEmail]
 public class AudioController : ControllerBase
 {
     private const int MaxTextLength = 300;

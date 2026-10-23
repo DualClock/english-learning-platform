@@ -20,6 +20,13 @@ public class AiQuotaExceededException : Exception
     public AiQuotaExceededException() : base(AiQuotaService.QuotaExceededMessage) { }
 }
 
+// Глобальный дневной бюджет обращений к Gemini исчерпан (A6): отказываем
+// всем, включая системные вызовы, — провайдер вызывается на реальные деньги.
+public class AiGlobalBudgetExceededException : Exception
+{
+    public AiGlobalBudgetExceededException() : base(AiQuotaService.GlobalBudgetExceededMessage) { }
+}
+
 // Единый слой вызовов Gemini: таймаут из конфига ("Ai:TimeoutSeconds"),
 // retry с экспоненциальной задержкой (429, 5xx, сеть, таймаут, пустой/битый ответ),
 // опциональный fallback-провайдер ("Ai:FallbackApiKey"/"Ai:FallbackModel").
@@ -72,11 +79,20 @@ public class ResilientAiService
         CancellationToken cancellationToken = default)
     {
         // Квота проверяется до обращения к провайдеру: исчерпанный лимит —
-        // 429 без сетевых вызовов. Системные вызовы (userId == null) не квотируются.
-        if (userId != null)
+        // 429 без сетевых вызовов. Глобальный бюджет проверяется для всех
+        // вызовов (включая системные с userId == null), per-user — только
+        // когда пользователь известен.
+        await using var quotaSession = await OpenQuotaSessionAsync();
+        if (quotaSession != null)
         {
-            await using var session = await OpenQuotaSessionAsync();
-            if (session != null && !await session.Service.IsWithinQuotaAsync(userId))
+            if (!await quotaSession.Service.IsWithinGlobalBudgetAsync())
+            {
+                _logger.LogWarning("AI global daily budget exceeded (requestType={RequestType}, userId={UserId})",
+                    requestType, userId ?? "-");
+                throw new AiGlobalBudgetExceededException();
+            }
+
+            if (userId != null && !await quotaSession.Service.IsWithinQuotaAsync(userId))
             {
                 _logger.LogWarning("AI quota exceeded (requestType={RequestType}, userId={UserId})",
                     requestType, userId);
