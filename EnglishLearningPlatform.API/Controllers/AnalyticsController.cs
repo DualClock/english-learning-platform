@@ -106,6 +106,25 @@ public class AnalyticsController : ControllerBase
     public record EventCount(string Event, int Count);
     public record DailyActive(DateTime Date, int Users);
 
+    /// <summary>Регистрация дня: день × канал × код — сколько привели и сколько из них начали читать.</summary>
+    public sealed record AcquisitionRow(string Date, string? Source, string? Code, int Registrations, int Activated);
+
+    /// <summary>Тот же срез, но за весь выбранный период и без разбиения по дням.</summary>
+    public sealed record AcquisitionChannel(string? Source, int Registrations, int Activated);
+
+    public sealed record AcquisitionTotals(int Registrations, int Activated);
+
+    public sealed record AcquisitionReport(
+        int Days,
+        string Since,
+        AcquisitionRow[] Rows,
+        AcquisitionChannel[] ByChannel,
+        AcquisitionTotals Totals);
+
+    public const int DefaultAcquisitionDays = 14;
+    private const int MinAcquisitionDays = 1;
+    private const int MaxAcquisitionDays = 90;
+
     // GET: api/analytics/summary — сводка по проекту (для владельца)
     [HttpGet("summary")]
     [EnableRateLimiting("admin")]
@@ -148,5 +167,78 @@ public class AnalyticsController : ControllerBase
             eventsLast30Days = byEvent,
             dailyActiveUsers = dau.Select(d => new { date = d.Date.ToString("yyyy-MM-dd"), users = d.Users })
         });
+    }
+
+    // GET: api/analytics/acquisition?days=14 — сколько регистраций дал каждый канал
+    // и сколько из этих людей действительно открыли первую главу
+    [HttpGet("acquisition")]
+    [EnableRateLimiting("admin")]
+    public async Task<IActionResult> Acquisition(
+        [FromHeader(Name = "X-Seed-Key")] string? seedKey,
+        [FromQuery] int days = DefaultAcquisitionDays)
+    {
+        // Тот же контур доступа, что у /summary: чужие коды каналов и воронка
+        // проекта — не то, что должен видеть любой вошедший пользователь.
+        var configuredKey = _configuration["Seeder:Key"];
+        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, _environment.IsDevelopment()))
+        {
+            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
+            return Unauthorized(new { message = "Invalid admin key" });
+        }
+
+        // Окно ограничиваем: days=0 или days=100000 означали бы «пробеги по всей
+        // таблице» на каждом запросе, а выгрузка предназначена для живого чтения.
+        days = Math.Clamp(days, MinAcquisitionDays, MaxAcquisitionDays);
+        var since = DateTime.UtcNow.AddDays(-days);
+
+        var registrants = await _context.Users
+            .Where(u => u.CreatedAt >= since)
+            .Select(u => new { u.Id, u.CreatedAt, u.AcquisitionSource, u.AcquisitionCode })
+            .ToListAsync();
+
+        var registrantIds = registrants.Select(r => r.Id).ToArray();
+
+        // Активация — «этот человек открыл первую главу когда-либо», поэтому берём
+        // distinct по пользователям, а не количество событий: исторические дубли
+        // не должны превращать одного читателя в двух.
+        var activatedIds = new HashSet<string>(
+            await _context.AnalyticsEvents
+                .Where(ae => ae.Event == FirstChapterEvent && registrantIds.Contains(ae.UserId))
+                .Select(ae => ae.UserId)
+                .Distinct()
+                .ToListAsync(),
+            StringComparer.Ordinal);
+
+        // Агрегация в памяти, как в /summary: за бету строк десятки, а группировка
+        // по LocalTime-усечённой дате в LINQ к Npgsql переводится болезненно.
+        var rows = registrants
+            .GroupBy(r => new { Date = r.CreatedAt.Date, r.AcquisitionSource, r.AcquisitionCode })
+            .Select(g => new AcquisitionRow(
+                g.Key.Date.ToString("yyyy-MM-dd"),
+                g.Key.AcquisitionSource,
+                g.Key.AcquisitionCode,
+                g.Count(),
+                g.Count(r => activatedIds.Contains(r.Id))))
+            .OrderBy(r => r.Date)
+            .ThenByDescending(r => r.Registrations)
+            .ToArray();
+
+        var byChannel = registrants
+            .GroupBy(r => r.AcquisitionSource)
+            .Select(g => new AcquisitionChannel(
+                g.Key,
+                g.Count(),
+                g.Count(r => activatedIds.Contains(r.Id))))
+            .OrderByDescending(c => c.Registrations)
+            .ToArray();
+
+        return Ok(new AcquisitionReport(
+            days,
+            since.ToString("yyyy-MM-dd"),
+            rows,
+            byChannel,
+            new AcquisitionTotals(
+                registrants.Count,
+                registrants.Count(r => activatedIds.Contains(r.Id)))));
     }
 }
