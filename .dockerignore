@@ -19,3 +19,11 @@ appsettings.Development.json
 **/appsettings.Production.local.json
 .env*
 **/.env*
+
+# Загрузки — рантайм-данные, не исходники: dev-EPUB и тестовые обложки
+# не должны ехать ни в build-контекст, ни в publish-артефакт (R-12).
+# StorySeeder перегенерирует covers/story-*.svg, PopularBooksService тянет
+# текст с Gutenberg, поэтому сборка без этого каталога остаётся рабочей.
+EnglishLearningPlatform.API/uploads/**
+**/uploads/books/**
+**/uploads/covers/**
