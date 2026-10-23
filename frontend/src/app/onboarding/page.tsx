@@ -1,6 +1,7 @@
 'use client';
 
 import Button from '@/components/ui/Button';
+import ChoiceCard from '@/components/ui/ChoiceCard';
 import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import Notice from '@/components/ui/Notice';
@@ -26,6 +27,13 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
+import { fetchPlacementQuestions, submitPlacementAnswers } from '@/app/lib/placement-api';
+import {
+  placementLevelLabel,
+  type PlacementAnswer,
+  type PlacementQuestion,
+  type PlacementResult,
+} from '@/lib/placement';
 import { getActiveAttribution, registrationPayload } from '@/lib/attribution';
 import {
   HONEYPOT_WRAPPER_STYLE,
@@ -35,18 +43,6 @@ import {
 } from '@/lib/signup-payload';
 
 type Step = 'level' | 'placement' | 'goal' | 'time' | 'account' | 'processing' | 'welcome';
-
-interface PlacementQuestion {
-  id: number;
-  prompt: string;
-  options: string[];
-}
-
-interface PlacementResult {
-  cefrLevel: string;
-  correctCount: number;
-  total: number;
-}
 
 const levels = [
   { value: 'a1', name: 'A1 — Начальный', description: 'Я понимаю простые фразы' },
@@ -74,44 +70,6 @@ const timeOptions = [
 ];
 
 const goalName = (value: string) => goals.find((g) => g.value === value)?.name ?? value;
-
-const levelLabel = (value: string) =>
-  levels.find((l) => l.value === value)?.name.split(' — ')[0].toUpperCase() || value.toUpperCase();
-
-/**
- * Вариант с одиночным выбором: уровень, вопрос теста и время занятий —
- * одна карточка на все три шага, чтобы выбор не выглядел по-разному.
- */
-function OptionCard({
-  selected,
-  title,
-  description,
-  onSelect,
-}: {
-  selected: boolean;
-  title: string;
-  description?: string;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={`flex w-full items-center gap-4 rounded-lg border p-5 text-left transition-[background-color,border-color] duration-fast ease-soft ${
-        selected
-          ? 'border-primary bg-surface-success'
-          : 'border-hairline-strong bg-canvas hover:border-primary'
-      }`}
-    >
-      <span className="min-w-0 flex-1">
-        <span className="block text-body font-medium text-ink">{title}</span>
-        {description && <span className="mt-1 block text-body-sm text-slate">{description}</span>}
-      </span>
-      {selected && <CheckIcon size={20} className="shrink-0 text-primary" />}
-    </button>
-  );
-}
 
 /** Заголовок шага: вопрос сверху, пояснение и, если нужно, счётчик выбора под ним. */
 function StepHeading({
@@ -156,7 +114,7 @@ export default function OnboardingPage() {
   const [placementQuestions, setPlacementQuestions] = useState<PlacementQuestion[]>([]);
   const [placementIndex, setPlacementIndex] = useState(0);
   const [placementChoice, setPlacementChoice] = useState<number | null>(null);
-  const [placementAnswers, setPlacementAnswers] = useState<{ id: number; choice: number }[]>([]);
+  const [placementAnswers, setPlacementAnswers] = useState<PlacementAnswer[]>([]);
   const [placementResult, setPlacementResult] = useState<PlacementResult | null>(null);
   const [placementError, setPlacementError] = useState('');
   const [isPlacementLoading, setIsPlacementLoading] = useState(false);
@@ -178,10 +136,7 @@ export default function OnboardingPage() {
     setPlacementError('');
     setIsPlacementLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/profile/placement`);
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const body = await res.json();
-      setPlacementQuestions(body.questions || []);
+      setPlacementQuestions(await fetchPlacementQuestions());
       setPlacementIndex(0);
       setPlacementChoice(null);
       setPlacementAnswers([]);
@@ -206,14 +161,7 @@ export default function OnboardingPage() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/profile/placement/result`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers }),
-      });
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const result: PlacementResult = await res.json();
-      setPlacementResult(result);
+      setPlacementResult(await submitPlacementAnswers(answers));
     } catch {
       setPlacementError('Не удалось отправить результаты. Попробуйте ещё раз.');
     }
@@ -352,7 +300,7 @@ export default function OnboardingPage() {
           <LexiMascot pose="wave" className="mx-auto -mt-4 mb-3 w-40" />
           <h1 className="mb-4 text-h1 text-ink">Добро пожаловать, {data.name || 'друг'}!</h1>
           <p className="mb-8 text-body-lg text-slate">
-            Ваш аккаунт готов. Уровень: <b className="font-semibold text-ink">{levelLabel(data.level)}</b>
+            Ваш аккаунт готов. Уровень: <b className="font-semibold text-ink">{placementLevelLabel(data.level)}</b>
             {data.goals.length > 0 && (
               <> · Цели: {data.goals.map(goalName).join(', ')}</>
             )}
@@ -416,7 +364,7 @@ export default function OnboardingPage() {
 
                   <div className="mb-6 space-y-3">
                     {levels.map((level) => (
-                      <OptionCard
+                      <ChoiceCard
                         key={level.value}
                         title={level.name}
                         description={level.description}
@@ -458,7 +406,7 @@ export default function OnboardingPage() {
                         <TargetIcon size={24} className="h-8 w-8" />
                       </span>
                       <h1 className="mb-4 text-h1 text-ink">
-                        Ваш уровень: {levelLabel(placementResult.cefrLevel)}
+                        Ваш уровень: {placementLevelLabel(placementResult.cefrLevel)}
                       </h1>
                       <p className="mb-8 text-body-lg text-slate">
                         Правильных ответов: {placementResult.correctCount} из {placementResult.total}
@@ -497,7 +445,7 @@ export default function OnboardingPage() {
 
                       <div className="mb-8 space-y-3">
                         {placementQuestions[placementIndex].options.map((option, i) => (
-                          <OptionCard
+                          <ChoiceCard
                             key={i}
                             title={option}
                             selected={placementChoice === i}
@@ -586,7 +534,7 @@ export default function OnboardingPage() {
 
                   <div className="mb-8 space-y-3">
                     {timeOptions.map((option) => (
-                      <OptionCard
+                      <ChoiceCard
                         key={option.value}
                         title={option.name}
                         selected={data.time === option.value}
