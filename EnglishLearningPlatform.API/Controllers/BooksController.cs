@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -374,7 +375,15 @@ public class BooksController : ControllerBase
     // (≤600 символов). Весь текст страницы переводится одним литературным вызовом
     // Gemini (TranslateLiteraryAsync); при расхождении числа сегментов — поблочный
     // gtx-фолбэк. Результат кэшируется 24ч.
+    //
+    // W1.4.3 (SECURITY_GATE R-06): здесь обязательно должен стоять гейт по
+    // подтверждённому email — этот GET единственный в контроллере, который
+    // доходит до модели. Остальные экшены (список книг, контент страницы,
+    // тултип слова) к AI не обращаются, и вешать атрибут на весь контроллер
+    // нельзя: читалка отрезала бы неподтверждённым аккаунтам всю библиотеку.
+    // Страховка от «забыли атрибут» — AiEndpointGateTests.
     [HttpGet("{id}/parallel")]
+    [RequireConfirmedEmail]
     public async Task<IActionResult> GetParallelPage(int id, [FromQuery] int page = 1)
     {
         var userId = GetUserId();

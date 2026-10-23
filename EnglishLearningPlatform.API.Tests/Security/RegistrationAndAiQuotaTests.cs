@@ -122,14 +122,12 @@ public class EmailConfirmationGateTests
         Assert.Equal(StatusCodes.Status403Forbidden, result.StatusCode);
     }
 
-    [Fact]
-    public void AiControllersAreMarkedWithRequireConfirmedEmail()
-    {
-        foreach (var type in new[] { typeof(AssistantController), typeof(AudioController), typeof(PronunciationController), typeof(AiController) })
-        {
-            Assert.NotEmpty(type.GetCustomAttributes(typeof(RequireConfirmedEmailAttribute), inherit: true));
-        }
-    }
+    // W1.4.3: здесь был тест `AiControllersAreMarkedWithRequireConfirmedEmail`,
+    // который перебирал захардкоженный список из четырёх типов. Именно он
+    // «зеленел», когда BooksController /parallel остался без гейта: нового
+    // эндпоинта в списке не было и быть не могло. Его место занял
+    // AiEndpointGateTests — он выводит AI-достижимые экшены из графа
+    // зависимостей, а не из списка.
 }
 
 /// <summary>Глобальный дневной бюджет Gemini: 80% — предупреждение, 100% — отказ.</summary>

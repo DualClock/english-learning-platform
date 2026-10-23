@@ -10,7 +10,7 @@ namespace EnglishLearningPlatform.API.Services;
 /// uploads/tts/{sha256}.wav, поэтому повторная озвучка той же фразы не тратит
 /// ни квоту, ни время провайдера.
 /// </summary>
-public class SpeechService
+public class SpeechService : IAiBackedService
 {
     private const string TtsModel = "gemini-2.5-flash-preview-tts";
     private const string TtsVoice = "Kore";

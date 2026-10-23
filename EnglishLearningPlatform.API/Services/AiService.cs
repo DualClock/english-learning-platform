@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace EnglishLearningPlatform.API.Services;
 
-public class AiService
+public class AiService : IAiBackedService
 {
     // Резервные модели: 2.5/2.0-flash больше не выдаются новым проектам,
     // основная модель берётся из Gemini:Model

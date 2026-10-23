@@ -31,7 +31,7 @@ public class AiGlobalBudgetExceededException : Exception
 // retry с экспоненциальной задержкой (429, 5xx, сеть, таймаут, пустой/битый ответ),
 // опциональный fallback-провайдер ("Ai:FallbackApiKey"/"Ai:FallbackModel").
 // В лог пишем только тип запроса, userId и текст ошибки — без текстов запросов.
-public class ResilientAiService
+public class ResilientAiService : IAiBackedService
 {
     public const string UserErrorMessage =
         "Функция временно недоступна. Попробуйте ещё раз через пару минут.";
