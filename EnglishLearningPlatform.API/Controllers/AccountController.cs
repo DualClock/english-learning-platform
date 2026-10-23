@@ -28,9 +28,10 @@ namespace EnglishLearningPlatform.API.Controllers;
 ///    AiUsageLogs.UserId и EmailMessages.UserId — обычные строки. Один
 ///    «delete user» оставил бы в базе книги, учёт токенов и копии писем
 ///    мёртвого человека. Поэтому удаляем каждую таблицу по имени, а тест
-///    AccountDeletionOrphansTests проходит по всей схеме и проверяет, что ни
-///    одна строка нигде не ссылается на id удалённого пользователя — так
-///    новая таблица с UserId не сможет молча пережить удаление.
+///    AccountDeletionTests (тест LeavesNoRowAnywhereReferencingTheUserId)
+///    проходит по всей схеме и проверяет, что ни одна строка нигде не ссылается
+///    на id удалённого пользователя — так новая таблица с UserId не сможет
+///    молча пережить удаление.
 ///
 /// 3. ФАЙЛЫ — ПОСЛЕ КОММИТА. Если удалить файлы до записи в базу, а база
 ///    откатится, человек потеряет книги, оставив строки, которые на них
@@ -147,7 +148,17 @@ public class AccountController : ControllerBase
         var rows = 0;
         try
         {
-            rows = await DeleteUserDataAsync(userId, bookIds, cancellationToken);
+            rows = await DeleteUserDataAsync(_context, userId, cancellationToken);
+
+            // ExecuteDeleteAsync обходит change tracker, поэтому после реестра
+            // в нём остаются «unchanged» копии строк, которых в базе уже нет.
+            // DeleteAsync снимает пользователя, и EF по каскаду помечает
+            // удалёнными все привязанные к нему отслеживаемые зависимости — а
+            // их строки уже стёрты, поэтому каждый такой DELETE даёт
+            // DbUpdateConcurrencyException («Optimistic concurrency failure»)
+            // и откат всего удаления. Трекер очищается ровно перед этим
+            // вызовом: дальше единственный источник правды — база.
+            _context.ChangeTracker.Clear();
 
             var identityResult = await _userManager.DeleteAsync(user);
             if (!identityResult.Succeeded)
@@ -191,62 +202,76 @@ public class AccountController : ControllerBase
     }
 
     /// <summary>
-    /// Все строки пользователя одной последовательностью. Порядок — от детей к
+    /// Реестр таблиц, где лежат строки пользователя. Порядок — от детей к
     /// родителям: каскад в базе делает то же самое, но полагаться на него
-    /// нельзя (см. комментарий к классу), а нам важна одна гарантия — после
-    /// этого метода в базе не остаётся ни одной строки с этим UserId.
+    /// нельзя (см. комментарий к классу), а нам нужна одна гарантия — после
+    /// прогона реестра в базе не остаётся ни одной строки с этим UserId.
+    ///
+    /// Реестр публичный не для красоты: тест CoversEveryTableThatHasAUserIdColumn
+    /// сверяет его со списком типов модели EF, у которых есть колонка UserId или
+    /// UploadedByUserId. Новая таблица с такой колонкой не сможет молча пережить
+    /// удаление аккаунта — тест краснеет, пока её не добавят сюда.
     /// </summary>
-    private async Task<int> DeleteUserDataAsync(string userId, int[] bookIds, CancellationToken cancellationToken)
+    private delegate Task<int> DeleteUserRows(
+        ApplicationDbContext context,
+        string userId,
+        CancellationToken cancellationToken);
+
+    private static readonly IReadOnlyList<(string Table, DeleteUserRows Delete)> UserOwnedRows =
+        new (string Table, DeleteUserRows Delete)[]
+        {
+            // Таблицы Identity: формально их снимает каскад от AspNetUsers, но
+            // гарантия «удаляем сами, а не надеемся на провайдера» дешевле.
+            ("UserRoles", (c, id, ct) => c.UserRoles.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserClaims", (c, id, ct) => c.UserClaims.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserLogins", (c, id, ct) => c.UserLogins.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserTokens", (c, id, ct) => c.UserTokens.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+
+            // Словарь и всё, что на него ссылается
+            ("UserWords", (c, id, ct) => c.UserWords.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserKnownWords", (c, id, ct) => c.UserKnownWords.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("ReviewLogs", (c, id, ct) => c.ReviewLogs.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserErrorBankEntries", (c, id, ct) => c.UserErrorBankEntries.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("Interactions", (c, id, ct) => c.Interactions.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+
+            // Прогресс, статистика, геймификация
+            ("DailyActivities", (c, id, ct) => c.DailyActivities.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("XpEvents", (c, id, ct) => c.XpEvents.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("LeagueHistories", (c, id, ct) => c.LeagueHistories.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserAchievements", (c, id, ct) => c.UserAchievements.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserGrammarProgresses", (c, id, ct) => c.UserGrammarProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserCategoryWordProgresses", (c, id, ct) => c.UserCategoryWordProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("AnalyticsEvents", (c, id, ct) => c.AnalyticsEvents.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+
+            // Книги: закладки и маркерные слова — раньше самих книг. Подзапрос
+            // вместо Include: ExecuteDelete не умеет JOIN, а correlated EXISTS
+            // translates в обычный DELETE.
+            ("BookBookmarks", (c, id, ct) => c.BookBookmarks.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("BookKeyWords", (c, id, ct) => c.BookKeyWords
+                .Where(k => c.Books.Any(b => b.Id == k.BookId && b.UploadedByUserId == id))
+                .ExecuteDeleteAsync(ct)),
+
+            // Принадлежит человеку, но внешний ключ на AspNetUsers не имеет:
+            // без этой строки книги умершего аккаунта остались бы в базе.
+            ("Books", (c, id, ct) => c.Books.Where(x => x.UploadedByUserId == id).ExecuteDeleteAsync(ct)),
+
+            // Служебное: учёт AI-вызовов и копии писем (включая отзывы с этим UserId)
+            ("AiUsageLogs", (c, id, ct) => c.AiUsageLogs.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("EmailMessages", (c, id, ct) => c.EmailMessages.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+        };
+
+    /// <summary>Имена DbSet, из которых удаляются строки пользователя.</summary>
+    public static IReadOnlyCollection<string> UserOwnedTables { get; } =
+        UserOwnedRows.Select(r => r.Table).ToArray();
+
+    private static async Task<int> DeleteUserDataAsync(ApplicationDbContext context, string userId, CancellationToken cancellationToken)
     {
         var removed = 0;
-
-        // Словарь и всё, что на него ссылается
-        removed += await _context.UserWords.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.UserKnownWords.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.ReviewLogs.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.UserErrorBankEntries.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.Interactions.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        // Прогресс, статистика, геймификация
-        removed += await _context.DailyActivities.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.XpEvents.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.LeagueHistories.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.UserAchievements.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.UserGrammarProgresses.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.UserCategoryWordProgresses.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.AnalyticsEvents.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        // Книги: закладки и маркерные слова — раньше самих книг
-        removed += await _context.BookBookmarks.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        if (bookIds.Length > 0)
+        foreach (var (_, delete) in UserOwnedRows)
         {
-            removed += await _context.BookKeyWords.Where(x => bookIds.Contains(x.BookId))
-                .ExecuteDeleteAsync(cancellationToken);
+            removed += await delete(context, userId, cancellationToken);
         }
-        removed += await _context.Books.Where(x => x.UploadedByUserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
 
-        // Служебное: учёт AI-вызовов и копии писем (включая отзывы с этим UserId)
-        removed += await _context.AiUsageLogs.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-        removed += await _context.EmailMessages.Where(x => x.UserId == userId)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        // Роли, клеймы, внешние логины и токены Identity — их снимает
-        // UserManager.DeleteAsync вместе со строкой пользователя.
         return removed;
     }
 
@@ -271,7 +296,7 @@ public class AccountController : ControllerBase
                 removed += TryDeleteUploadFile("books", book.FilePath) ? 1 : 0;
             }
 
-            if (!string.IsNullOrEmpty(book.CoverUrl) && !keep.Contains(book.CoverUrl))
+            if (!string.IsNullOrEmpty(book.CoverUrl) && !keep.Contains(book.CoverUrl) && !IsSharedServiceAsset(book.CoverUrl))
             {
                 removed += TryDeleteUploadFile("covers", book.CoverUrl) ? 1 : 0;
             }
@@ -287,8 +312,21 @@ public class AccountController : ControllerBase
         return removed;
     }
 
-    private bool TryDeleteUploadFile(string subFolder, string url)
+    /// <summary>
+    /// SVG-обложки рассказов (uploads/covers/story-{index}.svg) генерирует
+    /// StorySeeder и они принадлежат сервису, а не человеку, который добавил
+    /// рассказ в свою полку: у тысячи пользователей файл один. Удалять его из-
+    /// чужого выхода нельзя — даже если формально на момент удаления на него
+    /// больше никто не ссылается.
+    /// </summary>
+    private static bool IsSharedServiceAsset(string url)
     {
+        var name = Path.GetFileName(url);
+        return name.StartsWith("story-", StringComparison.OrdinalIgnoreCase) &&
+               name.EndsWith(".svg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool TryDeleteUploadFile(string subFolder, string url)    {
         var fileName = Path.GetFileName(url);
         if (string.IsNullOrEmpty(fileName)) return false;
 
