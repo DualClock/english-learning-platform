@@ -157,6 +157,21 @@ export default function ReaderPage() {
     [visibleTocItems, currentPage]
   );
 
+  // Активация беты: «первая открытая глава». Через неделю по этому событию видно,
+  // какой канал привёл читающих людей, а не просто регистрации.
+  // Отправляется один раз на монтирование читалки, а однократность на пользователя
+  // гарантирует сервер (AnalyticsController + частичный уникальный индекс),
+  // поэтому повторные заходы и перезапуски браузера безопасны.
+  const firstChapterTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (firstChapterTrackedRef.current) return;
+    if (!session?.accessToken || !content) return;
+
+    firstChapterTrackedRef.current = true;
+    trackEvent('chapter_opened_first', chapterTitle || book?.title);
+  }, [session, content, chapterTitle, book, trackEvent]);
+
   // Завершение чтения
   const [finishResult, setFinishResult] = useState<FinishResult | null>(null);
   const [quizIndex, setQuizIndex] = useState(0);

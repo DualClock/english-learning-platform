@@ -168,6 +168,19 @@ public class ApplicationDbContext : IdentityDbContext<User>
         builder.Entity<AnalyticsEvent>()
             .HasIndex(ae => ae.Event);
 
+        // Активационное событие «первая открытая глава» считается один раз на
+        // человека. Проверка в контроллере вежливая (она отвечает 200 и ничего не
+        // пишет), но два параллельных запроса могут пройти её одновременно —
+        // поэтому правило держит база: частичный уникальный индекс покрывает
+        // только эту строку события и не мешает остальной аналитике.
+        // Кавычки в фильтре стандартные для Postgres и SQLite, тестовый
+        // провайдер получает корректный DDL.
+        builder.Entity<AnalyticsEvent>()
+            .HasIndex(ae => new { ae.UserId, ae.Event })
+            .HasDatabaseName("IX_AnalyticsEvents_FirstChapterPerUser")
+            .HasFilter("\"Event\" = 'chapter_opened_first'")
+            .IsUnique();
+
         // Аналитика по периодам: глобальные срезы по дате
         builder.Entity<AnalyticsEvent>()
             .HasIndex(ae => ae.CreatedAt);

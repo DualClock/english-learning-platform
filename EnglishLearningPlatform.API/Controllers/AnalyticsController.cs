@@ -29,8 +29,15 @@ public class AnalyticsController : ControllerBase
     {
         "login", "register", "book_opened", "page_read", "word_translated",
         "word_learned", "word_reviewed", "session_finished", "lesson_completed",
-        "grammar_unit_completed", "practice_finished", "chat_message"
+        "grammar_unit_completed", "practice_finished", "chat_message",
+        FirstChapterEvent
     };
+
+    /// <summary>
+    /// Активационное событие: первая открытая глава. Пишется ровно один раз на
+    /// пользователя и именно по нему видно, что регистрация превратилась в чтение.
+    /// </summary>
+    public const string FirstChapterEvent = "chapter_opened_first";
 
     private readonly ApplicationDbContext _context;
     private readonly ILogger<AnalyticsController> _logger;
@@ -63,9 +70,23 @@ public class AnalyticsController : ControllerBase
 
         try
         {
+            var userId = GetUserId();
+
+            // Активационное событие однократное: клиент может прислать его
+            // повторно (перемонтировалась читалка, повторная отправка после
+            // обрыва сети), а метрика «начал читать» живёт до тех пор, пока
+            // считает ровно один раз на человека. Ответ всё равно 200 —
+            // аналитика не должна подсказывать фронтенду, что «что-то не так».
+            if (string.Equals(dto.Event, FirstChapterEvent, StringComparison.OrdinalIgnoreCase) &&
+                await _context.AnalyticsEvents.AnyAsync(ae =>
+                    ae.UserId == userId && ae.Event == FirstChapterEvent))
+            {
+                return Ok();
+            }
+
             _context.AnalyticsEvents.Add(new AnalyticsEvent
             {
-                UserId = GetUserId(),
+                UserId = userId,
                 Event = dto.Event.ToLowerInvariant(),
                 Meta = dto.Meta is { Length: > 500 } ? dto.Meta[..500] : dto.Meta
             });
@@ -73,7 +94,9 @@ public class AnalyticsController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Аналитика никогда не должна ломать пользовательский сценарий
+            // Аналитика никогда не должна ломать пользовательский сценарий.
+            // Сюда же попадает гонка двух параллельных chapter_opened_first:
+            // частичный уникальный индекс не впустит вторую строку, и это молча игнорируется.
             _logger.LogWarning(ex, "Analytics tracking failed");
         }
 

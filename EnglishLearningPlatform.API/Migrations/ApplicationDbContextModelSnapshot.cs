@@ -99,6 +99,11 @@ namespace EnglishLearningPlatform.API.Migrations
 
                     b.HasIndex("UserId", "CreatedAt");
 
+                    b.HasIndex("UserId", "Event")
+                        .IsUnique()
+                        .HasDatabaseName("IX_AnalyticsEvents_FirstChapterPerUser")
+                        .HasFilter("\"Event\" = 'chapter_opened_first'");
+
                     b.ToTable("AnalyticsEvents");
                 });
 
