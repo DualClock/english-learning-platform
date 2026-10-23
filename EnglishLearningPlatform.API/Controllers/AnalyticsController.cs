@@ -129,6 +129,13 @@ public class AnalyticsController : ControllerBase
     /// которому можно было бы построить когорту), регистрационные — по когорте
     /// этого дня, ровно как в <see cref="AcquisitionRow"/>. Числа `rows` и `funnel`
     /// сходятся: funnel — это сумма строк дня по всем каналам плюс гостевые события.
+    ///
+    /// `CohortViews` и `LibraryViews` (W3.4) — две ступени ДО теста: просмотр
+    /// страницы когорты и просмотр публичной полки. Новые колонки добавлены в
+    /// конец, а не вставлены в середину: порядок полей в JSON — это контракт для
+    /// читающих выгрузку скриптов, существующие имена и их значения не
+    /// меняются. Считаются как и всё остальное в funnel — по записям `Day`,
+    /// поэтому день, в котором были только просмотры, из ответа не исчезает.
     /// </summary>
     public sealed record FunnelRow(
         string Date,
@@ -136,13 +143,28 @@ public class AnalyticsController : ControllerBase
         int GuestCompletions,
         int GuestVisitors,
         int Registrations,
-        int Activated);
+        int Activated,
+        int CohortViews,
+        int LibraryViews);
 
     /// <summary>Распределение гостевых результатов по уровням — зачем человек пришёл и что ему предлагать дальше.</summary>
     public sealed record GuestLevelRow(string Level, int Completions);
 
-    /// <summary>Гостевые итоги за окно. `Visitors` — разных хешей IP, а не людей: семья за одним NAT = один гость.</summary>
-    public sealed record GuestTotals(int Starts, int Completions, int Visitors);
+    /// <summary>
+    /// Гостевые итоги за окно. `Visitors` — разных хешей IP, а не людей: семья за
+    /// одним NAT = один гость. С W3.4 это число считается по всем гостевым
+    /// событиям, то есть включает и зрителей /beta с /library, — раньше в таблице
+    /// были только события /test, поэтому на исторических днях колонка уже, чем на
+    /// новых. `CohortViews`/`LibraryViews` — просмотры двух публичных страниц:
+    /// это проходы, а не уникальные люди (один человек трижды открывший /beta
+    /// даёт три просмотра).
+    /// </summary>
+    public sealed record GuestTotals(
+        int Starts,
+        int Completions,
+        int Visitors,
+        int CohortViews,
+        int LibraryViews);
 
     public sealed record AcquisitionReport(
         int Days,
@@ -284,10 +306,28 @@ public class AnalyticsController : ControllerBase
             .Where(g => g.Event == AnonymousAnalyticsController.CompletedEvent)
             .ToArray();
 
+        // Просмотры двух публичных страниц (W3.4) — ступени, которые стоят ДО
+        // /test. Отдельные счётчики, а не «ещё одни старты»: у просмотра нет
+        // ни уровня, ни прохода, и смешивать его с началом теста значило бы
+        // потерять ровно тот вопрос, ради которого метрика и заводилась
+        // («человек увидел когорту → вступил»).
+        var cohortViews = guestEvents
+            .Where(g => g.Event == AnonymousAnalyticsController.CohortViewedEvent)
+            .ToArray();
+        var libraryViews = guestEvents
+            .Where(g => g.Event == AnonymousAnalyticsController.LibraryViewedEvent)
+            .ToArray();
+
         var startsByDay = guestStarts
             .GroupBy(g => g.Day)
             .ToDictionary(g => g.Key, g => g.Count());
         var completionsByDay = guestCompletions
+            .GroupBy(g => g.Day)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var cohortViewsByDay = cohortViews
+            .GroupBy(g => g.Day)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var libraryViewsByDay = libraryViews
             .GroupBy(g => g.Day)
             .ToDictionary(g => g.Key, g => g.Count());
         var visitorsByDay = guestEvents
@@ -300,12 +340,17 @@ public class AnalyticsController : ControllerBase
                 g => g.Key,
                 g => (Count: g.Count(), Activated: g.Count(r => activatedIds.Contains(r.Id))));
 
-        // День воронки = любой день, в котором случилось что-то из четырёх
-        // шагов. Иначе дни, где тест качали, но никто не зарегистрировался,
-        // пропадали бы из ответа — а именно они и есть интерес менеджера.
+        // День воронки = любой день, в котором случилось что-то из шести шагов.
+        // Иначе дни, где тест качали, но никто не зарегистрировался, пропадали бы
+        // из ответа — а именно они и есть интерес менеджера. Просмотры в этом
+        // перечне обязательны: страница когорты, которую посмотрели в тишине
+        // («ни регистраций, ни тестов»), и есть верх воронки, который мы наконец
+        // увидели.
         var funnelDays = startsByDay.Keys
             .Union(completionsByDay.Keys)
             .Union(visitorsByDay.Keys)
+            .Union(cohortViewsByDay.Keys)
+            .Union(libraryViewsByDay.Keys)
             .Union(registrationsByDay.Keys)
             .OrderBy(d => d)
             .Select(day =>
@@ -319,7 +364,9 @@ public class AnalyticsController : ControllerBase
                     completionsByDay.TryGetValue(day, out var c) ? c : 0,
                     visitorsByDay.TryGetValue(day, out var v) ? v : 0,
                     dayRegistrations.Count,
-                    dayRegistrations.Activated);
+                    dayRegistrations.Activated,
+                    cohortViewsByDay.TryGetValue(day, out var cv) ? cv : 0,
+                    libraryViewsByDay.TryGetValue(day, out var lv) ? lv : 0);
             })
             .ToArray();
 
@@ -343,6 +390,8 @@ public class AnalyticsController : ControllerBase
             new GuestTotals(
                 guestStarts.Length,
                 guestCompletions.Length,
-                guestEvents.Select(g => g.IpHash).Distinct().Count())));
+                guestEvents.Select(g => g.IpHash).Distinct().Count(),
+                cohortViews.Length,
+                libraryViews.Length)));
     }
 }

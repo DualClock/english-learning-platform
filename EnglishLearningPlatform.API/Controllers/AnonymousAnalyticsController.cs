@@ -46,6 +46,12 @@ public class AnonymousAnalyticsController : ControllerBase
     /// <summary>Гость увидел результат. Единственное место, где у гостя есть уровень.</summary>
     public const string CompletedEvent = "placement_test_completed";
 
+    /// <summary>Гость увидел страницу когорты (W3.4) — самый верх воронки до /test.</summary>
+    public const string CohortViewedEvent = "cohort_page_viewed";
+
+    /// <summary>Гость увидел публичную полку книг (W3.4) — вторая входная дверь.</summary>
+    public const string LibraryViewedEvent = "library_page_viewed";
+
     /// <summary>
     /// Whitelist гостевых событий. Ровно два, и это не забывчивость.
     ///
@@ -70,9 +76,19 @@ public class AnonymousAnalyticsController : ControllerBase
     /// Когда появится надёжный способ (например, свой same-origin прокси для
     /// биконов), событие добавляется сюда одним элементом — контракт на это
     /// покрыт тестом.
+    ///
+    /// Два событий верха воронки (W3.4) — `cohort_page_viewed` и
+    /// `library_page_viewed` — закрыли дыру «человек увидел когорту, но в
+    /// воронке его нет до самого /test»: обе страницы серверные и раньше не
+    /// измерялись вообще. Ни slug, ни query, ни user-agent к ним не пишется:
+    /// slug — это 18 названий книг сегодня и чужая книга завтра, то есть всё
+    /// тот же свободный текст, только замаскированный под идентификатор.
     /// </summary>
     public static readonly IReadOnlySet<string> AllowedEvents =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { StartedEvent, CompletedEvent };
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            StartedEvent, CompletedEvent, CohortViewedEvent, LibraryViewedEvent
+        };
 
     /// <summary>Уровни, которые умеет отдавать сервер (`ProfileController.SubmitPlacementResult`).</summary>
     public static readonly IReadOnlySet<string> AllowedLevels =

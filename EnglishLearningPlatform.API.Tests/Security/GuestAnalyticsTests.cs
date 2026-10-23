@@ -91,9 +91,39 @@ public class GuestAnalyticsTests
         // Из трёх событий ТЗ живых два: placement_test_abandoned_step с /test
         // не отправляемо надёжно (причина — в комментарии контроллера), а
         // мёртвая строка в whitelist — это открытая дверь, которая ждёт автора.
+        //
+        // W3.4 добавила ровно две строки — просмотры серверных витрин, у которых
+        // нет ни уровня, ни slug'а: список обязан remaining закрытым, и этот
+        // тест падает при любом несанкционированном расширении контракта.
         Assert.Equal(
-            new[] { "placement_test_completed", "placement_test_started" },
+            new[]
+            {
+                "cohort_page_viewed",
+                "library_page_viewed",
+                "placement_test_completed",
+                "placement_test_started",
+            },
             AnonymousAnalyticsController.AllowedEvents.OrderBy(e => e, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void ViewedEvents_AreNamedConstantsAndCarryNoSurfaceData()
+    {
+        // Имена зафиксированы константами (как и события теста), потому что к
+        // ним привязана выгрузка /acquisition: сравнение строк в отчёте и
+        // опечатка в ней = молча нулевая колонка.
+        Assert.Equal("cohort_page_viewed", AnonymousAnalyticsController.CohortViewedEvent);
+        Assert.Equal("library_page_viewed", AnonymousAnalyticsController.LibraryViewedEvent);
+
+        // Ни slug книги, ни query, ни user-agent: ни одного поля под них в
+        // контракте нет, и появление такого поля — это снова свободный текст.
+        var allowedFields = (HashSet<string>)typeof(AnonymousAnalyticsController)
+            .GetField("AllowedFields", BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetValue(null)!;
+
+        Assert.Equal(
+            new[] { "dedupeKey", "event", "level" },
+            allowedFields.OrderBy(f => f, StringComparer.Ordinal).ToArray());
     }
 
     [Fact]
@@ -364,6 +394,117 @@ public class GuestAnalyticsTests
         await context.DisposeAsync();
 
         Assert.IsType<OkResult>(await Post(controller, Started("pppppppp")));
+    }
+
+    // ---- W3.4: просмотры серверных витрин ----------------------------------
+
+    [Theory]
+    [InlineData("cohort_page_viewed")]
+    [InlineData("library_page_viewed")]
+    public async Task PageViewEvent_IsAcceptedAndWrittenWithoutLevel(string eventName)
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        var result = await Post(controller, $$"""{"event":"{{eventName}}","dedupeKey":"pv-aaaaaaaa"}""");
+
+        Assert.IsType<OkResult>(result);
+
+        var row = Assert.Single(await context.GuestAnalyticsEvents.ToListAsync());
+        Assert.Equal(eventName, row.Event);
+
+        // Ни уровня, ни чего-либо ещё: у просмотра страницы нет значения,
+        // кроме факта просмотра.
+        Assert.Null(row.Level);
+        Assert.Equal("pv-aaaaaaaa", row.DedupeKey);
+        Assert.Matches("^[0-9a-f]{64}$", row.IpHash);
+    }
+
+    [Fact]
+    public async Task PageViewEvent_IsCaseInsensitiveLikeTheRestOfTheWhitelist()
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        Assert.IsType<OkResult>(await Post(controller,
+            """{"event":"Cohort_Page_Viewed","dedupeKey":"pv-bbbbbbbb"}"""));
+
+        // Приведение к нижнему регистру одно на все события: иначе два написания
+        // одного имени стали бы двумя счётчиками в выгрузке.
+        Assert.Equal("cohort_page_viewed",
+            Assert.Single(await context.GuestAnalyticsEvents.ToListAsync()).Event);
+    }
+
+    [Fact]
+    public async Task CohortPageView_WithLevel_IsRejected()
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        // Уровень бывает только у завершения теста (проверка общая, но именно
+        // здесь она впервые реально проверяется на новом имени): клиент,
+        // решивший «заодно» прислать уровень просмотра, получает 400, а не
+        // строку с уровнем в таблице.
+        var result = await Post(controller,
+            """{"event":"cohort_page_viewed","level":"b1","dedupeKey":"pv-cccccccc"}""");
+
+        Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(0, await context.GuestAnalyticsEvents.CountAsync());
+    }
+
+    [Theory]
+    [InlineData("slug")]
+    [InlineData("path")]
+    [InlineData("url")]
+    [InlineData("userAgent")]
+    [InlineData("referrer")]
+    [InlineData("meta")]
+    [InlineData("query")]
+    public async Task PageViewEvent_WithAnyUnknownKey_IsRejected(string field)
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        // Защита от тихого расширения контракта: новое поле = свободный текст в
+        // анонимной таблице, поэтому ответ — 400, а не «молча выбросили».
+        var result = await Post(controller,
+            $$"""{"event":"library_page_viewed","dedupeKey":"pv-dddddddd","{{field}}":"a1"}""");
+
+        Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(0, await context.GuestAnalyticsEvents.CountAsync());
+    }
+
+    [Fact]
+    public async Task PageView_SameDedupeKeyTwice_IsStoredOnce()
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        // Двойной эффект в клиентском компоненте и сетевой ретрай — один
+        // просмотр, а не два: иначе только что заведённый счётчик завышался бы
+        // ровно на баг в нашем же коде.
+        var body = """{"event":"cohort_page_viewed","dedupeKey":"pv-eeeeeeee"}""";
+
+        Assert.IsType<OkResult>(await Post(controller, body));
+        Assert.IsType<OkResult>(await Post(controller, body));
+
+        Assert.Single(await context.GuestAnalyticsEvents.ToListAsync());
+    }
+
+    [Fact]
+    public async Task PageView_TwoDifferentPages_AreTwoRowsWithOneNonceEach()
+    {
+        using var context = CreateContext();
+        var controller = CreateController(context);
+
+        // Ключ антидубля — (событие, nonce): один и тот же nonce на два разных
+        // события не должен съесть второй просмотр.
+        Assert.IsType<OkResult>(await Post(controller,
+            """{"event":"cohort_page_viewed","dedupeKey":"pv-shared"}"""));
+        Assert.IsType<OkResult>(await Post(controller,
+            """{"event":"library_page_viewed","dedupeKey":"pv-shared"}"""));
+
+        Assert.Equal(2, await context.GuestAnalyticsEvents.CountAsync());
     }
 
     // ---- IpHash -------------------------------------------------------------

@@ -381,6 +381,143 @@ public class AcquisitionReportTests
         Assert.Empty(report.Funnel);
         Assert.Empty(report.ByLevel);
         Assert.Equal(0, report.Guest.Starts);
+        Assert.Equal(0, report.Guest.CohortViews);
+        Assert.Equal(0, report.Guest.LibraryViews);
         Assert.Equal(0, report.Totals.Registrations);
+    }
+
+    // ---- W3.4: просмотры витрин как ступень ДО теста -------------------------
+
+    [Fact]
+    public async Task Acquisition_FunnelCarriesPageViewsPerDay()
+    {
+        using var context = CreateContext();
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-1));
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, yesterday, "ip-1");
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, yesterday, "ip-2");
+        GuestEvent(context, AnonymousAnalyticsController.LibraryViewedEvent, yesterday, "ip-1");
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, today, "ip-3");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        var day = report.Funnel.Single(f => f.Date == yesterday.ToString("yyyy-MM-dd"));
+        Assert.Equal(2, day.CohortViews);
+        Assert.Equal(1, day.LibraryViews);
+
+        // Ни старта теста, ни регистраций в этот день не было — просмотры всё
+        // равно обязаны остаться в ответе: ровно ради этого дня воронку и
+        // расширяли («человек увидел когорту, но до теста не дошёл»).
+        Assert.Equal(0, day.GuestStarts);
+        Assert.Equal(0, day.GuestCompletions);
+        Assert.Equal(0, day.Registrations);
+
+        Assert.Equal(3, report.Guest.CohortViews);
+        Assert.Equal(1, report.Guest.LibraryViews);
+    }
+
+    [Fact]
+    public async Task Acquisition_FunnelViewCountersConvergeWithRawRows()
+    {
+        using var context = CreateContext();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var twoDaysAgo = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-2));
+
+        // Смешанный день: просмотры + тестовые события, чтобы проверить, что
+        // новые колонки не подменяют и не обнуляют старые.
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, today, "ip-a");
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, today, "ip-b");
+        GuestEvent(context, AnonymousAnalyticsController.LibraryViewedEvent, today, "ip-a");
+        GuestEvent(context, AnonymousAnalyticsController.StartedEvent, today, "ip-a");
+        GuestEvent(context, AnonymousAnalyticsController.CompletedEvent, today, "ip-a", "b1");
+        GuestEvent(context, AnonymousAnalyticsController.LibraryViewedEvent, twoDaysAgo, "ip-c");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        var rows = await context.GuestAnalyticsEvents.ToListAsync();
+
+        // Сходство с сырыми записями — то, что счётчик считает именно таблицу,
+        // а не своё собственное представление о ней.
+        foreach (var funnelDay in report.Funnel)
+        {
+            var day = DateOnly.Parse(funnelDay.Date);
+            var rawOfDay = rows.Where(g => g.Day == day).ToArray();
+
+            Assert.Equal(
+                rawOfDay.Count(g => g.Event == AnonymousAnalyticsController.CohortViewedEvent),
+                funnelDay.CohortViews);
+            Assert.Equal(
+                rawOfDay.Count(g => g.Event == AnonymousAnalyticsController.LibraryViewedEvent),
+                funnelDay.LibraryViews);
+            Assert.Equal(
+                rawOfDay.Count(g => g.Event == AnonymousAnalyticsController.StartedEvent),
+                funnelDay.GuestStarts);
+            Assert.Equal(
+                rawOfDay.Count(g => g.Event == AnonymousAnalyticsController.CompletedEvent),
+                funnelDay.GuestCompletions);
+        }
+
+        Assert.Equal(
+            rows.Count(g => g.Event == AnonymousAnalyticsController.CohortViewedEvent),
+            report.Funnel.Sum(f => f.CohortViews));
+        Assert.Equal(report.Guest.CohortViews, report.Funnel.Sum(f => f.CohortViews));
+        Assert.Equal(report.Guest.LibraryViews, report.Funnel.Sum(f => f.LibraryViews));
+
+        // Порядок дней — по возрастанию, как и раньше.
+        Assert.Equal(
+            report.Funnel.Select(f => f.Date).OrderBy(d => d, StringComparer.Ordinal),
+            report.Funnel.Select(f => f.Date));
+
+        // Просмотры не превратились в «тест начали»: у дня две отдельные пары чисел.
+        var todayRow = report.Funnel.Single(f => f.Date == today.ToString("yyyy-MM-dd"));
+        Assert.Equal(2, todayRow.CohortViews);
+        Assert.Equal(1, todayRow.GuestStarts);
+        Assert.Equal(1, todayRow.GuestCompletions);
+    }
+
+    [Fact]
+    public async Task Acquisition_PageViewOnlyWindow_KeepsRegistrationsAndLevelsUntouched()
+    {
+        using var context = CreateContext();
+        var day = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        context.Users.Add(MakeUser("u-1", "vk", "post-1", DateTime.UtcNow));
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent, day, "ip-1");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret")).Value!;
+
+        var funnel = report.Funnel.Single();
+        Assert.Equal(1, funnel.CohortViews);
+        Assert.Equal(0, funnel.LibraryViews);
+
+        // Существующие поля живут своей жизнью: расширение воронки не тронуло
+        // ни регистрации, ни активации, ни разбивку по уровням.
+        Assert.Equal(1, funnel.Registrations);
+        Assert.Equal(0, funnel.Activated);
+        Assert.Empty(report.ByLevel);
+        Assert.Equal(0, report.Guest.Starts);
+    }
+
+    [Fact]
+    public async Task Acquisition_IgnoresPageViewsFromBeforeTheWindow()
+    {
+        using var context = CreateContext();
+
+        GuestEvent(context, AnonymousAnalyticsController.CohortViewedEvent,
+            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-40)), "ip-old");
+        await context.SaveChangesAsync();
+
+        var report = (AnalyticsController.AcquisitionReport)
+            ((OkObjectResult)await CreateReportController(context).Acquisition("admin-secret", 14)).Value!;
+
+        Assert.Empty(report.Funnel);
+        Assert.Equal(0, report.Guest.CohortViews);
     }
 }
