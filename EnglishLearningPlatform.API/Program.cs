@@ -193,6 +193,7 @@ builder.Services.AddScoped<LemmatizerService>();
 builder.Services.AddScoped<ReaderDifficultyService>();
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
+builder.Services.AddScoped<PublicCatalogService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<AchievementService>();
 builder.Services.AddScoped<LeagueService>();

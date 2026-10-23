@@ -14,7 +14,9 @@ public class PopularBooksService
         Timeout = TimeSpan.FromSeconds(10)
     };
 
-    private const string PopularCoversCacheKey = "popular-covers";
+    // Ключ открыт (был private): публичный каталог и его тесты должны уметь
+    // прогреть список обложек, не отправляя ни одного запроса в Open Library.
+    public const string PopularCoversCacheKey = "popular-covers";
 
     private static readonly TimeSpan CoversCacheTtl = TimeSpan.FromHours(24);
 
