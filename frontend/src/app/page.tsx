@@ -222,6 +222,12 @@ export default function HomePage() {
               >
                 Конфиденциальность
               </Link>
+              <Link
+                href="/terms"
+                className="transition-colors duration-fast ease-soft hover:text-on-dark"
+              >
+                Правила беты
+              </Link>
               <Link href="/login" className="transition-colors duration-fast ease-soft hover:text-on-dark">
                 Войти
               </Link>
