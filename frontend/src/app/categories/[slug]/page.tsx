@@ -13,6 +13,8 @@ import ErrorState from '@/components/ui/ErrorState';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { Tag } from '@/components/ui/Badge';
 import CategoryIcon from '@/components/dictionary/CategoryIcon';
+import WordIllustration, { ILLUSTRATION_SIZE_CLASS } from '@/components/dictionary/WordIllustration';
+import { hasIllustration } from '@/lib/wordIllustrations.generated';
 import { pluralWords } from '@/lib/plural';
 import {
   ArrowLeftIcon,
@@ -217,6 +219,17 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   {words.map((word) => (
                     <li key={word.id} className="card flex flex-wrap items-center gap-x-4 gap-y-3 p-4">
                       {/*
+                        Иллюстрация — сосед текста, а не часть его колонки: у слов
+                        без картинки компонент возвращает null, лишнего отступа и
+                        пустого места не остаётся, высота строки не меняется.
+                      */}
+                      <WordIllustration
+                        categorySlug={category.slug}
+                        word={word.english}
+                        translation={word.translation}
+                        size="sm"
+                      />
+                      {/*
                         basis-52: на узких экранах строка переносится целиком,
                         иначе метка и кнопка сжимают текст до одной буквы в строке.
                       */}
@@ -254,7 +267,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   ))}
                 </motion.ul>
               ) : mode === 'flashcards' ? (
-                <Flashcards words={words} onResult={sendProgress} />
+                <Flashcards words={words} categorySlug={category.slug} onResult={sendProgress} />
               ) : mode === 'guess' ? (
                 <GuessTranslation words={words} onResult={sendProgress} />
               ) : (
@@ -328,36 +341,60 @@ function SessionDone({ onRestart, note }: { onRestart: () => void; note: string 
   );
 }
 
-/** Пара «слово ↔ перевод»: смена стороны — только прозрачность, высота карточки не прыгает. */
-function WordFace({ english, translation, transcription, example, flipped }: {
+/**
+ * Пара «слово ↔ перевод». Оба лица лежат в одной ячейке grid и меняют только
+ * прозрачность: высоту карточки держит более высокое из них. Если размонтировать
+ * лицо (как было с AnimatePresence), длинный пример на узком экране переносится
+ * на вторую строку и кнопки «Знаю / Не знаю» уезжают вниз при перевороте.
+ */
+function WordFace({ english, translation, transcription, example, flipped, illustration }: {
   english: string;
   translation: string;
   transcription?: string;
   example?: string;
   flipped: boolean;
+  illustration?: React.ReactNode;
 }) {
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={flipped ? 'back' : 'front'}
-        variants={variants.fadeOnly}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
+    <div className="grid">
+      <div
+        aria-hidden={flipped}
+        className={`col-start-1 row-start-1 transition-opacity duration-fast ease-soft ${
+          flipped ? 'opacity-0' : 'opacity-100'
+        }`}
       >
-        <div className="text-h1 text-ink">{flipped ? translation : english}</div>
-        {flipped ? (
-          example && <div className="mt-3 italic text-body-lg text-slate">«{example}»</div>
-        ) : (
-          transcription && <div className="mt-2 text-body-lg text-slate">{transcription}</div>
+        {illustration && (
+          <div className="mb-4 flex justify-center">{illustration}</div>
         )}
-      </motion.div>
-    </AnimatePresence>
+        <div className="text-h1 text-ink">{english}</div>
+        {transcription && <div className="mt-2 text-body-lg text-slate">{transcription}</div>}
+      </div>
+      <div
+        aria-hidden={!flipped}
+        className={`col-start-1 row-start-1 transition-opacity duration-fast ease-soft ${
+          flipped ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {illustration && (
+          <div className="mb-4 flex justify-center">
+            {/*
+              На обороте картинки нет — она выдала бы перевод раньше времени.
+              Пустой слот того же размера держит перевод на месте слова; высоту
+              карточки страхует grid, но без слота текст прыгал бы вверх.
+            */}
+            <span aria-hidden="true" className={`block ${ILLUSTRATION_SIZE_CLASS.lg}`} />
+          </div>
+        )}
+        <div className="text-h1 text-ink">{translation}</div>
+        {example && <div className="mt-3 italic text-body-lg text-slate">«{example}»</div>}
+      </div>
+    </div>
   );
 }
 
-function Flashcards({ words, onResult }: {
+function Flashcards({ words, categorySlug, onResult }: {
   words: CategoryWord[];
+  categorySlug: string;
   onResult: (wordId: number, status: 'learning' | 'learned') => void;
 }) {
   const deck = useDeck(words);
@@ -368,6 +405,9 @@ function Flashcards({ words, onResult }: {
   if (deck.length === 0) return null;
   const done = index >= deck.length;
   const word = deck[Math.min(index, deck.length - 1)];
+  // Проверяем манифест здесь, а не внутри карточки: WordFace должен знать,
+  // резервировать ли слот под картинку на обороте.
+  const illustrated = hasIllustration(categorySlug, word.english);
 
   return (
     <SessionShell title="Флэшкарты" index={index} total={deck.length}>
@@ -385,6 +425,16 @@ function Flashcards({ words, onResult }: {
               transcription={word.transcription}
               example={word.example}
               flipped={flipped}
+              illustration={
+                illustrated ? (
+                  <WordIllustration
+                    categorySlug={categorySlug}
+                    word={word.english}
+                    translation={word.translation}
+                    size="lg"
+                  />
+                ) : null
+              }
             />
             <span className="mt-4 block shrink-0 text-caption text-slate">
               {flipped ? 'Слово' : 'Нажмите, чтобы перевернуть'}

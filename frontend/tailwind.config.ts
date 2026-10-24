@@ -18,6 +18,7 @@ const config: Config = {
         link: "var(--color-link)",
         canvas: "var(--color-canvas)",
         "ground-warm": "var(--color-ground-warm)",
+        "illustration-paper": "var(--color-illustration-paper)",
         scrim: "var(--color-scrim)",
         hairline: "var(--color-hairline)",
         "hairline-soft": "var(--color-hairline-soft)",

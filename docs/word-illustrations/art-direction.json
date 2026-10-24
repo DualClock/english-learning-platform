@@ -1,0 +1,3280 @@
+{
+  "categories": [
+    {
+      "slug": "emotions",
+      "name": "Эмоции",
+      "words": [
+        {
+          "english": "joy",
+          "slug": "joy",
+          "type": "abstract",
+          "scene": "a small round character jumping high with both arms raised, sun overhead"
+        },
+        {
+          "english": "anger",
+          "slug": "anger",
+          "type": "abstract",
+          "scene": "a small round character with clenched fists and three steam puffs above its head"
+        },
+        {
+          "english": "fear",
+          "slug": "fear",
+          "type": "abstract",
+          "scene": "a small round character backing away from a large spider, knees bent"
+        },
+        {
+          "english": "surprise",
+          "slug": "surprise",
+          "type": "abstract",
+          "scene": "a small round character with an open mouth and both hands on its cheeks"
+        },
+        {
+          "english": "sadness",
+          "slug": "sadness",
+          "type": "abstract",
+          "scene": "a small round character sitting on the floor, head down, one tear falling"
+        },
+        {
+          "english": "excitement",
+          "slug": "excitement",
+          "type": "abstract",
+          "scene": "a small round character bouncing on tiptoes with sparkles around raised hands"
+        },
+        {
+          "english": "anxiety",
+          "slug": "anxiety",
+          "type": "abstract",
+          "scene": "a small round character biting its nails beside a tangled ball of thread"
+        },
+        {
+          "english": "pride",
+          "slug": "pride",
+          "type": "abstract",
+          "scene": "a small round character polishing a small medal pinned to its chest"
+        },
+        {
+          "english": "shame",
+          "slug": "shame",
+          "type": "abstract",
+          "scene": "a small round character covering its face with both hands, shoulders hunched"
+        },
+        {
+          "english": "jealousy",
+          "slug": "jealousy",
+          "type": "abstract",
+          "scene": "a small round character watching two others hug from behind a half-open door"
+        },
+        {
+          "english": "relief",
+          "slug": "relief",
+          "type": "abstract",
+          "scene": "a small round character exhaling with slumped shoulders beside a deflating balloon"
+        },
+        {
+          "english": "boredom",
+          "slug": "boredom",
+          "type": "abstract",
+          "scene": "a small round character yawning with its chin propped on one hand"
+        },
+        {
+          "english": "hope",
+          "slug": "hope",
+          "type": "abstract",
+          "scene": "a small round character holding a tiny seedling sprouting from a cracked pot"
+        },
+        {
+          "english": "gratitude",
+          "slug": "gratitude",
+          "type": "abstract",
+          "scene": "a small round character offering a small wrapped gift with both hands, head bowed"
+        },
+        {
+          "english": "disgust",
+          "slug": "disgust",
+          "type": "abstract",
+          "scene": "a small round character turning away while pinching its nose at a smelly sock"
+        },
+        {
+          "english": "loneliness",
+          "slug": "loneliness",
+          "type": "abstract",
+          "scene": "a small round character sitting alone on a bench, one empty space beside"
+        },
+        {
+          "english": "confidence",
+          "slug": "confidence",
+          "type": "abstract",
+          "scene": "a small round character stepping onto a small stage with shoulders back"
+        },
+        {
+          "english": "frustration",
+          "slug": "frustration",
+          "type": "abstract",
+          "scene": "a small round character gripping its head beside a crumpled paper ball"
+        },
+        {
+          "english": "nostalgia",
+          "slug": "nostalgia",
+          "type": "abstract",
+          "scene": "a small round character holding a small blank photo frame against its chest"
+        },
+        {
+          "english": "trust",
+          "slug": "trust",
+          "type": "abstract",
+          "scene": "a small round character leaning backwards into another character's open arms"
+        }
+      ]
+    },
+    {
+      "slug": "food",
+      "name": "Еда",
+      "words": [
+        {
+          "english": "appetite",
+          "slug": "appetite",
+          "type": "abstract",
+          "scene": "a small round character sniffing a steaming pie with a happy open mouth"
+        },
+        {
+          "english": "recipe",
+          "slug": "recipe",
+          "type": "object",
+          "scene": "an open cookbook propped on a stand beside a bowl of eggs"
+        },
+        {
+          "english": "ingredient",
+          "slug": "ingredient",
+          "type": "object",
+          "scene": "a small pile of flour, one egg and a pat of butter on a board"
+        },
+        {
+          "english": "delicious",
+          "slug": "delicious",
+          "type": "trait",
+          "scene": "a steaming pie with a small heart floating above the golden crust"
+        },
+        {
+          "english": "hungry",
+          "slug": "hungry",
+          "type": "trait",
+          "scene": "a small round character holding a fork and knife, staring at a closed pot"
+        },
+        {
+          "english": "beverage",
+          "slug": "beverage",
+          "type": "object",
+          "scene": "a tall glass of tea with a lemon slice and a thin straw"
+        },
+        {
+          "english": "dessert",
+          "slug": "dessert",
+          "type": "object",
+          "scene": "a slice of layered cake with one strawberry on top on a small plate"
+        },
+        {
+          "english": "spicy",
+          "slug": "spicy",
+          "type": "trait",
+          "scene": "a small round character fanning an open mouth beside a red chili pepper"
+        },
+        {
+          "english": "meal",
+          "slug": "meal",
+          "type": "object",
+          "scene": "a full plate with potatoes, green beans and a piece of fish"
+        },
+        {
+          "english": "snack",
+          "slug": "snack",
+          "type": "object",
+          "scene": "a small paper bag of nuts with one apple beside it"
+        },
+        {
+          "english": "flavor",
+          "slug": "flavor",
+          "type": "abstract",
+          "scene": "a small round character tasting a spoonful, small swirls rising from the bowl"
+        },
+        {
+          "english": "portion",
+          "slug": "portion",
+          "type": "object",
+          "scene": "one plate with a single small piece of chicken and three carrots"
+        },
+        {
+          "english": "menu",
+          "slug": "menu",
+          "type": "object",
+          "scene": "a blank folded menu card standing upright beside a small vase"
+        },
+        {
+          "english": "waiter",
+          "slug": "waiter",
+          "type": "object",
+          "scene": "a small round character in an apron holding a tray with one plate"
+        },
+        {
+          "english": "hunger",
+          "slug": "hunger",
+          "type": "abstract",
+          "scene": "a small round character with a hollow belly staring at an empty plate"
+        },
+        {
+          "english": "vegetarian",
+          "slug": "vegetarian",
+          "type": "trait",
+          "scene": "a small round character pushing away a steak while holding a carrot"
+        },
+        {
+          "english": "salty",
+          "slug": "salty",
+          "type": "trait",
+          "scene": "a small round character grimacing while pouring salt from a shaker"
+        },
+        {
+          "english": "fresh",
+          "slug": "fresh",
+          "type": "trait",
+          "scene": "a crusty bread loaf and a dew drop on a green lettuce leaf"
+        },
+        {
+          "english": "frozen",
+          "slug": "frozen",
+          "type": "object",
+          "scene": "a bag of frozen peas with ice crystals and one frost-covered carrot"
+        },
+        {
+          "english": "appetizer",
+          "slug": "appetizer",
+          "type": "object",
+          "scene": "a small plate of three olives and two crackers with a toothpick"
+        }
+      ]
+    },
+    {
+      "slug": "travel",
+      "name": "Путешествия",
+      "words": [
+        {
+          "english": "journey",
+          "slug": "journey",
+          "type": "abstract",
+          "scene": "a small round character walking a long winding path with a backpack"
+        },
+        {
+          "english": "luggage",
+          "slug": "luggage",
+          "type": "object",
+          "scene": "two stacked suitcases, one with a blank paper tag on the handle"
+        },
+        {
+          "english": "destination",
+          "slug": "destination",
+          "type": "abstract",
+          "scene": "a small round character pointing at a distant hill with a flag on top"
+        },
+        {
+          "english": "passport",
+          "slug": "passport",
+          "type": "object",
+          "scene": "a closed passport booklet with a small globe emblem on the cover"
+        },
+        {
+          "english": "flight",
+          "slug": "flight",
+          "type": "object",
+          "scene": "a passenger plane climbing with two small clouds behind it"
+        },
+        {
+          "english": "accommodation",
+          "slug": "accommodation",
+          "type": "place",
+          "scene": "a small house with a bed visible through the open window"
+        },
+        {
+          "english": "sightseeing",
+          "slug": "sightseeing",
+          "type": "action",
+          "scene": "a small round character with a camera looking up at a tall tower"
+        },
+        {
+          "english": "customs",
+          "slug": "customs",
+          "type": "place",
+          "scene": "a low desk with an open suitcase and a uniformed officer behind it"
+        },
+        {
+          "english": "itinerary",
+          "slug": "itinerary",
+          "type": "object",
+          "scene": "a folded paper with three pinned dots connected by one line"
+        },
+        {
+          "english": "souvenir",
+          "slug": "souvenir",
+          "type": "object",
+          "scene": "a small snow globe with a tiny house inside on a shelf"
+        },
+        {
+          "english": "abroad",
+          "slug": "abroad",
+          "type": "abstract",
+          "scene": "a small round character stepping over a border line toward a distant palm"
+        },
+        {
+          "english": "departure",
+          "slug": "departure",
+          "type": "action",
+          "scene": "a small round character waving beside an open suitcase and a plane tail"
+        },
+        {
+          "english": "visa",
+          "slug": "visa",
+          "type": "object",
+          "scene": "a passport page with a round stamp and a small photo square"
+        },
+        {
+          "english": "boarding pass",
+          "slug": "boarding-pass",
+          "type": "object",
+          "scene": "a rectangular card with a small plane symbol and a folded corner"
+        },
+        {
+          "english": "gate",
+          "slug": "gate",
+          "type": "place",
+          "scene": "a doorway frame with a queue rope and a small plane symbol above"
+        },
+        {
+          "english": "hotel",
+          "slug": "hotel",
+          "type": "place",
+          "scene": "a building with a striped awning, three windows and a bell stand"
+        },
+        {
+          "english": "guidebook",
+          "slug": "guidebook",
+          "type": "object",
+          "scene": "a thick book with a small tower drawing and a red bookmark ribbon"
+        },
+        {
+          "english": "suitcase",
+          "slug": "suitcase",
+          "type": "object",
+          "scene": "a hard-shell suitcase standing upright with a raised handle"
+        },
+        {
+          "english": "check-in",
+          "slug": "check-in",
+          "type": "action",
+          "scene": "a small round character placing a suitcase on a weighing scale at a desk"
+        },
+        {
+          "english": "resort",
+          "slug": "resort",
+          "type": "place",
+          "scene": "a palm tree, a sun lounger and a small pool by the sea"
+        }
+      ]
+    },
+    {
+      "slug": "work",
+      "name": "Работа",
+      "words": [
+        {
+          "english": "colleague",
+          "slug": "colleague",
+          "type": "relation",
+          "scene": "two small round characters at one desk, passing a folder to each other"
+        },
+        {
+          "english": "deadline",
+          "slug": "deadline",
+          "type": "abstract",
+          "scene": "a small round character running while holding a stack of papers, clock behind"
+        },
+        {
+          "english": "salary",
+          "slug": "salary",
+          "type": "object",
+          "scene": "a small envelope with banknotes sticking out on a desk"
+        },
+        {
+          "english": "interview",
+          "slug": "interview",
+          "type": "relation",
+          "scene": "two small round characters across a table, one holding a blank sheet"
+        },
+        {
+          "english": "promotion",
+          "slug": "promotion",
+          "type": "abstract",
+          "scene": "a small round character climbing one step up a small staircase, arms raised"
+        },
+        {
+          "english": "responsibility",
+          "slug": "responsibility",
+          "type": "abstract",
+          "scene": "a small round character carrying a tall stack of boxes carefully"
+        },
+        {
+          "english": "meeting",
+          "slug": "meeting",
+          "type": "relation",
+          "scene": "three small round characters around a round table with one laptop"
+        },
+        {
+          "english": "employer",
+          "slug": "employer",
+          "type": "relation",
+          "scene": "a small round character in a tie handing a key to another character"
+        },
+        {
+          "english": "experience",
+          "slug": "experience",
+          "type": "abstract",
+          "scene": "a small round character with a toolbox and three stacked books beside it"
+        },
+        {
+          "english": "schedule",
+          "slug": "schedule",
+          "type": "object",
+          "scene": "a wall planner grid with blank squares and one red pin"
+        },
+        {
+          "english": "resign",
+          "slug": "resign",
+          "type": "action",
+          "scene": "a small round character placing a blank badge on a desk and walking away"
+        },
+        {
+          "english": "skill",
+          "slug": "skill",
+          "type": "abstract",
+          "scene": "a small round character juggling three balls with steady hands"
+        },
+        {
+          "english": "task",
+          "slug": "task",
+          "type": "object",
+          "scene": "a clipboard with three blank lines and a pencil attached"
+        },
+        {
+          "english": "contract",
+          "slug": "contract",
+          "type": "object",
+          "scene": "a folded document with a ribbon seal and a fountain pen on top"
+        },
+        {
+          "english": "overtime",
+          "slug": "overtime",
+          "type": "abstract",
+          "scene": "a small round character at a desk under a lamp, moon in the window"
+        },
+        {
+          "english": "client",
+          "slug": "client",
+          "type": "relation",
+          "scene": "two small round characters shaking hands over a small table"
+        },
+        {
+          "english": "department",
+          "slug": "department",
+          "type": "place",
+          "scene": "three desks in a row with one shared lamp above them"
+        },
+        {
+          "english": "apply",
+          "slug": "apply",
+          "type": "action",
+          "scene": "a small round character pushing an envelope into a mailbox slot"
+        },
+        {
+          "english": "qualified",
+          "slug": "qualified",
+          "type": "trait",
+          "scene": "a small round character pointing at a small badge pinned on its chest"
+        },
+        {
+          "english": "teamwork",
+          "slug": "teamwork",
+          "type": "relation",
+          "scene": "four small round characters carrying one long plank together"
+        }
+      ]
+    },
+    {
+      "slug": "health",
+      "name": "Здоровье",
+      "words": [
+        {
+          "english": "headache",
+          "slug": "headache",
+          "type": "abstract",
+          "scene": "a small round character pressing both temples, small zigzag lines above the head"
+        },
+        {
+          "english": "medicine",
+          "slug": "medicine",
+          "type": "object",
+          "scene": "a small bottle with a spoon and two round pills beside it"
+        },
+        {
+          "english": "exercise",
+          "slug": "exercise",
+          "type": "action",
+          "scene": "a small round character doing a push-up on a mat"
+        },
+        {
+          "english": "appointment",
+          "slug": "appointment",
+          "type": "object",
+          "scene": "a blank appointment card beside a wall clock and a stethoscope"
+        },
+        {
+          "english": "symptom",
+          "slug": "symptom",
+          "type": "abstract",
+          "scene": "a small round character with a thermometer in its mouth, flushed cheeks"
+        },
+        {
+          "english": "recovery",
+          "slug": "recovery",
+          "type": "abstract",
+          "scene": "a small round character standing up from bed with a blanket falling off"
+        },
+        {
+          "english": "diet",
+          "slug": "diet",
+          "type": "object",
+          "scene": "a plate with salad, one apple and a glass of water"
+        },
+        {
+          "english": "allergy",
+          "slug": "allergy",
+          "type": "abstract",
+          "scene": "a small round character sneezing beside a bowl of peanuts"
+        },
+        {
+          "english": "injury",
+          "slug": "injury",
+          "type": "object",
+          "scene": "a knee with a bandage and one small plaster crossed over it"
+        },
+        {
+          "english": "vitamins",
+          "slug": "vitamins",
+          "type": "object",
+          "scene": "three round fruit slices and a small jar of pills"
+        },
+        {
+          "english": "prevention",
+          "slug": "prevention",
+          "type": "abstract",
+          "scene": "a small round character holding a shield in front of a small virus blob"
+        },
+        {
+          "english": "stress",
+          "slug": "stress",
+          "type": "abstract",
+          "scene": "a small round character pulling its hair with a tangled wire above"
+        },
+        {
+          "english": "prescription",
+          "slug": "prescription",
+          "type": "object",
+          "scene": "a blank prescription slip with a small pill bottle on top"
+        },
+        {
+          "english": "treatment",
+          "slug": "treatment",
+          "type": "abstract",
+          "scene": "a small round character sitting in a chair with a drip stand beside"
+        },
+        {
+          "english": "surgery",
+          "slug": "surgery",
+          "type": "place",
+          "scene": "a small round character lying on a table under a round lamp, masked doctor"
+        },
+        {
+          "english": "vaccination",
+          "slug": "vaccination",
+          "type": "action",
+          "scene": "a small round character receiving a shot in the arm from a nurse"
+        },
+        {
+          "english": "insomnia",
+          "slug": "insomnia",
+          "type": "abstract",
+          "scene": "a small round character lying awake in bed staring at the ceiling"
+        },
+        {
+          "english": "hydration",
+          "slug": "hydration",
+          "type": "action",
+          "scene": "a small round character drinking from a large glass of water"
+        },
+        {
+          "english": "clinic",
+          "slug": "clinic",
+          "type": "place",
+          "scene": "a small building with a red cross and two waiting chairs outside"
+        },
+        {
+          "english": "immune",
+          "slug": "immune",
+          "type": "abstract",
+          "scene": "a small round character surrounded by a soft ring of small shields"
+        }
+      ]
+    },
+    {
+      "slug": "nature",
+      "name": "Природа",
+      "words": [
+        {
+          "english": "forest",
+          "slug": "forest",
+          "type": "place",
+          "scene": "five tall trees with thick trunks and a narrow path between them"
+        },
+        {
+          "english": "river",
+          "slug": "river",
+          "type": "place",
+          "scene": "a winding blue river between two green banks and three stones"
+        },
+        {
+          "english": "mountain",
+          "slug": "mountain",
+          "type": "place",
+          "scene": "one tall pointed mountain with a snow cap and a small flag"
+        },
+        {
+          "english": "weather",
+          "slug": "weather",
+          "type": "abstract",
+          "scene": "a sun, one cloud and three raindrops above a low green hill"
+        },
+        {
+          "english": "storm",
+          "slug": "storm",
+          "type": "place",
+          "scene": "a dark cloud with three lightning bolts over bent trees"
+        },
+        {
+          "english": "sunrise",
+          "slug": "sunrise",
+          "type": "place",
+          "scene": "a half sun rising over a flat horizon between two hills"
+        },
+        {
+          "english": "wildlife",
+          "slug": "wildlife",
+          "type": "relation",
+          "scene": "a deer, a rabbit and a bird standing together at a forest edge"
+        },
+        {
+          "english": "climate",
+          "slug": "climate",
+          "type": "abstract",
+          "scene": "a half sun and a half snowflake above one small globe"
+        },
+        {
+          "english": "ocean",
+          "slug": "ocean",
+          "type": "place",
+          "scene": "a wide blue sea with three rolling waves and one small boat"
+        },
+        {
+          "english": "flower",
+          "slug": "flower",
+          "type": "object",
+          "scene": "a single daisy with six white petals and two green leaves"
+        },
+        {
+          "english": "island",
+          "slug": "island",
+          "type": "place",
+          "scene": "a small round island with one palm tree and a ring of water"
+        },
+        {
+          "english": "valley",
+          "slug": "valley",
+          "type": "place",
+          "scene": "two slopes meeting in a low green dip with a small house"
+        },
+        {
+          "english": "waterfall",
+          "slug": "waterfall",
+          "type": "place",
+          "scene": "water falling from a cliff edge into a round pool below"
+        },
+        {
+          "english": "desert",
+          "slug": "desert",
+          "type": "place",
+          "scene": "two sand dunes with one cactus and a hot round sun"
+        },
+        {
+          "english": "cave",
+          "slug": "cave",
+          "type": "place",
+          "scene": "a dark rock opening with two hanging stones at the entrance"
+        },
+        {
+          "english": "meadow",
+          "slug": "meadow",
+          "type": "place",
+          "scene": "a flat green field with five small flowers and one butterfly"
+        },
+        {
+          "english": "glacier",
+          "slug": "glacier",
+          "type": "place",
+          "scene": "a block of blue ice with sharp edges sliding between two rocks"
+        },
+        {
+          "english": "shore",
+          "slug": "shore",
+          "type": "place",
+          "scene": "a sandy strip with one shell and small waves reaching it"
+        },
+        {
+          "english": "pine",
+          "slug": "pine",
+          "type": "object",
+          "scene": "a tall pine tree with three tiers of needles and a bare trunk"
+        },
+        {
+          "english": "soil",
+          "slug": "soil",
+          "type": "object",
+          "scene": "a handful of dark crumbly soil with one small green sprout"
+        }
+      ]
+    },
+    {
+      "slug": "shopping",
+      "name": "Покупки",
+      "words": [
+        {
+          "english": "discount",
+          "slug": "discount",
+          "type": "abstract",
+          "scene": "a large red tag with a folded corner hanging from a shirt"
+        },
+        {
+          "english": "receipt",
+          "slug": "receipt",
+          "type": "object",
+          "scene": "a long curled paper strip coming out of a small till"
+        },
+        {
+          "english": "refund",
+          "slug": "refund",
+          "type": "action",
+          "scene": "a small round character receiving coins back over a shop counter"
+        },
+        {
+          "english": "bargain",
+          "slug": "bargain",
+          "type": "abstract",
+          "scene": "a small round character hugging a coat and holding one small coin"
+        },
+        {
+          "english": "price",
+          "slug": "price",
+          "type": "object",
+          "scene": "a blank price tag tied with string to a small ceramic vase"
+        },
+        {
+          "english": "customer",
+          "slug": "customer",
+          "type": "object",
+          "scene": "a small round character holding a basket with two apples inside"
+        },
+        {
+          "english": "cashier",
+          "slug": "cashier",
+          "type": "object",
+          "scene": "a small round character behind a till with an open cash drawer"
+        },
+        {
+          "english": "queue",
+          "slug": "queue",
+          "type": "relation",
+          "scene": "four small round characters standing in a line, one behind another"
+        },
+        {
+          "english": "trolley",
+          "slug": "trolley",
+          "type": "object",
+          "scene": "a wire shopping trolley filled with three boxes and a baguette"
+        },
+        {
+          "english": "checkout",
+          "slug": "checkout",
+          "type": "place",
+          "scene": "a counter with a conveyor belt, a basket and a card reader"
+        },
+        {
+          "english": "warranty",
+          "slug": "warranty",
+          "type": "object",
+          "scene": "a small round character holding a shield-shaped badge beside a laptop"
+        },
+        {
+          "english": "sale",
+          "slug": "sale",
+          "type": "place",
+          "scene": "a shop window with three shirts on a rail and a small paper bag"
+        },
+        {
+          "english": "size",
+          "slug": "size",
+          "type": "abstract",
+          "scene": "three identical shirts of growing size hanging on one rail"
+        },
+        {
+          "english": "try on",
+          "slug": "try-on",
+          "type": "action",
+          "scene": "a small round character in a jacket looking into a tall mirror"
+        },
+        {
+          "english": "expensive",
+          "slug": "expensive",
+          "type": "abstract",
+          "scene": "a small round character holding a watch with a very long price tag"
+        },
+        {
+          "english": "cheap",
+          "slug": "cheap",
+          "type": "abstract",
+          "scene": "a small round character buying three apples with one small coin"
+        },
+        {
+          "english": "delivery",
+          "slug": "delivery",
+          "type": "action",
+          "scene": "a small round character carrying a cardboard box to a front door"
+        },
+        {
+          "english": "return",
+          "slug": "return",
+          "type": "action",
+          "scene": "a small round character handing a shirt back across a counter"
+        },
+        {
+          "english": "brand",
+          "slug": "brand",
+          "type": "abstract",
+          "scene": "a plain t-shirt with a small star emblem on the chest"
+        },
+        {
+          "english": "shopper",
+          "slug": "shopper",
+          "type": "object",
+          "scene": "a small round character with two paper bags in both hands"
+        }
+      ]
+    },
+    {
+      "slug": "transport",
+      "name": "Транспорт",
+      "words": [
+        {
+          "english": "vehicle",
+          "slug": "vehicle",
+          "type": "object",
+          "scene": "a small blue car with two round headlights and four wheels"
+        },
+        {
+          "english": "subway",
+          "slug": "subway",
+          "type": "place",
+          "scene": "a train carriage in a tunnel beside a tiled platform edge"
+        },
+        {
+          "english": "railway",
+          "slug": "railway",
+          "type": "place",
+          "scene": "two steel rails on wooden sleepers running toward a hill"
+        },
+        {
+          "english": "platform",
+          "slug": "platform",
+          "type": "place",
+          "scene": "a raised platform edge with a yellow line and one bench"
+        },
+        {
+          "english": "ticket",
+          "slug": "ticket",
+          "type": "object",
+          "scene": "a rectangular paper ticket with a torn half and a round punch hole"
+        },
+        {
+          "english": "driver",
+          "slug": "driver",
+          "type": "object",
+          "scene": "a small round character behind a steering wheel with both hands on it"
+        },
+        {
+          "english": "traffic",
+          "slug": "traffic",
+          "type": "place",
+          "scene": "four cars standing bumper to bumper on a narrow road"
+        },
+        {
+          "english": "route",
+          "slug": "route",
+          "type": "abstract",
+          "scene": "a dotted line winding from a small house to a small flag"
+        },
+        {
+          "english": "fare",
+          "slug": "fare",
+          "type": "object",
+          "scene": "a hand dropping two coins into a fare box beside a bus door"
+        },
+        {
+          "english": "delay",
+          "slug": "delay",
+          "type": "abstract",
+          "scene": "a small round character sitting on a suitcase beside a stopped bus"
+        },
+        {
+          "english": "passenger",
+          "slug": "passenger",
+          "type": "object",
+          "scene": "a small round character sitting by a window on a bus seat"
+        },
+        {
+          "english": "petrol",
+          "slug": "petrol",
+          "type": "object",
+          "scene": "a fuel pump nozzle with a hose and one black tyre beside it"
+        },
+        {
+          "english": "parking",
+          "slug": "parking",
+          "type": "place",
+          "scene": "a rectangular parking bay with a small car inside and a low barrier"
+        },
+        {
+          "english": "bicycle",
+          "slug": "bicycle",
+          "type": "object",
+          "scene": "a bicycle with two wheels, a basket and a curved frame"
+        },
+        {
+          "english": "harbour",
+          "slug": "harbour",
+          "type": "place",
+          "scene": "three small boats tied to a wooden pier with round buoys"
+        },
+        {
+          "english": "engine",
+          "slug": "engine",
+          "type": "object",
+          "scene": "a boxy engine block with a fan belt and two pipes"
+        },
+        {
+          "english": "seatbelt",
+          "slug": "seatbelt",
+          "type": "object",
+          "scene": "a diagonal seatbelt strap across a car seat with a metal buckle"
+        },
+        {
+          "english": "crossing",
+          "slug": "crossing",
+          "type": "place",
+          "scene": "a road with five wide white stripes and a round sign"
+        },
+        {
+          "english": "commute",
+          "slug": "commute",
+          "type": "action",
+          "scene": "a small round character standing on a crowded bus holding a handrail"
+        },
+        {
+          "english": "speed",
+          "slug": "speed",
+          "type": "abstract",
+          "scene": "a small round character leaning forward on a scooter with motion lines"
+        }
+      ]
+    },
+    {
+      "slug": "home",
+      "name": "Дом",
+      "words": [
+        {
+          "english": "furniture",
+          "slug": "furniture",
+          "type": "object",
+          "scene": "a sofa, a small table and one floor lamp grouped together"
+        },
+        {
+          "english": "curtains",
+          "slug": "curtains",
+          "type": "object",
+          "scene": "two long pleated curtains tied back on either side of a window"
+        },
+        {
+          "english": "cupboard",
+          "slug": "cupboard",
+          "type": "object",
+          "scene": "a wooden cupboard with two doors and one shelf of plates inside"
+        },
+        {
+          "english": "blanket",
+          "slug": "blanket",
+          "type": "object",
+          "scene": "a folded wool blanket with a striped edge on a bed corner"
+        },
+        {
+          "english": "pillow",
+          "slug": "pillow",
+          "type": "object",
+          "scene": "a plump square pillow with one stitched button in the middle"
+        },
+        {
+          "english": "shelf",
+          "slug": "shelf",
+          "type": "object",
+          "scene": "a wooden shelf with three books and a small plant on it"
+        },
+        {
+          "english": "mirror",
+          "slug": "mirror",
+          "type": "object",
+          "scene": "an oval wall mirror with a wooden frame reflecting one chair"
+        },
+        {
+          "english": "carpet",
+          "slug": "carpet",
+          "type": "object",
+          "scene": "a rectangular rug with a simple diamond border on a floor"
+        },
+        {
+          "english": "tap",
+          "slug": "tap",
+          "type": "object",
+          "scene": "a curved metal tap with one drop falling into a sink"
+        },
+        {
+          "english": "oven",
+          "slug": "oven",
+          "type": "object",
+          "scene": "a boxy oven with a glass door and two round knobs"
+        },
+        {
+          "english": "fridge",
+          "slug": "fridge",
+          "type": "object",
+          "scene": "a tall white fridge with two doors and one round handle"
+        },
+        {
+          "english": "kettle",
+          "slug": "kettle",
+          "type": "object",
+          "scene": "a round kettle with a spout and steam rising from it"
+        },
+        {
+          "english": "rubbish",
+          "slug": "rubbish",
+          "type": "object",
+          "scene": "an overflowing bin bag with two apple cores beside it"
+        },
+        {
+          "english": "neighbour",
+          "slug": "neighbour",
+          "type": "relation",
+          "scene": "two small round characters talking over a low garden fence"
+        },
+        {
+          "english": "rent",
+          "slug": "rent",
+          "type": "object",
+          "scene": "a small house key on a folded paper beside three coins"
+        },
+        {
+          "english": "repair",
+          "slug": "repair",
+          "type": "action",
+          "scene": "a small round character with a wrench fixing a leaking pipe"
+        },
+        {
+          "english": "cosy",
+          "slug": "cosy",
+          "type": "trait",
+          "scene": "a small round character wrapped in a blanket beside a small lamp"
+        },
+        {
+          "english": "spacious",
+          "slug": "spacious",
+          "type": "trait",
+          "scene": "a large empty room with one chair far from the wall"
+        },
+        {
+          "english": "balcony",
+          "slug": "balcony",
+          "type": "place",
+          "scene": "a small balcony with a railing, two chairs and one plant pot"
+        },
+        {
+          "english": "basement",
+          "slug": "basement",
+          "type": "place",
+          "scene": "a stone stairway going down to a dark room with one lamp"
+        }
+      ]
+    },
+    {
+      "slug": "family",
+      "name": "Семья",
+      "words": [
+        {
+          "english": "relative",
+          "slug": "relative",
+          "type": "relation",
+          "scene": "four small round characters of different heights holding hands in a circle"
+        },
+        {
+          "english": "cousin",
+          "slug": "cousin",
+          "type": "relation",
+          "scene": "two small round characters of similar height sharing one pair of headphones"
+        },
+        {
+          "english": "nephew",
+          "slug": "nephew",
+          "type": "relation",
+          "scene": "a small character beside a taller character who pats its head"
+        },
+        {
+          "english": "niece",
+          "slug": "niece",
+          "type": "relation",
+          "scene": "a small character with a hair bow holding a taller character's hand"
+        },
+        {
+          "english": "grandparents",
+          "slug": "grandparents",
+          "type": "relation",
+          "scene": "two older characters with grey hair sitting together on a bench"
+        },
+        {
+          "english": "spouse",
+          "slug": "spouse",
+          "type": "relation",
+          "scene": "two small round characters standing close, one tying the other's scarf"
+        },
+        {
+          "english": "engaged",
+          "slug": "engaged",
+          "type": "relation",
+          "scene": "two small round characters, one kneeling with a small ring box open"
+        },
+        {
+          "english": "married",
+          "slug": "married",
+          "type": "relation",
+          "scene": "two small round characters with joined hands and one ring on a finger"
+        },
+        {
+          "english": "divorce",
+          "slug": "divorce",
+          "type": "relation",
+          "scene": "two small round characters standing apart, a torn paper heart between them"
+        },
+        {
+          "english": "twins",
+          "slug": "twins",
+          "type": "relation",
+          "scene": "two identical small round characters side by side, same height and clothes"
+        },
+        {
+          "english": "childhood",
+          "slug": "childhood",
+          "type": "abstract",
+          "scene": "a small round character with a toy horse and a low swing behind"
+        },
+        {
+          "english": "generation",
+          "slug": "generation",
+          "type": "relation",
+          "scene": "a baby, an adult and an older character standing in a line"
+        },
+        {
+          "english": "raise",
+          "slug": "raise",
+          "type": "action",
+          "scene": "a tall character reading a picture book to a small character"
+        },
+        {
+          "english": "adopt",
+          "slug": "adopt",
+          "type": "relation",
+          "scene": "a tall character holding the hand of a new small character"
+        },
+        {
+          "english": "wedding",
+          "slug": "wedding",
+          "type": "place",
+          "scene": "two small round characters under an arch of flowers with two rings"
+        },
+        {
+          "english": "household",
+          "slug": "household",
+          "type": "place",
+          "scene": "a house cutaway with three characters inside at one table"
+        },
+        {
+          "english": "in-laws",
+          "slug": "in-laws",
+          "type": "relation",
+          "scene": "two pairs of characters meeting at a doorway with a small cake"
+        },
+        {
+          "english": "sibling",
+          "slug": "sibling",
+          "type": "relation",
+          "scene": "two small round characters pulling one toy between them"
+        },
+        {
+          "english": "ancestor",
+          "slug": "ancestor",
+          "type": "abstract",
+          "scene": "three faded portraits in frames behind one small character"
+        },
+        {
+          "english": "guardian",
+          "slug": "guardian",
+          "type": "relation",
+          "scene": "a tall character holding an umbrella over a small character"
+        }
+      ]
+    },
+    {
+      "slug": "clothes",
+      "name": "Одежда",
+      "words": [
+        {
+          "english": "jacket",
+          "slug": "jacket",
+          "type": "object",
+          "scene": "a short jacket with two pockets and a raised collar"
+        },
+        {
+          "english": "trousers",
+          "slug": "trousers",
+          "type": "object",
+          "scene": "a pair of trousers folded over a hanger with two creases"
+        },
+        {
+          "english": "sleeve",
+          "slug": "sleeve",
+          "type": "object",
+          "scene": "one long sleeve with a cuff and two buttons at the end"
+        },
+        {
+          "english": "collar",
+          "slug": "collar",
+          "type": "object",
+          "scene": "a folded shirt collar with two pointed tips and one button"
+        },
+        {
+          "english": "button",
+          "slug": "button",
+          "type": "object",
+          "scene": "a round four-hole button with a thread loop through it"
+        },
+        {
+          "english": "pocket",
+          "slug": "pocket",
+          "type": "object",
+          "scene": "a patch pocket stitched on a shirt with one corner loose"
+        },
+        {
+          "english": "belt",
+          "slug": "belt",
+          "type": "object",
+          "scene": "a leather belt curled in a circle with a metal buckle"
+        },
+        {
+          "english": "scarf",
+          "slug": "scarf",
+          "type": "object",
+          "scene": "a long knitted scarf wrapped twice around a coat collar"
+        },
+        {
+          "english": "gloves",
+          "slug": "gloves",
+          "type": "object",
+          "scene": "a pair of gloves with five fingers each, lying side by side"
+        },
+        {
+          "english": "boots",
+          "slug": "boots",
+          "type": "object",
+          "scene": "a pair of tall boots with laces and thick soles"
+        },
+        {
+          "english": "sandals",
+          "slug": "sandals",
+          "type": "object",
+          "scene": "a pair of open sandals with two straps and a flat sole"
+        },
+        {
+          "english": "suit",
+          "slug": "suit",
+          "type": "object",
+          "scene": "a dark suit jacket on a hanger with matching trousers below"
+        },
+        {
+          "english": "uniform",
+          "slug": "uniform",
+          "type": "object",
+          "scene": "a school uniform set, a pleated skirt and a blazer with a badge"
+        },
+        {
+          "english": "wool",
+          "slug": "wool",
+          "type": "object",
+          "scene": "a ball of wool yarn with two knitting needles stuck in it"
+        },
+        {
+          "english": "cotton",
+          "slug": "cotton",
+          "type": "object",
+          "scene": "a fluffy cotton boll with three white puffs on a stem"
+        },
+        {
+          "english": "pattern",
+          "slug": "pattern",
+          "type": "object",
+          "scene": "a folded fabric with small repeated dots and one wavy line"
+        },
+        {
+          "english": "striped",
+          "slug": "striped",
+          "type": "object",
+          "scene": "a t-shirt with five even horizontal stripes across the chest"
+        },
+        {
+          "english": "loose",
+          "slug": "loose",
+          "type": "trait",
+          "scene": "a small round character in a shirt far too wide at the sides"
+        },
+        {
+          "english": "tight",
+          "slug": "tight",
+          "type": "trait",
+          "scene": "a small round character squeezing into a narrow shoe, cheeks puffed"
+        },
+        {
+          "english": "fashion",
+          "slug": "fashion",
+          "type": "abstract",
+          "scene": "a dress form with a scarf, a hat and one high boot beside"
+        }
+      ]
+    },
+    {
+      "slug": "money",
+      "name": "Деньги",
+      "words": [
+        {
+          "english": "currency",
+          "slug": "currency",
+          "type": "object",
+          "scene": "three different coins and two folded banknotes on a table"
+        },
+        {
+          "english": "budget",
+          "slug": "budget",
+          "type": "abstract",
+          "scene": "a small round character weighing coins on a small balance scale"
+        },
+        {
+          "english": "loan",
+          "slug": "loan",
+          "type": "relation",
+          "scene": "one character handing a stack of banknotes to another with a paper slip"
+        },
+        {
+          "english": "debt",
+          "slug": "debt",
+          "type": "abstract",
+          "scene": "a small round character carrying a heavy sack of coins uphill"
+        },
+        {
+          "english": "savings",
+          "slug": "savings",
+          "type": "object",
+          "scene": "a full coin jar with a few coins stacked beside it"
+        },
+        {
+          "english": "income",
+          "slug": "income",
+          "type": "abstract",
+          "scene": "coins dropping from above into one open palm"
+        },
+        {
+          "english": "expense",
+          "slug": "expense",
+          "type": "abstract",
+          "scene": "a small round character watching coins roll out of a torn pocket"
+        },
+        {
+          "english": "tax",
+          "slug": "tax",
+          "type": "abstract",
+          "scene": "a small round character placing one coin into a slot on a box"
+        },
+        {
+          "english": "invest",
+          "slug": "invest",
+          "type": "action",
+          "scene": "a small round character planting a coin in soil like a seed"
+        },
+        {
+          "english": "profit",
+          "slug": "profit",
+          "type": "abstract",
+          "scene": "a small round character holding a coin jar that overflows onto a table"
+        },
+        {
+          "english": "bill",
+          "slug": "bill",
+          "type": "object",
+          "scene": "a folded paper slip on a saucer beside two coffee cups"
+        },
+        {
+          "english": "coin",
+          "slug": "coin",
+          "type": "object",
+          "scene": "a single gold coin standing on its edge with a small star"
+        },
+        {
+          "english": "cash",
+          "slug": "cash",
+          "type": "object",
+          "scene": "a small stack of banknotes held together by a paper band"
+        },
+        {
+          "english": "change",
+          "slug": "change",
+          "type": "object",
+          "scene": "three small coins resting in an open palm beside a paper slip"
+        },
+        {
+          "english": "bank account",
+          "slug": "bank-account",
+          "type": "object",
+          "scene": "a passbook booklet with a small bank building stamped on it"
+        },
+        {
+          "english": "interest",
+          "slug": "interest",
+          "type": "abstract",
+          "scene": "a coin stack growing taller beside a small upward arrow"
+        },
+        {
+          "english": "afford",
+          "slug": "afford",
+          "type": "abstract",
+          "scene": "a small round character holding a coin purse upside down, empty"
+        },
+        {
+          "english": "wealthy",
+          "slug": "wealthy",
+          "type": "trait",
+          "scene": "a small round character in a top hat beside a tall stack of coins"
+        },
+        {
+          "english": "poverty",
+          "slug": "poverty",
+          "type": "abstract",
+          "scene": "a small round character with an empty bowl and a patched coat"
+        },
+        {
+          "english": "transaction",
+          "slug": "transaction",
+          "type": "action",
+          "scene": "a card being tapped on a small terminal, two coins beside"
+        }
+      ]
+    },
+    {
+      "slug": "time",
+      "name": "Время",
+      "words": [
+        {
+          "english": "century",
+          "slug": "century",
+          "type": "abstract",
+          "scene": "a tall old castle tower with ivy and a small clock above"
+        },
+        {
+          "english": "decade",
+          "slug": "decade",
+          "type": "abstract",
+          "scene": "a tree stump with ten rings beside a small sapling"
+        },
+        {
+          "english": "fortnight",
+          "slug": "fortnight",
+          "type": "abstract",
+          "scene": "a wall calendar with two blank rows circled by one loop"
+        },
+        {
+          "english": "punctual",
+          "slug": "punctual",
+          "type": "trait",
+          "scene": "a small round character arriving at a door as a clock strikes"
+        },
+        {
+          "english": "instant",
+          "slug": "instant",
+          "type": "abstract",
+          "scene": "a small round character snapping its fingers with one spark at the hand"
+        },
+        {
+          "english": "annual",
+          "slug": "annual",
+          "type": "abstract",
+          "scene": "a birthday cake with one candle beside a wall calendar"
+        },
+        {
+          "english": "temporary",
+          "slug": "temporary",
+          "type": "abstract",
+          "scene": "a small round character sitting on a folding chair under a paper parasol"
+        },
+        {
+          "english": "permanent",
+          "slug": "permanent",
+          "type": "abstract",
+          "scene": "a small round character planting a tree with deep roots visible"
+        },
+        {
+          "english": "early",
+          "slug": "early",
+          "type": "abstract",
+          "scene": "a small round character stretching in bed while a sun rises outside"
+        },
+        {
+          "english": "late",
+          "slug": "late",
+          "type": "abstract",
+          "scene": "a small round character running with one shoe in hand, clock behind"
+        },
+        {
+          "english": "soon",
+          "slug": "soon",
+          "type": "abstract",
+          "scene": "a small round character waiting at a station as a train appears far away"
+        },
+        {
+          "english": "recently",
+          "slug": "recently",
+          "type": "abstract",
+          "scene": "a small round character unpacking the last box in a new room"
+        },
+        {
+          "english": "eventually",
+          "slug": "eventually",
+          "type": "abstract",
+          "scene": "a small round character climbing the last step of a long staircase"
+        },
+        {
+          "english": "meanwhile",
+          "slug": "meanwhile",
+          "type": "relation",
+          "scene": "two small round characters in one room, one cooking, one waiting"
+        },
+        {
+          "english": "duration",
+          "slug": "duration",
+          "type": "abstract",
+          "scene": "a long ribbon stretched between two posts with a small hourglass"
+        },
+        {
+          "english": "calendar",
+          "slug": "calendar",
+          "type": "object",
+          "scene": "a wall calendar with blank squares and one page curling"
+        },
+        {
+          "english": "overdue",
+          "slug": "overdue",
+          "type": "abstract",
+          "scene": "a stack of library books beside a wall clock, one book open"
+        },
+        {
+          "english": "era",
+          "slug": "era",
+          "type": "abstract",
+          "scene": "an old stone column and a small satellite dish standing together"
+        },
+        {
+          "english": "quarter",
+          "slug": "quarter",
+          "type": "abstract",
+          "scene": "a round pie cut into four equal slices with one lifted"
+        },
+        {
+          "english": "sunset",
+          "slug": "sunset",
+          "type": "place",
+          "scene": "a half sun sinking behind a flat sea line with two clouds"
+        }
+      ]
+    },
+    {
+      "slug": "education",
+      "name": "Образование",
+      "words": [
+        {
+          "english": "degree",
+          "slug": "degree",
+          "type": "object",
+          "scene": "a rolled diploma tied with a ribbon and a small cap on top"
+        },
+        {
+          "english": "lecture",
+          "slug": "lecture",
+          "type": "place",
+          "scene": "a small round character at a podium facing three seated characters"
+        },
+        {
+          "english": "assignment",
+          "slug": "assignment",
+          "type": "object",
+          "scene": "a small round character holding a stack of blank sheets at a desk"
+        },
+        {
+          "english": "essay",
+          "slug": "essay",
+          "type": "object",
+          "scene": "three stacked blank sheets with a fountain pen on top"
+        },
+        {
+          "english": "tutor",
+          "slug": "tutor",
+          "type": "relation",
+          "scene": "a small round character pointing at a book beside a seated learner"
+        },
+        {
+          "english": "graduate",
+          "slug": "graduate",
+          "type": "action",
+          "scene": "a small round character in a cap throwing it into the air"
+        },
+        {
+          "english": "scholarship",
+          "slug": "scholarship",
+          "type": "abstract",
+          "scene": "a small round character holding a coin medal beside an open book"
+        },
+        {
+          "english": "curriculum",
+          "slug": "curriculum",
+          "type": "object",
+          "scene": "a thick open book with a small grid of squares on one page"
+        },
+        {
+          "english": "exam",
+          "slug": "exam",
+          "type": "object",
+          "scene": "a single sheet on a desk with a pencil and a small clock"
+        },
+        {
+          "english": "grade",
+          "slug": "grade",
+          "type": "abstract",
+          "scene": "a paper with a large star stamp and a small round character smiling"
+        },
+        {
+          "english": "homework",
+          "slug": "homework",
+          "type": "action",
+          "scene": "a small round character at a desk writing in a notebook at night"
+        },
+        {
+          "english": "library",
+          "slug": "library",
+          "type": "place",
+          "scene": "three tall bookshelves with a small ladder and one reading table"
+        },
+        {
+          "english": "research",
+          "slug": "research",
+          "type": "action",
+          "scene": "a small round character looking through a magnifier at a small plant"
+        },
+        {
+          "english": "knowledge",
+          "slug": "knowledge",
+          "type": "abstract",
+          "scene": "an open book with small sprouts growing out of the pages"
+        },
+        {
+          "english": "semester",
+          "slug": "semester",
+          "type": "abstract",
+          "scene": "a wall calendar with one long blank block marked by two pins"
+        },
+        {
+          "english": "tuition",
+          "slug": "tuition",
+          "type": "object",
+          "scene": "a stack of coins on top of a thick closed book"
+        },
+        {
+          "english": "principal",
+          "slug": "principal",
+          "type": "object",
+          "scene": "a small round character in a suit holding a folder in a school hall"
+        },
+        {
+          "english": "notebook",
+          "slug": "notebook",
+          "type": "object",
+          "scene": "a spiral notebook with blank lined pages and a pencil in the spiral"
+        },
+        {
+          "english": "diploma",
+          "slug": "diploma",
+          "type": "object",
+          "scene": "a framed diploma hanging on a wall with a round seal"
+        },
+        {
+          "english": "attendance",
+          "slug": "attendance",
+          "type": "abstract",
+          "scene": "a small round character raising a hand while three chairs are empty"
+        }
+      ]
+    },
+    {
+      "slug": "technology",
+      "name": "Технологии",
+      "words": [
+        {
+          "english": "device",
+          "slug": "device",
+          "type": "object",
+          "scene": "a small tablet with a rounded screen and one cable plugged in"
+        },
+        {
+          "english": "software",
+          "slug": "software",
+          "type": "abstract",
+          "scene": "an open box with a small disc and a paper manual beside it"
+        },
+        {
+          "english": "password",
+          "slug": "password",
+          "type": "abstract",
+          "scene": "a small round character holding a large key in front of a locked screen"
+        },
+        {
+          "english": "download",
+          "slug": "download",
+          "type": "action",
+          "scene": "a small round character pulling a file folder down a cable"
+        },
+        {
+          "english": "upload",
+          "slug": "upload",
+          "type": "action",
+          "scene": "a small round character pushing a file folder up a cable"
+        },
+        {
+          "english": "browser",
+          "slug": "browser",
+          "type": "object",
+          "scene": "a window frame with three small tabs and a round globe inside"
+        },
+        {
+          "english": "network",
+          "slug": "network",
+          "type": "abstract",
+          "scene": "four small devices connected by lines to one central round hub"
+        },
+        {
+          "english": "wireless",
+          "slug": "wireless",
+          "type": "object",
+          "scene": "a small router with three curved waves rising above it"
+        },
+        {
+          "english": "charger",
+          "slug": "charger",
+          "type": "object",
+          "scene": "a charger block with a coiled cable and one plug end"
+        },
+        {
+          "english": "screen",
+          "slug": "screen",
+          "type": "object",
+          "scene": "a rectangular screen with a thin crack running across one corner"
+        },
+        {
+          "english": "keyboard",
+          "slug": "keyboard",
+          "type": "object",
+          "scene": "a keyboard with rows of blank keys and one key raised"
+        },
+        {
+          "english": "storage",
+          "slug": "storage",
+          "type": "object",
+          "scene": "three stacked disk drives beside a small open box"
+        },
+        {
+          "english": "update",
+          "slug": "update",
+          "type": "action",
+          "scene": "a small round character pushing a round arrow upward on a screen"
+        },
+        {
+          "english": "backup",
+          "slug": "backup",
+          "type": "object",
+          "scene": "two identical folders side by side with a curved arrow between"
+        },
+        {
+          "english": "bug",
+          "slug": "bug",
+          "type": "abstract",
+          "scene": "a small beetle sitting on a circuit board with three wires"
+        },
+        {
+          "english": "artificial intelligence",
+          "slug": "artificial-intelligence",
+          "type": "abstract",
+          "scene": "a robot head with round eyes beside a small glowing brain shape"
+        },
+        {
+          "english": "algorithm",
+          "slug": "algorithm",
+          "type": "abstract",
+          "scene": "three square tiles arranged in a row with arrows between them"
+        },
+        {
+          "english": "gadget",
+          "slug": "gadget",
+          "type": "object",
+          "scene": "a small smartwatch with a round face and a strap"
+        },
+        {
+          "english": "install",
+          "slug": "install",
+          "type": "action",
+          "scene": "a small round character slotting a square tile into a screen"
+        },
+        {
+          "english": "stream",
+          "slug": "stream",
+          "type": "action",
+          "scene": "a small round character watching a film on a laptop, popcorn beside"
+        }
+      ]
+    },
+    {
+      "slug": "sport",
+      "name": "Спорт",
+      "words": [
+        {
+          "english": "coach",
+          "slug": "coach",
+          "type": "object",
+          "scene": "a small round character with a whistle around its neck, arms crossed"
+        },
+        {
+          "english": "team",
+          "slug": "team",
+          "type": "relation",
+          "scene": "five small round characters in matching shirts standing in a row"
+        },
+        {
+          "english": "match",
+          "slug": "match",
+          "type": "place",
+          "scene": "two small round characters kicking one ball toward two goals"
+        },
+        {
+          "english": "score",
+          "slug": "score",
+          "type": "abstract",
+          "scene": "a player raising both arms as the ball hits the net"
+        },
+        {
+          "english": "referee",
+          "slug": "referee",
+          "type": "object",
+          "scene": "a small round character in black holding a blank red card up high"
+        },
+        {
+          "english": "championship",
+          "slug": "championship",
+          "type": "object",
+          "scene": "a podium with three steps and one cup on the top step"
+        },
+        {
+          "english": "training",
+          "slug": "training",
+          "type": "action",
+          "scene": "a small round character jumping over three low hurdles"
+        },
+        {
+          "english": "stadium",
+          "slug": "stadium",
+          "type": "place",
+          "scene": "an oval stadium with tiered stands and one floodlight pole"
+        },
+        {
+          "english": "athlete",
+          "slug": "athlete",
+          "type": "object",
+          "scene": "a small round character running mid-stride with clenched fists"
+        },
+        {
+          "english": "compete",
+          "slug": "compete",
+          "type": "relation",
+          "scene": "two small round characters running side by side toward a ribbon"
+        },
+        {
+          "english": "opponent",
+          "slug": "opponent",
+          "type": "relation",
+          "scene": "two small round characters facing each other across a net"
+        },
+        {
+          "english": "defeat",
+          "slug": "defeat",
+          "type": "abstract",
+          "scene": "a small round character sitting on the ground, head bowed, ball beside"
+        },
+        {
+          "english": "victory",
+          "slug": "victory",
+          "type": "abstract",
+          "scene": "a small round character lifting a trophy above its head with sparkles"
+        },
+        {
+          "english": "fitness",
+          "slug": "fitness",
+          "type": "abstract",
+          "scene": "a small round character flexing one arm beside a jump rope"
+        },
+        {
+          "english": "warm up",
+          "slug": "warm-up",
+          "type": "action",
+          "scene": "a small round character stretching one leg on a low bench"
+        },
+        {
+          "english": "tactic",
+          "slug": "tactic",
+          "type": "abstract",
+          "scene": "three small figures on a board with arrows between them"
+        },
+        {
+          "english": "league",
+          "slug": "league",
+          "type": "object",
+          "scene": "a round badge with a laurel wreath and a small ball"
+        },
+        {
+          "english": "spectator",
+          "slug": "spectator",
+          "type": "object",
+          "scene": "a small round character sitting in a stand holding a small flag"
+        },
+        {
+          "english": "medal",
+          "slug": "medal",
+          "type": "object",
+          "scene": "a round medal on a striped ribbon hanging from a hook"
+        },
+        {
+          "english": "endurance",
+          "slug": "endurance",
+          "type": "abstract",
+          "scene": "a small round character carrying a heavy pack along a mountain trail"
+        }
+      ]
+    },
+    {
+      "slug": "music",
+      "name": "Музыка",
+      "words": [
+        {
+          "english": "melody",
+          "slug": "melody",
+          "type": "abstract",
+          "scene": "a small round character humming with a wavy ribbon curling from its mouth"
+        },
+        {
+          "english": "lyrics",
+          "slug": "lyrics",
+          "type": "object",
+          "scene": "an open notebook with blank lines beside a microphone"
+        },
+        {
+          "english": "orchestra",
+          "slug": "orchestra",
+          "type": "relation",
+          "scene": "six small round characters with violins, a cello and a flute"
+        },
+        {
+          "english": "violin",
+          "slug": "violin",
+          "type": "object",
+          "scene": "a violin with a bow resting across its strings"
+        },
+        {
+          "english": "concert",
+          "slug": "concert",
+          "type": "place",
+          "scene": "a stage with two spotlights, a microphone and a small crowd"
+        },
+        {
+          "english": "album",
+          "slug": "album",
+          "type": "object",
+          "scene": "a square record sleeve with a round disc sliding out"
+        },
+        {
+          "english": "rhythm",
+          "slug": "rhythm",
+          "type": "abstract",
+          "scene": "a small round character clapping while three even dots bounce above"
+        },
+        {
+          "english": "tempo",
+          "slug": "tempo",
+          "type": "object",
+          "scene": "a metronome with its pendulum leaning far to one side"
+        },
+        {
+          "english": "rehearsal",
+          "slug": "rehearsal",
+          "type": "action",
+          "scene": "a small round character playing a guitar beside a music stand"
+        },
+        {
+          "english": "composer",
+          "slug": "composer",
+          "type": "action",
+          "scene": "a small round character at a piano with blank sheets on the stand"
+        },
+        {
+          "english": "audience",
+          "slug": "audience",
+          "type": "relation",
+          "scene": "five small round characters seated in a row clapping their hands"
+        },
+        {
+          "english": "tune",
+          "slug": "tune",
+          "type": "abstract",
+          "scene": "a small round character whistling while tapping one foot"
+        },
+        {
+          "english": "instrument",
+          "slug": "instrument",
+          "type": "object",
+          "scene": "a guitar, a trumpet and a small drum grouped together"
+        },
+        {
+          "english": "choir",
+          "slug": "choir",
+          "type": "relation",
+          "scene": "four small round characters standing in a row with open mouths"
+        },
+        {
+          "english": "genre",
+          "slug": "genre",
+          "type": "abstract",
+          "scene": "three record sleeves standing in a row, each with a different symbol"
+        },
+        {
+          "english": "perform",
+          "slug": "perform",
+          "type": "action",
+          "scene": "a small round character bowing on a stage with arms spread wide"
+        },
+        {
+          "english": "record",
+          "slug": "record",
+          "type": "action",
+          "scene": "a small round character singing into a microphone in a booth"
+        },
+        {
+          "english": "soundtrack",
+          "slug": "soundtrack",
+          "type": "object",
+          "scene": "a film reel beside a pair of headphones on a table"
+        },
+        {
+          "english": "volume",
+          "slug": "volume",
+          "type": "object",
+          "scene": "a speaker with three curved lines growing outward beside it"
+        },
+        {
+          "english": "harmony",
+          "slug": "harmony",
+          "type": "relation",
+          "scene": "three small round characters singing together, sound ribbons meeting"
+        }
+      ]
+    },
+    {
+      "slug": "animals",
+      "name": "Животные",
+      "words": [
+        {
+          "english": "species",
+          "slug": "species",
+          "type": "relation",
+          "scene": "three different animals, a fox, a bird and a frog, side by side"
+        },
+        {
+          "english": "habitat",
+          "slug": "habitat",
+          "type": "place",
+          "scene": "a small pond with reeds and one frog sitting on a stone"
+        },
+        {
+          "english": "predator",
+          "slug": "predator",
+          "type": "object",
+          "scene": "a lion with an open mouth and sharp teeth standing low"
+        },
+        {
+          "english": "prey",
+          "slug": "prey",
+          "type": "object",
+          "scene": "a small rabbit crouching low in tall grass, ears back"
+        },
+        {
+          "english": "feather",
+          "slug": "feather",
+          "type": "object",
+          "scene": "a single white feather with a soft curved quill"
+        },
+        {
+          "english": "fur",
+          "slug": "fur",
+          "type": "object",
+          "scene": "a patch of thick orange fur with three darker stripes"
+        },
+        {
+          "english": "paw",
+          "slug": "paw",
+          "type": "object",
+          "scene": "a single animal paw with four round pads and small claws"
+        },
+        {
+          "english": "whiskers",
+          "slug": "whiskers",
+          "type": "object",
+          "scene": "a cat's muzzle with three long whiskers on each side"
+        },
+        {
+          "english": "nest",
+          "slug": "nest",
+          "type": "object",
+          "scene": "a round twig nest with three small eggs inside a fork of branches"
+        },
+        {
+          "english": "flock",
+          "slug": "flock",
+          "type": "relation",
+          "scene": "five birds flying together in a loose V shape"
+        },
+        {
+          "english": "herd",
+          "slug": "herd",
+          "type": "relation",
+          "scene": "four cows standing close together in a field"
+        },
+        {
+          "english": "zoo",
+          "slug": "zoo",
+          "type": "place",
+          "scene": "a fenced enclosure with one giraffe and a small viewing path"
+        },
+        {
+          "english": "veterinarian",
+          "slug": "veterinarian",
+          "type": "relation",
+          "scene": "a small round character in a coat holding a puppy on a table"
+        },
+        {
+          "english": "breed",
+          "slug": "breed",
+          "type": "object",
+          "scene": "two dogs of different shapes, one small and one tall"
+        },
+        {
+          "english": "tame",
+          "slug": "tame",
+          "type": "trait",
+          "scene": "a rabbit sitting calmly in an open human palm"
+        },
+        {
+          "english": "extinct",
+          "slug": "extinct",
+          "type": "abstract",
+          "scene": "a large dinosaur skeleton standing in an empty museum hall"
+        },
+        {
+          "english": "insect",
+          "slug": "insect",
+          "type": "object",
+          "scene": "a beetle with six legs and two dotted wings"
+        },
+        {
+          "english": "mammal",
+          "slug": "mammal",
+          "type": "object",
+          "scene": "a whale with a rounded body and one small fin"
+        },
+        {
+          "english": "poisonous",
+          "slug": "poisonous",
+          "type": "trait",
+          "scene": "a snake with a raised head and a bright zigzag pattern"
+        },
+        {
+          "english": "rescue",
+          "slug": "rescue",
+          "type": "action",
+          "scene": "a small round character lifting a seal out of a fishing net"
+        }
+      ]
+    },
+    {
+      "slug": "city",
+      "name": "Город",
+      "words": [
+        {
+          "english": "district",
+          "slug": "district",
+          "type": "place",
+          "scene": "a cluster of tall buildings around a small square with one lamp"
+        },
+        {
+          "english": "avenue",
+          "slug": "avenue",
+          "type": "place",
+          "scene": "a wide straight road with two rows of trees and a crossing"
+        },
+        {
+          "english": "square",
+          "slug": "square",
+          "type": "place",
+          "scene": "an open paved area with a fountain in the middle and two benches"
+        },
+        {
+          "english": "suburb",
+          "slug": "suburb",
+          "type": "place",
+          "scene": "three small houses with gardens and a fence in front"
+        },
+        {
+          "english": "crowded",
+          "slug": "crowded",
+          "type": "trait",
+          "scene": "a narrow street packed with eight small round characters"
+        },
+        {
+          "english": "pedestrian",
+          "slug": "pedestrian",
+          "type": "object",
+          "scene": "a small round character walking on a pavement with a shopping bag"
+        },
+        {
+          "english": "crossroads",
+          "slug": "crossroads",
+          "type": "place",
+          "scene": "two roads crossing with four corner kerbs and one lamp post"
+        },
+        {
+          "english": "landmark",
+          "slug": "landmark",
+          "type": "object",
+          "scene": "a tall stone tower with a pointed roof above small houses"
+        },
+        {
+          "english": "skyscraper",
+          "slug": "skyscraper",
+          "type": "object",
+          "scene": "a tall glass tower with many square windows and a crane beside"
+        },
+        {
+          "english": "council",
+          "slug": "council",
+          "type": "place",
+          "scene": "a stone building with columns and three small round characters at the door"
+        },
+        {
+          "english": "traffic lights",
+          "slug": "traffic-lights",
+          "type": "object",
+          "scene": "a pole with three round lights, the top one lit, beside a crossing"
+        },
+        {
+          "english": "pavement",
+          "slug": "pavement",
+          "type": "place",
+          "scene": "a raised grey walkway beside a road with two bollards"
+        },
+        {
+          "english": "litter",
+          "slug": "litter",
+          "type": "object",
+          "scene": "three crumpled paper cups and a banana peel on the ground"
+        },
+        {
+          "english": "noise",
+          "slug": "noise",
+          "type": "abstract",
+          "scene": "a small round character covering its ears beside a loud speaker"
+        },
+        {
+          "english": "population",
+          "slug": "population",
+          "type": "abstract",
+          "scene": "a row of five houses with many small characters at the windows"
+        },
+        {
+          "english": "architecture",
+          "slug": "architecture",
+          "type": "object",
+          "scene": "a building with an arched entrance and a curved glass roof"
+        },
+        {
+          "english": "neighbourhood",
+          "slug": "neighbourhood",
+          "type": "place",
+          "scene": "a row of houses with a shared garden and one tree"
+        },
+        {
+          "english": "facilities",
+          "slug": "facilities",
+          "type": "place",
+          "scene": "a small playground with a swing, a slide and a bench"
+        },
+        {
+          "english": "resident",
+          "slug": "resident",
+          "type": "object",
+          "scene": "a small round character at a window watering a plant"
+        },
+        {
+          "english": "urban",
+          "slug": "urban",
+          "type": "trait",
+          "scene": "a tall building, a bus and a lamp post packed together"
+        }
+      ]
+    },
+    {
+      "slug": "politeness",
+      "name": "Вежливость",
+      "words": [
+        {
+          "english": "please",
+          "slug": "please",
+          "type": "abstract",
+          "scene": "a small round character with hands clasped and eyebrows raised hopefully"
+        },
+        {
+          "english": "grateful",
+          "slug": "grateful",
+          "type": "abstract",
+          "scene": "a small round character with both hands on its heart, eyes closed"
+        },
+        {
+          "english": "apologize",
+          "slug": "apologize",
+          "type": "action",
+          "scene": "a small round character bowing low with one hand on its chest and a sweat drop"
+        },
+        {
+          "english": "excuse me",
+          "slug": "excuse-me",
+          "type": "action",
+          "scene": "a small round character tapping another's shoulder with one finger"
+        },
+        {
+          "english": "permission",
+          "slug": "permission",
+          "type": "relation",
+          "scene": "a small round character raising a hand while another nods"
+        },
+        {
+          "english": "invitation",
+          "slug": "invitation",
+          "type": "object",
+          "scene": "a folded card with a ribbon and a small envelope beside it"
+        },
+        {
+          "english": "compliment",
+          "slug": "compliment",
+          "type": "abstract",
+          "scene": "a small round character giving a flower to another who blushes"
+        },
+        {
+          "english": "manners",
+          "slug": "manners",
+          "type": "abstract",
+          "scene": "a small round character waiting patiently while another walks through a door first"
+        },
+        {
+          "english": "polite",
+          "slug": "polite",
+          "type": "trait",
+          "scene": "a small round character greeting an older character with a small bow"
+        },
+        {
+          "english": "rude",
+          "slug": "rude",
+          "type": "trait",
+          "scene": "a small round character turning its back with arms crossed"
+        },
+        {
+          "english": "respect",
+          "slug": "respect",
+          "type": "abstract",
+          "scene": "a small round character offering a seat to an older character"
+        },
+        {
+          "english": "greeting",
+          "slug": "greeting",
+          "type": "action",
+          "scene": "two small round characters waving at each other from a distance"
+        },
+        {
+          "english": "introduce",
+          "slug": "introduce",
+          "type": "action",
+          "scene": "a small round character gesturing toward another with an open palm"
+        },
+        {
+          "english": "complaint",
+          "slug": "complaint",
+          "type": "abstract",
+          "scene": "a small round character with a frown holding a paper slip at a desk"
+        },
+        {
+          "english": "forgive",
+          "slug": "forgive",
+          "type": "abstract",
+          "scene": "two small round characters hugging after one offers an open hand"
+        },
+        {
+          "english": "congratulations",
+          "slug": "congratulations",
+          "type": "abstract",
+          "scene": "two small round characters throwing small paper pieces upward"
+        },
+        {
+          "english": "welcome",
+          "slug": "welcome",
+          "type": "action",
+          "scene": "a small round character opening both arms wide at a doorway with a mat"
+        },
+        {
+          "english": "offer",
+          "slug": "offer",
+          "type": "action",
+          "scene": "a small round character holding out a cup to another"
+        },
+        {
+          "english": "refuse",
+          "slug": "refuse",
+          "type": "action",
+          "scene": "a small round character raising one palm and turning its head away"
+        },
+        {
+          "english": "kindness",
+          "slug": "kindness",
+          "type": "abstract",
+          "scene": "a small round character carrying a small bowl of soup to a cold character"
+        }
+      ]
+    },
+    {
+      "slug": "body",
+      "name": "Тело",
+      "words": [
+        {
+          "english": "shoulder",
+          "slug": "shoulder",
+          "type": "object",
+          "scene": "a bare shoulder and upper arm with one round joint"
+        },
+        {
+          "english": "elbow",
+          "slug": "elbow",
+          "type": "object",
+          "scene": "a bent arm showing the elbow joint with one small crease"
+        },
+        {
+          "english": "wrist",
+          "slug": "wrist",
+          "type": "object",
+          "scene": "a wrist with a watch strap and one open hand"
+        },
+        {
+          "english": "thumb",
+          "slug": "thumb",
+          "type": "object",
+          "scene": "a hand with the thumb raised and four fingers folded"
+        },
+        {
+          "english": "knee",
+          "slug": "knee",
+          "type": "object",
+          "scene": "a bent leg with the knee joint and one small plaster"
+        },
+        {
+          "english": "ankle",
+          "slug": "ankle",
+          "type": "object",
+          "scene": "a foot and ankle with a thin strap around it"
+        },
+        {
+          "english": "spine",
+          "slug": "spine",
+          "type": "object",
+          "scene": "a curved row of small bones stacked along a back"
+        },
+        {
+          "english": "muscle",
+          "slug": "muscle",
+          "type": "object",
+          "scene": "a strong upper arm flexed with one rounded bulge"
+        },
+        {
+          "english": "lung",
+          "slug": "lung",
+          "type": "object",
+          "scene": "two rounded lung shapes joined by a small tube"
+        },
+        {
+          "english": "brain",
+          "slug": "brain",
+          "type": "object",
+          "scene": "a rounded brain with two halves and three curved folds"
+        },
+        {
+          "english": "skin",
+          "slug": "skin",
+          "type": "object",
+          "scene": "a patch of skin with one small freckle and a hair"
+        },
+        {
+          "english": "bone",
+          "slug": "bone",
+          "type": "object",
+          "scene": "a single long bone with two rounded ends"
+        },
+        {
+          "english": "blood",
+          "slug": "blood",
+          "type": "object",
+          "scene": "a single red drop with a small white cell beside it"
+        },
+        {
+          "english": "heartbeat",
+          "slug": "heartbeat",
+          "type": "abstract",
+          "scene": "a small round character with one hand on the chest, wavy line"
+        },
+        {
+          "english": "breath",
+          "slug": "breath",
+          "type": "action",
+          "scene": "a small round character exhaling a long thin stream of air"
+        },
+        {
+          "english": "sweat",
+          "slug": "sweat",
+          "type": "object",
+          "scene": "a forehead with three large drops running down the temple"
+        },
+        {
+          "english": "posture",
+          "slug": "posture",
+          "type": "object",
+          "scene": "a small round character standing very straight with a book on its head"
+        },
+        {
+          "english": "sight",
+          "slug": "sight",
+          "type": "abstract",
+          "scene": "a small round character looking through round glasses at a distant tree"
+        },
+        {
+          "english": "hearing",
+          "slug": "hearing",
+          "type": "abstract",
+          "scene": "a small round character cupping one ear toward a small bell"
+        },
+        {
+          "english": "stomach",
+          "slug": "stomach",
+          "type": "object",
+          "scene": "a rounded stomach shape with a small curved tube on top"
+        }
+      ]
+    },
+    {
+      "slug": "personality",
+      "name": "Характер",
+      "words": [
+        {
+          "english": "confident",
+          "slug": "confident",
+          "type": "trait",
+          "scene": "a small round character standing tall with hands on hips"
+        },
+        {
+          "english": "shy",
+          "slug": "shy",
+          "type": "trait",
+          "scene": "a small round character peeking from behind a curtain"
+        },
+        {
+          "english": "honest",
+          "slug": "honest",
+          "type": "trait",
+          "scene": "a small round character holding an open palm with a small heart"
+        },
+        {
+          "english": "loyal",
+          "slug": "loyal",
+          "type": "trait",
+          "scene": "a small round character standing beside a friend under one umbrella"
+        },
+        {
+          "english": "generous",
+          "slug": "generous",
+          "type": "trait",
+          "scene": "a small round character giving half of a sandwich to another"
+        },
+        {
+          "english": "selfish",
+          "slug": "selfish",
+          "type": "trait",
+          "scene": "a small round character hugging a whole cake away from others"
+        },
+        {
+          "english": "curious",
+          "slug": "curious",
+          "type": "trait",
+          "scene": "a small round character leaning over a box with a magnifier"
+        },
+        {
+          "english": "patient",
+          "slug": "patient",
+          "type": "trait",
+          "scene": "a small round character calmly waiting beside a slowly filling hourglass"
+        },
+        {
+          "english": "ambitious",
+          "slug": "ambitious",
+          "type": "trait",
+          "scene": "a small round character on tiptoes reaching for a flag on a high shelf"
+        },
+        {
+          "english": "reliable",
+          "slug": "reliable",
+          "type": "trait",
+          "scene": "a small round character holding a ladder steady while another climbs"
+        },
+        {
+          "english": "stubborn",
+          "slug": "stubborn",
+          "type": "trait",
+          "scene": "a small round character pulling a rope against another, feet planted"
+        },
+        {
+          "english": "optimistic",
+          "slug": "optimistic",
+          "type": "trait",
+          "scene": "a small round character looking up at a sun through rain drops"
+        },
+        {
+          "english": "anxious",
+          "slug": "anxious",
+          "type": "trait",
+          "scene": "a small round character hugging its knees on a bench, eyes wide"
+        },
+        {
+          "english": "sensible",
+          "slug": "sensible",
+          "type": "trait",
+          "scene": "a small round character holding an umbrella while clouds gather"
+        },
+        {
+          "english": "creative",
+          "slug": "creative",
+          "type": "trait",
+          "scene": "a small round character painting a bright shape on a blank canvas"
+        },
+        {
+          "english": "sociable",
+          "slug": "sociable",
+          "type": "trait",
+          "scene": "a small round character waving at three others at a table"
+        },
+        {
+          "english": "modest",
+          "slug": "modest",
+          "type": "trait",
+          "scene": "a small round character stepping back while another takes a trophy"
+        },
+        {
+          "english": "impulsive",
+          "slug": "impulsive",
+          "type": "trait",
+          "scene": "a small round character jumping into a pool with clothes on"
+        },
+        {
+          "english": "tolerant",
+          "slug": "tolerant",
+          "type": "trait",
+          "scene": "two different characters sharing one bench without touching"
+        },
+        {
+          "english": "determined",
+          "slug": "determined",
+          "type": "trait",
+          "scene": "a small round character pushing a large boulder up a slope"
+        }
+      ]
+    },
+    {
+      "slug": "communication",
+      "name": "Общение",
+      "words": [
+        {
+          "english": "conversation",
+          "slug": "conversation",
+          "type": "relation",
+          "scene": "two small round characters facing each other, curved lines between mouths"
+        },
+        {
+          "english": "discuss",
+          "slug": "discuss",
+          "type": "relation",
+          "scene": "two small round characters leaning over one open book, pointing at pages"
+        },
+        {
+          "english": "explain",
+          "slug": "explain",
+          "type": "action",
+          "scene": "a small round character opening both hands wide while describing a shape"
+        },
+        {
+          "english": "argue",
+          "slug": "argue",
+          "type": "relation",
+          "scene": "two small round characters facing each other with crossed arms and frowns"
+        },
+        {
+          "english": "persuade",
+          "slug": "persuade",
+          "type": "relation",
+          "scene": "a small round character pulling another gently by the hand toward a door"
+        },
+        {
+          "english": "negotiate",
+          "slug": "negotiate",
+          "type": "relation",
+          "scene": "two small round characters across a table with coins between them"
+        },
+        {
+          "english": "whisper",
+          "slug": "whisper",
+          "type": "action",
+          "scene": "a small round character leaning close to another's ear, hand cupped"
+        },
+        {
+          "english": "shout",
+          "slug": "shout",
+          "type": "action",
+          "scene": "a small round character with hands cupped around an open mouth"
+        },
+        {
+          "english": "interrupt",
+          "slug": "interrupt",
+          "type": "action",
+          "scene": "a small round character raising a finger between two talking characters"
+        },
+        {
+          "english": "announce",
+          "slug": "announce",
+          "type": "action",
+          "scene": "a small round character on a small box speaking to a group"
+        },
+        {
+          "english": "confirm",
+          "slug": "confirm",
+          "type": "action",
+          "scene": "a small round character nodding with a raised thumb"
+        },
+        {
+          "english": "complain",
+          "slug": "complain",
+          "type": "action",
+          "scene": "a small round character pointing at a broken chair, frowning"
+        },
+        {
+          "english": "suggest",
+          "slug": "suggest",
+          "type": "action",
+          "scene": "a small round character holding up one finger with a small bulb above"
+        },
+        {
+          "english": "reply",
+          "slug": "reply",
+          "type": "action",
+          "scene": "a small round character turning back to answer a voice behind it"
+        },
+        {
+          "english": "mention",
+          "slug": "mention",
+          "type": "action",
+          "scene": "a small round character pointing at a cup while talking to another"
+        },
+        {
+          "english": "translate",
+          "slug": "translate",
+          "type": "action",
+          "scene": "a small round character holding two books, one in each hand"
+        },
+        {
+          "english": "pronounce",
+          "slug": "pronounce",
+          "type": "action",
+          "scene": "a small round character with an open mouth and one hand at its throat"
+        },
+        {
+          "english": "misunderstand",
+          "slug": "misunderstand",
+          "type": "relation",
+          "scene": "two small round characters with tangled lines crossing between them"
+        },
+        {
+          "english": "gesture",
+          "slug": "gesture",
+          "type": "object",
+          "scene": "a hand with an open palm and three curved motion lines"
+        },
+        {
+          "english": "fluent",
+          "slug": "fluent",
+          "type": "trait",
+          "scene": "a small round character talking easily with two others listening"
+        }
+      ]
+    },
+    {
+      "slug": "weather",
+      "name": "Погода",
+      "words": [
+        {
+          "english": "forecast",
+          "slug": "forecast",
+          "type": "abstract",
+          "scene": "a small round character holding an umbrella beside a cloud and sun"
+        },
+        {
+          "english": "humidity",
+          "slug": "humidity",
+          "type": "abstract",
+          "scene": "a small round character fanning itself with drops on the walls"
+        },
+        {
+          "english": "thunder",
+          "slug": "thunder",
+          "type": "abstract",
+          "scene": "a dark cloud with three curved sound lines spreading outward"
+        },
+        {
+          "english": "lightning",
+          "slug": "lightning",
+          "type": "object",
+          "scene": "a single jagged bolt striking down from a dark cloud"
+        },
+        {
+          "english": "foggy",
+          "slug": "foggy",
+          "type": "place",
+          "scene": "three trees fading into flat grey bands of mist"
+        },
+        {
+          "english": "breeze",
+          "slug": "breeze",
+          "type": "abstract",
+          "scene": "a small round character holding its hat as leaves blow past"
+        },
+        {
+          "english": "freezing",
+          "slug": "freezing",
+          "type": "abstract",
+          "scene": "a small round character shivering with icicles on its scarf"
+        },
+        {
+          "english": "mild",
+          "slug": "mild",
+          "type": "abstract",
+          "scene": "a small round character in a light jacket under a warm sun"
+        },
+        {
+          "english": "drought",
+          "slug": "drought",
+          "type": "place",
+          "scene": "cracked dry ground with one wilting plant and a hot sun"
+        },
+        {
+          "english": "flood",
+          "slug": "flood",
+          "type": "place",
+          "scene": "water covering a street up to a house door with a floating chair"
+        },
+        {
+          "english": "shower",
+          "slug": "shower",
+          "type": "place",
+          "scene": "a small cloud with a sun peeking beside it and short rain"
+        },
+        {
+          "english": "chilly",
+          "slug": "chilly",
+          "type": "abstract",
+          "scene": "a small round character hugging itself with a small cloud of breath"
+        },
+        {
+          "english": "sunshine",
+          "slug": "sunshine",
+          "type": "place",
+          "scene": "a round sun with five straight rays above a green hill"
+        },
+        {
+          "english": "temperature",
+          "slug": "temperature",
+          "type": "object",
+          "scene": "a tall thermometer with a red column rising near the top"
+        },
+        {
+          "english": "cloudy",
+          "slug": "cloudy",
+          "type": "place",
+          "scene": "three grey clouds covering most of the sky above a house"
+        },
+        {
+          "english": "windy",
+          "slug": "windy",
+          "type": "abstract",
+          "scene": "a small round character leaning into wind with a bent tree"
+        },
+        {
+          "english": "hail",
+          "slug": "hail",
+          "type": "object",
+          "scene": "five round ice stones falling from a grey cloud onto a car"
+        },
+        {
+          "english": "melt",
+          "slug": "melt",
+          "type": "action",
+          "scene": "a snowman slumping with a puddle forming at its base"
+        },
+        {
+          "english": "heatwave",
+          "slug": "heatwave",
+          "type": "abstract",
+          "scene": "a small round character under a parasol with wavy heat lines"
+        },
+        {
+          "english": "drizzle",
+          "slug": "drizzle",
+          "type": "place",
+          "scene": "a grey sky with many thin short lines falling on a pavement"
+        }
+      ]
+    },
+    {
+      "slug": "kitchen",
+      "name": "Кухня",
+      "words": [
+        {
+          "english": "utensils",
+          "slug": "utensils",
+          "type": "object",
+          "scene": "a spoon, a fork and a whisk standing in one jar"
+        },
+        {
+          "english": "saucepan",
+          "slug": "saucepan",
+          "type": "object",
+          "scene": "a deep saucepan with two handles and a lid ajar"
+        },
+        {
+          "english": "frying pan",
+          "slug": "frying-pan",
+          "type": "object",
+          "scene": "a round frying pan with a long handle and one fried egg"
+        },
+        {
+          "english": "chop",
+          "slug": "chop",
+          "type": "action",
+          "scene": "a small round character cutting a carrot into rounds on a board"
+        },
+        {
+          "english": "stir",
+          "slug": "stir",
+          "type": "action",
+          "scene": "a small round character stirring a pot with a long wooden spoon"
+        },
+        {
+          "english": "boil",
+          "slug": "boil",
+          "type": "action",
+          "scene": "a pot of water bubbling with steam rising from the top"
+        },
+        {
+          "english": "bake",
+          "slug": "bake",
+          "type": "action",
+          "scene": "a small round character sliding a cake tin into an open oven"
+        },
+        {
+          "english": "roast",
+          "slug": "roast",
+          "type": "action",
+          "scene": "a tray of vegetables browning inside an open oven"
+        },
+        {
+          "english": "fry",
+          "slug": "fry",
+          "type": "action",
+          "scene": "a fish sizzling in a pan with three small bubbles of oil"
+        },
+        {
+          "english": "peel",
+          "slug": "peel",
+          "type": "action",
+          "scene": "a small round character peeling a potato with a small knife"
+        },
+        {
+          "english": "slice",
+          "slug": "slice",
+          "type": "object",
+          "scene": "a loaf of bread cut into four even slices"
+        },
+        {
+          "english": "taste",
+          "slug": "taste",
+          "type": "action",
+          "scene": "a small round character holding a spoonful of soup to its lips"
+        },
+        {
+          "english": "season",
+          "slug": "season",
+          "type": "action",
+          "scene": "a small round character sprinkling pepper over a piece of meat"
+        },
+        {
+          "english": "pour",
+          "slug": "pour",
+          "type": "action",
+          "scene": "a small round character pouring milk from a bottle into a bowl"
+        },
+        {
+          "english": "mix",
+          "slug": "mix",
+          "type": "action",
+          "scene": "a small round character mixing flour and eggs in a bowl"
+        },
+        {
+          "english": "measure",
+          "slug": "measure",
+          "type": "action",
+          "scene": "a small round character filling a measuring cup with water"
+        },
+        {
+          "english": "leftovers",
+          "slug": "leftovers",
+          "type": "object",
+          "scene": "three covered bowls stacked in a fridge with one open"
+        },
+        {
+          "english": "dishwasher",
+          "slug": "dishwasher",
+          "type": "object",
+          "scene": "an open dishwasher with plates in a rack and one mug"
+        },
+        {
+          "english": "grill",
+          "slug": "grill",
+          "type": "object",
+          "scene": "a grill with four sausages on the bars and small flames"
+        },
+        {
+          "english": "napkin",
+          "slug": "napkin",
+          "type": "object",
+          "scene": "a folded cloth napkin with a ring and a fork beside"
+        }
+      ]
+    },
+    {
+      "slug": "directions",
+      "name": "Ориентация",
+      "words": [
+        {
+          "english": "left",
+          "slug": "left",
+          "type": "abstract",
+          "scene": "a small round character pointing to the left with one arm"
+        },
+        {
+          "english": "right",
+          "slug": "right",
+          "type": "abstract",
+          "scene": "a small round character pointing to the right with one arm"
+        },
+        {
+          "english": "straight",
+          "slug": "straight",
+          "type": "abstract",
+          "scene": "a small round character walking forward along a straight path"
+        },
+        {
+          "english": "opposite",
+          "slug": "opposite",
+          "type": "place",
+          "scene": "a small house facing another house across a narrow street"
+        },
+        {
+          "english": "behind",
+          "slug": "behind",
+          "type": "relation",
+          "scene": "a small round character standing behind a large box, partly hidden"
+        },
+        {
+          "english": "between",
+          "slug": "between",
+          "type": "relation",
+          "scene": "a small character standing between two taller characters"
+        },
+        {
+          "english": "corner",
+          "slug": "corner",
+          "type": "place",
+          "scene": "a street corner with a curved kerb and one lamp post"
+        },
+        {
+          "english": "roundabout",
+          "slug": "roundabout",
+          "type": "place",
+          "scene": "a circular road around a small round island with a tree"
+        },
+        {
+          "english": "junction",
+          "slug": "junction",
+          "type": "place",
+          "scene": "one road splitting into two roads around a small triangle"
+        },
+        {
+          "english": "entrance",
+          "slug": "entrance",
+          "type": "place",
+          "scene": "an open doorway with a small step and a curved arrow above"
+        },
+        {
+          "english": "exit",
+          "slug": "exit",
+          "type": "place",
+          "scene": "an open doorway with a small figure walking out and an arrow"
+        },
+        {
+          "english": "signpost",
+          "slug": "signpost",
+          "type": "object",
+          "scene": "a post with two blank arrow boards pointing different ways"
+        },
+        {
+          "english": "distance",
+          "slug": "distance",
+          "type": "abstract",
+          "scene": "two small flags at opposite edges with a wide gap between"
+        },
+        {
+          "english": "nearby",
+          "slug": "nearby",
+          "type": "place",
+          "scene": "a house with a bakery just next door, one shared wall"
+        },
+        {
+          "english": "map",
+          "slug": "map",
+          "type": "object",
+          "scene": "a paper map spread open with a river and a crossroad"
+        },
+        {
+          "english": "north",
+          "slug": "north",
+          "type": "abstract",
+          "scene": "a compass needle pointing up toward a small pine tree"
+        },
+        {
+          "english": "south",
+          "slug": "south",
+          "type": "abstract",
+          "scene": "a compass needle pointing down toward a small palm tree"
+        },
+        {
+          "english": "upstairs",
+          "slug": "upstairs",
+          "type": "place",
+          "scene": "a staircase leading up to an open door on a landing"
+        },
+        {
+          "english": "towards",
+          "slug": "towards",
+          "type": "abstract",
+          "scene": "a small round character walking toward a distant tree, arm extended"
+        },
+        {
+          "english": "cross",
+          "slug": "cross",
+          "type": "action",
+          "scene": "a small round character walking across a striped road"
+        }
+      ]
+    }
+  ]
+}

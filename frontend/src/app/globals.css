@@ -57,6 +57,14 @@
   --color-lexi-blush: #F3B39B;
   --color-lexi-accent: #0E7C7B;
 
+  /*
+   * Бумага иллюстраций слов. Не поверхность интерфейса, а часть самих ассетов:
+   * белый фон запечён в WebP, поэтому подложка под картинкой обязана совпадать
+   * с ним — иначе на скруглённых углах проступает прямоугольник другого тона.
+   * В светлой теме совпадает с canvas, и картинка растворяется в карточке.
+   */
+  --color-illustration-paper: #FFFFFF;
+
   /* Semantic */
   --color-success: #1A9C3C;
   --color-warning: #B45309;
@@ -177,6 +185,11 @@
   --color-lexi-blush: #EFA992;
   --color-lexi-accent: #7FDCD5;
 
+  /* Иллюстрации нарисованы на белом — это часть ассета, а не поверхность темы.
+     В тёмной теме белый лист остаётся белым, но получает тонкое световое ребро
+     (см. .word-illustration-img ниже), чтобы читаться как стикер, а не как засвет. */
+  --color-illustration-paper: #FFFFFF;
+
   /* Semantic */
   --color-success: #3DBB60;
   --color-warning: #E0A458;
@@ -262,6 +275,18 @@
 :root[data-theme='dark'] .avatar-frame-teal { background: linear-gradient(135deg, #0F5D5B, #2FB0A8); }
 :root[data-theme='dark'] .avatar-frame-ink { background: linear-gradient(135deg, #1A2940, #5A6FA8); }
 :root[data-theme='dark'] .avatar-frame-gold { background: linear-gradient(135deg, #6B5A25, #D9B45A); }
+
+/*
+ * Иллюстрация слова нарисована на белом — это часть ассета, а не поверхность
+ * темы, поэтому подменять ей фон нельзя: объект и поле разъедутся по тону.
+ * В светлой теме белый лист совпадает с canvas и растворяется в карточке;
+ * в тёмной он неизбежно остаётся светлым, и единственное, что нужно, — тонкое
+ * ребро, чтобы это читалось как стикер, а не как засвет. Гасить картинку
+ * фильтром нельзя: палитра и без того мягкая, brightness съедает её совсем.
+ */
+:root[data-theme='dark'] .word-illustration-tile {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
 
 @layer base {
   body {
