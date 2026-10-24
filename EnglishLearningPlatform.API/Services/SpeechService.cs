@@ -171,6 +171,10 @@ public class SpeechService : IAiBackedService
             {
                 _logger.LogWarning("TTS: Gemini недоступен ({Reason}), переключаюсь на бесплатный голос", ex.Message);
             }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogWarning("TTS: Gemini не успел за отведённое время, беру бесплатный голос");
+            }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "TTS: неожиданная ошибка Gemini, переключаюсь на бесплатный голос");
@@ -200,6 +204,13 @@ public class SpeechService : IAiBackedService
             return null;
         }
 
+        // Прокси до Gemini иногда собирает фразу десятки секунд (наблюдалось 56 с):
+        // пользователь к этому моменту уже слышит запасной голос, а серверный слот
+        // занят. Держим потолок и уходим на бесплатный резерв.
+        var timeoutSeconds = Math.Clamp(_configuration.GetValue("Tts:GeminiTimeoutSeconds", 15), 3, 60);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+
         var requestBody = new
         {
             contents = new[]
@@ -223,7 +234,7 @@ public class SpeechService : IAiBackedService
         };
 
         var result = await _resilient.SendAsync(
-            TtsModel, requestBody, apiKey, "tts", userId, cancellationToken);
+            TtsModel, requestBody, apiKey, "tts", userId, cts.Token);
 
         if (result.Json == null)
         {
