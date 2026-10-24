@@ -131,29 +131,46 @@ var emailTransport = EmailSender.ResolveTransport(
     builder.Configuration["Email:Smtp:User"],
     builder.Configuration["Email:Smtp:Password"]);
 
+var configErrors = new List<string>();
+var configWarnings = new List<string>();
+
 if (string.IsNullOrWhiteSpace(emailFrom) || !System.Net.Mail.MailAddress.TryCreate(emailFrom, out _))
-    configProblems.Add("Email:From должен быть корректным адресом отправителя.");
+    configErrors.Add("Email:From должен быть корректным адресом отправителя.");
 
 if (string.IsNullOrWhiteSpace(frontendUrl) || !Uri.TryCreate(frontendUrl, UriKind.Absolute, out _))
-    configProblems.Add("App:FrontendUrl должен быть абсолютным URL (ссылки из писем строятся от него).");
+    configErrors.Add("App:FrontendUrl должен быть абсолютным URL (ссылки из писем строятся от него).");
 
+// Отсутствие транспорта почты — предупреждение, а не остановка процесса: письма
+// не уходят из этого региона в принципе (SMTP-порты режет хостер), а сайт без
+// напоминаний живёт, без API — нет. Молчать при этом нельзя: ровно так бета и
+// получила «письмо есть только в журнале».
 if (emailTransport == "log")
-    configProblems.Add(
-        "Ни SMTP, ни HTTP-API почты не настроены (" +
+    configWarnings.Add(
+        "почта не настроена (" +
         EmailSender.ExplainLogOnly(
             emailProvider,
             brevoApiKey,
             smtpHost,
             builder.Configuration["Email:Smtp:User"],
-            builder.Configuration["Email:Smtp:Password"]) + ") — письма будут только в журнале.");
+            builder.Configuration["Email:Smtp:Password"]) + ") — письма пишутся в журнал EmailMessages");
 
-if (configProblems.Count > 0)
+if (!builder.Configuration.GetValue(RequireConfirmedEmailAttribute.ConfigKey, defaultValue: true))
+    configWarnings.Add(
+        "Auth:RequireConfirmedEmail=false — ИИ-функции доступны без подтверждения почты, " +
+        "бюджет Gemini держат только лимиты Ai__DailyUserRequestLimit / Ai__GlobalDailyRequestLimit");
+
+if (configWarnings.Count > 0)
 {
-    var message = string.Join(" ", configProblems);
+    Log.Warning("Конфигурация почты и доступов: {Warnings}", string.Join("; ", configWarnings));
+}
+
+if (configErrors.Count > 0)
+{
+    var message = string.Join(" ", configErrors);
     if (!builder.Environment.IsDevelopment())
     {
         throw new InvalidOperationException(
-            "Конфигурация почты неполна: " + message + " Задайте переменные Email__From, App__FrontendUrl и один из транспортов: Email__Smtp__Host (+ пароль) или Email__Provider=brevo с Email__Brevo__ApiKey.");
+            "Конфигурация почты неполна: " + message + " Задайте переменные Email__From и App__FrontendUrl.");
     }
 
     Log.Warning("Проверка конфигурации: {ConfigProblems}", message);
