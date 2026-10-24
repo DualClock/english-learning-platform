@@ -118,7 +118,18 @@ if (string.IsNullOrWhiteSpace(jwtKey)
 var emailFrom = builder.Configuration["Email:From"];
 var frontendUrl = builder.Configuration["App:FrontendUrl"];
 var smtpHost = builder.Configuration["Email:Smtp:Host"];
+var emailProvider = builder.Configuration["Email:Provider"];
+var brevoApiKey = builder.Configuration["Email:Brevo:ApiKey"];
 var configProblems = new List<string>();
+
+// Транспорт выбирает ровно тот же код, что и сам отправщик, — иначе на старте
+// можно потребовать SMTP-хост там, где письма идут через HTTP-API, или наоборот.
+var emailTransport = EmailSender.ResolveTransport(
+    emailProvider,
+    brevoApiKey,
+    smtpHost,
+    builder.Configuration["Email:Smtp:User"],
+    builder.Configuration["Email:Smtp:Password"]);
 
 if (string.IsNullOrWhiteSpace(emailFrom) || !System.Net.Mail.MailAddress.TryCreate(emailFrom, out _))
     configProblems.Add("Email:From должен быть корректным адресом отправителя.");
@@ -126,8 +137,15 @@ if (string.IsNullOrWhiteSpace(emailFrom) || !System.Net.Mail.MailAddress.TryCrea
 if (string.IsNullOrWhiteSpace(frontendUrl) || !Uri.TryCreate(frontendUrl, UriKind.Absolute, out _))
     configProblems.Add("App:FrontendUrl должен быть абсолютным URL (ссылки из писем строятся от него).");
 
-if (string.IsNullOrWhiteSpace(smtpHost))
-    configProblems.Add("Email:Smtp:Host не задан — письма будут только в журнале, а не на почту.");
+if (emailTransport == "log")
+    configProblems.Add(
+        "Ни SMTP, ни HTTP-API почты не настроены (" +
+        EmailSender.ExplainLogOnly(
+            emailProvider,
+            brevoApiKey,
+            smtpHost,
+            builder.Configuration["Email:Smtp:User"],
+            builder.Configuration["Email:Smtp:Password"]) + ") — письма будут только в журнале.");
 
 if (configProblems.Count > 0)
 {
@@ -135,7 +153,7 @@ if (configProblems.Count > 0)
     if (!builder.Environment.IsDevelopment())
     {
         throw new InvalidOperationException(
-            "Конфигурация почты неполна: " + message + " Задайте переменные Email__From, App__FrontendUrl, Email__Smtp__Host.");
+            "Конфигурация почты неполна: " + message + " Задайте переменные Email__From, App__FrontendUrl и один из транспортов: Email__Smtp__Host (+ пароль) или Email__Provider=brevo с Email__Brevo__ApiKey.");
     }
 
     Log.Warning("Проверка конфигурации: {ConfigProblems}", message);
@@ -209,6 +227,9 @@ builder.Services.AddScoped<CategorySeeder>();
 builder.Services.AddScoped<GrammarSeeder>();
 builder.Services.AddScoped<StorySeeder>();
 builder.Services.AddHttpClient<FeedbackNotifier>();
+// Именованный клиент для HTTP-API почты (Brevo): переиспользует соединения и
+// не зависит от закрытых хостером SMTP-портов. Таймаут ставится на запрос.
+builder.Services.AddHttpClient(EmailSender.BrevoClientName);
 
 var app = builder.Build();
 
