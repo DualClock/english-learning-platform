@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate, cacheKey, peekCache } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import EmptyState from '@/components/ui/EmptyState';import ErrorState from '@/components/ui/ErrorState';
 import { Skeleton } from '@/components/ui/LoadingState';
 import Button from '@/components/ui/Button';
@@ -63,7 +63,7 @@ function PracticeContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const trackEvent = useTrack();
-  const { speak } = useSpeech();
+  const { speak } = useTts();
   const params = useParams();
   const searchParams = useSearchParams();
   const listId = params?.id as string;

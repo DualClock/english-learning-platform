@@ -14,7 +14,7 @@ import {
   TrashIcon,
   VolumeIcon,
 } from '@/components/ui/icons';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import { transition } from '@/lib/motion';
 import { WORD_EMOJIS } from '@/lib/wordVisuals';
 import WordVisual from './WordVisual';
@@ -42,7 +42,7 @@ export default function DictionaryWordRow({
   onDelete,
   onUpdated,
 }: DictionaryWordRowProps) {
-  const { speak } = useSpeech();
+  const { speak, isLoading: isSpeakingLoading } = useTts();
   const [busy, setBusy] = useState<BusyAction>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
@@ -263,10 +263,13 @@ export default function DictionaryWordRow({
                 type="button"
                 onClick={() => speak(word.text)}
                 className="icon-chip h-11 min-w-11 border-transparent bg-transparent hover:bg-surface"
-                title="Произнести"
+                title={isSpeakingLoading ? 'Озвучиваем…' : 'Произнести'}
                 aria-label={`Произнести ${word.text}`}
+                aria-busy={isSpeakingLoading}
               >
-                <VolumeIcon size={16} />
+                {isSpeakingLoading
+                  ? <SpinnerIcon size={16} className="animate-spin" label="Озвучиваем" />
+                  : <VolumeIcon size={16} />}
               </button>
               {definition?.partOfSpeech && <Tag tone="neutral">{definition.partOfSpeech}</Tag>}
               {source && <Tag tone="neutral">{source}</Tag>}

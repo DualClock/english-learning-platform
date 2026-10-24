@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import Pager from '@/components/Pager';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
@@ -63,7 +63,7 @@ function BackToDictionary() {
 export default function WordListPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { speak } = useSpeech();
+  const { speak } = useTts();
   const params = useParams();
   const listId = params?.id as string;
 

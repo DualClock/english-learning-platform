@@ -99,7 +99,7 @@ public class SpeechService : IAiBackedService
             {
                 new
                 {
-                    parts = new[] { new { text = normalized } }
+                    parts = new[] { new { text = BuildTtsPrompt(normalized) } }
                 }
             },
             generationConfig = new
@@ -127,7 +127,7 @@ public class SpeechService : IAiBackedService
         var (pcm, sampleRate) = ExtractAudio(result.Json);
         if (pcm == null || pcm.Length == 0)
         {
-            _logger.LogWarning("TTS response contained no audio data");
+            _logger.LogWarning("TTS response contained no audio data — модель вернула текст вместо речи");
             return null;
         }
 
@@ -241,6 +241,20 @@ public class SpeechService : IAiBackedService
     // но именно от текста зависит хэш кэша — нормализуем до него
     private static string NormalizeText(string text) =>
         string.Join(' ', (text ?? string.Empty).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    /// <summary>
+    /// Оборачивает текст в кавычки перед отправкой в TTS-модель.
+    ///
+    /// Замерено на проде 24.10: на одиночное слово вроде `cheshire` или
+    /// `Cheshire Cat` модель отвечала HTTP 200 без аудиочасти (то есть генерировала
+    /// текст, которого мы не ждём) или 400 «Model tried to generate text, but it
+    /// should only be used for TTS». Кавычки дают модели однозначный сигнал «это
+    /// реплика, её надо произнести» и починили оба случая. В кэш идёт исходный
+    /// нормализованный текст (см. GetCachePath), поэтому одна и та же фраза не
+    /// дублируется в зависимости от обёртки.
+    /// </summary>
+    public static string BuildTtsPrompt(string normalizedText) =>
+        string.Concat("\"", normalizedText, "\"");
 
     private static bool IsThinkingModel(string model) =>
         model.Contains("2.5", StringComparison.Ordinal) ||

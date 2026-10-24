@@ -25,7 +25,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { variants } from '@/lib/motion';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import { useRecorder } from '@/hooks/useRecorder';
 import { blobToWavBase64 } from '@/app/lib/wav';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -76,7 +76,7 @@ export default function TranslatorPage() {
   const [userLevel, setUserLevel] = useState<string | null>(null);
 
   // Голос: озвучка ответов Alex и голосовой ввод с микрофона
-  const { speak, stop: stopSpeaking } = useSpeech();
+  const { speak, stop: stopSpeaking } = useTts();
   const recorder = useRecorder();
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [transcribing, setTranscribing] = useState(false);

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTts } from '@/hooks/useTts';
+
 import AppLayout from '@/components/AppLayout';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type {
@@ -712,13 +714,9 @@ export default function ReaderPage() {
     }
   }, [readingSessionId, isFinishing, session]);
 
-  const speak = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
-  };
+  // Озвучка слова идёт на серверный голос (Gemini, Kore): браузерный
+  // синтезатор здесь звучал роботом, а страница и так работает внутри сессии.
+  const { speak } = useTts();
 
   const openMobileDrawer = useCallback((tab: ReaderRailTab) => {
     setDrawerTab(tab);

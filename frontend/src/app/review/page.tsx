@@ -8,7 +8,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTrack } from '@/app/lib/analytics';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { pluralWords } from '@/lib/plural';
@@ -21,7 +21,7 @@ import Notice from '@/components/ui/Notice';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { Tag } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/LoadingState';
-import { ArrowLeftIcon, VolumeIcon } from '@/components/ui/icons';
+import { ArrowLeftIcon, SpinnerIcon, VolumeIcon } from '@/components/ui/icons';
 
 interface Word {
   wordId: number;
@@ -108,7 +108,7 @@ export default function ReviewPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const trackEvent = useTrack();
-  const { speak } = useSpeech();
+  const { speak, isLoading: isSpeakingLoading } = useTts();
 
   const { data, error: loadError, isLoading, refresh } = useApiQuery<ReviewTodayResponse>('/api/review/today', {
     maxAgeMs: 0,
@@ -462,7 +462,9 @@ export default function ReviewPage() {
                     title="Произнести"
                     aria-label="Произнести слово"
                   >
-                    <VolumeIcon size={20} />
+                    {isSpeakingLoading
+                      ? <SpinnerIcon size={20} className="animate-spin" label="Озвучиваем" />
+                      : <VolumeIcon size={20} />}
                   </button>
                 </div>
                 <p className="mt-2 text-caption text-slate">Нажмите на слово или динамик, чтобы услышать</p>

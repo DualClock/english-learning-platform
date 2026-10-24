@@ -44,6 +44,13 @@ public class ResilientAiService : IAiBackedService
     public const string UserErrorMessage =
         "Функция временно недоступна. Попробуйте ещё раз через пару минут.";
 
+    /// <summary>
+    /// Запрос за аудио, а не за текстом: для таких нельзя подменять модель
+    /// текстовым запасным путём — ответа в нужном формате всё равно не будет.
+    /// </summary>
+    public static bool IsAudioRequest(string? requestType) =>
+        string.Equals(requestType, "tts", StringComparison.OrdinalIgnoreCase);
+
     private static readonly TimeSpan[] DefaultRetryDelays =
     {
         TimeSpan.FromSeconds(1),
@@ -161,27 +168,34 @@ public class ResilientAiService : IAiBackedService
 
         await LogAiUsageAsync(userId, requestType, model, responseJson: null, success: false);
 
-        var fallbackJson = await TryFallbackProviderAsync(
-            requestBody, requestType, userId, timeoutSeconds, cancellationToken);
-        if (fallbackJson != null)
+        // Текстовые запасные пути бессмысленны для озвучки: и fallback-провайдер, и
+        // Pollinations отвечают текстом, а вызывающий код ждёт inlineData с PCM.
+        // Раньше это стоило двух лишних запросов и превращало отказ модели в 503
+        // с формулировкой «TTS response contained no audio data».
+        if (!IsAudioRequest(requestType))
         {
-            await LogAiUsageAsync(userId, requestType, "fallback:" + model, fallbackJson, success: true);
-            return new GeminiCallResult(fallbackJson, false);
-        }
-
-        // Последний резерв: бесплатный OpenAI-совместимый endpoint без ключа
-        // (нужен, когда Gemini недоступен из региона, а прокси не работает).
-        // Ответ конвертируется в Gemini-конверт, чтобы вызывающий код не менялся.
-        if (_configuration.GetValue("Ai:EnablePollinationsFallback", true))
-        {
-            for (var attempt = 1; attempt <= 2; attempt++)
+            var fallbackJson = await TryFallbackProviderAsync(
+                requestBody, requestType, userId, timeoutSeconds, cancellationToken);
+            if (fallbackJson != null)
             {
-                var pollinationsJson = await TryPollinationsAsync(
-                    requestBody, requestType, userId, timeoutSeconds, cancellationToken);
-                if (pollinationsJson != null)
+                await LogAiUsageAsync(userId, requestType, "fallback:" + model, fallbackJson, success: true);
+                return new GeminiCallResult(fallbackJson, false);
+            }
+
+            // Последний резерв: бесплатный OpenAI-совместимый endpoint без ключа
+            // (нужен, когда Gemini недоступен из региона, а прокси не работает).
+            // Ответ конвертируется в Gemini-конверт, чтобы вызывающий код не менялся.
+            if (_configuration.GetValue("Ai:EnablePollinationsFallback", true))
+            {
+                for (var attempt = 1; attempt <= 2; attempt++)
                 {
-                    await LogAiUsageAsync(userId, requestType, "pollinations", pollinationsJson, success: true);
-                    return new GeminiCallResult(pollinationsJson, false);
+                    var pollinationsJson = await TryPollinationsAsync(
+                        requestBody, requestType, userId, timeoutSeconds, cancellationToken);
+                    if (pollinationsJson != null)
+                    {
+                        await LogAiUsageAsync(userId, requestType, "pollinations", pollinationsJson, success: true);
+                        return new GeminiCallResult(pollinationsJson, false);
+                    }
                 }
             }
         }

@@ -6,7 +6,7 @@ import LexiPeek, { type LexiMood } from '@/components/brand/lexi/LexiPeek';
 import LevelChip from '@/components/ui/LevelChip';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { BookOpenIcon, CheckIcon, PlusIcon, VolumeIcon } from '@/components/ui/icons';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
 import { transition, variants } from '@/lib/motion';
 
 type WordKey = 'tired' | 'bank' | 'conversations';
@@ -73,7 +73,7 @@ export default function ReaderDemo() {
   const [lexiMood, setLexiMood] = useState<LexiMood>('neutral');
   const [lexiReaction, setLexiReaction] = useState(0);
   const moodTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { speak } = useSpeech();
+  const { speak } = useTts();
 
   const activeWord = WORDS[activeKey];
   const isSaved = savedKeys.includes(activeKey);
