@@ -29,4 +29,36 @@ public class SpeechTtsPromptTests
     [InlineData(null, false)]
     public void Аудиозапрос_не_гонится_через_текстовые_запасные_пути(string? requestType, bool expected)
         => Assert.Equal(expected, ResilientAiService.IsAudioRequest(requestType));
+
+    [Fact]
+    public void Резервная_озвучка_кодирует_текст_и_просит_английский_голос()
+    {
+        var url = SpeechService.BuildGtxUrl("white rabbit & tea");
+
+        Assert.StartsWith("https://translate.google.com/translate_tts?", url);
+        Assert.Contains("tl=en", url);
+        Assert.Contains("client=tw-ob", url);
+        Assert.Contains("white%20rabbit%20%26%20tea", url);
+        Assert.DoesNotContain(" ", url);
+    }
+
+    [Fact]
+    public void Отказ_резервной_озвучки_отличается_от_аудио()
+    {
+        Assert.True(SpeechService.LooksLikeMp3(new byte[] { 0x49, 0x44, 0x33, 0x04, 0x00 }));
+        Assert.True(SpeechService.LooksLikeMp3(new byte[] { 0xFF, 0xFB, 0x90, 0x64 }));
+        Assert.False(SpeechService.LooksLikeMp3(System.Text.Encoding.UTF8.GetBytes("<html>429</html>")));
+        Assert.False(SpeechService.LooksLikeMp3(Array.Empty<byte>()));
+    }
+
+    [Fact]
+    public void После_исчерпания_квоты_Gemini_пропускается_до_конца_кулдауна()
+    {
+        var now = new DateTime(2026, 10, 24, 12, 0, 0, DateTimeKind.Utc);
+
+        Assert.True(SpeechService.ShouldSkipGeminiTts(now, now.Add(SpeechService.TtsQuotaCooldown)));
+        Assert.False(SpeechService.ShouldSkipGeminiTts(now, now));
+        Assert.False(SpeechService.ShouldSkipGeminiTts(now, now.AddMinutes(-1)));
+        Assert.Equal(TimeSpan.FromMinutes(30), SpeechService.TtsQuotaCooldown);
+    }
 }

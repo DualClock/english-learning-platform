@@ -42,12 +42,14 @@ public class AudioController : ControllerBase
         try
         {
             var audio = await _speechService.SynthesizeAsync(text, GetUserId(), cancellationToken);
-            if (audio == null || audio.Length == 0)
+            if (audio == null || audio.Data.Length == 0)
             {
                 return StatusCode(503, new { error = "Озвучка временно недоступна. Попробуйте ещё раз чуть позже." });
             }
 
-            return File(audio, "audio/wav");
+            // Серверный голос приходит WAV-ом от Gemini, а бесплатный резерв — MP3,
+            // поэтому тип берём из результата, а не прибиваем гвоздями.
+            return File(audio.Data, audio.ContentType);
         }
         catch (AiUnavailableException ex)
         {

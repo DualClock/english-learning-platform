@@ -53,10 +53,32 @@ public class SpeechService : IAiBackedService
 
     private string TtsDirectory => Path.Combine(_environment.ContentRootPath, "uploads", "tts");
 
+    /// <summary>Аудио озвучки вместе с типом, который надо отдать клиенту.</summary>
+    public sealed record TtsAudio(byte[] Data, string ContentType);
+
     /// <summary>
-    /// Озвучивает текст и возвращает WAV-байты. null — если провайдер не отдал аудио.
+    /// После исчерпания квоты Gemini на TTS бесполезно ретраить её на каждый клик:
+    /// три попытки с backoff — это 7–10 секунд ожидания вместо готового резерва.
+    /// Кулдаун вместо «до полуночи»: момент сброса RPD у провайдера не наш контракт,
+    /// а через полчаса дешёвая проверка сама покажет, вернулась ли квота.
     /// </summary>
-    public async Task<byte[]?> SynthesizeAsync(
+    public static readonly TimeSpan TtsQuotaCooldown = TimeSpan.FromMinutes(30);
+
+    private static DateTime _ttsGeminiRetryAfterUtc = DateTime.MinValue;
+    private static int _ttsSkipLogged;
+
+    /// <summary>Пора ли пропустить Gemini и сразу взять бесплатный голос.</summary>
+    public static bool ShouldSkipGeminiTts(DateTime utcNow, DateTime retryAfterUtc) => utcNow < retryAfterUtc;
+
+    private static void BlockTtsGemini() =>
+        _ttsGeminiRetryAfterUtc = DateTime.UtcNow + TtsQuotaCooldown;
+
+    /// <summary>
+    /// Озвучивает текст: кэш на диске → Gemini (лучший голос, но бесплатная квота
+    /// 100 запросов в сутки на модель) → бесплатный Google Translate TTS.
+    /// null — если не сработал ни один провайдер.
+    /// </summary>
+    public async Task<TtsAudio?> SynthesizeAsync(
         string text,
         string? userId,
         CancellationToken cancellationToken = default)
@@ -72,12 +94,12 @@ public class SpeechService : IAiBackedService
             normalized = normalized[..MaxTextLength];
         }
 
-        var cachePath = GetCachePath(normalized);
-        if (File.Exists(cachePath))
+        var wavPath = GetCachePath(normalized);
+        if (File.Exists(wavPath))
         {
             try
             {
-                return await File.ReadAllBytesAsync(cachePath, cancellationToken);
+                return new TtsAudio(await File.ReadAllBytesAsync(wavPath, cancellationToken), "audio/wav");
             }
             catch (IOException ex)
             {
@@ -85,6 +107,78 @@ public class SpeechService : IAiBackedService
                 _logger.LogWarning(ex, "Failed to read cached TTS file");
             }
         }
+
+        var gtxPath = GetGtxCachePath(normalized);
+        if (File.Exists(gtxPath))
+        {
+            try
+            {
+                return new TtsAudio(await File.ReadAllBytesAsync(gtxPath, cancellationToken), "audio/mpeg");
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to read cached GTX audio");
+            }
+        }
+
+        byte[]? gemini = null;
+
+        if (ShouldSkipGeminiTts(DateTime.UtcNow, _ttsGeminiRetryAfterUtc))
+        {
+            // Кулдаун: квоту уже ловили в этой волне кликов — не тратим 7–10 секунд на ретраи
+            if (Interlocked.CompareExchange(ref _ttsSkipLogged, 1, 0) == 0)
+            {
+                _logger.LogInformation(
+                    "TTS: квота Gemini исчерпана, до {Until:HH:mm} UTC озвучиваю бесплатным резервом",
+                    _ttsGeminiRetryAfterUtc);
+            }
+        }
+        else
+        {
+            try
+            {
+                gemini = await SynthesizeGeminiAsync(normalized, userId, cancellationToken);
+                if (gemini != null)
+                {
+                    Interlocked.Exchange(ref _ttsSkipLogged, 0);
+                }
+            }
+            catch (AiQuotaExceededException)
+            {
+                // Личная квота исчерпана — не ошибка пользователю, а повод взять бесплатный голос
+                BlockTtsGemini();
+                _logger.LogInformation("TTS: квота пользователя исчерпана, переключаюсь на бесплатный голос");
+            }
+            catch (AiGlobalBudgetExceededException)
+            {
+                BlockTtsGemini();
+                _logger.LogInformation("TTS: суточный бюджет Gemini исчерпан, переключаюсь на бесплатный голос");
+            }
+            catch (AiUnavailableException ex)
+            {
+                _logger.LogWarning("TTS: Gemini недоступен ({Reason}), переключаюсь на бесплатный голос", ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "TTS: неожиданная ошибка Gemini, переключаюсь на бесплатный голос");
+            }
+        }
+
+        if (gemini != null)
+        {
+            return new TtsAudio(gemini, "audio/wav");
+        }
+
+        var gtx = await SynthesizeGtxAsync(normalized, cancellationToken);
+        return gtx == null ? null : new TtsAudio(gtx, "audio/mpeg");
+    }
+
+    private async Task<byte[]?> SynthesizeGeminiAsync(
+        string normalized,
+        string? userId,
+        CancellationToken cancellationToken)
+    {
+        var cachePath = GetCachePath(normalized);
 
         var apiKey = _configuration["Gemini:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
@@ -235,6 +329,80 @@ public class SpeechService : IAiBackedService
         var key = $"{TtsVoice}|{DefaultSampleRate}|{normalizedText}";
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key))).ToLowerInvariant();
         return Path.Combine(TtsDirectory, hash + ".wav");
+    }
+
+    private string GtxDirectory => Path.Combine(_environment.ContentRootPath, "uploads", "tts-gtx");
+
+    private string GetGtxCachePath(string normalizedText)
+    {
+        var key = $"gtx|en|0.9|{normalizedText}";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key))).ToLowerInvariant();
+        return Path.Combine(GtxDirectory, hash + ".mp3");
+    }
+
+    /// <summary>
+    /// Адрес бесплатной озвучки Google Translate — тот же контур, что уже используется
+    /// для перевода слова. Не требует ключа; отдаёт MP3 24 кГц.
+    /// </summary>
+    public static string BuildGtxUrl(string text) =>
+        "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&ttsspeed=0.9&q=" +
+        Uri.EscapeDataString(text);
+
+    /// <summary>Отличает MP3 от HTML-заглушки, которую endpoint иногда отдаёт с кодом 200.</summary>
+    public static bool LooksLikeMp3(byte[] data) =>
+        (data.Length > 3 && data[0] == 0x49 && data[1] == 0x44 && data[2] == 0x33) ||
+        (data.Length > 1 && data[0] == 0xFF && (data[1] & 0xE0) == 0xE0);
+
+    private static readonly HttpClient GtxClient = CreateGtxClient();
+
+    private static HttpClient CreateGtxClient()
+    {
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
+        // Без браузерного User-Agent endpoint отвечает 403 — проверено с сервера руками.
+        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0");
+        return client;
+    }
+
+    /// <summary>
+    /// Бесплатный резерв озвучки. Нужен, когда суточная квота Gemini на TTS (100
+    /// запросов на бесплатном тарифе) исчерпана: лучше ровный естественный голос,
+    /// чем робот из браузера.
+    /// </summary>
+    private async Task<byte[]?> SynthesizeGtxAsync(string normalized, CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var response = await GtxClient.GetAsync(BuildGtxUrl(normalized), cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("GTX TTS ответил HTTP {Status}", (int)response.StatusCode);
+                return null;
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            if (bytes.Length < 1024 || !LooksLikeMp3(bytes))
+            {
+                _logger.LogWarning("GTX TTS вернул не аудио ({Size} байт)", bytes.Length);
+                return null;
+            }
+
+            try
+            {
+                Directory.CreateDirectory(GtxDirectory);
+                await File.WriteAllBytesAsync(GetGtxCachePath(normalized), bytes, cancellationToken);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to cache GTX audio");
+            }
+
+            return bytes;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "GTX TTS недоступен");
+            return null;
+        }
     }
 
     // Схлопываем пробелы и переводы строк: для озвучки это шум,
