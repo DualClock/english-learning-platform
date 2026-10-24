@@ -288,6 +288,408 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
+/*
+ * Флэшкарта — тёплая бумажная сцена внутри интерфейса. Карточка держит 4:5,
+ * поэтому переворот не меняет высоту и не двигает стрелки с кнопками.
+ * Палитра локальная: это физическая бумага, а не поверхность темы, и она
+ * не должна следовать за акцентом пользователя.
+ */
+.flashcard-stage {
+  --fc-stage: #f1efe5;
+  --fc-stage-text: #3c4535;
+  --fc-stage-muted: #646a58;
+  --fc-stage-line: rgba(60, 69, 53, 0.08);
+  --fc-card: #faf7ef;
+  --fc-card-border: #e4dfd1;
+  --fc-card-ink: #3c4535;
+  --fc-card-muted: #626858;
+  --fc-rose: #b87865;
+  --fc-sage: #7f8c6c;
+  --fc-green: #667751;
+  --fc-green-strong: #566646;
+  --fc-green-ink: #fcfbee;
+  --fc-paper-mid: #efe9da;
+  --fc-paper-back: #e6e8d9;
+  --fc-paper-line: #e4dfd1;
+  --fc-arrow-bg: #f8f7ee;
+  --fc-arrow-line: #d8dccb;
+  --fc-arrow-text: #7b8c66;
+  --fc-arrow-shadow: #e5e5d8;
+  --fc-ghost-line: #d8dccb;
+  --fc-shadow:
+    0 18px 40px -18px rgba(93, 81, 48, 0.35),
+    0 2px 6px rgba(91, 78, 56, 0.06),
+    0 1px 0 rgba(255, 254, 247, 0.9) inset;
+  position: relative;
+  padding: clamp(22px, 4vw, 40px) clamp(16px, 3vw, 32px);
+  border: 1px solid var(--fc-stage-line);
+  border-radius: 28px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 58%),
+    var(--fc-stage);
+  color: var(--fc-stage-text);
+}
+
+:root[data-theme='dark'] .flashcard-stage {
+  --fc-stage: #17140f;
+  --fc-stage-text: #e9e3d4;
+  --fc-stage-muted: #a79f8f;
+  --fc-stage-line: rgba(255, 255, 255, 0.07);
+  --fc-card: #f7f1e4;
+  --fc-card-border: #e4dfd1;
+  --fc-card-ink: #3c4535;
+  --fc-card-muted: #626858;
+  --fc-rose: #b87865;
+  --fc-sage: #7f8c6c;
+  --fc-green: #8fa276;
+  --fc-green-strong: #74845f;
+  --fc-green-ink: #17140f;
+  --fc-paper-mid: #2a251c;
+  --fc-paper-back: #232a1f;
+  --fc-paper-line: #3b3528;
+  --fc-arrow-bg: #221e16;
+  --fc-arrow-line: #3d3a2e;
+  --fc-arrow-text: #c9d3b9;
+  --fc-arrow-shadow: #0d0b08;
+  --fc-ghost-line: #3d3a2e;
+  --fc-shadow:
+    0 24px 50px -20px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  background:
+    radial-gradient(120% 70% at 50% 0%, #211c14 0%, var(--fc-stage) 62%);
+}
+
+.flashcard-swipe {
+  touch-action: pan-y;
+}
+
+.flashcard-stack {
+  position: relative;
+  width: min(100%, 500px);
+  margin-inline: auto;
+}
+
+.flashcard-paper {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--fc-paper-line);
+  border-radius: 27px;
+  background: var(--fc-paper-back);
+  box-shadow: 0 8px 22px rgba(87, 76, 53, 0.06);
+  pointer-events: none;
+}
+
+.flashcard-paper-middle {
+  z-index: 1;
+  background: var(--fc-paper-mid);
+  transform: rotate(-2.4deg) translate(-6px, -6px);
+}
+
+.flashcard-paper-back {
+  z-index: 0;
+  transform: rotate(1.8deg) translate(6px, 5px);
+}
+
+.flashcard-card-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 27px;
+  box-shadow: var(--fc-shadow);
+  perspective: 1500px;
+}
+
+.flashcard-flipper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 27px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.22, 0.8, 0.28, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flashcard-flipper.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-flipper:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 4px;
+}
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--fc-card-border);
+  border-radius: 27px;
+  background: var(--fc-card);
+  color: var(--fc-card-ink);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flashcard-face-front {
+  padding: clamp(20px, 4.5vw, 40px) clamp(18px, 4vw, 35px) clamp(16px, 3vw, 30px);
+}
+
+.flashcard-face-back {
+  gap: clamp(8px, 1.2vw, 14px);
+  padding: clamp(28px, 5vw, 48px) clamp(24px, 4.5vw, 40px);
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.flashcard-art {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 1;
+  /* 3D-слой карточки изолирует blend от фона бумаги, поэтому подложка
+     повторяет цвет карточки. darken, а не multiply: у части WebP фон
+     почти белый (248–249), и multiply оставлял бы visible прямоугольник. */
+  background: var(--fc-card);
+  isolation: isolate;
+}
+
+.flashcard-word {
+  margin-top: clamp(8px, 1.6vw, 14px);
+  font-family: var(--font-literata), Literata, Georgia, Cambria, serif;
+  font-size: clamp(2.75rem, 5.2vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--fc-rose);
+  text-align: center;
+}
+
+.flashcard-phonetic {
+  margin-top: 4px;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  letter-spacing: 0.02em;
+  color: var(--fc-card-muted);
+  text-align: center;
+}
+
+.flashcard-back-label {
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fc-card-muted);
+}
+
+.flashcard-translation {
+  max-width: 100%;
+  font-family: var(--font-literata), Literata, Georgia, Cambria, serif;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--fc-rose);
+  overflow-wrap: anywhere;
+}
+
+.flashcard-example {
+  max-width: 34ch;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--fc-card-muted);
+}
+
+.flashcard-sound {
+  position: absolute;
+  top: clamp(10px, 2vw, 16px);
+  right: clamp(10px, 2vw, 16px);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fc-sage);
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.flashcard-sound:hover {
+  background: rgba(127, 140, 108, 0.16);
+}
+
+.flashcard-sound:focus-visible {
+  outline: 2px solid var(--fc-green);
+  outline-offset: 2px;
+}
+
+.flashcard-sound.is-speaking {
+  color: var(--fc-green-strong);
+}
+
+.flashcard-hint {
+  min-height: 1.25rem;
+  margin: 16px auto 0;
+  font-size: 0.78rem;
+  line-height: 1.25rem;
+  color: var(--fc-stage-muted);
+  text-align: center;
+}
+
+.flashcard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 26px);
+  margin-top: 8px;
+}
+
+.flashcard-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--fc-arrow-line);
+  border-radius: 50%;
+  background: var(--fc-arrow-bg);
+  color: var(--fc-arrow-text);
+  box-shadow: 0 3px 0 var(--fc-arrow-shadow);
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 160ms ease;
+}
+
+.flashcard-arrow:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.flashcard-arrow:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--fc-arrow-shadow);
+}
+
+.flashcard-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.flashcard-arrow:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 3px;
+}
+
+.flashcard-arrow-next {
+  border-color: var(--fc-green);
+  background: var(--fc-green);
+  color: var(--fc-green-ink);
+  box-shadow: 0 3px 0 var(--fc-green-strong);
+}
+
+.flashcard-progress {
+  min-width: 74px;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+  color: var(--fc-stage-muted);
+  text-align: center;
+}
+
+.flashcard-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.flashcard-action {
+  min-height: 46px;
+  padding: 0 22px;
+  border: 1px solid var(--fc-ghost-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fc-stage-text);
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+
+.flashcard-action:hover {
+  background: rgba(116, 132, 95, 0.1);
+}
+
+.flashcard-action:active {
+  transform: scale(0.98);
+}
+
+.flashcard-action:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 2px;
+}
+
+.flashcard-action-primary {
+  border-color: var(--fc-green);
+  background: var(--fc-green);
+  color: var(--fc-green-ink);
+  box-shadow: 0 3px 0 var(--fc-green-strong);
+}
+
+.flashcard-action-primary:hover {
+  background: var(--fc-green-strong);
+}
+
+.flashcard-action-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--fc-green-strong);
+}
+
+@media (max-width: 480px) {
+  .flashcard-stage {
+    padding: 22px 16px 24px;
+    border-radius: 24px;
+  }
+
+  .flashcard-paper,
+  .flashcard-face,
+  .flashcard-card-shell,
+  .flashcard-flipper {
+    border-radius: 24px;
+  }
+
+  .flashcard-arrow {
+    width: 52px;
+    height: 52px;
+  }
+
+  .flashcard-action {
+    min-height: 44px;
+    padding: 0 20px;
+  }
+}
+
 @layer base {
   body {
     @apply bg-surface text-ink antialiased;

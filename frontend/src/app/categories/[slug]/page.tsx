@@ -1,10 +1,10 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import { AnimatePresence, motion } from 'motion/react';
-import { variants } from '@/lib/motion';
+import { variants, transition } from '@/lib/motion';
 import { ApiError, apiMutate } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
 import Button from '@/components/ui/Button';
@@ -13,13 +13,14 @@ import ErrorState from '@/components/ui/ErrorState';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { Tag } from '@/components/ui/Badge';
 import CategoryIcon from '@/components/dictionary/CategoryIcon';
-import WordIllustration, { ILLUSTRATION_SIZE_CLASS } from '@/components/dictionary/WordIllustration';
-import { hasIllustration } from '@/lib/wordIllustrations.generated';
+import WordIllustration from '@/components/dictionary/WordIllustration';
+import WordFlashcard from '@/components/dictionary/WordFlashcard';
 import { pluralWords } from '@/lib/plural';
 import {
   ArrowLeftIcon,
   BookOpenIcon,
   CheckIcon,
+  ChevronRightIcon,
   CloseIcon,
   SparkIcon,
   SpinnerIcon,
@@ -57,6 +58,17 @@ const statusTone: Record<CategoryWord['status'], 'neutral' | 'warning' | 'succes
   not_started: 'neutral',
   learning: 'warning',
   learned: 'success',
+};
+
+/**
+ * Вход новой карточки с той стороны, куда листаем: вправо — новая приходит
+ * справа, старая уходит влево. Направление задаёт `custom`, чтобы exit и enter
+ * не разъехались при быстром нажатии.
+ */
+const flashcardSlide = {
+  enter: (direction: number) => ({ opacity: 0, x: direction * 40 }),
+  center: { opacity: 1, x: 0 },
+  exit: (direction: number) => ({ opacity: 0, x: direction * -40 }),
 };
 
 function shuffle<T>(arr: T[]): T[] {
@@ -341,57 +353,6 @@ function SessionDone({ onRestart, note }: { onRestart: () => void; note: string 
   );
 }
 
-/**
- * Пара «слово ↔ перевод». Оба лица лежат в одной ячейке grid и меняют только
- * прозрачность: высоту карточки держит более высокое из них. Если размонтировать
- * лицо (как было с AnimatePresence), длинный пример на узком экране переносится
- * на вторую строку и кнопки «Знаю / Не знаю» уезжают вниз при перевороте.
- */
-function WordFace({ english, translation, transcription, example, flipped, illustration }: {
-  english: string;
-  translation: string;
-  transcription?: string;
-  example?: string;
-  flipped: boolean;
-  illustration?: React.ReactNode;
-}) {
-  return (
-    <div className="grid">
-      <div
-        aria-hidden={flipped}
-        className={`col-start-1 row-start-1 transition-opacity duration-fast ease-soft ${
-          flipped ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
-        {illustration && (
-          <div className="mb-4 flex justify-center">{illustration}</div>
-        )}
-        <div className="text-h1 text-ink">{english}</div>
-        {transcription && <div className="mt-2 text-body-lg text-slate">{transcription}</div>}
-      </div>
-      <div
-        aria-hidden={!flipped}
-        className={`col-start-1 row-start-1 transition-opacity duration-fast ease-soft ${
-          flipped ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        {illustration && (
-          <div className="mb-4 flex justify-center">
-            {/*
-              На обороте картинки нет — она выдала бы перевод раньше времени.
-              Пустой слот того же размера держит перевод на месте слова; высоту
-              карточки страхует grid, но без слота текст прыгал бы вверх.
-            */}
-            <span aria-hidden="true" className={`block ${ILLUSTRATION_SIZE_CLASS.lg}`} />
-          </div>
-        )}
-        <div className="text-h1 text-ink">{translation}</div>
-        {example && <div className="mt-3 italic text-body-lg text-slate">«{example}»</div>}
-      </div>
-    </div>
-  );
-}
-
 function Flashcards({ words, categorySlug, onResult }: {
   words: CategoryWord[];
   categorySlug: string;
@@ -400,60 +361,158 @@ function Flashcards({ words, categorySlug, onResult }: {
   const deck = useDeck(words);
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [direction, setDirection] = useState(1);
   const report = useStreak(onResult);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const suppressFlip = useRef(false);
+
+  const go = useCallback((delta: number) => {
+    setFlipped(false);
+    setDirection(delta);
+    setIndex((current) => Math.max(0, Math.min(deck.length - 1, current + delta)));
+  }, [deck.length]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Событие может прийти не от элемента (window/document): такие клавиши
+      // всё равно листают, а проверять поля ввода имеет смысл только у DOM-узла.
+      const target = event.target;
+      if (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        go(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        go(1);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [go]);
 
   if (deck.length === 0) return null;
-  const done = index >= deck.length;
-  const word = deck[Math.min(index, deck.length - 1)];
-  // Проверяем манифест здесь, а не внутри карточки: WordFace должен знать,
-  // резервировать ли слот под картинку на обороте.
-  const illustrated = hasIllustration(categorySlug, word.english);
+
+  if (index >= deck.length) {
+    return (
+      <section className="flashcard-stage" aria-label="Флэшкарты">
+        <SessionDone
+          note="Вы прошли все карточки."
+          onRestart={() => {
+            setIndex(0);
+            setFlipped(false);
+            setDirection(1);
+          }}
+        />
+      </section>
+    );
+  }
+
+  const word = deck[index];
+
+  const flip = () => {
+    if (suppressFlip.current) return;
+    setFlipped((value) => !value);
+  };
+
+  const mark = (correct: boolean) => {
+    report(word.id, correct);
+    setFlipped(false);
+    setDirection(1);
+    setIndex((current) => current + 1);
+  };
+
+  // Свайп только горизонтальный: вертикальный жест оставляем странице,
+  // а короткий тап не должен превращаться в листание.
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('[data-no-swipe]')) return;
+    dragStart.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = dragStart.current;
+    dragStart.current = null;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+    // Клик после свайпа не должен переворачивать уже следующую карточку.
+    suppressFlip.current = true;
+    window.setTimeout(() => { suppressFlip.current = false; }, 0);
+    go(dx < 0 ? 1 : -1);
+  };
 
   return (
-    <SessionShell title="Флэшкарты" index={index} total={deck.length}>
-      {done ? (
-        <SessionDone note="Вы прошли все карточки." onRestart={() => { setIndex(0); setFlipped(false); }} />
-      ) : (
-        <>
-          <button
-            onClick={() => setFlipped(!flipped)}
-            className="flip-face w-full rounded-lg border border-hairline bg-surface px-6 py-8 text-center transition-colors duration-fast ease-soft hover:bg-surface-sunken active:scale-97"
+    <section className="flashcard-stage" aria-label="Флэшкарты">
+      <div
+        className="flashcard-swipe"
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => { dragStart.current = null; }}
+      >
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={word.id}
+            custom={direction}
+            variants={flashcardSlide}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={transition.fast}
           >
-            <WordFace
-              english={word.english}
-              translation={word.translation}
-              transcription={word.transcription}
-              example={word.example}
+            <WordFlashcard
+              word={word}
+              categorySlug={categorySlug}
               flipped={flipped}
-              illustration={
-                illustrated ? (
-                  <WordIllustration
-                    categorySlug={categorySlug}
-                    word={word.english}
-                    translation={word.translation}
-                    size="lg"
-                  />
-                ) : null
-              }
+              onFlip={flip}
+              hintId="flashcard-hint"
             />
-            <span className="mt-4 block shrink-0 text-caption text-slate">
-              {flipped ? 'Слово' : 'Нажмите, чтобы перевернуть'}
-            </span>
-          </button>
-          <div className="mt-6 flex justify-center gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => { report(word.id, false); setFlipped(false); setIndex(index + 1); }}
-            >
-              Не знаю
-            </Button>
-            <Button onClick={() => { report(word.id, true); setFlipped(false); setIndex(index + 1); }}>
-              Знаю
-            </Button>
-          </div>
-        </>
-      )}
-    </SessionShell>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <p id="flashcard-hint" className="flashcard-hint">
+        {flipped
+          ? 'Нажмите, чтобы вернуть слово'
+          : 'Нажмите на карточку, чтобы увидеть перевод'}
+      </p>
+
+      <div className="flashcard-nav">
+        <button
+          type="button"
+          className="flashcard-arrow"
+          onClick={() => go(-1)}
+          disabled={index === 0}
+          aria-label="Предыдущая карточка"
+        >
+          <ChevronRightIcon size={24} className="rotate-180" />
+        </button>
+        <span className="flashcard-progress" aria-live="polite">
+          {String(index + 1).padStart(2, '0')} / {String(deck.length).padStart(2, '0')}
+        </span>
+        <button
+          type="button"
+          className="flashcard-arrow flashcard-arrow-next"
+          onClick={() => go(1)}
+          disabled={index >= deck.length - 1}
+          aria-label="Следующая карточка"
+        >
+          <ChevronRightIcon size={24} />
+        </button>
+      </div>
+
+      <div className="flashcard-actions">
+        <button type="button" className="flashcard-action" onClick={() => mark(false)}>
+          Не знаю
+        </button>
+        <button
+          type="button"
+          className="flashcard-action flashcard-action-primary"
+          onClick={() => mark(true)}
+        >
+          Знаю
+        </button>
+      </div>
+    </section>
   );
 }
 

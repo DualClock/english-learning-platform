@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { hasIllustration, illustrationSrc } from '@/lib/wordIllustrations.generated';
 
 type IllustrationSize = 'sm' | 'md' | 'lg';
+type IllustrationVariant = 'tile' | 'bare';
 
 /**
  * Размеры — одной таблицей: список берёт sm, флэшкарта lg, а слот на обороте
@@ -30,6 +31,10 @@ interface WordIllustrationProps {
   /** Явный alt, если контекст требует своей формулировки. Пустым быть не может. */
   alt?: string;
   size?: IllustrationSize;
+  /** Карточка флэшкарты берёт картинку без белого тайла и сама задаёт ей размер. */
+  variant?: IllustrationVariant;
+  /** Текущее слово грузим сразу: оно уже в первом экране и не должно мигать. */
+  priority?: boolean;
   className?: string;
   /**
    * Пустой слот того же размера вместо null. Нужен только для приёмки вёрстки,
@@ -54,6 +59,8 @@ export default function WordIllustration({
   translation,
   alt,
   size = 'md',
+  variant = 'tile',
+  priority = false,
   className = '',
   placeholder = false,
 }: WordIllustrationProps) {
@@ -80,6 +87,25 @@ export default function WordIllustration({
   const label =
     alt ?? (translation ? `Иллюстрация: ${word} — ${translation}` : `Иллюстрация: ${word}`);
   const px = ILLUSTRATION_SIZE_PX[size];
+
+  if (variant === 'bare') {
+    return (
+      // bare нужен бумажной карточке: белый тайл там читался бы прямоугольником,
+      // а масштаб задаёт родитель. Белый фон WebP растворяется через blend-mode.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={label}
+        width={px}
+        height={px}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        draggable={false}
+        onError={() => setFailedSrc(src)}
+        className={`word-illustration-img h-full w-full object-contain ${className}`.trim()}
+      />
+    );
+  }
 
   return (
     // Размер и скругление задаёт обёртка, а не сам <img>: у object-contain
