@@ -94,6 +94,19 @@ public class SpeechService : IAiBackedService
             normalized = normalized[..MaxTextLength];
         }
 
+        var packPath = FindPackFile(normalized);
+        if (packPath != null)
+        {
+            try
+            {
+                return new TtsAudio(await File.ReadAllBytesAsync(packPath, cancellationToken), "audio/mpeg");
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to read packed TTS file");
+            }
+        }
+
         var wavPath = GetCachePath(normalized);
         if (File.Exists(wavPath))
         {
@@ -332,6 +345,49 @@ public class SpeechService : IAiBackedService
     }
 
     private string GtxDirectory => Path.Combine(_environment.ContentRootPath, "uploads", "tts-gtx");
+
+    /// <summary>
+    /// Готовый пак озвучки слов нейроголосами Edge: файлы кладутся заранее (генератор
+    /// лежит в tools/), поэтому клик по слову не зависит ни от квоты Gemini, ни от
+    /// доступности провайдера. Каталог можно переопределить через Tts:PackDirectory.
+    /// </summary>
+    private string PackDirectory
+    {
+        get
+        {
+            var configured = _configuration["Tts:PackDirectory"];
+            if (string.IsNullOrWhiteSpace(configured))
+            {
+                return Path.Combine(_environment.ContentRootPath, "uploads", "tts-pack");
+            }
+
+            return Path.IsPathRooted(configured)
+                ? configured
+                : Path.Combine(_environment.ContentRootPath, configured);
+        }
+    }
+
+    /// <summary>Ключ файла в паке: слово в нижнем регистре, пробелы схлопнуты.</summary>
+    public static string GetPackKey(string normalizedText) => "pack|" + normalizedText;
+
+    /// <summary>
+    /// Ищет слово в паке с учётом регистра: в тексте книги «Alice», в словаре «alice».
+    /// </summary>
+    private string? FindPackFile(string normalized)
+    {
+        foreach (var candidate in new[] { normalized, normalized.ToLowerInvariant() }.Distinct())
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(GetPackKey(candidate))))
+                .ToLowerInvariant();
+            var path = Path.Combine(PackDirectory, hash + ".mp3");
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        return null;
+    }
 
     private string GetGtxCachePath(string normalizedText)
     {

@@ -52,6 +52,21 @@ public class SpeechTtsPromptTests
     }
 
     [Fact]
+    public void Ключ_пака_совпадает_с_тем_что_пишет_генератор()
+    {
+        // Контракт с tools/tts-pack/generate.py: имя файла =
+        // sha256("pack|" + слово в нижнем регистре). Если кто-то поменяет одну
+        // сторону, пак перестанет находиться — и это должно падать здесь, а не в проде.
+        Assert.Equal("pack|rabbit", SpeechService.GetPackKey("rabbit"));
+
+        var hash = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes(SpeechService.GetPackKey("a")))).ToLowerInvariant();
+
+        Assert.Equal("a26fb61aa788f12706e0cb7c6daa450150203c4a22752af3d41ef42431aa05a0", hash);
+    }
+
+    [Fact]
     public void После_исчерпания_квоты_Gemini_пропускается_до_конца_кулдауна()
     {
         var now = new DateTime(2026, 10, 24, 12, 0, 0, DateTimeKind.Utc);
