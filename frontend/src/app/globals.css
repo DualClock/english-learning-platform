@@ -1646,7 +1646,11 @@
  * ------------------------------------------------------------------ */
 .reader-stage {
   --reader-desk: #e9e1d2;
-  --reader-page-shadow: 0 24px 70px rgba(48, 39, 25, 0.18), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+  /* Тень листа держим «под» страницей: отрицательный spread уводит её от
+     боковых кромок. Раньше гало вокруг кромки было темнее самого стола
+     (≈208 против 226 luma) и читалось как нарисованная рамка — теперь край
+     листа отделяет только контраст бумаги и стола. */
+  --reader-page-shadow: 0 20px 70px -20px rgba(48, 39, 25, 0.1), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
   background: var(--reader-desk);
   color: var(--reader-ink);
 }
@@ -1851,20 +1855,11 @@
   border-top: 1px solid var(--reader-hairline);
 }
 
-/* Мягкая тень у правого края страницы: книга, а не бесконечный холст */
-.reader-viewport::after {
-  content: '';
-  position: absolute;
-  inset-block: 0;
-  right: 0;
-  width: 18px;
-  pointer-events: none;
-  background: linear-gradient(to left, rgba(38, 30, 18, 0.055), transparent);
-}
-
-.reader-stage[data-reader-theme='night'] .reader-viewport::after {
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.28), transparent);
-}
+/* Раньше здесь жил 18px градиент у правого края .reader-viewport. Вьюпорт —
+   это и есть текстовая колонка, поэтому градиент ложился поверх последних
+   18px каждой строки: справа текст темнел, а на его кромке оставался резкий
+   перепад (≈12 luma на один пиксель) — «страница обрезана справа». Плюс правое
+   поле выглядело уже левого. Тень листа теперь живёт только на .reader-sheet. */
 
 @media (max-width: 639px) {
   .reader-sheet {
