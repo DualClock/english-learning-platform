@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import ReaderDemo from '@/components/landing/ReaderDemo';
 import SkillsGrid from '@/components/landing/SkillsGrid';
 import { Reveal, RevealGroup, RevealItem } from '@/components/landing/Reveal';
+import LandingFooter from '@/components/landing/LandingFooter';
 import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
 import LevelChip from '@/components/ui/LevelChip';
 import { ArrowRightIcon, CheckIcon } from '@/components/ui/icons';
@@ -200,62 +201,14 @@ export default function HomePage() {
             </div>
           </Reveal>
         </div>
-
-        <footer className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="font-heading text-h1 text-on-dark">Lexicon</p>
-              <a
-                href="mailto:hello@lexicon.app"
-                className="mt-3 inline-block text-body-sm text-on-dark-muted underline decoration-on-dark-muted underline-offset-4 transition-colors duration-fast ease-soft hover:text-on-dark"
-              >
-                hello@lexicon.app
-              </a>
-            </div>
-            <nav className="flex flex-wrap gap-x-8 gap-y-2 text-body-sm text-on-dark-muted">
-              <Link
-                href="/beta"
-                className="transition-colors duration-fast ease-soft hover:text-on-dark"
-              >
-                Когорта
-              </Link>
-              <a href="#skills" className="transition-colors duration-fast ease-soft hover:text-on-dark">
-                Возможности
-              </a>
-              <a href="#library" className="transition-colors duration-fast ease-soft hover:text-on-dark">
-                Библиотека
-              </a>
-              <FeedbackTrigger className="transition-colors duration-fast ease-soft hover:text-on-dark">
-                Обратная связь
-              </FeedbackTrigger>
-              {/*
-               * Правовые страницы (W2.5.1/W2.5.2) должны быть видны до
-               * регистрации: человек приводит в бету свою группу и хочет
-               * прочитать «что с данными», не заводя аккаунт. Ссылки в
-               * футере — единственное место, где их ищут краулер и человек.
-               */}
-              <Link
-                href="/privacy"
-                className="transition-colors duration-fast ease-soft hover:text-on-dark"
-              >
-                Конфиденциальность
-              </Link>
-              <Link
-                href="/terms"
-                className="transition-colors duration-fast ease-soft hover:text-on-dark"
-              >
-                Правила беты
-              </Link>
-              <Link href="/login" className="transition-colors duration-fast ease-soft hover:text-on-dark">
-                Войти
-              </Link>
-            </nav>
-          </div>
-          <p className="mt-12 text-caption text-on-dark-muted">
-            © 2026 Lexicon. Читай. Учи. Помни.
-          </p>
-        </footer>
       </section>
+
+      {/*
+       * Футер-сториборд продолжает тёмную секцию: тот же navy, чернила on-dark,
+       * а ссылки и правовые страницы остаются на месте — только теперь в
+       * колонках и нижней строке рисунка.
+       */}
+      <LandingFooter />
     </div>
   );
 }
