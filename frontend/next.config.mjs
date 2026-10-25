@@ -41,6 +41,9 @@ const SECURITY_HEADERS = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Отдельный каталог сборки для e2e: Playwright поднимает свой dev-сервер,
+  // и он не должен выбивать `.next` из-под работающего `npm run dev`.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   images: {
     /*
      * В коде нет ни одного `next/image` (проверено поиском по src/), поэтому

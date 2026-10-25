@@ -54,6 +54,10 @@
 | `Gemini__ApiKey` | ключ Gemini из appsettings (возьми локально) |
 | `Gemini__ProxyUrl` | **оставь пустым** — с серверов Render Gemini доступен напрямую |
 | `Gemini__Model` | `gemini-2.5-flash` |
+| `Azure__Speech__Key` | ключ Azure Speech (бесплатный тариф F0). Пусто = главы читает голос браузера, остальное работает |
+| `Azure__Speech__Region` | регион ресурса, например `westeurope` — от него зависит адрес `https://{region}.tts.speech.microsoft.com` |
+| `Azure__Speech__Voice` | `en-US-AriaNeural` (тот же голос, что был в Edge-TTS) |
+| `Azure__Speech__MonthlyCharLimit` | `400000` — потолок символов в месяц. При исчерпании Azure не вызывается, клиент уходит на браузерный голос; счётчик живёт в таблице `SpeechUsages` |
 | `Seeder__Key` | ваш собственный секрет для сидирования (придумайте, в git не храните) |
 | `Email__Smtp__Host` | SMTP-хост (например `smtp.resend.com`); если пусто — письма попадают в журнал вместо отправки |
 | `Email__Smtp__Port` | `587` |

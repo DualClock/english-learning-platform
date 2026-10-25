@@ -94,7 +94,7 @@ public class BookService
             var book = await EpubReader.ReadBookAsync(filePath);
             title = book.Title;
             author = book.Author;
-            language = book.Schema.Package.Metadata.Languages?.FirstOrDefault()?.ToString();
+            language = book.Schema.Package.Metadata.Languages?.FirstOrDefault()?.Language;
 
             // Извлекаем обложку
             var coverImage = book.CoverImage;

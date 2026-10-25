@@ -93,6 +93,18 @@ public static class RateLimitPolicies
             // 20/мин на IP: щедро для человека за роутером (несколько тестов в
             // минуту), тесно для скрипта.
             ["guest-analytics"] = ctx => IpPartition(ctx, permit: GuestAnalyticsPermitLimit, window: TimeSpan.FromMinutes(1)),
+
+            // Читалка: позиция сохраняется каждые 1,5 с, карман — по тапу.
+            // 240/мин на пользователя с запасом покрывает листание и разбор,
+            // но не даёт скрипту писать прогресс сотнями запросов в секунду.
+            ["reader"] = ctx => RateLimitPartition.GetFixedWindowLimiter(
+                RateLimitPartitionKeys.Identity(ctx),
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 240,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                }),
         };
 
     // Два адреса из TEST-NET-2/TEST-NET-3: партиции проверяются прогоном на них,

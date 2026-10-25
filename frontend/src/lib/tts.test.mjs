@@ -57,7 +57,8 @@ test('долгая генерация не оставляют клик без з
 
 test('ни один потребитель озвучки не остался на голом браузерном синтезе', () => {
   const consumers = [
-    read('..', 'app', 'reader', '[id]', 'page.tsx'),
+    // Страница книги теперь тонкая оболочка, а слово озвучивает WordSheet.
+    read('..', 'components', 'reader', 'WordSheet.tsx'),
     read('..', 'app', 'review', 'page.tsx'),
     read('..', 'app', 'translator', 'page.tsx'),
     read('..', 'app', 'dictionary', 'lists', '[id]', 'page.tsx'),
@@ -69,4 +70,14 @@ test('ни один потребитель озвучки не остался н
     assert.match(source, /useTts/, 'потребитель должен брать серверный голос');
     assert.doesNotMatch(source, /new SpeechSynthesisUtterance/, 'сам браузерный вызов остаётся только в useSpeech');
   }
+});
+
+test('браузерный голос остаётся только резервом для главы', () => {
+  // Глава читается с сервера; браузерный синтез — тихий fallback, когда
+  // ключа Azure нет или кончился лимит. Поэтому вызов живёт ровно в двух
+  // местах: в useSpeech для слов и в useListening для главы.
+  const listening = read('..', 'hooks', 'reader', 'useListening.ts');
+  assert.match(listening, /SpeechSynthesisUtterance/);
+  assert.match(listening, /provider.*browser/s);
+  assert.match(listening, /getSpeechManifest/);
 });

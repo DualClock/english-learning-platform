@@ -189,11 +189,6 @@ public class AccountController : ControllerBase
 
         var files = DeleteUserFiles(ownedBooks, wordImages, avatarUrl, keep);
 
-        // Сессии чтения живут в памяти процесса (IMemoryCache, TTL 12 ч), а не
-        // в базе: без этой чистки собранные слова пережили бы владельца до
-        // конца TTL.
-        ClearReadingSessions(userId);
-
         _logger.LogInformation(
             "Аккаунт удалён: {UserId}, строк {Rows}, файлов {Files}",
             userId, rows, files);
@@ -241,6 +236,8 @@ public class AccountController : ControllerBase
             ("UserAchievements", (c, id, ct) => c.UserAchievements.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("UserGrammarProgresses", (c, id, ct) => c.UserGrammarProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("UserCategoryWordProgresses", (c, id, ct) => c.UserCategoryWordProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("UserBookProgresses", (c, id, ct) => c.UserBookProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+            ("ReaderPocketWords", (c, id, ct) => c.ReaderPocketWords.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("AnalyticsEvents", (c, id, ct) => c.AnalyticsEvents.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
 
             // Книги: закладки и маркерные слова — раньше самих книг. Подзапрос
@@ -369,20 +366,6 @@ public class AccountController : ControllerBase
         if (!string.Equals(currentRoot, contentRoot, StringComparison.OrdinalIgnoreCase))
         {
             yield return currentRoot;
-        }
-    }
-
-    private void ClearReadingSessions(string userId)
-    {
-        if (_cache.TryGetValue(ReadingSessionController.UserSessionsKey(userId), out List<Guid>? sessionIds)
-            && sessionIds != null)
-        {
-            foreach (var sessionId in sessionIds)
-            {
-                _cache.Remove(ReadingSessionController.SessionKey(sessionId));
-            }
-
-            _cache.Remove(ReadingSessionController.UserSessionsKey(userId));
         }
     }
 

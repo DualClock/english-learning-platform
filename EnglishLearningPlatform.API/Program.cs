@@ -4,6 +4,7 @@ using EnglishLearningPlatform.API.Middleware;
 using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
+using EnglishLearningPlatform.API.Services.Reader;
 using EnglishLearningPlatform.API.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -226,6 +227,18 @@ builder.Services.AddScoped<SpeechService>();
 builder.Services.AddScoped<PronunciationService>();
 builder.Services.AddScoped<LemmatizerService>();
 builder.Services.AddScoped<ReaderDifficultyService>();
+builder.Services.AddScoped<ReaderAssetService>();
+builder.Services.AddScoped<BookSnapshotParser>();
+builder.Services.AddScoped<ReaderContentService>();
+builder.Services.AddScoped<ReaderProgressService>();
+builder.Services.AddScoped<ReaderPocketService>();
+builder.Services.AddScoped<AzureSpeechService>();
+builder.Services.AddHttpClient("azure-speech", client =>
+{
+    // Синтез одной фразы у Azure — сотни миллисекунд; 30 с хватает даже
+    // на холодный старт, а зависший запрос не должен держать главу.
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
 builder.Services.AddScoped<PublicCatalogService>();

@@ -38,9 +38,16 @@ foreach (var type in assembly.GetTypes()
 
         foreach (var row in rows)
         {
+            if (row == null)
+            {
+                Console.WriteLine($"SKIP {testName}: пустая строка данных теории");
+                skipped++;
+                continue;
+            }
+
             var displayName = row.Length == 0
                 ? testName
-                : $"{testName}({string.Join(", ", row.Select(FormatValue))})";
+                : $"{testName}({string.Join(", ", row.Select(value => FormatValue(value)))})";
 
             var skipReason = ReadString(method.GetCustomAttributes()
                 .FirstOrDefault(attribute => attribute.GetType().Name is "FactAttribute" or "TheoryAttribute"), "Skip");

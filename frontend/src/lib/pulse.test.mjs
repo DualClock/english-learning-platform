@@ -35,7 +35,9 @@ import { FEEDBACK_CHECKPOINTS } from './beta.ts';
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (...segments) => readFileSync(join(here, ...segments), 'utf8');
 
-const readerPage = read('..', 'app', 'reader', '[id]', 'page.tsx');
+// В Reader 3.0 страница книги — тонкая оболочка, а вопрос живёт в разборе
+// главы: там читатель закончил главу и готов ответить одной кнопкой.
+const chapterEnd = read('..', 'components', 'reader', 'ChapterEndSheet.tsx');
 const pulseComponent = read('..', 'components', 'feedback', 'BetaPulse.tsx');
 const serverController = read(
   '..',
@@ -200,5 +202,6 @@ test('блок стоит в читалке и не прячет контент 
 
   // Вставлен в скролл читаемой колонки, рядом с текстом страницы, и знает,
   // на какой странице он появился.
-  assert.match(readerPage, /<BetaPulse[\s\S]{0,200}page=\{currentPage\}/);
+  assert.match(chapterEnd, /<BetaPulse[\s\S]{0,200}page=\{page\}/);
+  assert.match(chapterEnd, /userId=\{userId\}/);
 });

@@ -2,8 +2,10 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Models.DTOs;
 using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
+using EnglishLearningPlatform.API.Services.Reader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -23,13 +25,12 @@ public class BooksController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ActivityService _activityService;
     private readonly BookAnalyzerService _analyzerService;
-    private readonly AiService _aiService;
-    private readonly ReaderDifficultyService _difficultyService;
+    private readonly Services.Reader.ReaderContentService _readerContentService;
     private readonly IMemoryCache _cache;
     private readonly ILogger<BooksController> _logger;
 
     // Один конструктор с обоими сервисами
-    public BooksController(BookService bookService, PopularBooksService popularBooksService, StorySeeder storySeeder, ApplicationDbContext context, ActivityService activityService, BookAnalyzerService analyzerService, AiService aiService, ReaderDifficultyService difficultyService, IMemoryCache cache, ILogger<BooksController> logger)
+    public BooksController(BookService bookService, PopularBooksService popularBooksService, StorySeeder storySeeder, ApplicationDbContext context, ActivityService activityService, BookAnalyzerService analyzerService, Services.Reader.ReaderContentService readerContentService, IMemoryCache cache, ILogger<BooksController> logger)
     {
         _bookService = bookService;
         _popularBooksService = popularBooksService;
@@ -37,8 +38,7 @@ public class BooksController : ControllerBase
         _context = context;
         _activityService = activityService;
         _analyzerService = analyzerService;
-        _aiService = aiService;
-        _difficultyService = difficultyService;
+        _readerContentService = readerContentService;
         _cache = cache;
         _logger = logger;
     }
@@ -76,6 +76,8 @@ public class BooksController : ControllerBase
     }
 
     // Анализ книги: строит кэш страниц и маркерные слова. ВАЖНО: работает без AI.
+    // Здесь же готовим структурный снимок читалки: первый открытый текст не
+    // должен разбирать EPUB на глазах у человека.
     private async Task AnalyzeBookAsync(int bookId)
     {
         try
@@ -86,6 +88,16 @@ public class BooksController : ControllerBase
         {
             // Анализ не должен ломать добавление книги
             _logger.LogWarning(ex, "Book analysis failed for {BookId}", bookId);
+        }
+
+        try
+        {
+            await _readerContentService.EnsureSnapshotAsync(bookId);
+        }
+        catch (Exception ex)
+        {
+            // Старая читалка продолжает работать; новая разберёт книгу при открытии
+            _logger.LogWarning(ex, "Reader snapshot failed for {BookId}", bookId);
         }
     }
 
@@ -283,31 +295,6 @@ public class BooksController : ControllerBase
         return Ok(new { message = "Analysis complete" });
     }
 
-    // GET: api/books/5/word-tooltip?word=thirteen
-    [HttpGet("{id}/word-tooltip")]
-    public async Task<IActionResult> GetWordTooltip(int id, [FromQuery] string word)
-    {
-        var book = await _bookService.GetBookAsync(GetUserId(), id);
-        if (book == null) return NotFound();
-
-        var normalized = BookAnalyzerService.Normalize(word ?? "");
-        if (normalized.Length < 2) return BadRequest(new { message = "Invalid word" });
-
-        // Маркерные слова всегда есть в справочнике WordLevels — отвечаем мгновенно,
-        // без обращения к AI (оно может занимать секунды и подвешивает тултип)
-        var level = await _context.WordLevels.AsNoTracking()
-            .FirstOrDefaultAsync(wl => wl.Text == normalized);
-
-        return Ok(new
-        {
-            word = normalized,
-            cefrLevel = level?.CefrLevel,
-            translationRu = level?.TranslationRu,
-            freqRank = level?.FreqRank,
-            translation = (string?)null
-        });
-    }
-
     // GET: api/books/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBook(int id)
@@ -326,169 +313,6 @@ public class BooksController : ControllerBase
             author = book.Author,
             language = book.Language
         });
-    }
-
-    // GET: api/books/5/content
-    // GET: api/books/5/content?page=1
-    [HttpGet("{id}/content")]
-    public async Task<IActionResult> GetBookContent(int id, [FromQuery] int page = 1)
-    {
-        var userId = GetUserId();
-
-        // Трекаем прочитанную страницу только если это движение вперёд
-        var currentPage = await _context.Books.AsNoTracking()
-            .Where(b => b.Id == id && b.UploadedByUserId == userId)
-            .Select(b => (int?)b.CurrentPage)
-            .FirstOrDefaultAsync();
-
-        if (currentPage.HasValue && page > currentPage.Value)
-        {
-            await _activityService.TrackAsync(userId, "read_page", 1);
-        }
-
-        var content = await _bookService.GetBookContentAsync(userId, id, page);
-
-        if (content == null)
-        {
-            return NotFound();
-        }
-
-        var keyWords = await _context.BookKeyWords.AsNoTracking()
-            .Where(bk => bk.BookId == id && bk.Page == page)
-            .OrderBy(bk => bk.FreqRank)
-            .Select(bk => new { wordText = bk.WordText, cefrLevel = bk.CefrLevel })
-            .ToListAsync();
-
-        return Ok(new
-        {
-            content.Text,
-            content.CurrentPage,
-            content.TotalPages,
-            content.TotalWords,
-            content.WordsRead,
-            keyWords
-        });
-    }
-
-    // GET: api/books/5/parallel?page=1 — страница с параллельным переводом en→ru.
-    // Текст страницы режется на предложения, группируется в чанки по 2-3 предложения
-    // (≤600 символов). Весь текст страницы переводится одним литературным вызовом
-    // Gemini (TranslateLiteraryAsync); при расхождении числа сегментов — поблочный
-    // gtx-фолбэк. Результат кэшируется 24ч.
-    //
-    // W1.4.3 (SECURITY_GATE R-06): здесь обязательно должен стоять гейт по
-    // подтверждённому email — этот GET единственный в контроллере, который
-    // доходит до модели. Остальные экшены (список книг, контент страницы,
-    // тултип слова) к AI не обращаются, и вешать атрибут на весь контроллер
-    // нельзя: читалка отрезала бы неподтверждённым аккаунтам всю библиотеку.
-    // Страховка от «забыли атрибут» — AiEndpointGateTests.
-    [HttpGet("{id}/parallel")]
-    [RequireConfirmedEmail]
-    public async Task<IActionResult> GetParallelPage(int id, [FromQuery] int page = 1)
-    {
-        var userId = GetUserId();
-
-        var book = await _bookService.GetBookAsync(userId, id);
-        if (book == null) return NotFound();
-
-        var cacheKey = $"parallel:{id}:{page}";
-        if (_cache.TryGetValue(cacheKey, out List<ParallelChunk>? cached) && cached != null)
-        {
-            return Ok(new { chunks = cached });
-        }
-
-        var pages = await _bookService.GetPagesAsync(id);
-        if (pages == null || pages.Count == 0) return NotFound();
-        if (page < 1 || page > pages.Count) return NotFound();
-
-        var chunks = await TranslateChunksAsync(BuildTranslationChunks(pages[page - 1]), userId);
-
-        _cache.Set(cacheKey, chunks, ParallelPageCacheTtl);
-
-        return Ok(new { chunks });
-    }
-
-    // Один литературный вызов на страницу: чанки EN склеиваются через "\n\n",
-    // ответ разбивается по "\n\n" обратно. Если модель вернула другое число
-    // сегментов или упала — переводим каждый чанк через gtx по отдельности.
-    private async Task<List<ParallelChunk>> TranslateChunksAsync(List<ParallelChunk> chunks, string? userId = null)
-    {
-        if (chunks.Count == 0)
-        {
-            return chunks;
-        }
-
-        var joined = string.Join("\n\n", chunks.Select(c => c.En));
-        var literary = await _aiService.TranslateLiteraryAsync(joined, userId);
-
-        if (literary != null)
-        {
-            var parts = literary
-                .Split("\n\n")
-                .Select(p => p.Trim())
-                .Where(p => p.Length > 0)
-                .ToList();
-
-            if (parts.Count == chunks.Count)
-            {
-                return chunks.Zip(parts, (chunk, ru) => chunk with { Ru = ru }).ToList();
-            }
-
-            _logger.LogWarning(
-                "Literary translation returned {Parts} segments for {Chunks} chunks, falling back to per-chunk gtx",
-                parts.Count, chunks.Count);
-        }
-
-        var translations = await Task.WhenAll(
-            chunks.Select(chunk => _aiService.TranslateTextAsync(chunk.En)));
-
-        return chunks.Zip(translations, (chunk, ru) => chunk with { Ru = ru }).ToList();
-    }
-
-    private static readonly TimeSpan ParallelPageCacheTtl = TimeSpan.FromHours(24);
-
-    private const int MaxChunkSentences = 3;
-    private const int MaxChunkLength = 600;
-
-    // Разбивка на предложения (по [.!?…] с учётом закрывающих кавычек/скобок),
-    // затем группировка в чанки: максимум 3 предложения и 600 символов
-    internal static List<ParallelChunk> BuildTranslationChunks(string text)
-    {
-        var chunks = new List<ParallelChunk>();
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return chunks;
-        }
-
-        var sentences = Regex
-            .Split(text.Trim(), @"(?<=[.!?…][""”’')\]]*)\s+")
-            .Select(s => s.Trim())
-            .Where(s => s.Length > 0)
-            .ToList();
-
-        var current = new List<string>();
-        var currentLength = 0;
-
-        foreach (var sentence in sentences)
-        {
-            if (current.Count >= MaxChunkSentences ||
-                currentLength > 0 && currentLength + sentence.Length + 1 > MaxChunkLength)
-            {
-                chunks.Add(new ParallelChunk(string.Join(" ", current), null));
-                current = new List<string>();
-                currentLength = 0;
-            }
-
-            current.Add(sentence);
-            currentLength += sentence.Length + 1;
-        }
-
-        if (current.Count > 0)
-        {
-            chunks.Add(new ParallelChunk(string.Join(" ", current), null));
-        }
-
-        return chunks;
     }
 
     // GET: api/books/recommended?level=b1
@@ -540,61 +364,6 @@ public class BooksController : ControllerBase
         _ => 0
     };
 
-    // GET: api/books/5/difficulty — доля знакомых/изучаемых/новых слов по страницам
-    [HttpGet("{id}/difficulty")]
-    public async Task<IActionResult> GetDifficulty(int id)
-    {
-        var userId = GetUserId();
-
-        var book = await _bookService.GetBookAsync(userId, id);
-        if (book == null) return NotFound();
-
-        var difficulty = await _difficultyService.GetAsync(userId, id);
-        if (difficulty == null) return NotFound();
-
-        static object Map(PageDifficulty page) => new
-        {
-            page = page.Page,
-            totalWords = page.TotalWords,
-            known = page.KnownWords,
-            learning = page.LearningWords,
-            newWords = page.NewWords,
-            knownPercent = page.KnownPercent,
-            learningPercent = page.LearningPercent,
-            newPercent = page.NewPercent
-        };
-
-        return Ok(new
-        {
-            pages = difficulty.Pages.Select(Map).ToList(),
-            average = Map(difficulty.Average),
-            totalWords = difficulty.TotalWords,
-            knownWordCount = difficulty.KnownWordCount,
-            learningWordCount = difficulty.LearningWordCount
-        });
-    }
-
-    // GET: api/books/5/toc — оглавление с номерами страниц
-    [HttpGet("{id}/toc")]
-    public async Task<IActionResult> GetToc(int id)
-    {
-        var book = await _bookService.GetBookAsync(GetUserId(), id);
-        if (book == null) return NotFound();
-
-        var items = await _bookService.GetTableOfContentsAsync(id);
-
-        return Ok(new
-        {
-            items = (items ?? new List<BookTocItem>()).Select(i => new
-            {
-                title = i.Title,
-                page = i.Page,
-                level = i.Level
-            }),
-            count = items?.Count ?? 0
-        });
-    }
-
     // GET: api/books/5/bookmarks
     [HttpGet("{id}/bookmarks")]
     public async Task<IActionResult> GetBookmarks(int id)
@@ -604,13 +373,30 @@ public class BooksController : ControllerBase
         var book = await _bookService.GetBookAsync(userId, id);
         if (book == null) return NotFound();
 
-        var items = await _context.BookBookmarks.AsNoTracking()
+        var bookmarks = await _context.BookBookmarks.AsNoTracking()
             .Where(b => b.BookId == id && b.UserId == userId)
             .OrderBy(b => b.Page)
-            .Select(b => new { id = b.Id, page = b.Page, note = b.Note, createdAt = b.CreatedAt })
+            .ThenBy(b => b.CreatedAt)
             .ToListAsync();
 
-        return Ok(new { items });
+        var source = await _readerContentService.GetBookSnapshotAsync(userId, id);
+        var items = bookmarks
+            .Select(b => source == null
+                ? new ReaderBookmarkDto
+                {
+                    Id = b.Id,
+                    Page = b.Page,
+                    ChapterId = b.ChapterId,
+                    SentenceId = b.SentenceId,
+                    CharOffset = b.CharOffset,
+                    Excerpt = b.Excerpt,
+                    Note = b.Note,
+                    CreatedAt = b.CreatedAt
+                }
+                : ReaderContentService.ToBookmarkDto(b, source.Value.Snapshot))
+            .ToList();
+
+        return Ok(new { items, count = items.Count });
     }
 
     // POST: api/books/5/bookmarks — поставить/обновить закладку на странице
@@ -622,9 +408,10 @@ public class BooksController : ControllerBase
         var book = await _bookService.GetBookAsync(userId, id);
         if (book == null) return NotFound();
 
-        if (request == null || request.Page < 1)
+        if (request == null ||
+            (string.IsNullOrWhiteSpace(request.ChapterId) && (request.Page is null || request.Page < 1)))
         {
-            return BadRequest(new { error = "Некорректный номер страницы." });
+            return BadRequest(new { error = "Нужна страница или предложение книги." });
         }
 
         var note = request.Note?.Trim();
@@ -633,8 +420,45 @@ public class BooksController : ControllerBase
             return BadRequest(new { error = "Заметка слишком длинная (максимум 500 символов)." });
         }
 
-        var bookmark = await _context.BookBookmarks
-            .FirstOrDefaultAsync(b => b.BookId == id && b.UserId == userId && b.Page == request.Page);
+        string? chapterId = null;
+        string? sentenceId = null;
+        var charOffset = 0;
+        string? excerpt = null;
+        int? page = request.Page;
+
+        if (!string.IsNullOrWhiteSpace(request.ChapterId))
+        {
+            var source = await _readerContentService.GetBookSnapshotAsync(userId, id);
+            if (source == null)
+            {
+                return NotFound();
+            }
+
+            var chapter = ReaderContentService.FindChapter(source.Value.Snapshot, request.ChapterId);
+            if (chapter == null)
+            {
+                return BadRequest(new { error = "Глава не найдена." });
+            }
+
+            var sentence = ReaderContentService.FindSentence(chapter, request.SentenceId);
+            if (sentence == null)
+            {
+                return BadRequest(new { error = "Предложение не найдено." });
+            }
+
+            chapterId = chapter.Id;
+            sentenceId = sentence.Id;
+            charOffset = Math.Clamp(request.CharOffset, 0, Math.Max(0, sentence.Text.Length - 1));
+            excerpt = sentence.Text.Length > 500 ? sentence.Text[..500] : sentence.Text;
+            page = null;
+        }
+
+        var bookmark = chapterId != null
+            ? await _context.BookBookmarks.FirstOrDefaultAsync(b =>
+                b.BookId == id && b.UserId == userId &&
+                b.ChapterId == chapterId && b.SentenceId == sentenceId)
+            : await _context.BookBookmarks.FirstOrDefaultAsync(b =>
+                b.BookId == id && b.UserId == userId && b.Page == request.Page);
 
         if (bookmark == null)
         {
@@ -642,24 +466,37 @@ public class BooksController : ControllerBase
             {
                 BookId = id,
                 UserId = userId,
-                Page = request.Page,
+                Page = page,
+                ChapterId = chapterId,
+                SentenceId = sentenceId,
+                CharOffset = charOffset,
+                Excerpt = excerpt,
                 Note = string.IsNullOrWhiteSpace(note) ? null : note
             };
             _context.BookBookmarks.Add(bookmark);
         }
         else
         {
+            bookmark.Page = page;
+            bookmark.ChapterId = chapterId;
+            bookmark.SentenceId = sentenceId;
+            bookmark.CharOffset = charOffset;
+            bookmark.Excerpt = excerpt;
             bookmark.Note = string.IsNullOrWhiteSpace(note) ? null : note;
         }
 
         await _context.SaveChangesAsync();
 
-        return Ok(new
+        return Ok(new ReaderBookmarkDto
         {
-            id = bookmark.Id,
-            page = bookmark.Page,
-            note = bookmark.Note,
-            createdAt = bookmark.CreatedAt
+            Id = bookmark.Id,
+            Page = bookmark.Page,
+            ChapterId = bookmark.ChapterId,
+            SentenceId = bookmark.SentenceId,
+            CharOffset = bookmark.CharOffset,
+            Excerpt = bookmark.Excerpt,
+            Note = bookmark.Note,
+            CreatedAt = bookmark.CreatedAt
         });
     }
 
@@ -696,10 +533,12 @@ public class BooksController : ControllerBase
 }
 
 // Один блок параллельного чтения: en — оригинал, ru — перевод (null, если перевод не удался)
-public record ParallelChunk(string En, string? Ru);
 
 public class BookmarkRequest
 {
-    public int Page { get; set; }
+    public int? Page { get; set; }
+    public string? ChapterId { get; set; }
+    public string? SentenceId { get; set; }
+    public int CharOffset { get; set; }
     public string? Note { get; set; }
 }

@@ -38,17 +38,20 @@ public class SpeechService : IAiBackedService
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<SpeechService> _logger;
     private readonly ResilientAiService _resilient;
+    private readonly Reader.AzureSpeechService _azure;
 
     public SpeechService(
         IConfiguration configuration,
         IWebHostEnvironment environment,
         ILogger<SpeechService> logger,
-        ResilientAiService resilient)
+        ResilientAiService resilient,
+        Reader.AzureSpeechService azure)
     {
         _configuration = configuration;
         _environment = environment;
         _logger = logger;
         _resilient = resilient;
+        _azure = azure;
     }
 
     private string TtsDirectory => Path.Combine(_environment.ContentRootPath, "uploads", "tts");
@@ -136,6 +139,15 @@ public class SpeechService : IAiBackedService
 
         byte[]? gemini = null;
 
+        // Azure стоит после пака и кэшей, но до Gemini: слова вне пака тоже
+        // должны звучать AriaNeural, а не случайным голосом нейросети. Если
+        // ключа нет или бюджет месяца исчерпан, сервис молча вернёт null.
+        var azureClip = await _azure.SynthesizeAsync(normalized, cancellationToken);
+        if (azureClip != null)
+        {
+            return new TtsAudio(azureClip.Data, azureClip.ContentType);
+        }
+
         if (ShouldSkipGeminiTts(DateTime.UtcNow, _ttsGeminiRetryAfterUtc))
         {
             // Кулдаун: квоту уже ловили в этой волне кликов — не тратим 7–10 секунд на ретраи
@@ -206,8 +218,9 @@ public class SpeechService : IAiBackedService
 
         // Прокси до Gemini иногда собирает фразу десятки секунд (наблюдалось 56 с):
         // пользователь к этому моменту уже слышит запасной голос, а серверный слот
-        // занят. Держим потолок и уходим на бесплатный резерв.
-        var timeoutSeconds = Math.Clamp(_configuration.GetValue("Tts:GeminiTimeoutSeconds", 15), 3, 60);
+        // занят. Потолок держим чуть выше окна ожидания фронтенда (6 с), чтобы
+        // сервер успевал ответить хоть чем-то естественным, а не молчал.
+        var timeoutSeconds = Math.Clamp(_configuration.GetValue("Tts:GeminiTimeoutSeconds", 6), 3, 60);
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
 

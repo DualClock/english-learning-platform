@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs src/lib/pulse.test.mjs src/lib/tts.test.mjs"
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs src/lib/pulse.test.mjs src/lib/tts.test.mjs src/lib/reader/pagination.test.mjs src/lib/reader/sentences.test.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:lab": "playwright test e2e/reader-lab.spec.ts"
   },
   "dependencies": {
     "motion": "^14.5.0",
@@ -18,6 +20,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

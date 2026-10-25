@@ -9,9 +9,11 @@ import { Book } from './utils';
 export default function ContinueReading({ hero, others }: { hero: Book; others: Book[] }) {
   const progress = Math.round(hero.progress ?? 0);
 
+  // Номер страницы здесь больше не показываем: в Reader 3.0 страницы зависят
+  // от кегля, и «стр. 5 из 40» — это про старый серверный разрез по 300 слов.
   const lexiLine =
-    hero.currentPage && hero.totalPages
-      ? `Остановился на «${hero.title}», страница ${hero.currentPage}`
+    progress > 0
+      ? `Остановился на «${hero.title}», ${progress}% книги`
       : 'Сегодня пусто. Можно пять минут';
 
   return (
@@ -28,11 +30,7 @@ export default function ContinueReading({ hero, others }: { hero: Book; others: 
           <div className="mb-6 mt-5 max-w-measure-sm">
             <div className="mb-2 flex justify-between text-body-sm text-slate">
               <span>Прочитано {progress}%</span>
-              {hero.currentPage && hero.totalPages ? (
-                <span className="tabular-nums">
-                  стр. {hero.currentPage} из {hero.totalPages}
-                </span>
-              ) : null}
+              <span className="tabular-nums">{Math.max(0, 100 - progress)}% впереди</span>
             </div>
             <ProgressBar value={progress} />
           </div>

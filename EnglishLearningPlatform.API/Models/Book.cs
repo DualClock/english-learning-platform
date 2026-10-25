@@ -39,6 +39,15 @@ public class Book
 
     public int WordCount { get; set; } = 0;
 
+    // Структурный разбор читалки. Хэш позволяет переиспользовать один снимок
+    // для всех пользовательских копий одной и той же книги.
+    [MaxLength(64)]
+    public string? ContentHash { get; set; }
+
+    public int? ContentSnapshotId { get; set; }
+
+    public DateTime? ParsedAt { get; set; }
+
     // Кто загрузил
     public string? UploadedByUserId { get; set; }
 
@@ -46,6 +55,7 @@ public class Book
 
     // Навигационные свойства
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
+    public BookContentSnapshot? ContentSnapshot { get; set; }
 }
 
 public class Interaction

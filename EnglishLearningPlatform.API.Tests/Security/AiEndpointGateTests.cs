@@ -292,8 +292,9 @@ public class AiEndpointGateTests
     {
         var detected = DetectAiReachableActions().Select(a => a.Name).ToHashSet(StringComparer.Ordinal);
 
-        Assert.Contains("BooksController.GetParallelPage", detected);
-
+        // Reader 3.0 удалил GET /parallel вместе со старым постраничным
+        // переводом, поэтому «известный вход» проверяем на живых AI-контроллерах:
+        // если детектор перестанет их видеть, страховка ослепнет молча.
         foreach (var controller in new[] { "AiController", "AssistantController", "AudioController", "PronunciationController" })
         {
             Assert.Contains(detected, name => name.StartsWith(controller + ".", StringComparison.Ordinal));
@@ -310,9 +311,9 @@ public class AiEndpointGateTests
         var detected = DetectAiReachableActions().ToDictionary(a => a.Name, a => a.Diagnosis);
         var suspects = new[]
         {
-            "BooksController.GetBooks", "BooksController.GetBookContent", "BooksController.GetWordTooltip",
-            "BooksController.GetDifficulty", "BooksController.GetRecommendedBooks", "BooksController.AddStory",
-            "BooksController.UploadBook"
+            "BooksController.GetBooks", "BooksController.GetBook", "BooksController.GetBookmarks",
+            "BooksController.GetRecommendedBooks", "BooksController.AddStory", "BooksController.UploadBook",
+            "ReaderController.GetManifest", "ReaderController.GetChapter", "ReaderController.LookupWord"
         };
 
         Assert.True(

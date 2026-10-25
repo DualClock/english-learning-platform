@@ -40,6 +40,10 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<UserErrorBankEntry> UserErrorBankEntries => Set<UserErrorBankEntry>();
     public DbSet<UserKnownWord> UserKnownWords => Set<UserKnownWord>();
     public DbSet<BookBookmark> BookBookmarks => Set<BookBookmark>();
+    public DbSet<BookContentSnapshot> BookContentSnapshots => Set<BookContentSnapshot>();
+    public DbSet<UserBookProgress> UserBookProgresses => Set<UserBookProgress>();
+    public DbSet<ReaderPocketWord> ReaderPocketWords => Set<ReaderPocketWord>();
+    public DbSet<SpeechUsage> SpeechUsages => Set<SpeechUsage>();
     public DbSet<LeagueWeekState> LeagueWeekStates => Set<LeagueWeekState>();
     public DbSet<LeagueHistory> LeagueHistories => Set<LeagueHistory>();
 
@@ -327,9 +331,15 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .HasForeignKey(k => k.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Закладки: одна закладка на страницу книги у пользователя
+        // Закладки: одна закладка на страницу книги у пользователя (старый формат)
         builder.Entity<BookBookmark>()
             .HasIndex(b => new { b.BookId, b.UserId, b.Page })
+            .IsUnique();
+
+        // Новый формат: одна закладка на предложение. NULL в Page/ChapterId
+        // Postgres не считает конфликтом, поэтому старые строки не мешают.
+        builder.Entity<BookBookmark>()
+            .HasIndex(b => new { b.BookId, b.UserId, b.ChapterId, b.SentenceId })
             .IsUnique();
 
         builder.Entity<BookBookmark>()
@@ -343,5 +353,60 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .WithMany()
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Снимок книги: один разбор на хэш содержимого и версию парсера.
+        builder.Entity<BookContentSnapshot>()
+            .HasIndex(s => new { s.ContentHash, s.ParserVersion })
+            .IsUnique();
+
+        builder.Entity<Book>()
+            .HasOne(b => b.ContentSnapshot)
+            .WithMany()
+            .HasForeignKey(b => b.ContentSnapshotId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Точка чтения: одна на пользователя и книгу.
+        builder.Entity<UserBookProgress>()
+            .HasIndex(p => new { p.UserId, p.BookId })
+            .IsUnique();
+
+        builder.Entity<UserBookProgress>()
+            .HasOne(p => p.Book)
+            .WithMany()
+            .HasForeignKey(p => p.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<UserBookProgress>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Карман чтения: слово уникально в пределах книги пользователя.
+        builder.Entity<ReaderPocketWord>()
+            .HasIndex(p => new { p.UserId, p.BookId, p.NormalizedWord })
+            .IsUnique();
+
+        builder.Entity<ReaderPocketWord>()
+            .HasIndex(p => new { p.UserId, p.ChapterId });
+
+        builder.Entity<ReaderPocketWord>()
+            .HasIndex(p => new { p.UserId, p.LastSeenAt });
+
+        builder.Entity<ReaderPocketWord>()
+            .HasOne(p => p.Book)
+            .WithMany()
+            .HasForeignKey(p => p.BookId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ReaderPocketWord>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Расход Azure Speech: одна строка на месяц, Period — ключ.
+        builder.Entity<SpeechUsage>()
+            .HasKey(u => u.Period);
     }
 }

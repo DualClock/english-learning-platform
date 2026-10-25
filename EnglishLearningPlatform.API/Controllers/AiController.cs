@@ -66,10 +66,40 @@ public class AiController : ControllerBase
 
         return StatusCode(503, new { error = "Не удалось перевести слово: сервис перевода временно недоступен. Попробуйте позже." });
     }
+
+    // POST: api/ai/translate-sentence — перевод фразы для карточки слова.
+    // Быстрый бесплатный контур, без Gemini: смысл слова остаётся в контексте,
+    // а ожидание не превращается в несколько секунд на каждый тап.
+    [HttpPost("translate-sentence")]
+    public async Task<IActionResult> TranslateSentence([FromBody] TranslateSentenceRequest request)
+    {
+        var text = request.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return BadRequest(new { error = "Укажите фразу." });
+        }
+
+        if (text.Length > 1000)
+        {
+            return BadRequest(new { error = "Фраза слишком длинная (максимум 1000 символов)." });
+        }
+
+        var translation = await _aiService.TranslateTextAsync(text);
+        if (string.IsNullOrWhiteSpace(translation))
+        {
+            return StatusCode(503, new { error = "Не удалось перевести фразу. Попробуйте позже." });
+        }
+
+        return Ok(new { translation, source = "gtx" });
+    }
 }
 
 public record TranslateRequest(
     [property: Required, MaxLength(200)] string Word,
     [property: MaxLength(1000)] string? Context,
     [property: MaxLength(10)] string? TargetLanguage
+);
+
+public record TranslateSentenceRequest(
+    [property: Required, MaxLength(1000)] string Text
 );
