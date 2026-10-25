@@ -22,6 +22,7 @@ function tokenExpiresAt(token?: string): number | undefined {
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   session: {
     strategy: 'jwt',
     maxAge: SESSION_MAX_AGE_SECONDS,
