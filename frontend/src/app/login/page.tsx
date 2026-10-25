@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import AuthLayout from '@/app/auth-layout';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import { SignInPage } from '@/components/ui/sign-in';
 import Notice from '@/components/ui/Notice';
 
 // Имя СУБД и команда запуска — только для локальной разработки: там это
@@ -18,8 +15,6 @@ const DEV_OPS_HINT =
     : '';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -38,6 +33,26 @@ export default function LoginPage() {
     return callback && callback.startsWith('/') && !callback.startsWith('//')
       ? callback
       : '/dashboard';
+  };
+
+  // signIn отдаёт одинаковую ошибку и на неверный пароль, и на упавший бэкенд.
+  // Спрашиваем /health, чтобы не писать «неверный пароль», когда лежит база.
+  const describeFailure = async (): Promise<string> => {
+    try {
+      // Короткий таймаут: сообщение об ошибке не должно ждать зависший health
+      const res = await fetch('/api/backend-status', {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(3000),
+      });
+      const status = await res.json();
+      if (!status?.ok) {
+        return `Сервис временно недоступен: нет связи с сервером.${DEV_OPS_HINT}`;
+      }
+    } catch {
+      // проверка не удалась — считаем, что дело в пароле
+    }
+
+    return 'Неверный email или пароль';
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,97 +81,37 @@ export default function LoginPage() {
     setIsLoading(false);
   };
 
-  // signIn отдаёт одинаковую ошибку и на неверный пароль, и на упавший бэкенд.
-  // Спрашиваем /health, чтобы не писать «неверный пароль», когда лежит база.
-  const describeFailure = async (): Promise<string> => {
-    try {
-      // Короткий таймаут: сообщение об ошибке не должно ждать зависший health
-      const res = await fetch('/api/backend-status', {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(3000),
-      });
-      const status = await res.json();
-      if (!status?.ok) {
-        return `Сервис временно недоступен: нет связи с сервером.${DEV_OPS_HINT}`;
-      }
-    } catch {
-      // проверка не удалась — считаем, что дело в пароле
-    }
-
-    return 'Неверный email или пароль';
-  };
-
   return (
-    <AuthLayout>
-      <div className="card animate-pop-in p-8">
-        <h1 className="mb-2 text-center text-h2 text-ink">С возвращением</h1>
-        <p className="mb-6 text-center text-body text-slate">Продолжим читать?</p>
+    <SignInPage
+      title="С возвращением"
+      description="Продолжите с того места, где остановились: книги, слова и прогресс уже ждут."
+      onSignIn={handleSubmit}
+      isLoading={isLoading}
+      error={error}
+      notices={
+        sessionExpired || accountDeleted ? (
+          <>
+            {sessionExpired && (
+              <Notice tone="info">
+                Сессия истекла. Войдите снова — книги, слова и прогресс на месте.
+              </Notice>
+            )}
 
-        {sessionExpired && (
-          <div className="mb-5">
-            <Notice tone="info">
-              Сессия истекла. Войдите снова — книги, слова и прогресс на месте.
-            </Notice>
-          </div>
-        )}
-
-        {/*
-         * Финал пути удаления аккаунта (W2.5.3): сюда попадает человек после
-         * «Удалить аккаунт и все данные». Сообщить нужно здесь, а не в
-         * настройках, — аккаунта уже нет, и форма настроек больше не откроется.
-         */}
-        {accountDeleted && (
-          <div className="mb-5">
-            <Notice tone="info">
-              Аккаунт удалён вместе со словами, прогрессом и загруженными книгами. Если это было ошибкой —
-              напишите на hello@lexicon.app, а новый профиль можно завести заново этим же адресом.
-            </Notice>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="email"
-            name="email"
-            label="Email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="email@example.com"
-            required
-          />
-
-          <Input
-            type="password"
-            name="password"
-            label="Пароль"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-
-          {error && <Notice tone="danger">{error}</Notice>}
-
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Вход…' : 'Войти'}
-          </Button>
-        </form>
-
-        <div className="mt-4 text-center">
-          <Link href="/forgot-password" className="text-body-sm text-link hover:underline">
-            Забыли пароль?
-          </Link>
-        </div>
-
-        <div className="mt-6 text-center text-body text-slate">
-          <span>Нет аккаунта? </span>
-          <Link href="/onboarding" className="font-medium text-link hover:underline">
-            Зарегистрироваться
-          </Link>
-        </div>
-      </div>
-    </AuthLayout>
+            {/*
+             * Финал пути удаления аккаунта (W2.5.3): сюда попадает человек после
+             * «Удалить аккаунт и все данные». Сообщить нужно здесь, а не в
+             * настройках, — аккаунта уже нет, и форма настроек больше не откроется.
+             */}
+            {accountDeleted && (
+              <Notice tone="info">
+                Аккаунт удалён вместе со словами, прогрессом и загруженными книгами. Если это было
+                ошибкой — напишите на hello@lexicon.app, а новый профиль можно завести заново этим же
+                адресом.
+              </Notice>
+            )}
+          </>
+        ) : undefined
+      }
+    />
   );
 }

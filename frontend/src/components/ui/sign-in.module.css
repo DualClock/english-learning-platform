@@ -1,0 +1,182 @@
+/*
+ * Вход. Анимации перенесены из исходного компонента (fadeSlideIn,
+ * slideRightIn, testimonialIn) в CSS-модуль: в проекте нет
+ * tailwindcss-animate, поэтому animate-in / animate-delay-* здесь не работают.
+ * Стаггер задаётся animation-delay у классов d1…d7 и card1…card3.
+ */
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRightIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes testimonialIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.enter {
+  opacity: 0;
+  animation: fadeSlideIn 560ms var(--ease-out-soft) both;
+}
+
+.d1 { animation-delay: 90ms; }
+.d2 { animation-delay: 180ms; }
+.d3 { animation-delay: 270ms; }
+.d4 { animation-delay: 360ms; }
+.d5 { animation-delay: 450ms; }
+.d6 { animation-delay: 540ms; }
+.d7 { animation-delay: 630ms; }
+
+.panel {
+  opacity: 0;
+  animation: slideRightIn 700ms var(--ease-out-soft) 160ms both;
+}
+
+.card {
+  opacity: 0;
+  animation: testimonialIn 620ms var(--ease-out-soft) both;
+}
+
+.card1 { animation-delay: 760ms; }
+.card2 { animation-delay: 900ms; }
+.card3 { animation-delay: 1040ms; }
+
+/*
+ * Ошибка — не часть входного стаггера: она появляется после ответа сервера,
+ * поэтому без задержки и без blur. Сообщение должно быть читаемым сразу.
+ */
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert {
+  animation: noticeIn 200ms var(--ease-out-soft) both;
+}
+
+/*
+ * Поле ввода: высота фиксирована, поэтому переключение видимости пароля
+ * не меняет геометрию формы. Фокус виден и без внешнего outline — рамкой
+ * и мягким кольцом в цвете акцента.
+ */
+.field {
+  width: 100%;
+  height: 3rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: 8px;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-size: 1rem;
+  line-height: 1.5;
+  transition:
+    border-color 160ms var(--ease-out-soft),
+    box-shadow 160ms var(--ease-out-soft),
+    background-color 160ms var(--ease-out-soft);
+}
+
+.field::placeholder {
+  color: var(--color-muted);
+}
+
+.field:hover {
+  border-color: var(--color-steel);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.fieldPassword {
+  padding-right: 3rem;
+}
+
+/*
+ * Декоративные пятна панели: цвет выводится из токенов через color-mix,
+ * поэтому в тёмной теме они не превращаются в светлые кляксы.
+ */
+.panel::before,
+.panel::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.panel::before {
+  top: -8rem;
+  right: -7rem;
+  width: 24rem;
+  height: 24rem;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-primary) 16%, transparent) 0%,
+    transparent 68%
+  );
+}
+
+.panel::after {
+  bottom: -10rem;
+  left: -8rem;
+  width: 28rem;
+  height: 28rem;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-tint-peach) 55%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .panel,
+  .card,
+  .alert {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .field {
+    transition: none;
+  }
+}
