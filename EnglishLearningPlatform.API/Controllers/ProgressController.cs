@@ -194,4 +194,59 @@ public class ProgressController : ControllerBase
             week
         });
     }
+
+    // GET: api/progress/activity?days=365 — дневная активность для календаря.
+    // Отдаём непрерывный ряд с нулями за пропущенные дни: календарь раскладывает
+    // клетки по датам, и «дырка» в ответе сдвинула бы всю сетку.
+    [HttpGet("activity")]
+    public async Task<IActionResult> GetActivity([FromQuery] int days = 365)
+    {
+        var userId = GetUserId();
+
+        var user = await _context.Users.AsNoTracking()
+            .FirstAsync(u => u.Id == userId);
+
+        var today = UserTime.Today(user);
+        var span = Math.Clamp(days, 7, 365);
+        var from = today.AddDays(-(span - 1));
+
+        var rows = await _context.DailyActivities.AsNoTracking()
+            .Where(a => a.UserId == userId && a.Date >= from && a.Date <= today)
+            .Select(a => new { a.Date, a.MinutesRead, a.WordsReviewed, a.GoalMet })
+            .ToListAsync();
+
+        // На всякий случай складываем строки за один день: уникальность пары
+        // «пользователь + дата» держится кодом, а не ограничением в БД.
+        var byDate = rows
+            .GroupBy(row => row.Date)
+            .ToDictionary(
+                group => group.Key,
+                group => new
+                {
+                    Minutes = group.Sum(row => row.MinutesRead),
+                    Words = group.Sum(row => row.WordsReviewed),
+                    GoalMet = group.Any(row => row.GoalMet)
+                });
+
+        var items = new List<object>(span);
+        for (var offset = 0; offset < span; offset++)
+        {
+            var date = from.AddDays(offset);
+            byDate.TryGetValue(date, out var row);
+
+            items.Add(new
+            {
+                date = date.ToString("yyyy-MM-dd"),
+                minutes = row?.Minutes ?? 0,
+                words = row?.Words ?? 0,
+                goalMet = row?.GoalMet ?? false
+            });
+        }
+
+        return Ok(new
+        {
+            today = today.ToString("yyyy-MM-dd"),
+            days = items
+        });
+    }
 }

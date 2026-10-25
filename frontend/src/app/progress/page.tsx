@@ -23,7 +23,8 @@ import {
   type AchievementCategory,
 } from '@/components/progress/achievementMeta';
 import { plural } from '@/lib/plural';
-import { useEffect, useRef, useState } from 'react';
+import ActivityHeatmap from '@/components/ui/activity-heatmap';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -73,6 +74,18 @@ interface StreakData {
   totalXp: number;
   dailyGoalMinutes: number;
   week: WeekDay[];
+}
+
+interface ActivityRow {
+  date: string;
+  minutes: number;
+  words: number;
+  goalMet: boolean;
+}
+
+interface ActivityResponse {
+  today: string;
+  days: ActivityRow[];
 }
 
 const WEEKDAYS = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
@@ -315,6 +328,19 @@ export default function ProgressPage() {
     enabled: status === 'authenticated',
   });
 
+  const { data: activity, isLoading: activityLoading } = useApiQuery<ActivityResponse>(
+    '/api/progress/activity?days=365',
+    { enabled: status === 'authenticated' }
+  );
+
+  // Хук стоит до ранних return'ов: иначе при переходе «загрузка → данные»
+  // меняется порядок хуков и React падает. Ссылка на массив должна быть
+  // стабильной — календарь пересобирает модель по идентичности пропа.
+  const heatmapDays = useMemo(
+    () => (activity?.days ?? []).map((day) => ({ date: day.date, count: day.minutes })),
+    [activity]
+  );
+
   if (status === 'loading' || (progressLoading && !progress)) {
     return (
       <AppLayout>
@@ -480,6 +506,26 @@ export default function ProgressPage() {
             )}
           </section>
         )}
+
+        {/* Год активности: тот же дневник, что и «Эта неделя», но в масштабе года */}
+        <section className="card mb-6 p-6">
+          {/* Сумму минут печатает сам календарь — второй раз она не нужна */}
+          <h2 className="mb-4 text-h3 text-ink">Активность за год</h2>
+
+          {activityLoading && !activity ? (
+            <Skeleton className="h-28 w-full" />
+          ) : activity ? (
+            <ActivityHeatmap
+              days={heatmapDays}
+              label="Минуты чтения за последний год"
+              period="за год"
+              unit={{ one: 'минута', few: 'минуты', other: 'минут' }}
+              locale="ru-RU"
+            />
+          ) : (
+            <p className="text-body-sm text-slate">Не удалось загрузить активность.</p>
+          )}
+        </section>
 
         {/* Лига недели */}
         <WeeklyLeague />

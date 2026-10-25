@@ -9,13 +9,13 @@ import WelcomeScreen from '@/components/assistant/WelcomeScreen';
 import Button from '@/components/ui/Button';
 import LoadingState from '@/components/ui/LoadingState';
 import Notice from '@/components/ui/Notice';
+import { PromptInput } from '@/components/ui/ai-chat-input';
 import {
   BulbIcon,
   ChevronDownIcon,
   MicIcon,
   PinIcon,
   RefreshIcon,
-  SendIcon,
   SpinnerIcon,
   StopIcon,
   VolumeIcon,
@@ -93,7 +93,6 @@ export default function TranslatorPage() {
 
   const greetedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const seen = localStorage.getItem('assistant_seen');
@@ -178,14 +177,13 @@ export default function TranslatorPage() {
     }
   };
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (raw?: string) => {
+    const text = (raw ?? input).trim();
     if (!text || sending) return;
 
     const history = [...messages, { role: 'user' as const, text }];
     setMessages(history);
     setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
     await deliverMessage(history);
   };
 
@@ -240,8 +238,8 @@ export default function TranslatorPage() {
 
         const text = result?.transcribed?.trim();
         if (text) {
+          // Поле раскроется само: PromptInput следит за внешним значением.
           setInput((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
-          textareaRef.current?.focus();
         } else {
           setMicError('Не расслышали. Попробуйте сказать чуть громче.');
         }
@@ -293,20 +291,6 @@ export default function TranslatorPage() {
     setOpenAnalyses({});
     setError('');
     greetedRef.current = false;
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    e.target.style.height = 'auto';
-    // 112px = 7rem, тот же потолок, что и max-h-28 у поля
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 112)}px`;
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
   };
 
   if (phase === 'loading') {
@@ -512,10 +496,7 @@ export default function TranslatorPage() {
               <button
                 key={chip}
                 type="button"
-                onClick={() => {
-                  setInput(chip);
-                  textareaRef.current?.focus();
-                }}
+                onClick={() => setInput(chip)}
                 className="chip-button"
               >
                 {chip}
@@ -559,27 +540,23 @@ export default function TranslatorPage() {
                 <MicIcon size={20} />
               )}
             </button>
-            <label className="sr-only" htmlFor="assistant-input">
-              Сообщение для Alex
-            </label>
-            <textarea
-              id="assistant-input"
-              ref={textareaRef}
+            {/* Микрофон остаётся свой: он ходит в /api/pronunciation/transcribe,
+                а встроенный в PromptInput Web Speech дал бы второй, худший путь. */}
+            <PromptInput
               value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              rows={1}
+              onChange={setInput}
+              onSubmit={(text) => void sendMessage(text)}
               placeholder="Напиши сообщение на английском…"
-              className="input max-h-28 flex-1 resize-none py-2.5"
+              models={['Alex']}
+              efforts={['Коротко', 'Обычно', 'Подробно']}
+              showModelPicker={false}
+              showEffort={false}
+              showAttachments={false}
+              showVoice={false}
+              disabled={sending}
+              fullWidth
+              className="min-w-0 flex-1"
             />
-            <Button
-              onClick={sendMessage}
-              disabled={sending || !input.trim()}
-              aria-label="Отправить сообщение"
-              className="px-4"
-            >
-              <SendIcon size={20} />
-            </Button>
           </div>
         </div>
       )}

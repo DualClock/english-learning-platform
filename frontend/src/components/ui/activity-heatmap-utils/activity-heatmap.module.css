@@ -1,0 +1,515 @@
+/*
+ * ActivityHeatmap — contribution-календарь в палитре проекта.
+ *
+ * Цвета уровней выводятся из токенов темы через color-mix: поэтому сетка
+ * сама следует и за светлой/тёмной темой, и за выбранным акцентом (teal /
+ * warm / ink), и не тащит серый GitHub-вид. Уровень 0 — тёплая бумага,
+ * уровни 1–4 — акцент от почти прозрачного к насыщенному.
+ */
+
+.root {
+  --heat-cell: 12px;
+  --heat-gap: 3px;
+  --heat-step: calc(var(--heat-cell) + var(--heat-gap));
+  --heat-ring-line: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  /* Бумага пустого дня: тёплый нейтральный, а не серая подложка GitHub */
+  --heat-paper: color-mix(in srgb, var(--color-ground-warm) 22%, var(--color-canvas));
+  --heat-0: color-mix(in srgb, var(--color-ink) 5%, var(--heat-paper));
+  --heat-1: color-mix(in srgb, var(--color-primary) 20%, var(--color-canvas));
+  --heat-2: color-mix(in srgb, var(--color-primary) 42%, var(--color-canvas));
+  --heat-3: color-mix(in srgb, var(--color-primary) 68%, var(--color-canvas));
+  --heat-4: var(--color-primary);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  color: var(--color-ink);
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+}
+
+/* Тёмная тема: пустая клетка светлее поля, уровни — от глубокого teal к светлому */
+[data-theme='dark'] .root {
+  --heat-ring-line: rgba(255, 255, 255, 0.1);
+  /*
+   * В тёмной теме пустая клетка — светлее поля, но того же синего тона:
+   * тёплая бумага на navy читалась бы грязным пятном.
+   */
+  --heat-0: color-mix(in srgb, var(--color-on-dark) 9%, var(--color-canvas));
+  --heat-1: color-mix(in srgb, var(--color-primary) 36%, var(--color-canvas));
+  --heat-2: color-mix(in srgb, var(--color-primary) 56%, var(--color-canvas));
+  --heat-3: color-mix(in srgb, var(--color-primary) 74%, var(--color-canvas));
+  --heat-4: var(--color-primary);
+}
+
+/* ── Шапка: сумма слева, переключатель диапазона справа ─────────────── */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin: 0;
+  color: var(--color-slate);
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.total {
+  color: var(--color-ink);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.period {
+  color: var(--color-slate);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* ── Прокрутка: на узком экране сетка уезжает вбок, а не сжимается ───── */
+
+.scroller {
+  /* 2px по краям: кольцо выбора выступает за клетку и иначе срезается overflow */
+  padding: 2px;
+  margin: -2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+
+.scroller::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scroller::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+}
+
+/* ── Сетка: подписи месяцев сверху, дни недели слева ────────────────── */
+
+.canvas {
+  display: grid;
+  grid-template-columns: auto max-content;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  row-gap: 6px;
+  width: max-content;
+}
+
+.months {
+  grid-area: 1 / 2;
+  position: relative;
+  height: 13px;
+}
+
+.month {
+  position: absolute;
+  top: 0;
+  left: calc(var(--col) * var(--heat-step));
+  color: var(--color-steel);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.weekdays {
+  grid-area: 2 / 1;
+  display: grid;
+  grid-template-rows: repeat(7, var(--heat-cell));
+  gap: var(--heat-gap);
+  min-width: 24px;
+}
+
+.weekday {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  color: var(--color-steel);
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.plot {
+  grid-area: 2 / 2;
+  position: relative;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--heat-gap);
+}
+
+.row {
+  display: flex;
+  gap: var(--heat-gap);
+}
+
+/* ── Клетка дня ─────────────────────────────────────────────────────── */
+
+.cell {
+  flex: none;
+  width: var(--heat-cell);
+  height: var(--heat-cell);
+  border-radius: 2.5px;
+  background: var(--heat-0);
+  box-shadow: inset 0 0 0 1px var(--heat-ring-line);
+  cursor: pointer;
+  transition:
+    background-color 320ms var(--ease-out-soft) var(--wave, 0ms),
+    transform 140ms var(--ease-out-soft),
+    opacity 160ms linear;
+}
+
+.cell[data-level='1'] { background: var(--heat-1); }
+.cell[data-level='2'] { background: var(--heat-2); }
+.cell[data-level='3'] { background: var(--heat-3); }
+.cell[data-level='4'] { background: var(--heat-4); }
+
+.cell[data-level='1'],
+.cell[data-level='2'],
+.cell[data-level='3'],
+.cell[data-level='4'] {
+  box-shadow: none;
+}
+
+.cell[data-empty] {
+  cursor: default;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--heat-ring-line) 55%, transparent);
+}
+
+.cell[data-empty]:hover {
+  transform: none;
+}
+
+.cell:hover {
+  transform: scale(1.18);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/*
+ * Смена диапазона перекрашивает сетку волной: задержка берётся из --wave
+ * (вперёд) или --wave-back (назад), которую кладёт компонент. Задержка живёт
+ * только у background-color — иначе hover-масштаб тоже ехал бы с запозданием.
+ */
+.grid[data-direction='back'] .cell {
+  transition:
+    background-color 320ms var(--ease-out-soft) var(--wave-back, 0ms),
+    transform 140ms var(--ease-out-soft),
+    opacity 160ms linear;
+}
+
+/* Появление: волна по диагонали, один раз при входе в вьюпорт */
+@keyframes heat-cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid[data-reveal='hidden'] .cell {
+  opacity: 0;
+}
+
+.grid[data-reveal='revealing'] .cell {
+  animation: heat-cell-in 340ms cubic-bezier(0.16, 1, 0.3, 1) var(--wave, 0ms) backwards;
+}
+
+.grid[data-reveal='revealing'][data-direction='back'] .cell {
+  animation-delay: var(--wave-back, 0ms);
+}
+
+/* После волны анимация снимается: иначе fill-mode держал бы opacity и мешал подсветке */
+.grid[data-reveal='done'] .cell {
+  animation: none;
+}
+
+/* Подсветка уровня из легенды: чужие дни гаснут, свои остаются в полную силу */
+.grid[data-highlight='0'] .cell:not([data-level='0']),
+.grid[data-highlight='1'] .cell:not([data-level='1']),
+.grid[data-highlight='2'] .cell:not([data-level='2']),
+.grid[data-highlight='3'] .cell:not([data-level='3']),
+.grid[data-highlight='4'] .cell:not([data-level='4']) {
+  opacity: 0.3;
+}
+
+/* ── Кольцо выбранного дня ──────────────────────────────────────────── */
+
+.ring {
+  position: absolute;
+  top: calc(var(--row) * var(--heat-step) - 2px);
+  left: calc(var(--col) * var(--heat-step) - 2px);
+  width: calc(var(--heat-cell) + 4px);
+  height: calc(var(--heat-cell) + 4px);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1.5px var(--color-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    top 260ms var(--ease-out-soft),
+    left 260ms var(--ease-out-soft),
+    opacity 160ms var(--ease-out-soft);
+}
+
+.ring[data-shown] {
+  opacity: 1;
+}
+
+/* ── Легенда ────────────────────────────────────────────────────────── */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  min-height: 18px;
+}
+
+.caption {
+  color: var(--color-slate);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.captionShort {
+  display: none;
+}
+
+.scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.legendText {
+  color: var(--color-steel);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.swatches {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.swatch {
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--heat-0);
+  box-shadow: inset 0 0 0 1px var(--heat-ring-line);
+  cursor: pointer;
+  transition:
+    transform 140ms var(--ease-out-soft),
+    box-shadow 140ms var(--ease-out-soft);
+}
+
+.swatch[data-level='1'] { background: var(--heat-1); }
+.swatch[data-level='2'] { background: var(--heat-2); }
+.swatch[data-level='3'] { background: var(--heat-3); }
+.swatch[data-level='4'] { background: var(--heat-4); }
+
+.swatch:hover {
+  transform: translateY(-1px);
+}
+
+.swatch[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 1.5px var(--color-canvas),
+    0 0 0 3px var(--color-primary);
+}
+
+/* ── Тултип ─────────────────────────────────────────────────────────── */
+
+.tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  pointer-events: none;
+  /* Пузырь стоит над клеткой: translate не конфликтует с transform от motion */
+  translate: 0 calc(-100% - 8px);
+}
+
+/*
+ * Пузырь тёмный, а не белый: на белой карточке светлый тултип с тонкой рамкой
+ * читался как «пустое место». Тёмная плашка сразу отделяется от бумаги.
+ */
+.bubble {
+  padding: 6px 10px 7px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--color-navy);
+  box-shadow:
+    0 14px 30px -16px rgba(11, 37, 69, 0.55),
+    0 2px 6px rgba(11, 37, 69, 0.12);
+  transform-origin: 50% 100%;
+}
+
+/* На тёмном поле navy сливается с карточкой — поднимаем плашку тоном и рамкой */
+[data-theme='dark'] .bubble {
+  background: color-mix(in srgb, var(--color-on-dark) 15%, var(--color-canvas));
+  border-color: color-mix(in srgb, var(--color-on-dark) 20%, transparent);
+  box-shadow: 0 18px 36px -18px rgba(0, 0, 0, 0.85);
+}
+
+.tipBody {
+  position: relative;
+  display: block;
+}
+
+/* Невидимый слой задаёт ширину пузыря: по нему измеряется текст до перелёта */
+.tipMeasure {
+  display: grid;
+  gap: 1px;
+  visibility: hidden;
+  white-space: nowrap;
+}
+
+.tipLines {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 1px;
+  align-content: start;
+  white-space: nowrap;
+}
+
+.tipPrimary {
+  color: var(--color-on-dark);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.tipSecondary {
+  color: var(--color-on-dark-muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+[data-theme='dark'] .tipPrimary {
+  color: var(--color-ink);
+}
+
+[data-theme='dark'] .tipSecondary {
+  color: var(--color-slate);
+}
+
+/* ── Число в шапке и сменный текст периода ──────────────────────────── */
+
+.rollingFrame {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+}
+
+.rolling {
+  display: inline-flex;
+  white-space: pre;
+}
+
+.place {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.placeChar {
+  display: inline-block;
+  will-change: transform;
+}
+
+.rise {
+  position: relative;
+  display: inline-block;
+}
+
+.riseLine {
+  display: inline-block;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* На узком экране длинная подпись легенды заменяется короткой */
+@media (max-width: 560px) {
+  .captionLong {
+    display: none;
+  }
+
+  .captionShort {
+    display: inline;
+  }
+
+  .month {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell,
+  .ring,
+  .swatch {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .grid[data-reveal='hidden'] .cell {
+    opacity: 1;
+  }
+
+  .grid[data-reveal='revealing'] .cell {
+    animation: none;
+  }
+
+  .cell:hover {
+    transform: none;
+  }
+}
