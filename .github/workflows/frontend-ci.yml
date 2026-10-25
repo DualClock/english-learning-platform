@@ -41,7 +41,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # 22, а не 20: юнит-тесты импортируют .ts напрямую (`from './beta.ts'`),
+          # а встроенное снятие типов появилось только в Node 22.6. На 20 шаг
+          # «Unit tests» падал с ERR_UNKNOWN_FILE_EXTENSION ещё до моих изменений.
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

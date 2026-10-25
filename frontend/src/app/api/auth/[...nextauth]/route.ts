@@ -22,7 +22,9 @@ function tokenExpiresAt(token?: string): number | undefined {
 
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true,
+  // Доверие прокси в next-auth 4 задаётся не опцией, а окружением:
+  // detectOrigin() берёт NEXTAUTH_URL, а без него — AUTH_TRUST_HOST + X-Forwarded-Host.
+  // На сервере NEXTAUTH_URL задан в юните, поэтому хост за nginx считается верным.
   session: {
     strategy: 'jwt',
     maxAge: SESSION_MAX_AGE_SECONDS,
