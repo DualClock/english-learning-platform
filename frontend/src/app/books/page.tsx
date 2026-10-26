@@ -104,7 +104,7 @@ export default function BooksPage() {
 
     const refreshCovers = async () => {
       try {
-        const res = await fetch(`/api/next/api/books/refresh-covers`, {
+        const res = await fetch(`/api/next/books/refresh-covers`, {
           method: 'POST',
         });
         if (res.ok) {
@@ -189,7 +189,7 @@ export default function BooksPage() {
   const addStory = async (story: Story) => {
     setAddingStoryIndex(story.index);
     try {
-      const res = await fetch(`/api/next/api/books/story/${story.index}`, {
+      const res = await fetch(`/api/next/books/story/${story.index}`, {
         method: 'POST',
       });
       if (!res.ok) throw new Error('failed');
@@ -209,7 +209,7 @@ export default function BooksPage() {
 
   const deleteBook = async (book: UserBook) => {
     try {
-      await fetch(`/api/next/api/books/${book.id}`, {
+      await fetch(`/api/next/books/${book.id}`, {
         method: 'DELETE',
       });
       await reloadBooks();
@@ -233,7 +233,7 @@ export default function BooksPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`/api/next/api/books/upload`, {
+      const res = await fetch(`/api/next/books/upload`, {
         method: 'POST',
         body: formData,
       });

@@ -1721,7 +1721,13 @@
 .reader-page-pad {
   height: 100%;
   box-sizing: border-box;
-  padding: clamp(22px, 4.6vh, 52px) var(--reader-page-margin, 8%);
+  /*
+   * Верхний отступ не меньше высоты постоянного хедера читалки (48px):
+   * хедер больше не прячется, и без этого запаса первая строка подходила
+   * под него вплотную.
+   */
+  padding: clamp(56px, 4.6vh, 72px) var(--reader-page-margin, 8%)
+    clamp(22px, 4.6vh, 52px);
 }
 
 .reader-viewport {

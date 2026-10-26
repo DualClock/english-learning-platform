@@ -23,7 +23,7 @@ export default function AvatarPicker({ current, onDone, onSkip }: AvatarPickerPr
     setError('');
     setIsUploading(true);
     try {
-      const res = await fetch(`/api/next/api/profile/avatar/default`, {
+      const res = await fetch(`/api/next/profile/avatar/default`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ export default function AvatarPicker({ current, onDone, onSkip }: AvatarPickerPr
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`/api/next/api/profile/avatar`, {
+      const res = await fetch(`/api/next/profile/avatar`, {
         method: 'POST',
         body: formData,
       });

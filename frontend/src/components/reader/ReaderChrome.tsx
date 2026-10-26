@@ -49,17 +49,14 @@ export default function ReaderChrome({
   const Bookmark = hasBookmark ? BookmarkFilledIcon : BookmarkIcon;
 
   return (
-    <div
-      className={`pointer-events-none absolute inset-0 z-30 transition-opacity duration-200 ${
-        visible ? 'opacity-100' : 'opacity-0'
-      }`}
-      aria-hidden={!visible}
-    >
-      <header
-        className={`pointer-events-auto absolute inset-x-0 top-0 border-b border-[var(--reader-hairline)] bg-[var(--reader-paper)] ${
-          visible ? '' : 'pointer-events-none'
-        }`}
-      >
+    <div className="pointer-events-none absolute inset-0 z-30">
+      {/*
+       * Хедер виден всегда. Раньше он исчезал через 3.2 секунды (таймер жил в
+       * ReaderShell), и на телефоне, где ховера нет, вернуть его было нечем:
+       * человек оставался в тексте без названия главы, без процента книги и
+       * без кнопки назад. Полоса тонкая (48px) и краёв текста не касается.
+       */}
+      <header className="pointer-events-auto absolute inset-x-0 top-0 border-b border-[var(--reader-hairline)] bg-[var(--reader-paper)]">
         <div className="mx-auto flex h-12 max-w-[780px] items-center gap-1 px-2 sm:px-4">
           <Link
             href="/books"
@@ -73,6 +70,14 @@ export default function ReaderChrome({
           <div className="min-w-0 flex-1 px-1">
             <p className="truncate font-reading text-body-sm text-[var(--reader-ink)]">{chapterTitle}</p>
           </div>
+
+          {/* Процент книги — на виду всегда, а не только в открытой нижней панели */}
+          <span
+            className="shrink-0 text-caption tabular-nums text-[var(--reader-ink-soft)]"
+            title="Прочитано в книге"
+          >
+            {Math.min(100, Math.max(0, Math.round(bookPercent)))}%
+          </span>
 
           <button
             type="button"
@@ -119,9 +124,14 @@ export default function ReaderChrome({
         </div>
       </header>
 
+      {/*
+       * Нижняя панель (страницы) — наоборот, по требованию: на мобиле она
+       * всегда видима как транспорт, на десктопе появляется при касании
+       * текста, чтобы не отбирать место у набора.
+       */}
       <footer
-        className={`pointer-events-auto absolute inset-x-0 bottom-0 border-t border-[var(--reader-hairline)] bg-[var(--reader-paper)] ${
-          visible ? '' : 'pointer-events-none'
+        className={`pointer-events-auto absolute inset-x-0 bottom-0 border-t border-[var(--reader-hairline)] bg-[var(--reader-paper)] transition-opacity duration-200 ${
+          visible ? 'opacity-100' : 'opacity-0 pointer-events-none sm:opacity-100 sm:pointer-events-auto'
         }`}
       >
         <div className="mx-auto flex h-11 max-w-[780px] items-center gap-2 px-2 sm:px-4">
