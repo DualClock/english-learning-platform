@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getReaderChapter, ReaderApiError } from '@/lib/reader/api';
 import type { ReaderChapter } from '@/lib/reader/types';
 
-export function useReaderChapter(bookId: number, chapterId: string | null, token?: string) {
+export function useReaderChapter(bookId: number, chapterId: string | null) {
   const [chapter, setChapter] = useState<ReaderChapter | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +21,6 @@ export function useReaderChapter(bookId: number, chapterId: string | null, token
 
   const load = useCallback(
     async (id: string) => {
-      if (!token) return;
       const cached = cacheRef.current.get(id);
       if (cached) {
         setChapter(cached);
@@ -33,7 +32,7 @@ export function useReaderChapter(bookId: number, chapterId: string | null, token
       const requestId = ++requestRef.current;
       setIsLoading(true);
       try {
-        const data = await getReaderChapter(bookId, id, token);
+        const data = await getReaderChapter(bookId, id);
         if (requestId !== requestRef.current) return;
         cacheRef.current.set(id, data);
         setChapter(data);
@@ -51,7 +50,7 @@ export function useReaderChapter(bookId: number, chapterId: string | null, token
         if (requestId === requestRef.current) setIsLoading(false);
       }
     },
-    [bookId, token]
+    [bookId]
   );
 
   useEffect(() => {
@@ -61,15 +60,15 @@ export function useReaderChapter(bookId: number, chapterId: string | null, token
 
   const prefetch = useCallback(
     async (id: string) => {
-      if (!token || !id || cacheRef.current.has(id)) return;
+      if (!id || cacheRef.current.has(id)) return;
       try {
-        const data = await getReaderChapter(bookId, id, token);
+        const data = await getReaderChapter(bookId, id);
         cacheRef.current.set(id, data);
       } catch {
         // предзагрузка не должна влиять на чтение
       }
     },
-    [bookId, token]
+    [bookId]
   );
 
   const reload = useCallback(() => {

@@ -15,7 +15,6 @@ export default function ReaderPage() {
     <AppLayout immersive>
       <ReaderShell
         bookId={Number.isInteger(bookId) && bookId > 0 ? bookId : 0}
-        token={session?.accessToken}
         userId={session?.user?.id ?? null}
       />
     </AppLayout>

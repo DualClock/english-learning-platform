@@ -113,6 +113,36 @@ public class CategoriesController : ControllerBase
             })
             .ToList();
 
+        // Перевод примера берём из справочника WordLevels (R11): в Categories
+        // поле Example есть только по-английски, а карточке нужна пара.
+        var categoryExamples = await _context.WordLevels
+            .AsNoTracking()
+            .Where(level => texts.Contains(level.Text) && level.ExampleRu != null)
+            .Select(level => new { level.Text, level.Example, level.ExampleRu })
+            .ToDictionaryAsync(level => level.Text, level => level, StringComparer.OrdinalIgnoreCase);
+
+        var wordsWithExamples = words
+            .Select(w =>
+            {
+                var reference = categoryExamples.GetValueOrDefault(w.English.ToLowerInvariant());
+                var example = string.IsNullOrWhiteSpace(reference?.Example) ? w.Example : reference!.Example;
+                return new
+                {
+                    w.Id,
+                    w.English,
+                    w.Translation,
+                    w.Transcription,
+                    Example = example,
+                    // Перевод относим только к тому примеру, что реально вернули:
+                    // иначе под английской фразой из категории стоял бы перевод
+                    // другой фразы из справочника.
+                    ExampleRu = example == reference?.Example ? reference?.ExampleRu : null,
+                    w.Status,
+                    w.InDictionary
+                };
+            })
+            .ToList();
+
         return Ok(new
         {
             category.Id,
@@ -121,7 +151,7 @@ public class CategoriesController : ControllerBase
             category.Icon,
             category.Color,
             category.Description,
-            Words = words
+            Words = wordsWithExamples
         });
     }
 

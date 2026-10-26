@@ -198,15 +198,23 @@ public class DictionaryService
             userWords.Select(uw => uw.WordId));
         var categoryIcons = await LoadCategoryIconsAsync(
             userWords.Select(uw => uw.Word.Text));
+        var examples = await LoadWordExamplesAsync(
+            userWords.Select(uw => uw.Word.Text));
 
         var items = userWords
-            .Select(uw => MapToResponse(
-                uw.Word,
-                uw.Source,
-                contexts.GetValueOrDefault(uw.WordId),
-                uw.Emoji,
-                uw.ImageUrl,
-                categoryIcons.GetValueOrDefault(uw.Word.Text)))
+            .Select(uw =>
+            {
+                var example = examples.GetValueOrDefault(uw.Word.Text);
+                return MapToResponse(
+                    uw.Word,
+                    uw.Source,
+                    contexts.GetValueOrDefault(uw.WordId),
+                    uw.Emoji,
+                    uw.ImageUrl,
+                    categoryIcons.GetValueOrDefault(uw.Word.Text),
+                    example.Example,
+                    example.ExampleRu);
+            })
             .ToList();
 
         return (items, totalCount);
@@ -232,15 +240,23 @@ public class DictionaryService
             userWords.Select(uw => uw.WordId));
         var categoryIcons = await LoadCategoryIconsAsync(
             userWords.Select(uw => uw.Word.Text));
+        var examples = await LoadWordExamplesAsync(
+            userWords.Select(uw => uw.Word.Text));
 
         return userWords
-            .Select(uw => MapToResponse(
-                uw.Word,
-                uw.Source,
-                contexts.GetValueOrDefault(uw.WordId),
-                uw.Emoji,
-                uw.ImageUrl,
-                categoryIcons.GetValueOrDefault(uw.Word.Text)))
+            .Select(uw =>
+            {
+                var example = examples.GetValueOrDefault(uw.Word.Text);
+                return MapToResponse(
+                    uw.Word,
+                    uw.Source,
+                    contexts.GetValueOrDefault(uw.WordId),
+                    uw.Emoji,
+                    uw.ImageUrl,
+                    categoryIcons.GetValueOrDefault(uw.Word.Text),
+                    example.Example,
+                    example.ExampleRu);
+            })
             .ToList();
     }
 
@@ -256,13 +272,17 @@ public class DictionaryService
 
         var contexts = await LoadContextsAsync(userId, new[] { wordId });
         var categoryIcons = await LoadCategoryIconsAsync(new[] { userWord.Word.Text });
+        var examples = await LoadWordExamplesAsync(new[] { userWord.Word.Text });
+        var reference = examples.GetValueOrDefault(userWord.Word.Text);
         return MapToResponse(
             userWord.Word,
             userWord.Source,
             contexts.GetValueOrDefault(wordId),
             userWord.Emoji,
             userWord.ImageUrl,
-            categoryIcons.GetValueOrDefault(userWord.Word.Text));
+            categoryIcons.GetValueOrDefault(userWord.Word.Text),
+            reference.Example,
+            reference.ExampleRu);
     }
 
     public async Task<WordResponse?> UpdateWordAsync(string userId, int wordId, UpdateWordRequest request)
@@ -326,13 +346,17 @@ public class DictionaryService
 
             var copyContexts = await LoadContextsAsync(userId, new[] { copy.Id });
             var copyIcons = await LoadCategoryIconsAsync(new[] { copy.Text });
+            var copyExamples = await LoadWordExamplesAsync(new[] { copy.Text });
+            var copyReference = copyExamples.GetValueOrDefault(copy.Text);
             return MapToResponse(
                 copy,
                 userWord.Source,
                 copyContexts.GetValueOrDefault(copy.Id),
                 userWord.Emoji,
                 userWord.ImageUrl,
-                copyIcons.GetValueOrDefault(copy.Text));
+                copyIcons.GetValueOrDefault(copy.Text),
+                copyReference.Example,
+                copyReference.ExampleRu);
         }
 
         if (!string.IsNullOrEmpty(request.Text))
@@ -364,13 +388,17 @@ public class DictionaryService
         await _context.SaveChangesAsync();
         var contexts = await LoadContextsAsync(userId, new[] { word.Id });
         var categoryIcons = await LoadCategoryIconsAsync(new[] { word.Text });
+        var examples = await LoadWordExamplesAsync(new[] { word.Text });
+        var reference = examples.GetValueOrDefault(word.Text);
         return MapToResponse(
             word,
             userWord.Source,
             contexts.GetValueOrDefault(word.Id),
             userWord.Emoji,
             userWord.ImageUrl,
-            categoryIcons.GetValueOrDefault(word.Text));
+            categoryIcons.GetValueOrDefault(word.Text),
+            reference.Example,
+            reference.ExampleRu);
     }
 
     public async Task<(WordResponse? Word, string? RemovedImageUrl)> SetEmojiAsync(
@@ -515,13 +543,47 @@ public class DictionaryService
                 StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Примеры из справочника WordLevels по тексту слова (R11).
+    ///
+    /// Отдельный запрос, а не Include: WordLevel связан с Word только текстом
+    /// (navigation property нет), и тащить её в основной запрос словаря значило
+    /// бы джойнить глобальную таблицу на 4500 строк ради двух колонок.
+    /// Ключ — нижний регистр: в Words текст может прийти с заглавной («River»),
+    /// в справочнике слово всегда в нижнем.
+    /// </summary>
+    private async Task<Dictionary<string, (string? Example, string? ExampleRu)>> LoadWordExamplesAsync(
+        IEnumerable<string> texts)
+    {
+        var normalized = texts
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .Select(text => text.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToList();
+
+        if (normalized.Count == 0) return new Dictionary<string, (string?, string?)>();
+
+        var rows = await _context.WordLevels
+            .AsNoTracking()
+            .Where(level => normalized.Contains(level.Text) && level.Example != null)
+            .Select(level => new { level.Text, level.Example, level.ExampleRu })
+            .ToListAsync();
+
+        return rows.ToDictionary(
+            row => row.Text,
+            row => (row.Example, row.ExampleRu),
+            StringComparer.OrdinalIgnoreCase);
+    }
+
     private static WordResponse MapToResponse(
         Word word,
         string? source = null,
         string? context = null,
         string? emoji = null,
         string? imageUrl = null,
-        string? categoryIcon = null)
+        string? categoryIcon = null,
+        string? example = null,
+        string? exampleRu = null)
     {
         return new WordResponse(
             word.Id,
@@ -542,7 +604,9 @@ public class DictionaryService
             context,
             emoji,
             imageUrl,
-            categoryIcon
+            categoryIcon,
+            example,
+            exampleRu
         );
     }
 }

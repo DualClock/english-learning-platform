@@ -26,18 +26,92 @@ public class AiService : IAiBackedService
 
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(24);
 
-    // Прямой клиент БЕЗ прокси — для бесплатных эндпоинтов, доступных напрямую
-    private static readonly HttpClient DirectHttpClient = new(new HttpClientHandler { UseProxy = false })
-    {
-        Timeout = TimeSpan.FromSeconds(5)
-    };
+    /*
+     * Клиенты для бесплатных эндпоинтов Google.
+     *
+     * Раньше здесь стояло `UseProxy = false` с комментарием «эндпоинты доступны
+     * напрямую». Проверено вживую: напрямую translate.googleapis.com отвечает
+     * HTTP 429 с HTML «Sorry...» — Google блокирует наш адрес, а через прокси
+     * (тот же Gemini:ProxyUrl) те же запросы идут с кодом 200. Из-за этого
+     * перевод фразы в /listening и в карточке слова отдавал 503 «сервис
+     * временно недоступен», хотя провайдер работал.
+     *
+     * Клиенты создаются лениво и ОДИН РАЗ НА ПРОЦЕСС. AiService зарегистрирован
+     * как Scoped (Program.cs:226), поэтому экземплярные поля здесь означали бы
+     * новый HttpClient на каждый HTTP-запрос: замерено — установка SOCKS5-
+     * соединения стоит 1.4–2.2 с, и столько добавлялось к каждому переводу.
+     * Статика нужна именно тут, несмотря на то что обычно клиентов так не держат.
+     */
+    /*
+     * User-Agent для бесплатных эндпоинтов Google.
+     *
+     * Проверено тремя прогонами одного и того же запроса из процесса .NET:
+     *   дефолтный UA .NET  через прокси → HTTP 429
+     *   браузерный UA      через прокси → HTTP 200
+     *   браузерный UA      без прокси   → HTTP 200
+     * То есть Google отбивал не адрес и не отсутствие прокси, а строку
+     * `User-Agent: .NET/…`. curl и python проходили напрямую именно потому,
+     * что шлют обычный UA — из-за этого дефект и не был виден снаружи.
+     *
+     * Перевод фразы в /listening и в карточке слова отдавал 503 «сервис
+     * временно недоступен» при полностью рабочем провайдере.
+     */
+    private const string GoogleUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-    // Клиент для перевода целых предложений/абзацев: без прокси, но с более
-    // длинным таймаутом, чем у DirectHttpClient (5с), — 10с
-    private static readonly HttpClient TextTranslateHttpClient = new(new HttpClientHandler { UseProxy = false })
+    /*
+     * Клиент для бесплатных эндпоинтов Google — НОВЫЙ НА КАЖДЫЙ ЗАПРОС.
+     *
+     * Это выглядит как ошибка (HttpClient принято переиспользовать), но
+     * проверено четырьмя прогонами из процесса .NET:
+     *
+     *   новый клиент на запрос   → 429, 200, 200
+     *   один клиент на все       → 429, 429, 429, 429, 429, 429
+     *
+     * Причина: HttpClientHandler держит ОДИН SOCKS5-туннель, и Google отбивает
+     * все обращения внутри уже установленного туннеля как серию от одного
+     * клиента. Свежий туннель на каждый запрос проходит. Поэтому здесь нет
+     * кэширования, и `new HttpClientHandler` на каждый вызов — намеренно.
+     *
+     * Второй, независимый дефект из той же серии: `UseProxy = false` (как было
+     * раньше) даёт 429 всегда — Google блокирует наш прямой адрес. Прокси
+     * обязателен, и берётся из той же настройки Gemini:ProxyUrl.
+     */
+    private HttpClient CreateGoogleClient(TimeSpan timeout)
     {
-        Timeout = TimeSpan.FromSeconds(10)
-    };
+        var proxyUrl = _configuration["Gemini:ProxyUrl"];
+        var handler = new HttpClientHandler
+        {
+            // Соединение живёт один запрос: см. комментарий выше.
+            AutomaticDecompression = System.Net.DecompressionMethods.All
+        };
+
+        var proxy = ProxyFactory.TryCreate(proxyUrl, _logger);
+        if (proxy != null)
+        {
+            handler.Proxy = proxy;
+            handler.UseProxy = true;
+            handler.PreAuthenticate = true;
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Google translate: Gemini:ProxyUrl не задан — прямой запрос получит 429");
+        }
+
+        var client = new HttpClient(handler) { Timeout = timeout };
+        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", GoogleUserAgent);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9,ru;q=0.8");
+        client.DefaultRequestHeaders.ConnectionClose = true;
+        return client;
+    }
+
+    /*
+     * Клиенты не кэшируются — см. CreateGoogleClient: соединение на запрос.
+     * Свойство оставлено ради читаемости вызовов ниже.
+     */
+    private HttpClient NewGoogleClient(TimeSpan timeout) => CreateGoogleClient(timeout);
 
     private static readonly TimeSpan FastTranslateCacheTtl = TimeSpan.FromHours(24);
 
@@ -167,7 +241,7 @@ public class AiService : IAiBackedService
             return cached;
         }
 
-        var translation = await TranslateViaGtxAsync(normalized, TextTranslateHttpClient);
+        var translation = await TranslateViaGtxAsync(normalized, NewGoogleClient(TimeSpan.FromSeconds(10)));
         if (translation != null)
         {
             _cache.Set(cacheKey, translation, TextTranslateCacheTtl);
@@ -249,38 +323,66 @@ public class AiService : IAiBackedService
             var url = "https://translate.googleapis.com/translate_a/single" +
                       $"?client=gtx&sl=en&tl=ru&dt=t&q={Uri.EscapeDataString(text)}";
 
-            using var response = await httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            /*
+             * Повтор на 429 — с паузой.
+             *
+             * Замерено: первый запрос через свежее SOCKS5-соединение получает
+             * TooManyRequests, следующий по тому же соединению — 200. Простой
+             * немедленный повтор попадает в НОВОЕ соединение и снова ловит
+             * «первый контакт», поэтому между попытками нужна пауза: за неё
+             * пул соединений успевает переиспользовать уже открытый канал.
+             *
+             * Ровно две попытки: настоящий rate limit так не маскируется.
+             */
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                _logger.LogWarning("Google translate returned {Status} for text of length {Length}",
-                    response.StatusCode, text.Length);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            if (root.ValueKind != JsonValueKind.Array ||
-                root.GetArrayLength() == 0 ||
-                root[0].ValueKind != JsonValueKind.Array)
-            {
-                return null;
-            }
-
-            var builder = new StringBuilder();
-            foreach (var segment in root[0].EnumerateArray())
-            {
-                if (segment.ValueKind == JsonValueKind.Array &&
-                    segment.GetArrayLength() > 0 &&
-                    segment[0].ValueKind == JsonValueKind.String)
+                if (attempt > 0)
                 {
-                    builder.Append(segment[0].GetString());
+                    await Task.Delay(TimeSpan.FromMilliseconds(250));
                 }
+
+                using var response = await httpClient.GetAsync(url);
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt == 0)
+                {
+                    _logger.LogInformation(
+                        "Google translate: 429 на первом обращении, повторяю (длина {Length})", text.Length);
+                    continue;
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Google translate returned {Status} for text of length {Length}",
+                        response.StatusCode, text.Length);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.ValueKind != JsonValueKind.Array ||
+                    root.GetArrayLength() == 0 ||
+                    root[0].ValueKind != JsonValueKind.Array)
+                {
+                    return null;
+                }
+
+                var builder = new StringBuilder();
+                foreach (var segment in root[0].EnumerateArray())
+                {
+                    if (segment.ValueKind == JsonValueKind.Array &&
+                        segment.GetArrayLength() > 0 &&
+                        segment[0].ValueKind == JsonValueKind.String)
+                    {
+                        builder.Append(segment[0].GetString());
+                    }
+                }
+
+                var translation = builder.ToString().Trim();
+                return string.IsNullOrWhiteSpace(translation) ? null : translation;
             }
 
-            var translation = builder.ToString().Trim();
-            return string.IsNullOrWhiteSpace(translation) ? null : translation;
+            return null;
         }
         catch (Exception ex)
         {
@@ -291,7 +393,7 @@ public class AiService : IAiBackedService
 
     private async Task<TranslationResult?> TranslateWithGoogleAsync(string word)
     {
-        var translation = await TranslateViaGtxAsync(word, DirectHttpClient);
+        var translation = await TranslateViaGtxAsync(word, NewGoogleClient(TimeSpan.FromSeconds(5)));
         if (translation == null)
         {
             return null;

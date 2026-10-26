@@ -93,7 +93,11 @@ public class AuthController : ControllerBase
             StudyGoal = dto.StudyGoal,
             DailyGoalMinutes = Math.Clamp(dto.DailyGoalMinutes ?? 10, 1, 240),
             TimeZoneId = UserTime.Normalize(dto.TimeZoneId),
-            NotifyEnabled = dto.NotifyEnabled ?? false,
+            // true по умолчанию: без письма-напоминания у нового пользователя нет
+            // ни одного канала возврата (пуш не спрашиваем, письмо подтверждения
+            // не уходит — почтового транспорта нет). Отписка остаётся в настройках,
+            // и там же стоят время и часовой пояс напоминания.
+            NotifyEnabled = dto.NotifyEnabled ?? true,
             ReminderHour = Math.Clamp(dto.ReminderHour ?? 9, 0, 23),
             // Если пользователь пропустит выбор аватара, остаётся базовый по умолчанию
             AvatarUrl = AvatarService.DefaultAvatarUrl("avatar-1")

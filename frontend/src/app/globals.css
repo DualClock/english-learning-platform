@@ -517,6 +517,16 @@
   color: var(--fc-card-muted);
 }
 
+/* Перевод примера — подсказка, а не второй заголовок: мельче английского и
+   без курсива, иначе две наклонные строки сливаются в одну. */
+.flashcard-example-translation {
+  max-width: 34ch;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+  line-height: 1.45;
+  color: var(--fc-card-muted);
+}
+
 .flashcard-sound {
   position: absolute;
   top: clamp(10px, 2vw, 16px);

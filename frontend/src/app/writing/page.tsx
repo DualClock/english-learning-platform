@@ -112,7 +112,7 @@ const TOPICS: WritingTopic[] = [
 const MAX_LENGTH = 2000;
 
 export default function WritingPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const { data: profile } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
 
   const [topicId, setTopicId] = useState(TOPICS[0].id);
@@ -153,7 +153,6 @@ export default function WritingPage() {
 
     try {
       const result = await apiMutate<Analysis>('/api/assistant/analyze', {
-        token: session?.accessToken,
         method: 'POST',
         body: {
           text: trimmed,
@@ -166,7 +165,6 @@ export default function WritingPage() {
       // XP за письменную практику: отдельный вызов, чтобы начисление
       // не зависело от того, удался ли разбор
       void apiMutate('/api/practice/writing/submitted', {
-        token: session?.accessToken,
         method: 'POST',
         body: { wordCount },
       }).catch(() => {
@@ -181,7 +179,7 @@ export default function WritingPage() {
     } finally {
       setChecking(false);
     }
-  }, [checking, profile?.cefrLevel, session?.accessToken, text, wordCount]);
+  }, [checking, profile?.cefrLevel, text, wordCount]);
 
   const copyBetter = async () => {
     if (!analysis?.betterVersion) return;

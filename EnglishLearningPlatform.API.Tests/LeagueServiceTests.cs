@@ -141,4 +141,83 @@ public class LeagueServiceTests
         Assert.Equal("demotion", board.Entries.Single(e => e.Rank == 12).Zone);
         Assert.True(board.Entries.Single(e => e.Rank == 6).IsMe);
     }
+
+    // ── Порог соревнования: фронт не рендерит лигу на 9 участниках ──────────
+    //
+    // WeeklyLeague показывает «лигу формируется» с цифрой, но человеку это не
+    // соревнование: повышение и вылет на 9 участниках не начисляются, зато
+    // таблица выглядит как готовая. Фронт прячет блок целиком, а решает это по
+    // числам из API — поэтому обе величины обязаны приезжать наружу и не
+    // разъезжаться с правилом, по которому сервер закрывает неделю.
+
+    private static async Task<LeaderboardDto> BoardForGroupSize(int size)
+    {
+        await using var context = CreateContext();
+        var currentWeek = CurrentWeekStart();
+
+        var users = AddUsers(context, size, "silver");
+        if (size > 0) AddWeekXp(context, currentWeek, users);
+
+        context.LeagueWeekStates.Add(new LeagueWeekState
+        {
+            Id = 1,
+            LastProcessedWeekStart = currentWeek.AddDays(-7)
+        });
+        await context.SaveChangesAsync();
+
+        var service = new LeagueService(context);
+        return await service.GetLeaderboardAsync(size > 0 ? users[0].Id : "guest-without-xp");
+    }
+
+    [Theory]
+    [InlineData(9, false)]
+    [InlineData(10, true)]
+    [InlineData(0, false)]
+    public async Task Group_IsConfigurableOnlyFromMinimumCompetitiveGroup(int participants, bool expectedConfigurable)
+    {
+        var board = await BoardForGroupSize(participants);
+
+        Assert.Equal(participants, board.Group.ParticipantCount);
+        Assert.Equal(participants, board.Group.Participants);
+        Assert.Equal(LeagueService.MinimumCompetitiveGroup, board.Group.CompetitiveThreshold);
+
+        // Одно слово для фронта: «можно ли показывать соревнование». Это
+        // отрицание Forming, а не независимая логика — иначе два экрана начнут
+        // показывать разные ответы про одну группу.
+        var isConfigurable = board.Group.ParticipantCount >= board.Group.CompetitiveThreshold;
+
+        Assert.Equal(expectedConfigurable, isConfigurable);
+        Assert.Equal(expectedConfigurable, !board.Group.Forming);
+    }
+
+    /// <summary>
+    /// Порог живёт в одном месте: если кто-то поднимет MinimumCompetitiveGroup,
+    /// поменяется и DTO, и закрытие недели. Тест ловит правку константы без
+    /// правки контракта — иначе фронт остался бы на захардкоженной десятке.
+    /// </summary>
+    [Fact]
+    public async Task Group_ThresholdIsReadFromServiceConstant_NotHardcodedOnClient()
+    {
+        var board = await BoardForGroupSize(10);
+
+        Assert.Equal(10, board.Group.CompetitiveThreshold);
+        Assert.Equal(LeagueService.MinimumCompetitiveGroup, board.Group.CompetitiveThreshold);
+        Assert.True(board.Group.ParticipantCount >= board.Group.CompetitiveThreshold);
+    }
+
+    /// <summary>
+    /// Владелец с нулём XP не должен превращаться в «группу из одного»:
+    /// участник — это тот, у кого есть недельный XP. Пустая группа обязана
+    /// приезжать как 0 участников, а не 1.
+    /// </summary>
+    [Fact]
+    public async Task EmptyLeaderboard_ReportsZeroParticipants()
+    {
+        var board = await BoardForGroupSize(0);
+
+        Assert.Equal(0, board.Group.ParticipantCount);
+        Assert.Equal(0, board.Group.Participants);
+        Assert.True(board.Group.Forming);
+        Assert.Empty(board.Entries);
+    }
 }

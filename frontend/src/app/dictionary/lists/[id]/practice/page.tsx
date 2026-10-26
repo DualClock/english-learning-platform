@@ -60,7 +60,7 @@ type TranslationState =
   | { status: 'error' };
 
 function PracticeContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const trackEvent = useTrack();
   const { speak } = useTts();
@@ -124,7 +124,7 @@ function PracticeContent() {
   }, [count]);
 
   const startRound = useCallback(() => {
-    if (!session?.accessToken || !listId) return;
+    if (!listId) return;
 
     eligibleRef.current = [];
     processedPagesRef.current = new Set();
@@ -138,7 +138,7 @@ function PracticeContent() {
     setLoadError(false);
     setRound(value => value + 1);
     setLoadPage(1);
-  }, [session?.accessToken, listId]);
+  }, [listId]);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -155,7 +155,7 @@ function PracticeContent() {
     const requestPath = `/api/wordlists/${listId}?page=${loadPage}&pageSize=${FETCH_PAGE_SIZE}`;
     // Если кэш страницы сброшен (например, после добавления слов), ждём сеть,
     // а не используем устаревшие данные из состояния хука.
-    if (peekCache(cacheKey(requestPath, session?.accessToken)) === undefined) return;
+    if (peekCache(cacheKey(requestPath)) === undefined) return;
     if (processedPagesRef.current.has(loadPage)) return;
     processedPagesRef.current.add(loadPage);
 
@@ -202,7 +202,6 @@ function PracticeContent() {
     }
     try {
       const data = await apiMutate<{ translation?: string }>('/api/ai/translate', {
-        token: session?.accessToken,
         method: 'POST',
         body: { word, targetLanguage: 'ru' }
       });
@@ -240,7 +239,6 @@ function PracticeContent() {
     }
     try {
       const data = await apiMutate<{ added: number; skipped: number }>(`/api/wordlists/${listId}/learn`, {
-        token: session?.accessToken,
         method: 'POST',
         body: { words },
         invalidate: ['/api/wordlists', '/api/dictionary']

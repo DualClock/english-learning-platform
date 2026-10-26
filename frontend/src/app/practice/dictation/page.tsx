@@ -48,7 +48,7 @@ interface AttemptResult {
 const ITEM_COUNT = 5;
 
 export default function DictationPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const { play, stop, isPlaying, isLoading } = useTts();
 
   const { data, error, isLoading: loadingDeck, refresh } = useApiQuery<DictationResponse>(
@@ -116,7 +116,6 @@ export default function DictationPage() {
       setSubmitError('');
       try {
         await apiMutate('/api/practice/dictation/result', {
-          token: session?.accessToken,
           method: 'POST',
           body: { results: all.map((r) => ({ wordId: r.wordId, correct: r.correct })) },
         });
@@ -127,7 +126,7 @@ export default function DictationPage() {
         setSubmitting(false);
       }
     },
-    [session?.accessToken]
+    []
   );
 
   const handleNext = useCallback(async () => {

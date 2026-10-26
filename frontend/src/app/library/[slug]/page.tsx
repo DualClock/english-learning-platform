@@ -278,14 +278,26 @@ export default async function LibraryBookPage({ params }: PageProps) {
             Что делать дальше
           </h2>
           <p className="mt-2 max-w-measure text-body text-charcoal">
-            Тест уровня займёт три минуты и ничего не сохранит — он подскажет, с какой полки
-            начинать. Аккаунт открывает читалку: клик по слову даёт перевод, слово уходит в словарь
-            и возвращается на повторение само.
+            Первую главу можно открыть прямо сейчас, без аккаунта: клик по слову показывает
+            перевод. Аккаунт добавляет остальное — словарь, повторение и остальные главы.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-4">
-            <Button href="/onboarding" className="px-6 py-3 text-body">
+            {/*
+             * Гостевое превью — единственная точка, где обещание лендинга
+             * «нажми на незнакомое слово» выполняется до регистрации. Ведёт на
+             * /reader/preview/<slug>, который middleware не гейтит; глава — только
+             * первая, запись в словарь требует аккаунта.
+             */}
+            <Button
+              href={`/reader/preview/${book.slug}`}
+              className="px-6 py-3 text-body"
+              data-testid="read-without-signup"
+            >
               <BookOpenIcon size={20} aria-hidden />
-              Читать бесплатно
+              Читать без регистрации
+            </Button>
+            <Button href="/onboarding" variant="secondary" className="px-6 py-3 text-body">
+              Создать аккаунт
             </Button>
             <Button href="/test" variant="secondary" className="px-6 py-3 text-body">
               Проверить уровень

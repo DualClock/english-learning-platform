@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { API_URL } from '@/app/lib/api-url';
 import { track } from '@/app/lib/analytics';
 import { FEEDBACK_CHECKPOINTS } from '@/lib/beta';
 import { CloseIcon } from '@/components/ui/icons';
@@ -22,7 +21,6 @@ import type { PulseAnswer, PulseState } from '@/lib/pulse';
 
 interface Props {
   userId: string | null;
-  accessToken: string | null;
   /** Номер открытой страницы: блок живёт только на той, где появился. */
   page: number;
 }
@@ -40,7 +38,7 @@ interface Props {
  * Никаких анимаций появления: контент, стартующий с opacity 0, без JS не
  * читается, и индексацию мы на этом уже ломали.
  */
-export default function BetaPulse({ userId, accessToken, page }: Props) {
+export default function BetaPulse({ userId, page }: Props) {
   // Копия вопроса живёт в beta.ts вместе с остальными обещаниями когорты:
   // сдвиг текста на /beta автоматически меняет и этот блок, а разъезд текста
   // с кнопками перехватывает buildPulseBlock (он вернёт null).
@@ -69,16 +67,16 @@ export default function BetaPulse({ userId, accessToken, page }: Props) {
   // 2. Спросить сервер, можно ли показывать. Один запрос на монтирование:
   // без него блок показался бы на каждом из трёх устройств читателя.
   useEffect(() => {
-    if (!userId || !accessToken || askedRef.current) return;
+    if (!userId || askedRef.current) return;
     askedRef.current = true;
 
     let cancelled = false;
 
     (async () => {
       try {
-        const response = await fetch(`${API_URL}/api/analytics/pulse/eligible`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        // Eligible-проверка ходит через свой origin: `Authorization` ставит
+        // серверный прокси из httpOnly-куки, в JS токена больше нет.
+        const response = await fetch('/api/next/analytics/pulse/eligible');
         if (!response.ok) return;
         const data = (await response.json()) as { eligible?: boolean };
         if (!cancelled) setServerEligible(data.eligible === true);
@@ -91,7 +89,7 @@ export default function BetaPulse({ userId, accessToken, page }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [userId, accessToken]);
+  }, [userId]);
 
   const remember = useCallback(
     (next: PulseState) => {
@@ -112,30 +110,30 @@ export default function BetaPulse({ userId, accessToken, page }: Props) {
   // одного читателя в двух молчунов.
   useEffect(() => {
     if (openedRef.current) return;
-    if (!shouldShowPulse({ userId, accessToken, serverEligible, state })) return;
+    if (!shouldShowPulse({ userId, serverEligible, state })) return;
 
     openedRef.current = true;
     setOpenedPage(page);
-    void track(PULSE_EVENTS.seen, pulseMeta(PULSE_EVENTS.seen), accessToken);
+    void track(PULSE_EVENTS.seen, pulseMeta(PULSE_EVENTS.seen));
     remember({ ...state, seen: true });
-  }, [userId, accessToken, serverEligible, state, remember, page]);
+  }, [userId, serverEligible, state, remember, page]);
 
   const answer = useCallback(
     (option: PulseAnswer) => {
       if (state.answered !== option) {
         const event = pulseEventsOnAnswer(option);
-        void track(event.event, event.meta, accessToken);
+        void track(event.event, event.meta);
       }
       remember({ ...state, seen: true, answered: option });
     },
-    [accessToken, remember, state]
+    [remember, state]
   );
 
   const dismiss = useCallback(() => {
-    void track(PULSE_EVENTS.dismissed, pulseMeta(PULSE_EVENTS.dismissed), accessToken);
+    void track(PULSE_EVENTS.dismissed, pulseMeta(PULSE_EVENTS.dismissed));
     remember({ ...state, seen: true, dismissed: true });
     setOpenedPage(null);
-  }, [accessToken, remember, state]);
+  }, [remember, state]);
 
   if (!block || !pulseShowsOnPage(openedPage, page)) return null;
 

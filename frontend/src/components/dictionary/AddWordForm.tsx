@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
 import Button from '@/components/ui/Button';
 import Notice from '@/components/ui/Notice';
@@ -34,7 +33,6 @@ interface SuccessState {
 }
 
 export default function AddWordForm() {
-  const { data: session } = useSession();
 
   const [text, setText] = useState('');
   const [definition, setDefinition] = useState('');
@@ -70,7 +68,6 @@ export default function AddWordForm() {
     setTranslating(true);
     try {
       const result = await apiMutate<DictionaryTranslation>('/api/ai/translate', {
-        token: session?.accessToken,
         body: {
           word,
           context: example.trim() || undefined,
@@ -121,7 +118,6 @@ export default function AddWordForm() {
     setSaving(true);
     try {
       const created = await apiMutate<WordResponse>('/api/dictionary', {
-        token: session?.accessToken,
         method: 'POST',
         body: {
           text: text.trim(),

@@ -28,7 +28,17 @@ public record LeagueGroupDto(
     bool PromotionAvailable,
     bool DemotionAvailable,
     string? PromotionLeagueTitle,
-    string? DemotionLeagueTitle);
+    string? DemotionLeagueTitle)
+{
+    // Дубликат Participants под именем, которое читает фронт при решении
+    // «рендерить блок лиги или нет». Оставили и Participants: на него завязаны
+    // уже собранный экран прогресса и старые клиенты.
+    public int ParticipantCount => Participants;
+
+    // Порог выносится наружу, чтобы фронт не хардкодил «10» и не разъезжался
+    // с правилом, по которому сервер начисляет повышение и вылет.
+    public int CompetitiveThreshold => LeagueService.MinimumCompetitiveGroup;
+}
 
 public record LeagueMeDto(
     int? Rank,

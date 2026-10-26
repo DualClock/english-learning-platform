@@ -159,7 +159,10 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
+      // accessToken в сессию НЕ отдаём: /api/auth/session — публичный JSON,
+      // и токен из него читал любой скрипт на странице. Он остаётся в jwt
+      // (то есть в зашифрованной httpOnly-куке) и нужен только серверному
+      // прокси /api/next/[...path], который подставляет Authorization сам.
       session.avatarUrl = token.avatarUrl ?? null;
       session.avatarFrame = token.avatarFrame ?? 'none';
       session.accentTheme = token.accentTheme ?? 'teal';

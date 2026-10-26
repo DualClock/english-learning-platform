@@ -71,7 +71,6 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const accessToken = session?.accessToken;
 
   // Наведение (или фокус) на пункт меню заранее тянет данные страницы,
   // поэтому клик открывает её уже с готовыми данными.
@@ -79,9 +78,9 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
     (href: string) => {
       router.prefetch(href);
       const paths = ROUTE_PREFETCH[href];
-      if (paths) prefetchApi(paths, accessToken);
+      if (paths) prefetchApi(paths);
     },
-    [router, accessToken]
+    [router]
   );
 
   const linkClass = (isActive: boolean) =>

@@ -23,15 +23,47 @@ namespace EnglishLearningPlatform.API.Security;
 /// </summary>
 public static class RateLimitPolicies
 {
+    /*
+     * Лимиты регистрации.
+     *
+     * Константы — значения для продакшена; на стенде их можно переопределить
+     * через конфигурацию (Auth__SignupIpPermitLimit). Зачем: 50 регистраций в
+     * час на IP при отладке исчерпываются за одну сессию прогонов, и человек
+     * натыкается на 429, принимая его за поломку. Значения по умолчанию
+     * оставлены продовыми — ослаблять защиту «по умолчанию» нельзя.
+     */
     public const int SignupEmailPermitLimit = 5;
     public const int SignupIpPermitLimit = 50;
     public static readonly TimeSpan SignupWindow = TimeSpan.FromHours(1);
+
+    /// <summary>Лимиты, переопределённые конфигурацией (стенд/тесты). 0 — не задано.</summary>
+    private static int _signupIpOverride;
+    private static int _signupEmailOverride;
+
+    /// <summary>Применить переопределения из конфигурации. Звать один раз при старте.</summary>
+    public static void ApplyOverrides(IConfiguration configuration)
+    {
+        _signupIpOverride = configuration.GetValue("Auth:SignupIpPermitLimit", 0);
+        _signupEmailOverride = configuration.GetValue("Auth:SignupEmailPermitLimit", 0);
+    }
+
+    private static int EffectiveIpLimit =>
+        _signupIpOverride > 0 ? _signupIpOverride : SignupIpPermitLimit;
+
+    private static int EffectiveEmailLimit =>
+        _signupEmailOverride > 0 ? _signupEmailOverride : SignupEmailPermitLimit;
 
     /// <summary>Аутентифицированная аналитика: читатель генерирует события активно.</summary>
     public const int AnalyticsPermitLimit = 120;
 
     /// <summary>Гостевая воронка /test: легальный burst — 2 события на проход.</summary>
     public const int GuestAnalyticsPermitLimit = 20;
+
+    /// <summary>
+    /// Гостевой читатель: 90 запросов в минуту с одного IP. Открытие превью —
+    /// два запроса (манифест и глава), дальше по одному на клик по слову.
+    /// </summary>
+    public const int GuestReaderPermitLimit = 90;
 
     /// <summary>Путь регистрации: его партицируем по IP отдельным лимитером.</summary>
     public const string RegistrationPath = "/api/auth/register";
@@ -45,6 +77,44 @@ public static class RateLimitPolicies
     public static void Configure(RateLimiterOptions options)
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        /*
+         * Ответ на отказ + след в логе.
+         *
+         * Раньше 429 уходил «голым»: тело пустое, в логе строка о статусе, из
+         * которой непонятно — это лимит на email, на IP или на эндпоинт.
+         * Форма при этом показывала «попробуйте ещё раз», и причину приходилось
+         * восстанавливать руками. Теперь отказ сам себя объясняет.
+         */
+        options.OnRejected = async (context, cancellationToken) =>
+        {
+            var http = context.HttpContext;
+            var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var window)
+                ? (int)window.TotalSeconds
+                : (int)SignupWindow.TotalSeconds;
+
+            http.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            http.Response.Headers.RetryAfter = retryAfter.ToString();
+
+            var logger = http.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("RateLimit");
+            logger?.LogWarning(
+                "Лимит исчерпан: {Method} {Path} от {Ip}. Повторить через {RetryAfter} с",
+                http.Request.Method,
+                http.Request.Path,
+                http.Connection.RemoteIpAddress?.ToString() ?? "неизвестен",
+                retryAfter);
+
+            await http.Response.WriteAsJsonAsync(
+                new
+                {
+                    error = "Слишком много попыток. Повторите позже.",
+                    limit = http.Request.Path.StartsWithSegments(RegistrationPath)
+                        ? $"регистрация: {EffectiveIpLimit} в час с одного IP и {EffectiveEmailLimit} на один email"
+                        : "запросы к этому разделу",
+                    retryAfterSeconds = retryAfter
+                },
+                cancellationToken);
+        };
 
         foreach (var (name, partition) in EndpointPartitions)
         {
@@ -93,6 +163,15 @@ public static class RateLimitPolicies
             // 20/мин на IP: щедро для человека за роутером (несколько тестов в
             // минуту), тесно для скрипта.
             ["guest-analytics"] = ctx => IpPartition(ctx, permit: GuestAnalyticsPermitLimit, window: TimeSpan.FromMinutes(1)),
+
+            // Гостевое чтение (R2): открытие превью — 2 запроса (манифест +
+            // глава), дальше по одному запросу на клик по слову. 90/мин
+            // покрывает разбор абзаца вручную (десятки кликов), но не даёт
+            // скрипту перебирать словарь в цикле с одного адреса.
+            // Отдельная политика, потому что `reader` партицируется по
+            // `IP|email из тела`, а у GET тела нет — корзина стала бы общей
+            // на весь мир.
+            ["guest-reader"] = ctx => IpPartition(ctx, permit: GuestReaderPermitLimit, window: TimeSpan.FromMinutes(1)),
 
             // Читалка: позиция сохраняется каждые 1,5 с, карман — по тапу.
             // 240/мин на пользователя с запасом покрывает листание и разбор,
@@ -168,7 +247,7 @@ public static class RateLimitPolicies
             RateLimitPartitionKeys.SignupEmail(context),
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = SignupEmailPermitLimit,
+                PermitLimit = EffectiveEmailLimit,
                 Window = SignupWindow,
                 QueueLimit = 0
             });
@@ -188,7 +267,7 @@ public static class RateLimitPolicies
             RateLimitPartitionKeys.IpOnly(context),
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = SignupIpPermitLimit,
+                PermitLimit = EffectiveIpLimit,
                 Window = SignupWindow,
                 QueueLimit = 0
             });

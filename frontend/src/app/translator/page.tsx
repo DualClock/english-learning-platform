@@ -29,7 +29,6 @@ import { useTts } from '@/hooks/useTts';
 import { useRecorder } from '@/hooks/useRecorder';
 import { blobToWavBase64 } from '@/app/lib/wav';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -59,7 +58,6 @@ const SUGGESTION_CHIPS = [
 ];
 
 export default function TranslatorPage() {
-  const { data: session } = useSession();
   const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
 
   const [phase, setPhase] = useState<'loading' | 'welcome' | 'chat'>('loading');
@@ -112,7 +110,6 @@ export default function TranslatorPage() {
     async (history: ChatMessage[]): Promise<{ reply: string | null; error: string | null }> => {
       try {
         const data = await apiMutate<{ reply?: string }>('/api/assistant/chat', {
-          token: session?.accessToken,
           method: 'POST',
           body: { messages: history, userLevel: userLevel || undefined },
         });
@@ -131,7 +128,7 @@ export default function TranslatorPage() {
         return { reply: null, error: 'Нет соединения с сервером. Проверь интернет и попробуй ещё раз.' };
       }
     },
-    [session?.accessToken, userLevel]
+    [userLevel]
   );
 
   // Приветствие: если история пуста, Alex пишет первым
@@ -203,7 +200,6 @@ export default function TranslatorPage() {
     setAnalyzing((prev) => ({ ...prev, [idx]: true }));
     try {
       const data = await apiMutate<AssistantAnalysis>('/api/assistant/analyze', {
-        token: session?.accessToken,
         method: 'POST',
         body: { text: messages[idx].text, userLevel: userLevel || undefined },
       });
@@ -231,7 +227,6 @@ export default function TranslatorPage() {
       try {
         const audioBase64 = await blobToWavBase64(blob);
         const result = await apiMutate<{ transcribed?: string }>('/api/pronunciation/transcribe', {
-          token: session?.accessToken,
           method: 'POST',
           body: { audioBase64, mimeType: 'audio/wav' },
         });
@@ -270,7 +265,6 @@ export default function TranslatorPage() {
   const resolveError = async (id: number) => {
     try {
       await apiMutate(`/api/assistant/errors/${id}/resolve`, {
-        token: session?.accessToken,
         method: 'POST',
         invalidate: ['/api/assistant/errors'],
       });

@@ -15,15 +15,18 @@ public class ProgressController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly AchievementService _achievements;
     private readonly LeagueService _league;
+    private readonly SrsBreakdownService _srsBreakdown;
 
     public ProgressController(
         ApplicationDbContext context,
         AchievementService achievements,
-        LeagueService league)
+        LeagueService league,
+        SrsBreakdownService srsBreakdown)
     {
         _context = context;
         _achievements = achievements;
         _league = league;
+        _srsBreakdown = srsBreakdown;
     }
 
     private string GetUserId() => User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
@@ -141,6 +144,15 @@ public class ProgressController : ControllerBase
     public async Task<IActionResult> GetLeaderboard()
     {
         return Ok(await _league.GetLeaderboardAsync(GetUserId()));
+    }
+
+    // GET: api/progress/srs-breakdown — распределение словаря по интервалам SRS.
+    // Нужен карточке «как закреплены слова» на /progress: интервал и leech
+    // уже есть в ответах повторения, но по одному слову, а не по всем.
+    [HttpGet("srs-breakdown")]
+    public async Task<IActionResult> GetSrsBreakdown(CancellationToken cancellationToken)
+    {
+        return Ok(await _srsBreakdown.GetAsync(GetUserId(), cancellationToken));
     }
 
     // GET: api/progress/streak

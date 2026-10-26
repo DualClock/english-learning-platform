@@ -244,7 +244,6 @@ export default function SettingsPage() {
     setProfileError('');
     try {
       await apiMutate('/api/profile', {
-        token: session?.accessToken,
         method: 'PUT',
         body: {
           displayName,
@@ -281,7 +280,6 @@ export default function SettingsPage() {
 
     try {
       await apiMutate('/api/profile/customization', {
-        token: session?.accessToken,
         method: 'PUT',
         body: { avatarFrame: selectedFrame, accentTheme: selectedAccent },
         invalidate: ['/api/profile'],
@@ -312,7 +310,7 @@ export default function SettingsPage() {
     try {
       const result = await apiMutate<{ message: string; transport: string; delivered: boolean }>(
         '/api/notifications/test',
-        { token: session?.accessToken, method: 'POST' }
+        { method: 'POST' }
       );
       setReminderTestResult(result?.message ?? 'Готово');
     } catch {
@@ -328,7 +326,6 @@ export default function SettingsPage() {
     setConfirmationResult('');
     try {
       const result = await apiMutate<{ message: string }>('/api/auth/resend-confirmation', {
-        token: session?.accessToken,
         method: 'POST',
       });
       setConfirmationResult(result?.message ?? 'Письмо отправлено');
@@ -354,7 +351,6 @@ export default function SettingsPage() {
     setIsChangingPassword(true);
     try {
       await apiMutate('/api/profile/change-password', {
-        token: session?.accessToken,
         method: 'POST',
         body: { currentPassword, newPassword },
       });
@@ -403,7 +399,6 @@ export default function SettingsPage() {
     setDeletionError('');
     try {
       await apiMutate('/api/account', {
-        token: session?.accessToken,
         method: 'DELETE',
         body: { password: deletionPassword },
       });
@@ -444,7 +439,7 @@ export default function SettingsPage() {
     (status === 'authenticated' &&
       isProfileLoading &&
       profileData === undefined &&
-      Boolean(session?.accessToken))
+      Boolean())
   ) {
     return (
       <AppLayout>
@@ -492,7 +487,6 @@ export default function SettingsPage() {
             {isEditingAvatar && (
               <div className="rounded-lg border border-hairline-strong bg-surface p-4">
                 <AvatarPicker
-                  token={session?.accessToken || ''}
                   current={avatarUrl}
                   onDone={async (url) => {
                     setAvatarUrl(url);

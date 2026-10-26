@@ -20,6 +20,7 @@ import {
   type IconSize,
 } from '@/components/ui/icons';
 import XpRulesTable from './XpRulesTable';
+import { MIN_COMPETITIVE_PARTICIPANTS, shouldRenderLeague } from '@/components/dashboard/dashboard-state';
 import type { Leaderboard, LeagueHistoryItem } from './leagueTypes';
 
 /*
@@ -132,6 +133,41 @@ export default function WeeklyLeague() {
   if (!data) return null;
 
   const { group, me, entries, history, leagues } = data;
+
+  /*
+   * Пока в группе меньше порога — соревнования нет, и показывать «Лига
+   * формируется: 3 участника» вредно: человек читает это как подтверждение,
+   * что здесь никого нет, и уходит. Вместо пустой лиги — личная цель недели:
+   * с кем соревноваться, когда вокруг никого, — с собой на прошлой неделе.
+   */
+  if (!shouldRenderLeague(group.participants)) {
+    const previousWeek = history[0] ?? null;
+    const delta = previousWeek ? me.weeklyXp - previousWeek.weeklyXp : null;
+    return (
+      <section className="card mb-6 scroll-mt-20 p-6" aria-label="Цель недели">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-h3 text-ink">Цель недели</h2>
+          <span className="text-body-sm text-slate tabular-nums">
+            {me.weeklyXp} XP
+            {previousWeek && ` · было ${previousWeek.weeklyXp} XP`}
+          </span>
+        </div>
+        <p className="text-body-sm text-slate">
+          {delta === null
+            ? 'Это ваша первая неделя — ориентир появится со следующей недели.'
+            : delta >= 0
+              ? `Вы уже на ${delta} XP выше прошлой недели. Держите темп.`
+              : `До прошлой недели осталось ${Math.abs(delta)} XP.`}
+        </p>
+        <p className="mt-2 text-caption text-slate">
+          Соревнование с другими откроется, когда в группе соберётся
+          {' '}
+          {MIN_COMPETITIVE_PARTICIPANTS} участников.
+        </p>
+      </section>
+    );
+  }
+
   const myZoneText = (() => {
     if (group.forming) {
       return `Лига формируется: ${group.participants} ${plural(group.participants, ['участник', 'участника', 'участников'])}. Повышение и вылет включим с 10 реальных участников.`;

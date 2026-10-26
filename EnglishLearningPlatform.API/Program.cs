@@ -5,6 +5,7 @@ using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using EnglishLearningPlatform.API.Services.Reader;
+using EnglishLearningPlatform.API.Services.Guest;
 using EnglishLearningPlatform.API.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -179,6 +180,10 @@ if (configErrors.Count > 0)
 
 // Rate limiting: защита логина/регистрации/сброса пароля от брутфорса.
 // Политики и партиции — в Security/RateLimitPolicies (покрыто юнит-тестами).
+// Переопределения лимитов из конфигурации — до регистрации rate limiter'а.
+// На стенде поднимаем порог регистрации (Auth__SignupIpPermitLimit), на проде
+// значения остаются продовыми.
+RateLimitPolicies.ApplyOverrides(builder.Configuration);
 builder.Services.AddRateLimiter(RateLimitPolicies.Configure);
 
 // ForwardedHeaders: настоящий IP клиента виден лимитеру только если мы доверяем
@@ -221,6 +226,7 @@ builder.Services.AddSingleton(sp => new ResilientAiService(
     scopeFactory: sp.GetRequiredService<IServiceScopeFactory>()));
 builder.Services.AddScoped<DictionaryService>();
 builder.Services.AddScoped<SrsService>();
+builder.Services.AddScoped<SrsBreakdownService>();
 builder.Services.AddScoped<AiService>();
 builder.Services.AddScoped<AssistantService>();
 builder.Services.AddScoped<SpeechService>();
@@ -233,6 +239,25 @@ builder.Services.AddScoped<ReaderContentService>();
 builder.Services.AddScoped<ReaderProgressService>();
 builder.Services.AddScoped<ReaderPocketService>();
 builder.Services.AddScoped<AzureSpeechService>();
+// Прогрев — синглтон: идемпотентность держится на памяти процесса. Оба его
+// сервиса scoped, поэтому каждое обращение открывает собственный scope — так
+// фоновый прогрев не берёт DbContext запроса, который уже утилизирован.
+builder.Services.AddSingleton(sp =>
+{
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+    return new ChapterSpeechPrefetcher(
+        () => scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ReaderContentService>(),
+        () => scopeFactory.CreateScope().ServiceProvider.GetRequiredService<AzureSpeechService>(),
+        sp.GetRequiredService<ILogger<ChapterSpeechPrefetcher>>());
+});
+// Гостевой режим (docs/execution/EXECUTION_CONTRACT.md, R2): каталог публичных
+// книг и словарная справка без записи в БД. Без этих регистраций контроллер
+// `GuestReaderController` не резолвится и /api/guest/* отдаёт 500 при старте.
+builder.Services.Configure<GuestPreviewOptions>(
+    builder.Configuration.GetSection(GuestPreviewOptions.SectionName));
+builder.Services.AddScoped<GuestReaderCatalog>();
+builder.Services.AddScoped<GuestWordLookup>();
+builder.Services.AddScoped<GuestCatalogSeeder>();
 builder.Services.AddHttpClient("azure-speech", client =>
 {
     // Синтез одной фразы у Azure — сотни миллисекунд; 30 с хватает даже
@@ -253,6 +278,7 @@ builder.Services.AddScoped<GuestAnalyticsCleanupService>();
 builder.Services.AddHostedService<GuestAnalyticsCleanupBackgroundService>();
 builder.Services.AddScoped<BookAnalyzerService>();
 builder.Services.AddScoped<WordListSeeder>();
+builder.Services.AddScoped<WordExampleSeeder>();
 builder.Services.AddScoped<CategorySeeder>();
 builder.Services.AddScoped<GrammarSeeder>();
 builder.Services.AddScoped<StorySeeder>();
@@ -360,8 +386,20 @@ if (app.Environment.IsDevelopment())
     try
     {
         var wordListsSeed = await seedProvider.GetRequiredService<WordListSeeder>().SeedAsync();
+
+        // Примеры к словам идут ПОСЛЕ словаря: сидер ищет WordLevel по тексту,
+        // и на чистой базе заполнять нечего, пока WordLevels пуста.
+        var wordExamplesSeed = await seedProvider.GetRequiredService<WordExampleSeeder>().SeedAsync();
+
         var categoriesSeed = await seedProvider.GetRequiredService<CategorySeeder>().SeedAsync();
         var grammarSeed = await seedProvider.GetRequiredService<GrammarSeeder>().SeedAsync();
+
+        // Системные копии рассказов для гостевого чтения. Без этого шага
+        // /api/guest/books отдаёт пустой список: строки Books с
+        // UploadedByUserId == null не создаёт больше никто (пользовательские
+        // копии всегда имеют владельца). Идемпотентно: повторный старт
+        // пропускает уже созданные заголовки.
+        var guestSeed = await seedProvider.GetRequiredService<GuestCatalogSeeder>().SeedAsync();
 
         seedLogger.LogInformation(
             "Сиды: сборники — {WordLists} (списков {Lists}, слов {Words}), категории — {Categories}, грамматика — {Grammar} (юнитов {Units})",
@@ -371,6 +409,19 @@ if (app.Environment.IsDevelopment())
             categoriesSeed.AlreadySeeded ? "уже были" : "засеяны",
             grammarSeed.AlreadySeeded ? "уже были" : "засеяны",
             grammarSeed.UnitsCreated);
+
+        seedLogger.LogInformation(
+            "Гостевой каталог: новые копии {Created}, уже были {Skipped}",
+            guestSeed.Created,
+            guestSeed.Skipped);
+
+        seedLogger.LogInformation(
+            "Примеры к словам: обновлено {Updated}, пропущено {Skipped}, не найдено {NotFound}, отклонено {Rejected}{Error}",
+            wordExamplesSeed.Updated,
+            wordExamplesSeed.Skipped,
+            wordExamplesSeed.NotFound,
+            wordExamplesSeed.Rejected,
+            wordExamplesSeed.Error == null ? string.Empty : ", ошибка: " + wordExamplesSeed.Error);
     }
     catch (Exception ex)
     {

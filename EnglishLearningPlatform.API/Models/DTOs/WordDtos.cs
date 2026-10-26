@@ -13,7 +13,9 @@ public record AddWordRequest(
     [property: MaxLength(500)] string? Context
 );
 
-// Ответ со словом
+// Ответ со словом. Example/ExampleRu — пример из справочника WordLevels (R11):
+// английское предложение и его русский перевод. null значит «примера нет»,
+// и карточка показывает только перевод, не пустую строку.
 public record WordResponse(
     int Id,
     string Text,
@@ -24,7 +26,9 @@ public record WordResponse(
     string? Context = null,
     string? Emoji = null,
     string? ImageUrl = null,
-    string? CategoryIcon = null
+    string? CategoryIcon = null,
+    string? Example = null,
+    string? ExampleRu = null
 );
 
 public record DefinitionResponse(

@@ -66,7 +66,7 @@ const LEVEL_LABELS: Record<string, string> = {
 };
 
 function QuizContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -147,7 +147,6 @@ function QuizContent() {
 
     try {
       const result = await apiMutate<QuizResultResponse>('/api/review/quiz/result', {
-        token: session?.accessToken,
         method: 'POST',
         body: {
           token: quizToken,
@@ -169,7 +168,7 @@ function QuizContent() {
     } finally {
       resultInFlightRef.current = false;
     }
-  }, [quizToken, resultState, score, mode, session?.accessToken]);
+  }, [quizToken, resultState, score, mode, ]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < deck.length - 1) {

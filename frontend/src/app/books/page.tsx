@@ -7,7 +7,6 @@ import ErrorState from '@/components/ui/ErrorState';
 import Badge from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { BooksIcon, CheckIcon, AlertIcon, UploadIcon, SpinnerIcon } from '@/components/ui/icons';
-import { API_URL } from '@/app/lib/api-url';
 import { invalidateCache } from '@/app/lib/api-client';
 import { useApiQuery } from '@/app/lib/use-api';
 import { AnimatePresence, motion } from 'motion/react';
@@ -43,7 +42,7 @@ interface Toast {
 }
 
 export default function BooksPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   const [page, setPage] = useState(1);
@@ -89,11 +88,6 @@ export default function BooksPage() {
     []
   );
 
-  const authHeaders = useCallback(
-    (): Record<string, string> =>
-      session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {},
-    [session]
-  );
 
   const reloadBooks = useCallback(async () => {
     invalidateCache('/api/books');
@@ -108,9 +102,8 @@ export default function BooksPage() {
 
     const refreshCovers = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/books/refresh-covers`, {
+        const res = await fetch(`/api/next/api/books/refresh-covers`, {
           method: 'POST',
-          headers: authHeaders(),
         });
         if (res.ok) {
           const data = await res.json().catch(() => null);
@@ -121,7 +114,7 @@ export default function BooksPage() {
       }
     };
     void refreshCovers();
-  }, [status, books, authHeaders, reloadBooks]);
+  }, [status, books, reloadBooks]);
 
   const userLevel = normalizeLevel(profileLevel);
 
@@ -161,9 +154,16 @@ export default function BooksPage() {
   const addPopularBook = async (book: PopularBook) => {
     setAddingPopularId(book.gutenbergId);
     try {
-      const res = await fetch(`${API_URL}/api/books/popular/${book.gutenbergId}`, {
+      /*
+       * ВАЖНО: путь к прокси — `/api/next/books/...`, без второго `/api`.
+       *
+       * Прокси сам строит адрес как `${API_URL}/api/${path}` (см.
+       * app/api/next/[...path]/route.ts, buildTargetUrl). Лишний `/api` в
+       * аргументе давал запрос на `/api/api/books/popular/84` — 404, и
+       * «добавить книгу» молча не работало (нашёл в логе фронта).
+       */
+      const res = await fetch(`/api/next/books/popular/${book.gutenbergId}`, {
         method: 'POST',
-        headers: authHeaders(),
       });
       if (!res.ok) throw new Error('failed');
       await reloadBooks();
@@ -178,9 +178,8 @@ export default function BooksPage() {
   const addStory = async (story: Story) => {
     setAddingStoryIndex(story.index);
     try {
-      const res = await fetch(`${API_URL}/api/books/story/${story.index}`, {
+      const res = await fetch(`/api/next/api/books/story/${story.index}`, {
         method: 'POST',
-        headers: authHeaders(),
       });
       if (!res.ok) throw new Error('failed');
       const created = await res.json().catch(() => null);
@@ -199,9 +198,8 @@ export default function BooksPage() {
 
   const deleteBook = async (book: UserBook) => {
     try {
-      await fetch(`${API_URL}/api/books/${book.id}`, {
+      await fetch(`/api/next/api/books/${book.id}`, {
         method: 'DELETE',
-        headers: authHeaders(),
       });
       await reloadBooks();
       showToast('Книга удалена');
@@ -224,9 +222,8 @@ export default function BooksPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_URL}/api/books/upload`, {
+      const res = await fetch(`/api/next/api/books/upload`, {
         method: 'POST',
-        headers: authHeaders(),
         body: formData,
       });
       if (!res.ok) {

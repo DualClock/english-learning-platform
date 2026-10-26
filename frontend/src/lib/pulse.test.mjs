@@ -139,7 +139,7 @@ test('копия чекпоинта, потерявшая один вариан�
 
 // ---- «не показывать второй раз» ----------------------------------------------
 
-const open = { userId: 'u-1', accessToken: 'token', serverEligible: true };
+const open = { userId: 'u-1',  serverEligible: true };
 
 test('блок показывается один раз: после ответа, закрытия и уже виденного — нет', () => {
   assert.equal(shouldShowPulse({ ...open, state: EMPTY_PULSE_STATE }), true);
@@ -148,9 +148,10 @@ test('блок показывается один раз: после ответа
   assert.equal(shouldShowPulse({ ...open, state: { seen: true, answered: 'word', dismissed: false } }), false);
   assert.equal(shouldShowPulse({ ...open, state: { seen: false, answered: null, dismissed: true } }), false);
 
-  // Гость и читатель без токена не получают ни блока, ни запроса на сервер.
+  // Гость не получает ни блока, ни запроса на сервер. Отдельного признака
+  // «есть ли токен» здесь больше нет: токен живёт только в httpOnly-куке,
+  // из JS его не видно, и в браузере гость отличается именно отсутствием userId.
   assert.equal(shouldShowPulse({ ...open, userId: null }), false);
-  assert.equal(shouldShowPulse({ ...open, accessToken: null }), false);
 });
 
 test('частоту решает сервер: ineligible снимает блок даже при пустом флаге', () => {

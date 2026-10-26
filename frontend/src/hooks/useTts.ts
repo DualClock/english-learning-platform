@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
 import { shouldUseServerTts } from '@/lib/tts';
 import { useSpeech } from './useSpeech';
 
@@ -29,7 +27,6 @@ const SERVER_GRACE_MS = 6000;
  * Русские строки на сервер не уезжают сознательно: см. `lib/tts.ts`.
  */
 export function useTts() {
-  const { data: session } = useSession();
   const { speak: webSpeak, stop: webStop, isSupported } = useSpeech();
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -90,11 +87,7 @@ export function useTts() {
       const requestId = requestRef.current;
       setIsLoading(true);
 
-      const pending = fetch(`${API_URL}/api/audio/tts?text=${encodeURIComponent(clean)}`, {
-        headers: session?.accessToken
-          ? { Authorization: `Bearer ${session.accessToken}` }
-          : {},
-      });
+      const pending = fetch(`/api/next/audio/tts?text=${encodeURIComponent(clean)}`);
 
       // Долгая генерация не должна превращать клик в тишину: через окно ожидания
       // озвучиваем браузерным голосом, а запрос оставляем жить — он кладёт аудио
@@ -152,7 +145,7 @@ export function useTts() {
 
       playBrowser(clean);
     },
-    [session?.accessToken, releaseUrl, stop, playBrowser]
+    [releaseUrl, stop, playBrowser]
   );
 
   // `speak`/`isSpeaking` — те же имена, что у useSpeech: страницы переходят на

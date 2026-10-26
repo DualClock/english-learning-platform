@@ -19,7 +19,11 @@ namespace EnglishLearningPlatform.API.Services.Reader;
 /// оптимизация: при исчерпании месячного лимита Azure не вызывается вовсе,
 /// а клиент тихо уходит на голос браузера.
 /// </summary>
-public sealed class AzureSpeechService
+/// <remarks>
+/// Не sealed: тест R7 подменяет провайдера наследником, чтобы посчитать, какие
+/// куски текста и сколько раз реально ушли в сеть. Продовый код наследников не заводит.
+/// </remarks>
+public class AzureSpeechService
 {
     public const string DefaultVoice = "en-US-AriaNeural";
     public const int DefaultMonthlyCharLimit = 400_000;
@@ -100,7 +104,19 @@ public sealed class AzureSpeechService
         name.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) &&
         name[..64].All(Uri.IsHexDigit);
 
-    public async Task<SpeechClip?> SynthesizeAsync(string text, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Сколько символов спишется за этот текст. Нужно тому, кто планирует расход
+    /// до вызова (прогрев главы): считать по исходному тексту нельзя — нормализация
+    /// схлопывает пробелы, и смета разошлась бы со счётом.
+    /// </summary>
+    public static int MeasureChars(string? text) => Normalize(text).Length;
+
+    /// <summary>
+    /// Виртуальный ради теста R7: внешнего провайдера нельзя подсунуть иначе, а
+    /// проверять надо именно то, как <see cref="SpeechService"/> режет и склеивает
+    /// куски. Продовый код метод не переопределяет.
+    /// </summary>
+    public virtual async Task<SpeechClip?> SynthesizeAsync(string text, CancellationToken cancellationToken = default)
     {
         var normalized = Normalize(text);
         if (normalized.Length == 0)
@@ -108,9 +124,16 @@ public sealed class AzureSpeechService
             return null;
         }
 
+        // Обрезка до MaxCharsPerRequest убрана: в главе такое предложение
+        // встречается (длинная цитата без точек) и теряло конец. Кто зовёт нас
+        // без нарезки — сам отвечает за формат, а мы лучше промолчим, чем
+        // озвучим половину. Читалка режет предложения сама (см. ChapterSpeechPrefetcher).
         if (normalized.Length > MaxCharsPerRequest)
         {
-            normalized = normalized[..MaxCharsPerRequest];
+            _logger.LogWarning(
+                "Azure TTS: текст {Length} символов длиннее запроса {Limit}, кусок пропущен",
+                normalized.Length, MaxCharsPerRequest);
+            return null;
         }
 
         if (normalized.Length > _monthlyCharLimit)

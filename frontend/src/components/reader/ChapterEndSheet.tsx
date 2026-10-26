@@ -19,7 +19,6 @@ interface Props {
   finished: boolean;
   finishing: boolean;
   userId: string | null;
-  accessToken?: string;
   page: number;
   onClose: () => void;
   onPromote: (pocketId: number) => void;
@@ -79,7 +78,6 @@ export default function ChapterEndSheet({
   finished,
   finishing,
   userId,
-  accessToken,
   page,
   onClose,
   onPromote,
@@ -222,7 +220,7 @@ export default function ChapterEndSheet({
                              [--color-hairline-strong:var(--reader-ink-soft)]
                              [--color-link:var(--reader-ink)]"
                 >
-                  <BetaPulse userId={userId} accessToken={accessToken ?? null} page={page} />
+                  <BetaPulse userId={userId} page={page} />
                 </div>
               ) : null}
 

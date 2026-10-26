@@ -59,7 +59,7 @@ function DictionaryTabs() {
 }
 
 function DictionaryContent() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
@@ -121,7 +121,6 @@ function DictionaryContent() {
     setActionError('');
     try {
       await apiMutate(`/api/dictionary/${id}`, {
-        token: session?.accessToken,
         method: 'DELETE',
         invalidate: ['/api/dictionary']
       });
@@ -264,7 +263,6 @@ function DictionaryContent() {
               <DictionaryWordRow
                 key={word.id}
                 word={word}
-                token={session?.accessToken}
                 onDelete={deleteWord}
                 onUpdated={refreshWords}
               />

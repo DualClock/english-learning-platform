@@ -6,6 +6,7 @@
       "esnext"
     ],
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -36,7 +37,9 @@
     ".next-check/types/**/*.ts",
     ".next-check2/types/**/*.ts",
     ".next-check3/types/**/*.ts",
-    ".next-check4/types/**/*.ts"
+    ".next-check4/types/**/*.ts",
+    ".next-buildcheck/types/**/*.ts",
+    ".next-buildcheck2/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

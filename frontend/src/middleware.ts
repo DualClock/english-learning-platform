@@ -24,6 +24,15 @@ const SESSION_COOKIES = [
 const NO_INDEX = { 'X-Robots-Tag': 'noindex, nofollow' };
 
 export function middleware(request: NextRequest) {
+  // Гостевой режим чтения: preview-глава открыта без сессии. Ветка стоит до
+  // проверки куки и без X-Robots-Tag: страница нужна краулеру и человеку,
+  // который ещё не завёл аккаунт, — иначе он получил бы пустую заглушку вместо
+  // отрывка книги. Матчер (`/reader/:path*`) этот путь не исключает, поэтому
+  // исключение живёт здесь явно.
+  if (request.nextUrl.pathname.startsWith('/reader/preview')) {
+    return NextResponse.next();
+  }
+
   const hasSessionCookie = SESSION_COOKIES.some((name) =>
     Boolean(request.cookies.get(name)?.value),
   );

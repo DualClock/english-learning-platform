@@ -89,3 +89,81 @@ jobs:
       # `migrations list` требует живого подключения к базе. Применение миграций
       # остаётся ручным шагом деплоя под номером 1 в EXECUTION_SEQUENCE A9 —
       # новый код без них ломает регистрацию, и это проверяется на стенде, а не в CI.
+
+  # ---------------------------------------------------------------------------
+  # Схема БД и применение миграций.
+  #
+  # Отдельный job, потому что он отвечает на другой вопрос, чем build-and-test:
+  # «соберётся ли код против АКТУАЛЬНОЙ схемы», а не «компилируется ли он».
+  # Именно отсутствие этого шага дало инцидент, когда 27 из 30 миграций были
+  # применены, а /health отдавал зелёный: AddReaderV3 меняет
+  # BookBookmarks.Page на nullable, и без неё читалка падает уже в рантайме.
+  #
+  # Порядок в job'е принципиален:
+  #   1. поднять Postgres;
+  #   2. dotnet ef database update  — схема становится такой же, как на проде;
+  #   3. dotnet ef migrations list --no-connect — список в коде;
+  #   4. сверить: каждая миграция из кода обязана быть применена.
+  # Шаг 4 не падает «на всякий случай»: он падает ровно тогда, когда есть
+  # расхождение, и печатает список — это и есть сигнал «прод отстаёт от HEAD».
+  # ---------------------------------------------------------------------------
+  migrations:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: appuser
+          POSTGRES_PASSWORD: apppass123
+          POSTGRES_DB: english_learning_migrations
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+      DOTNET_NOLOGO: 'true'
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=english_learning_migrations;Username=appuser;Password=apppass123"
+      # Значения-заглушки: миграции не подписывают токены, но Program.cs валидирует
+      # длину Jwt__Key на старте конфигурации, а design-time фабрика читает ту же конфигурацию.
+      Jwt__Key: "ci-only-migrations-key-min-32-characters-long!!"
+      Jwt__Issuer: "TestIssuer"
+      Jwt__Audience: "TestAudience"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Restore dependencies
+        run: dotnet restore EnglishLearningPlatform.slnx
+
+      - name: Apply all migrations to a clean database
+        run: dotnet ef database update --project EnglishLearningPlatform.API --startup-project EnglishLearningPlatform.API
+
+      - name: Fail if the code has migrations the database does not
+        # Пропускаем служебные строки вывода `migrations list` (имя миграции
+        # всегда начинается с цифр даты) и сравниваем множества, а не порядок:
+        # EF сам гарантирует порядок применения, а нам нужно расхождение состава.
+        run: |
+          set -euo pipefail
+          dotnet ef migrations list --project EnglishLearningPlatform.API --startup-project EnglishLearningPlatform.API --no-build > /tmp/migrations.txt
+          grep -Eo '^[0-9]{14}_[A-Za-z0-9_]+' /tmp/migrations.txt | sort > /tmp/in-code.txt
+          if grep -q 'Pending' /tmp/migrations.txt; then
+            echo "::error::В коде есть миграции, не применённые к схеме. Прод отстаёт от HEAD."
+            grep 'Pending' /tmp/migrations.txt
+            exit 1
+          fi
+          echo "Миграций в коде: $(wc -l < /tmp/in-code.txt). Все применены."

@@ -11,6 +11,7 @@ import { ArrowRightIcon, BookOpenIcon, BulbIcon, CheckCircleIcon, CloseIcon } fr
 import { useSession } from 'next-auth/react';
 import { useApiQuery } from '@/app/lib/use-api';
 import WeeklyLeague from '@/components/progress/WeeklyLeague';
+import SrsBreakdownCard from '@/components/progress/SrsBreakdownCard';
 import QuizHistory from '@/components/quiz/QuizHistory';
 import AchievementIcon from '@/components/progress/AchievementIcon';
 import {
@@ -452,6 +453,9 @@ export default function ProgressPage() {
             hint="цель выполнена"
           />
         </ul>
+
+        {/* Закрепление слов по интервалам SRS — данные `GET /api/progress/srs-breakdown` */}
+        <SrsBreakdownCard />
 
         {/* Неделя */}
         {week.length > 0 && (

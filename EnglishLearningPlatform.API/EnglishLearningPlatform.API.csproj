@@ -31,4 +31,10 @@
     <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Настоящий сид-файл примеров нужен тесту контента: проверяем то, что
+         поедет в базу, а не копию текста внутри теста. -->
+    <None Include="Data/Seed/word-examples.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

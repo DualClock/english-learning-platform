@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   deletePocketWord,
   getPocketWords,
@@ -18,20 +18,19 @@ import {
 } from '@/lib/reader/pocketQueue';
 import type { ReaderPocketItem } from '@/lib/reader/types';
 
-export function useReaderPocket(bookId: number, token?: string) {
+/**
+ * Карман книги. Токена больше нет: `Authorization` ставит серверный прокси,
+ * поэтому единственный гейт — сам факт, что читалка открыта (страница за
+ * middleware). Без сессии прокси ответит 401, и карман просто останется пустым.
+ */
+export function useReaderPocket(bookId: number) {
   const [items, setItems] = useState<ReaderPocketItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const tokenRef = useRef(token);
-
-  useEffect(() => {
-    tokenRef.current = token;
-  }, [token]);
 
   const refresh = useCallback(async () => {
-    if (!tokenRef.current) return;
     setIsLoading(true);
     try {
-      const data = await getPocketWords(bookId, tokenRef.current);
+      const data = await getPocketWords(bookId);
       setItems(data.items);
     } catch {
       // карман — не блокирующее чтение
@@ -42,9 +41,6 @@ export function useReaderPocket(bookId: number, token?: string) {
 
   const save = useCallback(
     async (payload: UpsertPocketPayload): Promise<ReaderPocketItem | null> => {
-      const authToken = tokenRef.current;
-      if (!authToken) return null;
-
       const entry: PocketQueueEntry = {
         ...payload,
         bookId,
@@ -53,7 +49,7 @@ export function useReaderPocket(bookId: number, token?: string) {
       enqueuePocket(entry);
 
       try {
-        const item = await upsertPocketWord(bookId, authToken, payload, true);
+        const item = await upsertPocketWord(bookId, payload, true);
         removePocketFromQueue(entry);
         setItems((current) => [
           item,
@@ -72,57 +68,43 @@ export function useReaderPocket(bookId: number, token?: string) {
     [bookId]
   );
 
-  const remove = useCallback(
-    async (pocketId: number): Promise<boolean> => {
-      if (!tokenRef.current) return false;
-      try {
-        await deletePocketWord(pocketId, tokenRef.current);
-        setItems((current) => current.filter((item) => item.id !== pocketId));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    []
-  );
+  const remove = useCallback(async (pocketId: number): Promise<boolean> => {
+    try {
+      await deletePocketWord(pocketId);
+      setItems((current) => current.filter((item) => item.id !== pocketId));
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
-  const promote = useCallback(
-    async (pocketId: number): Promise<boolean> => {
-      if (!tokenRef.current) return false;
-      try {
-        await promotePocketWord(pocketId, tokenRef.current);
-        setItems((current) => current.filter((item) => item.id !== pocketId));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    []
-  );
+  const promote = useCallback(async (pocketId: number): Promise<boolean> => {
+    try {
+      await promotePocketWord(pocketId);
+      setItems((current) => current.filter((item) => item.id !== pocketId));
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
-  const markKnown = useCallback(
-    async (pocketId: number): Promise<boolean> => {
-      if (!tokenRef.current) return false;
-      try {
-        await markPocketWordKnown(pocketId, tokenRef.current);
-        setItems((current) => current.filter((item) => item.id !== pocketId));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    []
-  );
+  const markKnown = useCallback(async (pocketId: number): Promise<boolean> => {
+    try {
+      await markPocketWordKnown(pocketId);
+      setItems((current) => current.filter((item) => item.id !== pocketId));
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
-    if (!token) return;
-
     // Сначала досылаем то, что не успело уйти в прошлый раз. Записи чужих
     // книг остаются в очереди и отправятся при их открытии.
     void flushPocketQueue(
       async (entry) => {
         try {
-          await upsertPocketWord(bookId, token, entry, true);
+          await upsertPocketWord(bookId, entry, true);
           return { ok: true };
         } catch (error) {
           if (error instanceof ReaderApiError && (error.status === 400 || error.status === 404)) {
@@ -133,7 +115,7 @@ export function useReaderPocket(bookId: number, token?: string) {
       },
       (entry) => entry.bookId === bookId
     );
-  }, [bookId, token]);
+  }, [bookId]);
 
   return {
     items,

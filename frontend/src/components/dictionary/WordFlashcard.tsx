@@ -9,6 +9,8 @@ export interface FlashcardWord {
   translation: string;
   transcription?: string;
   example?: string;
+  /** Перевод примера из справочника (R11). Мельче английского: читается как подсказка. */
+  exampleRu?: string;
 }
 
 interface WordFlashcardProps {
@@ -75,6 +77,11 @@ export default function WordFlashcard({
             {word.example && (
               <span className="flashcard-example" lang="en">
                 «{word.example}»
+              </span>
+            )}
+            {word.exampleRu && (
+              <span className="flashcard-example-translation" lang="ru">
+                {word.exampleRu}
               </span>
             )}
           </span>

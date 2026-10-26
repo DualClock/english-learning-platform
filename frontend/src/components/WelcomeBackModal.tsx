@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { AnimatePresence, motion } from 'motion/react';
-import { API_URL } from '@/app/lib/api-url';
 import Button from '@/components/ui/Button';
 import {
   BookOpenIcon,
@@ -65,8 +64,7 @@ export default function WelcomeBackModal() {
     (async () => {
       try {
         if (window.sessionStorage.getItem(DISMISS_KEY)) return;
-        const res = await fetch(`${API_URL}/api/welcome`, {
-          headers: { Authorization: `Bearer ${session?.accessToken}` },
+        const res = await fetch(`/api/next/welcome`, {
         });
         if (!res.ok) return;
         const welcome: WelcomeData = await res.json();

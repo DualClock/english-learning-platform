@@ -25,6 +25,7 @@ public class ReaderController : ControllerBase
     private readonly ReaderPocketService _pocket;
     private readonly ReaderAssetService _assets;
     private readonly AzureSpeechService _azure;
+    private readonly ChapterSpeechPrefetcher _prefetcher;
     private readonly ApplicationDbContext _context;
 
     public ReaderController(
@@ -33,6 +34,7 @@ public class ReaderController : ControllerBase
         ReaderPocketService pocket,
         ReaderAssetService assets,
         AzureSpeechService azure,
+        ChapterSpeechPrefetcher prefetcher,
         ApplicationDbContext context)
     {
         _content = content;
@@ -40,6 +42,7 @@ public class ReaderController : ControllerBase
         _pocket = pocket;
         _assets = assets;
         _azure = azure;
+        _prefetcher = prefetcher;
         _context = context;
     }
 
@@ -177,6 +180,11 @@ public class ReaderController : ControllerBase
         {
             requested = sentences.Select(s => s.Id).Take(MaxSpeechSegments).ToList();
         }
+
+        // Прогрев стартует здесь, а не по клику: манифест уже запрошен, значит
+        // читатель собирается слушать. Старт неблокирующий — ответ уходит сразу,
+        // файлы догружаются в кэш к первому нажатию «Слушать».
+        _prefetcher.Start(bookId, chapter.Id);
 
         var now = DateTime.UtcNow;
         return Ok(new ReaderSpeechManifestDto

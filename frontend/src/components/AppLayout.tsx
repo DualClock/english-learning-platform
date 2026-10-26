@@ -8,28 +8,8 @@ import AchievementCelebration from './progress/AchievementCelebration';
 import LexiSign from './brand/lexi/LexiSign';
 import Button from './ui/Button';
 import { AlertIcon, MenuIcon, RefreshIcon, SpinnerIcon } from './ui/icons';
-import { prefetchApi } from '@/app/lib/api-client';
 import { applyAccent, normalizeAccent, writeAccent } from '@/lib/theme';
 
-// Данные вкладок, которые прогреваются в фоне сразу после входа:
-// первое открытие любой вкладки происходит без ожидания сети.
-const WARMUP_PATHS = [
-  '/api/books',
-  '/api/books/popular',
-  '/api/books/stories',
-  '/api/profile',
-  '/api/dictionary',
-  '/api/wordlists',
-  '/api/categories',
-  '/api/review/today',
-  '/api/grammar/units',
-  '/api/progress/streak',
-  '/api/progress/achievements',
-  '/api/progress/leaderboard',
-  '/api/progress/today-plan',
-];
-
-let warmupStarted = false;
 
 export default function AppLayout({
   children,
@@ -140,19 +120,6 @@ export default function AppLayout({
     writeAccent(accent);
   }, [status, session?.accentTheme]);
 
-  // Прогрев кэша остальных вкладок в простое — чтобы переход был мгновенным
-  useEffect(() => {
-    if (!session?.accessToken || warmupStarted) return;
-    warmupStarted = true;
-
-    const run = () => prefetchApi(WARMUP_PATHS, session.accessToken);
-    const win = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-    };
-    if (win.requestIdleCallback) win.requestIdleCallback(run, { timeout: 3000 });
-    else window.setTimeout(run, 1500);
-  }, [session]);
-
   // Возвращаем фокус на бургер после закрытия drawer (не при первом рендере)
   const prevSidebarOpen = useRef(false);
   useEffect(() => {
@@ -199,7 +166,7 @@ export default function AppLayout({
   }
 
   // Читалка — отдельная комната: ни общего сайдбара, ни мобильной шапки.
-  // Сессия и прогрев кэша уже отработали выше, поэтому отдаём кадр целиком.
+  // Сессия уже проверена выше, поэтому отдаём кадр целиком.
   if (immersive) {
     return (
       <>

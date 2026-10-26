@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
 import Button from '@/components/ui/Button';
 import Notice from '@/components/ui/Notice';
@@ -29,7 +28,6 @@ interface BulkAddFormProps {
 const TERMINAL: RowStatus[] = ['added', 'duplicate', 'error'];
 
 export default function BulkAddForm({ onRunningChange }: BulkAddFormProps) {
-  const { data: session } = useSession();
 
   const [text, setText] = useState('');
   const [autoTranslate, setAutoTranslate] = useState(false);
@@ -61,8 +59,6 @@ export default function BulkAddForm({ onRunningChange }: BulkAddFormProps) {
 
   const start = async () => {
     if (running || preview.exceedsLimit || preview.valid.length === 0) return;
-
-    const token = session?.accessToken;
     const items: BulkRow[] = preview.valid.map((word, index) => ({
       key: `${index}-${word.toLocaleLowerCase('en')}`,
       text: word,
@@ -83,7 +79,6 @@ export default function BulkAddForm({ onRunningChange }: BulkAddFormProps) {
         updateRow(row.key, { status: 'translating' });
         try {
           const translated = await apiMutate<DictionaryTranslation>('/api/ai/translate', {
-            token,
             body: { word: row.text, targetLanguage: 'ru' },
           });
           definition = translated?.translation?.trim() ?? '';
@@ -101,7 +96,6 @@ export default function BulkAddForm({ onRunningChange }: BulkAddFormProps) {
 
       try {
         await apiMutate('/api/dictionary', {
-          token,
           method: 'POST',
           body: {
             text: row.text,

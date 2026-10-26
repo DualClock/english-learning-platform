@@ -84,6 +84,27 @@ const nextConfig = {
       },
     ];
   },
+
+  /**
+   * Файлы, которые отдаёт API, а не Next.
+   *
+   * Обложки книг (`/uploads/covers/story-0.svg`), аватары и загруженные EPUB
+   * лежат в `EnglishLearningPlatform.API/uploads`. Next про них не знает, а
+   * страницы строят ссылки вида `<img src="/uploads/covers/story-0.svg">` —
+   * без этого rewrite браузер получал 404 и библиотека показывала книги без
+   * обложек. Проверено: API отдаёт тот же файл с кодом 200, дело было только
+   * в отсутствующем пробросе.
+   *
+   * Почему не через наш `/api/next`-прокси: он добавляет `Authorization` и
+   * подходит только для приватных сущностей. Обложки публичные по смыслу, и
+   * городить вокруг них сессию незачем.
+   */
+  async rewrites() {
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5226').replace(/\/+$/, '');
+    return [
+      { source: '/uploads/:path*', destination: `${apiUrl}/uploads/:path*` },
+    ];
+  },
   experimental: {
     // Клиентский router-cache: дольше держит RSC-ответы, поэтому
     // возврат на уже открытую вкладку не ждёт сервер.

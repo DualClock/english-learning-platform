@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { API_URL } from '@/app/lib/api-url';
 import { ApiError, apiMutate, invalidateCache } from '@/app/lib/api-client';
 import Button from '@/components/ui/Button';
 import { Tag } from '@/components/ui/Badge';
@@ -38,7 +37,6 @@ const MAX_IMAGE_BYTES = 1024 * 1024;
 
 export default function DictionaryWordRow({
   word,
-  token,
   onDelete,
   onUpdated,
 }: DictionaryWordRowProps) {
@@ -67,7 +65,6 @@ export default function DictionaryWordRow({
 
     try {
       const result = await apiMutate<DictionaryTranslation>('/api/ai/translate', {
-        token,
         body: { word: word.text, context: context || undefined, targetLanguage: 'ru' },
       });
       const translation = result?.translation?.trim();
@@ -78,7 +75,6 @@ export default function DictionaryWordRow({
       }
 
       await apiMutate(`/api/dictionary/${word.id}`, {
-        token,
         method: 'PUT',
         body: { definition: translation },
         invalidate: ['/api/dictionary'],
@@ -111,7 +107,6 @@ export default function DictionaryWordRow({
 
     try {
       await apiMutate(`/api/dictionary/${word.id}`, {
-        token,
         method: 'PUT',
         body: { definition: value },
         invalidate: ['/api/dictionary'],
@@ -137,7 +132,6 @@ export default function DictionaryWordRow({
 
     try {
       await apiMutate(`/api/dictionary/${word.id}/emoji`, {
-        token,
         method: 'PUT',
         body: { emoji },
         invalidate: ['/api/dictionary'],
@@ -170,9 +164,8 @@ export default function DictionaryWordRow({
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_URL}/api/dictionary/${word.id}/image`, {
+      const res = await fetch(`/api/next/dictionary/${word.id}/image`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -200,7 +193,6 @@ export default function DictionaryWordRow({
 
     try {
       await apiMutate(`/api/dictionary/${word.id}/visual`, {
-        token,
         method: 'DELETE',
         invalidate: ['/api/dictionary'],
       });

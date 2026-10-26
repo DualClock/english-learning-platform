@@ -2,13 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Notice from '@/components/ui/Notice';
 import LexiMascot from '@/components/brand/lexi/LexiMascot';
 import { CloseIcon, FeedbackIcon } from '@/components/ui/icons';
-import { API_URL } from '@/app/lib/api-url';
 import { FEEDBACK_OPEN_EVENT } from './events';
 
 type FeedbackType = 'idea' | 'problem';
@@ -27,7 +25,6 @@ const MAX_LENGTH = 2000;
  */
 export default function FeedbackWidget() {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<FeedbackType>('idea');
@@ -129,11 +126,8 @@ export default function FeedbackWidget() {
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (session?.accessToken) {
-        headers.Authorization = `Bearer ${session.accessToken}`;
-      }
 
-      const response = await fetch(`${API_URL}/api/feedback`, {
+      const response = await fetch('/api/next/feedback', {
         method: 'POST',
         headers,
         body: JSON.stringify({

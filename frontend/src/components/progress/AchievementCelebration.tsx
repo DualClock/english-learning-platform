@@ -56,20 +56,18 @@ function writeSeen(key: string, codes: string[]): void {
  * только запоминаются, чтобы не высыпать пачку уведомлений.
  */
 export default function AchievementCelebration() {
-  const { data: session } = useSession();
-  const token = session?.accessToken;
+  const { data: session } = useSession();
   const userKey = session?.user?.id || session?.user?.email || 'user';
   const [newAchievements, setNewAchievements] = useState<SmallAchievement[] | null>(null);
   const inFlightRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const check = useCallback(async (force: boolean) => {
-    if (!token || inFlightRef.current) return;
+    if (inFlightRef.current) return;
     inFlightRef.current = true;
 
     try {
       const data = await apiGet<ProgressPayload>('/api/progress/achievements', {
-        token,
         force,
         maxAgeMs: force ? 0 : 60_000,
       });
@@ -93,7 +91,7 @@ export default function AchievementCelebration() {
     } finally {
       inFlightRef.current = false;
     }
-  }, [token, userKey]);
+  }, [userKey]);
 
   // Первый заход за сессию: инициализируем seen или покажем то, что реально ново.
   useEffect(() => {

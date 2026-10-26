@@ -2,21 +2,19 @@
 
 import { useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
-import { API_URL } from '@/app/lib/api-url';
 import { DEFAULT_AVATARS, resolveAvatarSrc } from '@/app/lib/avatars';
 
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface AvatarPickerProps {
-  token: string;
   /** Текущий аватар профиля — чтобы выбор не выглядел как сетка одинаковых кнопок. */
   current?: string | null;
   onDone: (avatarUrl: string) => void;
   onSkip?: () => void;
 }
 
-export default function AvatarPicker({ token, current, onDone, onSkip }: AvatarPickerProps) {
+export default function AvatarPicker({ current, onDone, onSkip }: AvatarPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -25,11 +23,10 @@ export default function AvatarPicker({ token, current, onDone, onSkip }: AvatarP
     setError('');
     setIsUploading(true);
     try {
-      const res = await fetch(`${API_URL}/api/profile/avatar/default`, {
+      const res = await fetch(`/api/next/api/profile/avatar/default`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ name }),
       });
@@ -58,9 +55,8 @@ export default function AvatarPicker({ token, current, onDone, onSkip }: AvatarP
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_URL}/api/profile/avatar`, {
+      const res = await fetch(`/api/next/api/profile/avatar`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       if (!res.ok) {

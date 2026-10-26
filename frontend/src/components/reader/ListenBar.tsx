@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/icons';
 import { variants } from '@/lib/motion';
 import type { ListeningProvider, ListeningStatus } from '@/hooks/reader/useListening';
+import { SPEECH_RATES, type SpeechRate } from '@/hooks/useSpeech';
 
 interface Props {
   open: boolean;
@@ -19,10 +20,17 @@ interface Props {
   index: number;
   total: number;
   error: string | null;
+  rate: SpeechRate;
+  onRateChange: (rate: SpeechRate) => void;
   onToggle: () => void;
   onPrevious: () => void;
   onNext: () => void;
   onClose: () => void;
+}
+
+/** Подписи скоростей: 1× вместо 1.0 — так принято в плеерах. */
+function rateLabel(rate: SpeechRate): string {
+  return `${rate}×`.replace('.0×', '×');
 }
 
 /**
@@ -37,6 +45,8 @@ export default function ListenBar({
   index,
   total,
   error,
+  rate,
+  onRateChange,
   onToggle,
   onPrevious,
   onNext,
@@ -92,6 +102,34 @@ export default function ListenBar({
           >
             <ArrowRightIcon size={16} />
           </button>
+
+          {/*
+            Скорость — группой из трёх кнопок, а не выпадающим списком:
+            переключение должно стоить одного касания и не открывать меню
+            поверх текста, ради которого человек сюда пришёл.
+          */}
+          <div
+            role="group"
+            aria-label="Скорость чтения"
+            className="flex shrink-0 items-center rounded-lg border border-[var(--reader-hairline)] p-0.5"
+          >
+            {SPEECH_RATES.map((value) => {
+              const active = rate === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onRateChange(value)}
+                  aria-pressed={active}
+                  data-testid={`listen-rate-${value}`}
+                  className="min-w-9 rounded-md px-1.5 py-1 text-[0.7rem] tabular-nums text-[var(--reader-ink-soft)] transition-colors data-[active=true]:bg-[var(--reader-ink)] data-[active=true]:text-[var(--reader-paper)]"
+                  data-active={active ? 'true' : undefined}
+                >
+                  {rateLabel(value)}
+                </button>
+              );
+            })}
+          </div>
 
           <div className="min-w-0 flex-1 px-1">
             <p className="truncate text-caption text-[var(--reader-ink)]" aria-live="polite">

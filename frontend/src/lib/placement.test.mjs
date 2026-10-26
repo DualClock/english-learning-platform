@@ -184,15 +184,31 @@ test('полка «что читать» совпадает с реальным�
   assert.ok(readingPickCaption(getLevelGuide('a1').picks[0]).length > 0);
 });
 
-test('онбординг берёт placement из общего модуля, а не из своих fetch', () => {
+/*
+ * Онбординг больше не тестирует уровень: тест живёт на `/test`, а сюда
+ * приходит только его результат параметром `?level=`. Поэтому проверка
+ * перевёрнута: важно, чтобы онбординг НЕ ходил в placement-эндпоинты
+ * напрямую и НЕ дублировал контракт — тем самым человек не проходит тест
+ * второй раз.
+ */
+test('онбординг не зовёт placement-эндпоинты напрямую', () => {
   const onboarding = read('..', 'app', 'onboarding', 'page.tsx');
 
-  assert.match(onboarding, /from '@\/app\/lib\/placement-api'/, 'онбординг не использует общий слой');
   assert.doesNotMatch(
     onboarding,
     /api\/profile\/placement/,
     'онбординг по-прежнему зовёт эндпоинты напрямую — контракт продублирован'
   );
+  assert.doesNotMatch(
+    onboarding,
+    /fetchPlacementQuestions|submitPlacementAnswers/,
+    'онбординг снова показывает тест уровня — тест живёт на /test, сюда приходит только ?level='
+  );
+});
+
+test('онбординг берёт уровень из адреса, а не переспрашивает его', () => {
+  const onboarding = read('..', 'app', 'onboarding', 'page.tsx');
+  assert.match(onboarding, /levelFromQuery/, 'уровень должен читаться из ?level=');
 });
 
 test('страница /test рендерит текст до JavaScript и ведёт в онбординг', () => {
@@ -203,10 +219,12 @@ test('страница /test рендерит текст до JavaScript и ве
   assert.match(page, /from '@\/lib\/site'/, 'OG должен собираться из боевого siteUrl, а не из NEXTAUTH_URL');
 
   const testFlow = read('..', 'components', 'test', 'PlacementTest.tsx');
+  // Уровень должен уехать в онбординг адресом: иначе после результата теста
+  // человек заново отвечает на те же вопросы — ровно то, что чинилось.
   assert.match(
     testFlow,
-    /href="\/onboarding"/,
-    'под результатом нет CTA «сохранить результат» в онбординг'
+    /onboarding\?level=/,
+    'под результатом нет CTA в онбординг С УРОВНЕМ (/onboarding?level=…)'
   );
   assert.match(testFlow, /role="radiogroup"/, 'варианты ответа не радиогруппа');
   assert.match(testFlow, /aria-labelledby=\{promptId\}/, 'радиогруппа не подписана текстом вопроса');

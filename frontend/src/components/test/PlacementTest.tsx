@@ -290,11 +290,15 @@ export default function PlacementTest() {
 
         <div className="mt-8">
           {/*
-           * Результат гостя нигде не сохранён — сервер только посчитал уровень.
-           * Предзаполнить уровень в онбординге нельзя: страница онбординга не
-           * читает query-параметры, поэтому ссылка ведёт туда как есть.
+           * Уровень едет в онбординг адресом: сервер его уже посчитал, а
+           * `src/app/onboarding/page.tsx` читает `?level=` и не спрашивает
+           * уровень второй раз. Без параметра человек проходил тест заново
+           * сразу после результата.
            */}
-          <Button href="/onboarding" className="w-full py-4 text-body">
+          <Button
+            href={`/onboarding?level=${encodeURIComponent(result.cefrLevel.toLowerCase())}`}
+            className="w-full py-4 text-body"
+          >
             Сохранить результат и получать слова на повторение
             <ArrowRightIcon size={20} aria-hidden />
           </Button>

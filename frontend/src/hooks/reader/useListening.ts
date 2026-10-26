@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getSpeechManifest, resolveApiAssetUrl } from '@/lib/reader/api';
 import type { ReaderChapter, ReaderSentence } from '@/lib/reader/types';
+import { normalizeSpeechRate, type SpeechRate } from '@/hooks/useSpeech';
 
 export type ListeningStatus = 'idle' | 'loading' | 'playing' | 'paused';
 export type ListeningProvider = 'azure' | 'browser';
@@ -10,7 +11,6 @@ export type ListeningProvider = 'azure' | 'browser';
 interface Options {
   bookId: number;
   chapter: ReaderChapter | null;
-  token?: string;
   /** Текущее предложение — читалка подсвечивает его и перелистывает страницу. */
   onSentenceChange?: (sentence: ReaderSentence, index: number) => void;
   onEnd?: () => void;
@@ -23,6 +23,9 @@ interface ListeningResult {
   total: number;
   activeSentenceId: string | null;
   error: string | null;
+  /** Скорость чтения: 0.75 — разобрать фразу, 1.25 — бегло. */
+  rate: SpeechRate;
+  setRate: (rate: SpeechRate) => void;
   toggle: () => void;
   start: (sentenceId?: string) => void;
   stop: () => void;
@@ -51,7 +54,6 @@ function speechAvailable(): boolean {
 export function useListening({
   bookId,
   chapter,
-  token,
   onSentenceChange,
   onEnd,
 }: Options): ListeningResult {
@@ -59,6 +61,31 @@ export function useListening({
   const [provider, setProvider] = useState<ListeningProvider>('azure');
   const [index, setIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  /*
+   * Скорость чтения — общая для серверного и браузерного голоса.
+   *
+   * Раньше её не было вовсе: на сервере играл оригинальный темп, а браузерный
+   * голос стоял на 0.95. Кнопки скорости в интерфейсе появились раньше, чем
+   * хук научился их слушать, поэтому 1.25x не ускоряла ничего. Значение живёт
+   * в ref тоже: колбэки проигрывания пересоздаются по зависимостям, а читать
+   * «текущую» скорость из замыкания внутри цепочки onended нельзя.
+   */
+  const [rate, setRateState] = useState<SpeechRate>(1.0);
+  const rateRef = useRef<SpeechRate>(1.0);
+
+  const setRate = useCallback((next: SpeechRate) => {
+    const normalized = normalizeSpeechRate(next);
+    rateRef.current = normalized;
+    setRateState(normalized);
+
+    // Уже играющий серверный звук меняет темп сразу: иначе человек жмёт 0.75,
+    // слышит то же самое и решает, что кнопка не работает.
+    const audio = audioRef.current;
+    if (audio) {
+      audio.playbackRate = normalized;
+    }
+  }, []);
 
   const sentences = chapter ? chapter.blocks.flatMap((block) => block.sentences) : [];
   const sentencesRef = useRef<ReaderSentence[]>(sentences);
@@ -158,7 +185,7 @@ export function useListening({
 
       const utterance = new SpeechSynthesisUtterance(sentence.text);
       utterance.lang = 'en-US';
-      utterance.rate = 0.95;
+      utterance.rate = normalizeSpeechRate(rateRef.current);
 
       const runId = runIdRef.current;
       utterance.onend = () => {
@@ -229,6 +256,9 @@ export function useListening({
       setStatusSafe('playing');
 
       current.src = url;
+      // Темп серверного звука: 0.75/1.25 применяем сразу при старте фразы,
+      // иначе смена скорости срабатывала бы только со следующего предложения.
+      current.playbackRate = rateRef.current;
       void current.play().catch(() => {
         if (runId !== runIdRef.current) return;
         playBrowser(indexRef.current);
@@ -266,22 +296,20 @@ export function useListening({
         : Math.min(indexRef.current, list.length - 1);
 
       let manifestAvailable = false;
-      if (token) {
-        try {
-          const manifest = await getSpeechManifest(bookId, chapterIdRef.current ?? '', token);
-          if (runId !== runIdRef.current) return;
+      try {
+        const manifest = await getSpeechManifest(bookId, chapterIdRef.current ?? '');
+        if (runId !== runIdRef.current) return;
 
-          manifestAvailable = manifest.available && manifest.segments.length > 0;
-          const urls = new Map<string, string>();
-          for (const segment of manifest.segments) {
-            const resolved = resolveApiAssetUrl(segment.url);
-            if (resolved) urls.set(segment.sentenceId, resolved);
-          }
-          urlsRef.current = urls;
-        } catch {
-          if (runId !== runIdRef.current) return;
-          manifestAvailable = false;
+        manifestAvailable = manifest.available && manifest.segments.length > 0;
+        const urls = new Map<string, string>();
+        for (const segment of manifest.segments) {
+          const resolved = resolveApiAssetUrl(segment.url);
+          if (resolved) urls.set(segment.sentenceId, resolved);
         }
+        urlsRef.current = urls;
+      } catch {
+        if (runId !== runIdRef.current) return;
+        manifestAvailable = false;
       }
 
       providerRef.current = manifestAvailable ? 'azure' : 'browser';
@@ -302,7 +330,7 @@ export function useListening({
 
       playServer(startIndex);
     },
-    [bookId, notify, playBrowser, playServer, setStatusSafe, stopAudio, token]
+    [bookId, notify, playBrowser, playServer, setStatusSafe, stopAudio]
   );
 
   const start = useCallback(
@@ -390,6 +418,8 @@ export function useListening({
     total: sentences.length,
     activeSentenceId: status === 'idle' ? null : sentences[index]?.id ?? null,
     error,
+    rate,
+    setRate,
     toggle,
     start,
     stop,

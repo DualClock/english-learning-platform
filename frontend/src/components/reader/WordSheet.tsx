@@ -25,7 +25,6 @@ import type { ReaderPocketItem } from '@/lib/reader/types';
 
 interface Props {
   bookId: number;
-  token?: string;
   word: string;
   sentence: string;
   chapterId: string;
@@ -43,7 +42,6 @@ type ActionState = 'idle' | 'working' | 'promoted' | 'known';
 
 export default function WordSheet({
   bookId,
-  token,
   word,
   sentence,
   chapterId,
@@ -120,13 +118,6 @@ export default function WordSheet({
     setActionState('idle');
     setActionError('');
 
-    if (!token) {
-      setTranslationLoading(false);
-      setSentenceLoading(false);
-      setPocketState('error');
-      return;
-    }
-
     // Слово сохраняем сразу, не дожидаясь перевода: сервер уже умеет
     // подставить словарное значение, а сеть может ответить позже.
     void savePocket({ translation: null, partOfSpeech: null });
@@ -138,7 +129,7 @@ export default function WordSheet({
       let finalPart: string | null = null;
 
       try {
-        const lookup = await getWordLookup(bookId, word, token);
+        const lookup = await getWordLookup(bookId, word);
         if (cancelled) return;
 
         setCefrLevel(lookup.cefrLevel ?? null);
@@ -150,7 +141,7 @@ export default function WordSheet({
 
       if (!finalTranslation && !cancelled) {
         try {
-          const ai = await translateWord(word, token);
+          const ai = await translateWord(word);
           if (cancelled) return;
           finalTranslation = ai.translation || ai.translationRu || null;
           finalPart = finalPart || ai.partOfSpeech || null;
@@ -180,7 +171,7 @@ export default function WordSheet({
       }
 
       try {
-        const result = await translateSentence(sentence, token);
+        const result = await translateSentence(sentence);
         if (!cancelled) setSentenceTranslation(result.translation);
       } catch {
         // перевод фразы — необязательная помощь, не блокируем карточку
@@ -195,7 +186,7 @@ export default function WordSheet({
     return () => {
       cancelled = true;
     };
-  }, [bookId, savePocket, sentence, token, word]);
+  }, [bookId, savePocket, sentence, word]);
 
   const retryPocket = async () => {
     setPocketState('saving');

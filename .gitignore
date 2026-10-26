@@ -46,6 +46,10 @@ logs/
 # Секреты
 EnglishLearningPlatform.API/appsettings.Development.json
 
+# Дампы БД: в них персональные данные пользователей, в репозиторий им нельзя.
+# Пишутся deploy/apply-migrations.sh до каждой миграции.
+backups/
+
 # Пользовательские загрузки (аватары)
 EnglishLearningPlatform.API/uploads/
 

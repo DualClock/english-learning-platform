@@ -58,7 +58,7 @@ interface Verdict {
 type Side = 'a' | 'b';
 
 export default function PronunciationPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const { play, isLoading: audioLoading } = useTts();
   const recorder = useRecorder();
 
@@ -97,7 +97,6 @@ export default function PronunciationPage() {
       try {
         const audioBase64 = await blobToWavBase64(blob);
         const result = await apiMutate<Verdict>('/api/pronunciation/check', {
-          token: session?.accessToken,
           method: 'POST',
           body: { target, audioBase64, mimeType: 'audio/wav' },
         });
@@ -112,7 +111,7 @@ export default function PronunciationPage() {
         setChecking(false);
       }
     },
-    [session?.accessToken, target]
+    [target]
   );
 
   const toggleRecord = useCallback(async () => {

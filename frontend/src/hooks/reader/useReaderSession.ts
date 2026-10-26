@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getReaderManifest, ReaderApiError } from '@/lib/reader/api';
 import type { ReaderBookmark, ReaderManifest } from '@/lib/reader/types';
 
-export function useReaderSession(bookId: number, token?: string) {
+export function useReaderSession(bookId: number) {
   const [manifest, setManifest] = useState<ReaderManifest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -12,12 +12,12 @@ export function useReaderSession(bookId: number, token?: string) {
   const inFlightRef = useRef(false);
 
   const load = useCallback(async () => {
-    if (!token || inFlightRef.current) return;
+    if (inFlightRef.current) return;
     inFlightRef.current = true;
     const requestId = ++requestRef.current;
     setIsLoading(true);
     try {
-      const data = await getReaderManifest(bookId, token);
+      const data = await getReaderManifest(bookId);
       if (requestId !== requestRef.current) return;
       setManifest(data);
       setError('');
@@ -34,7 +34,7 @@ export function useReaderSession(bookId: number, token?: string) {
       inFlightRef.current = false;
       if (requestId === requestRef.current) setIsLoading(false);
     }
-  }, [bookId, token]);
+  }, [bookId]);
 
   useEffect(() => {
     void load();

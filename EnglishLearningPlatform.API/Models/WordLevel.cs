@@ -15,4 +15,13 @@ public class WordLevel
     public string? TranslationRu { get; set; }
 
     public int FreqRank { get; set; }
+
+    // Пример-предложение к слову (R11). Nullable: справочник на 4500 слов
+    // приходит без примеров, а «пустая строка» и «примера ещё нет» для карточки
+    // одно и то же состояние, поэтому отдельное значение не нужно.
+    [MaxLength(500)]
+    public string? Example { get; set; }
+
+    [MaxLength(500)]
+    public string? ExampleRu { get; set; }
 }

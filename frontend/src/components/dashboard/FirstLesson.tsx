@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
 import { apiGet } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
 import Button from '@/components/ui/Button';
@@ -53,18 +52,16 @@ export default function FirstLesson() {
 
   // Загрузка статуса: книги + размер словаря (через кэш, чтобы не дёргать API зря)
   const refreshStatus = useCallback(async () => {
-    const token = session?.accessToken;
-    if (!token) return;
     try {
       const [books, words] = await Promise.all([
-        apiGet<unknown[]>('/api/books', { token, maxAgeMs: 15_000 }),
-        apiGet<unknown[]>('/api/dictionary', { token, maxAgeMs: 15_000 }),
+        apiGet<unknown[]>('/api/books', { maxAgeMs: 15_000 }),
+        apiGet<unknown[]>('/api/dictionary', { maxAgeMs: 15_000 }),
       ]);
       setState({ bookAdded: books.length > 0, wordsCount: words.length });
     } catch {
       // тихо: чек-лист не критичен
     }
-  }, [session]);
+  }, []);
 
   useEffect(() => {
     if (!session) return;
@@ -104,10 +101,8 @@ export default function FirstLesson() {
     setIsAdding(true);
     setAddError('');
     try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/books/story/0`, {
+      const res = await fetch(`/api/next/books/story/0`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
       await refreshStatus();

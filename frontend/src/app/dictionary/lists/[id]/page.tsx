@@ -61,7 +61,7 @@ function BackToDictionary() {
 }
 
 export default function WordListPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const { speak } = useTts();
   const params = useParams();
@@ -176,7 +176,6 @@ export default function WordListPage() {
     setLearnError('');
     try {
       const data = await apiMutate<{ added: number; skipped: number }>(`/api/wordlists/${listId}/learn`, {
-        token: session?.accessToken,
         method: 'POST',
         body: { words },
         invalidate: ['/api/wordlists', '/api/dictionary']

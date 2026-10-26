@@ -196,11 +196,10 @@ export function serializePulseState(state: PulseState): string {
  */
 export function shouldShowPulse(args: {
   userId: string | null;
-  accessToken: string | null;
   serverEligible: boolean | null;
   state: PulseState;
 }): boolean {
-  if (!args.userId || !args.accessToken) return false;
+  if (!args.userId) return false;
   if (args.state.seen || args.state.answered !== null || args.state.dismissed) return false;
   return args.serverEligible === true;
 }

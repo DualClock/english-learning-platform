@@ -64,7 +64,7 @@ interface CompleteResponse {
 }
 
 export default function GrammarUnitPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const params = useParams();
   const unitId = Number(params?.id);
   const trackEvent = useTrack();
@@ -121,7 +121,6 @@ export default function GrammarUnitPage() {
     setCheckError(null);
     try {
       const data = await apiMutate<CompleteResponse>(`/api/grammar/units/${unitId}/complete`, {
-        token: session?.accessToken,
         method: 'POST',
         body: {
           answers: sortedExercises.map((ex) => ({

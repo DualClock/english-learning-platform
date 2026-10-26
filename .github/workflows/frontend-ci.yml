@@ -62,6 +62,16 @@ jobs:
           cd frontend
           npm run test:unit
 
+      # Типы проверялись только глазами: `next build` умеет собирать с ошибками
+      # типов за счёт SWC в части случаев, а `next lint` проверяет правила, а не
+      # сигнатуры. После перевода всех запросов на /api/next/* сигнатура
+      # apiGet/apiMutate изменилась — без этого шага рассинхрон вызовов всплыл бы
+      # в рантайме у пользователя.
+      - name: Type check
+        run: |
+          cd frontend
+          npx tsc --noEmit -p tsconfig.json
+
       - name: Lint
         run: |
           cd frontend

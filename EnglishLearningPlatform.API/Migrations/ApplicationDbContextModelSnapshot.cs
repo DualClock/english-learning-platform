@@ -1344,6 +1344,14 @@ namespace EnglishLearningPlatform.API.Migrations
                         .HasMaxLength(2)
                         .HasColumnType("character varying(2)");
 
+                    b.Property<string>("Example")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ExampleRu")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<int>("FreqRank")
                         .HasColumnType("integer");
 

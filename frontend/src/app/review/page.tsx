@@ -12,6 +12,7 @@ import { useTts } from '@/hooks/useTts';
 import { useApiQuery } from '@/app/lib/use-api';
 import { apiMutate } from '@/app/lib/api-client';
 import { pluralWords } from '@/lib/plural';
+import { formatNextInterval, LEECH_THRESHOLD, pluralRu } from '@/lib/srs-buckets';
 import { formatNumber } from '@/lib/format';
 import { slideVariants, variants } from '@/lib/motion';
 import Button from '@/components/ui/Button';
@@ -35,6 +36,10 @@ interface Word {
   }[];
   isNew?: boolean;
   isLeech?: boolean;
+  interval?: number;
+  intervalMinutes?: number;
+  repetitionCount?: number;
+  lapses?: number;
 }
 
 interface ReviewTodayResponse {
@@ -84,6 +89,37 @@ const QUALITY = [
   },
 ];
 
+/**
+ * «Почему это слово сегодня» — одна строка под карточкой.
+ * Интервал, который вернёт следующий ответ, уже пришёл от API (`/api/review/today`
+ * отдаёт interval/intervalMinutes/repetitionCount), но раньше не показывался:
+ * человек не видел, что оценка меняет расписание. Срыв показываем отдельно —
+ * он объясняет, почему слово часто возвращается, даже если оценка «хорошо».
+ */
+function whyToday(word: Word): string | null {
+  const lapses = word.lapses ?? 0;
+  if (lapses >= LEECH_THRESHOLD) {
+    return `Трудное слово: ${lapses} ${pluralRu(lapses, ['срыв', 'срыва', 'срывов'])} — вернётся через день-два.`;
+  }
+  const intervalMinutes = word.intervalMinutes ?? 0;
+  const interval = word.interval ?? 0;
+  if (intervalMinutes === 0 && interval === 0) return null;
+
+  const repetitions = word.repetitionCount ?? 0;
+  const show = formatNextInterval(interval, intervalMinutes);
+  if (repetitions <= 1) return `После первого ответа вернётся ${show}.`;
+  return `Следующий показ — ${show}, интервал уже вырос до ${formatIntervalDays(interval, intervalMinutes)}.`;
+}
+
+/** Один и тот же срок словами: «10 минут», «1 день», «15 дней». */
+function formatIntervalDays(intervalDays: number, intervalMinutes: number): string {
+  if (intervalMinutes > 0) {
+    return `${intervalMinutes} ${pluralRu(intervalMinutes, ['минута', 'минуты', 'минут'])}`;
+  }
+  const days = Math.max(1, Math.round(intervalDays));
+  return `${days} ${pluralRu(days, ['день', 'дня', 'дней'])}`;
+}
+
 /** Общая рамка фокусной сессии: тихая шапка и одна колонка по центру. */
 function ReviewShell({ children }: { children: React.ReactNode }) {
   return (
@@ -105,7 +141,7 @@ function ReviewShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function ReviewPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const trackEvent = useTrack();
   const { speak, isLoading: isSpeakingLoading } = useTts();
@@ -157,7 +193,6 @@ export default function ReviewPage() {
       const outcome = await apiMutate<ReviewResponse>(
         `/api/review/${word.wordId}/quality/${quality}`,
         {
-          token: session?.accessToken,
           method: 'POST',
           invalidate: ['/api/review/today', '/api/progress/streak'],
         }
@@ -190,7 +225,7 @@ export default function ReviewPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [words, currentIndex, session?.accessToken, isSaving, trackEvent]);
+  }, [words, currentIndex, isSaving, trackEvent]);
 
   const handleUndo = useCallback(async () => {
     if (!lastAnswer || undoBusy) return;
@@ -199,7 +234,6 @@ export default function ReviewPage() {
 
     try {
       await apiMutate(`/api/review/${lastAnswer.wordId}/undo`, {
-        token: session?.accessToken,
         method: 'POST',
         body: { token: lastAnswer.undoToken },
         invalidate: ['/api/review/today', '/api/progress/streak'],
@@ -217,7 +251,7 @@ export default function ReviewPage() {
     } finally {
       setUndoBusy(false);
     }
-  }, [lastAnswer, undoBusy, session?.accessToken]);
+  }, [lastAnswer, undoBusy, ]);
 
   // Клавиатура: Space/Enter — ответ, 1–4 — оценка, Escape — пауза.
   useEffect(() => {
@@ -468,6 +502,9 @@ export default function ReviewPage() {
                   </button>
                 </div>
                 <p className="mt-2 text-caption text-slate">Нажмите на слово или динамик, чтобы услышать</p>
+                {currentWord && (
+                  <p className="mt-1 text-caption text-slate">{whyToday(currentWord)}</p>
+                )}
               </div>
 
               <div className="mt-6 flex flex-1 flex-col justify-center border-t border-hairline pt-6">

@@ -12,7 +12,6 @@ declare module 'next-auth' {
   }
 
   interface Session {
-    accessToken?: string;
     avatarUrl?: string | null;
     avatarFrame?: string | null;
     accentTheme?: string | null;

@@ -32,6 +32,7 @@ interface CategoryWord {
   translation: string;
   transcription?: string;
   example?: string;
+  exampleRu?: string;
   status: 'not_started' | 'learning' | 'learned';
   inDictionary: boolean;
 }
@@ -82,8 +83,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const { data: session, status: authStatus } = useSession();
-  const token = session?.accessToken ?? null;
+  const { status: authStatus } = useSession();
 
   const {
     data: categoryData,
@@ -115,7 +115,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     }));
     try {
       await apiMutate(`/api/categories/words/${wordId}/progress`, {
-        token,
         method: 'POST',
         body: { status: statusValue },
         invalidate: ['/api/categories'],
@@ -123,7 +122,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     } catch {
       // прогресс обновится при следующей загрузке
     }
-  }, [token]);
+  }, []);
 
   const markInDictionary = useCallback((wordId: number) => {
     setCategory((prev) => prev && ({
@@ -136,7 +135,6 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     setAddingId(word.id);
     try {
       await apiMutate('/api/dictionary', {
-        token,
         method: 'POST',
         body: {
           text: word.english,

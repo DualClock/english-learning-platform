@@ -14,17 +14,16 @@ interface PendingPosition {
  * Сохраняет место с задержкой и копит реальное время чтения. Секунды
  * прибавляются только при видимой вкладке, а при уходе со страницы позиция
  * всё равно уходит (keepalive), даже если минута ещё не набежала.
+ *
+ * Токена у хука нет: `Authorization` подставляет серверный прокси, поэтому
+ * отвалидировать «есть ли сессия» здесь нечем — 401 придёт ответом, и время
+ * вернётся в счётчик, как и при любом сетевом сбое.
  */
-export function useProgressSync(bookId: number, token?: string) {
-  const tokenRef = useRef(token);
+export function useProgressSync(bookId: number) {
   const pendingRef = useRef<PendingPosition | null>(null);
   const secondsRef = useRef(0);
   const lastTickRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    tokenRef.current = token;
-  }, [token]);
 
   const addVisibleTime = useCallback(() => {
     const now = Date.now();
@@ -42,9 +41,8 @@ export function useProgressSync(bookId: number, token?: string) {
 
   const flush = useCallback(
     (keepalive = false) => {
-      const authToken = tokenRef.current;
       const pending = pendingRef.current;
-      if (!authToken || !pending) return;
+      if (!pending) return;
 
       addVisibleTime();
       const seconds = Math.floor(secondsRef.current);
@@ -53,7 +51,6 @@ export function useProgressSync(bookId: number, token?: string) {
       secondsRef.current -= seconds;
       void saveReaderPosition(
         bookId,
-        authToken,
         {
           ...pending,
           activeSeconds: seconds,

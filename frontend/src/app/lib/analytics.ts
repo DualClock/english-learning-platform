@@ -1,29 +1,19 @@
-import { useSession } from 'next-auth/react';
 import { API_URL } from '@/app/lib/api-url';
+import { toProxyUrl } from '@/app/lib/proxy-path';
 
 /**
  * Отправка аналитического события на бэкенд.
  * Никогда не бросает исключений и не ломает UX: все ошибки проглатываются.
  *
- * sessionAccessToken передаётся явно (из useSession().data.accessToken),
- * чтобы хелпер можно было вызывать из любого места компонента.
+ * Токен не передаётся: запрос идёт через серверный прокси `/api/next/*`,
+ * который сам достаёт access-токен из httpOnly-куки. Без сессии прокси
+ * ответит 401 — событие потеряется так же тихо, как и при обрыве сети.
  */
-export async function track(
-  event: string,
-  meta?: string,
-  sessionAccessToken?: string | null
-): Promise<void> {
+export async function track(event: string, meta?: string): Promise<void> {
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (sessionAccessToken) {
-      headers.Authorization = `Bearer ${sessionAccessToken}`;
-    }
-
-    await fetch(`${API_URL}/api/analytics/event`, {
+    await fetch(toProxyUrl('/api/analytics/event'), {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event, meta }),
     });
   } catch {
@@ -31,11 +21,9 @@ export async function track(
   }
 }
 
-/** Удобный хук: возвращает track с уже подставленным токеном сессии. */
-export function useTrack() {
-  const { data: session } = useSession();
-  const token = session?.accessToken ?? null;
-  return (event: string, meta?: string) => track(event, meta, token);
+/** Удобный хук для компонентов: та же функция, единая точка на будущее. */
+export function useTrack(): (event: string, meta?: string) => Promise<void> {
+  return track;
 }
 
 /*

@@ -38,7 +38,6 @@ import WordSheet from './WordSheet';
 
 interface Props {
   bookId: number;
-  token?: string;
   userId?: string | null;
 }
 
@@ -67,8 +66,8 @@ function chapterForLegacyPage(chapters: ReaderManifestChapter[], page: number): 
   return found;
 }
 
-export default function ReaderShell({ bookId, token, userId = null }: Props) {
-  const { manifest, isLoading, error, reload, updateBookmarks } = useReaderSession(bookId, token);
+export default function ReaderShell({ bookId, userId = null }: Props) {
+  const { manifest, isLoading, error, reload, updateBookmarks } = useReaderSession(bookId);
   const [chapterId, setChapterId] = useState<string | null>(null);
   const [initialAnchor, setInitialAnchor] = useState<ReaderAnchor | null>(null);
   const {
@@ -77,9 +76,9 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
     error: chapterError,
     prefetch,
     reload: reloadChapter,
-  } = useReaderChapter(bookId, chapterId, token);
-  const pocket = useReaderPocket(bookId, token);
-  const progress = useProgressSync(bookId, token);
+  } = useReaderChapter(bookId, chapterId);
+  const pocket = useReaderPocket(bookId);
+  const progress = useProgressSync(bookId);
 
   const [settings, setSettings] = useState<ReaderSettings>(DEFAULT_READER_SETTINGS);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -106,7 +105,6 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
   const listening = useListening({
     bookId,
     chapter: activeChapter,
-    token,
     onSentenceChange: (sentence) => {
       viewportRef.current?.ensureVisible({ sentenceId: sentence.id, charOffset: 0 });
     },
@@ -253,7 +251,7 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
   }, [activeChapter, manifest]);
 
   const openReview = useCallback(async () => {
-    if (!activeChapter || !token) return;
+    if (!activeChapter) return;
     stopListening();
     setWordPopup(null);
     setDrawerOpen(false);
@@ -263,14 +261,14 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
     setReviewLoading(true);
     setReviewError('');
     try {
-      const data = await getChapterReview(bookId, activeChapter.id, token);
+      const data = await getChapterReview(bookId, activeChapter.id);
       setReviewItems(data.items);
     } catch {
       setReviewError('Не удалось собрать разбор главы. Попробуйте ещё раз.');
     } finally {
       setReviewLoading(false);
     }
-  }, [activeChapter, bookId, stopListening, token]);
+  }, [activeChapter, bookId, stopListening]);
 
   const closeReview = useCallback(() => {
     setReviewOpen(false);
@@ -283,10 +281,10 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
   }, [activeChapter, manifest]);
 
   const handleFinish = useCallback(async () => {
-    if (!token || !activeChapter || finishing) return;
+    if (!activeChapter || finishing) return;
     setFinishing(true);
     try {
-      await markBookFinished(bookId, token, activeChapter.id);
+      await markBookFinished(bookId, activeChapter.id);
       await reload();
       setToast('Книга дочитана');
       setReviewOpen(false);
@@ -296,7 +294,7 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
     } finally {
       setFinishing(false);
     }
-  }, [activeChapter, bookId, finishing, reload, showChrome, token]);
+  }, [activeChapter, bookId, finishing, reload, showChrome]);
 
   const handleWordTap = useCallback((word: PointWord, tappedChapter: ReaderChapter) => {
     if (!tappedChapter) return;
@@ -323,7 +321,7 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
   }, [chapterId, currentAnchor, manifest]);
 
   const toggleBookmark = useCallback(async () => {
-    if (!token || !activeChapter) return;
+    if (!activeChapter) return;
     const anchor =
       currentAnchor ??
       (activeChapter.blocks.flatMap((block) => block.sentences)[0]
@@ -336,11 +334,11 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
 
     try {
       if (currentBookmark) {
-        await deleteReaderBookmark(bookId, currentBookmark.id, token);
+        await deleteReaderBookmark(bookId, currentBookmark.id);
         updateBookmarks(manifest?.bookmarks.filter((bookmark) => bookmark.id !== currentBookmark.id) ?? []);
         setToast('Закладка убрана');
       } else {
-        const created = await addReaderBookmark(bookId, token, {
+        const created = await addReaderBookmark(bookId, {
           chapterId: activeChapter.id,
           sentenceId: anchor.sentenceId,
           charOffset: anchor.charOffset,
@@ -351,20 +349,19 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
     } catch {
       setToast('Не удалось сохранить закладку');
     }
-  }, [activeChapter, bookId, currentAnchor, currentBookmark, manifest, token, updateBookmarks]);
+  }, [activeChapter, bookId, currentAnchor, currentBookmark, manifest, updateBookmarks]);
 
   const deleteBookmark = useCallback(
     async (bookmarkId: number) => {
-      if (!token) return;
       try {
-        await deleteReaderBookmark(bookId, bookmarkId, token);
+        await deleteReaderBookmark(bookId, bookmarkId);
         updateBookmarks(manifest?.bookmarks.filter((bookmark) => bookmark.id !== bookmarkId) ?? []);
         setToast('Закладка убрана');
       } catch {
         setToast('Не удалось убрать закладку');
       }
     },
-    [bookId, manifest, token, updateBookmarks]
+    [bookId, manifest, updateBookmarks]
   );
 
   const selectBookmark = useCallback(
@@ -610,6 +607,8 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
           index={listening.index}
           total={listening.total}
           error={listening.error}
+          rate={listening.rate}
+          onRateChange={listening.setRate}
           onToggle={listening.toggle}
           onPrevious={listening.previous}
           onNext={listening.next}
@@ -641,7 +640,6 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
           <WordSheet
             key={`${wordPopup.chapterId}-${wordPopup.word.sentenceId}-${wordPopup.word.word}`}
             bookId={bookId}
-            token={token}
             word={wordPopup.word.word}
             sentence={wordPopup.word.sentenceText}
             chapterId={wordPopup.chapterId}
@@ -707,7 +705,6 @@ export default function ReaderShell({ bookId, token, userId = null }: Props) {
           finished={Boolean(manifest?.position.finishedAt)}
           finishing={finishing}
           userId={userId}
-          accessToken={token}
           page={pageState.page}
           onClose={closeReview}
           onPromote={(id) => void handlePromote(id)}
