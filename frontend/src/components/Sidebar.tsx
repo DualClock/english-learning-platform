@@ -8,6 +8,7 @@ import FeedbackTrigger from './feedback/FeedbackTrigger';
 import UserAvatar from './UserAvatar';
 import { prefetchApi } from '@/app/lib/api-client';
 import { displayNameOf } from '@/lib/display-name';
+import { NAV_GROUPS, isRouteActive, type NavIconKey } from '@/lib/sidebar-nav';
 import { useCallback, type ComponentType } from 'react';
 import {
   BookOpenIcon,
@@ -46,22 +47,29 @@ const ROUTE_PREFETCH: Record<string, string[]> = {
   '/settings': ['/api/profile'],
 };
 
-const navigation: { name: string; href: string; Icon: ComponentType<IconProps> }[] = [
-  { name: 'Главная', href: '/dashboard', Icon: HomeIcon },
-  { name: 'Библиотека', href: '/books', Icon: BooksIcon },
-  { name: 'Словарь', href: '/dictionary', Icon: NotebookIcon },
-  { name: 'Категории', href: '/categories', Icon: FoldersIcon },
-  { name: 'Повторение', href: '/review', Icon: RepeatIcon },
-  { name: 'Прогресс', href: '/progress', Icon: TrendUpIcon },
-  { name: 'Профиль', href: '/profile', Icon: UserIcon },
-  { name: 'Грамматика', href: '/grammar', Icon: BookOpenIcon },
-  { name: 'Тест', href: '/quiz', Icon: TestIcon },
-  { name: 'Аудирование', href: '/listening', Icon: HeadphonesIcon },
-  { name: 'Диктант', href: '/practice/dictation', Icon: VolumeIcon },
-  { name: 'Произношение', href: '/practice/pronunciation', Icon: MicIcon },
-  { name: 'Письмо', href: '/writing', Icon: PenIcon },
-  { name: 'AI Собеседник', href: '/translator', Icon: BotIcon },
-];
+/**
+ * Иконки по ключам из `lib/sidebar-nav`. Данные меню держатся без React,
+ * чтобы их можно было проверить тестом без сборки; компоненты иконок
+ * подключаются здесь.
+ */
+const ICONS: Record<NavIconKey, ComponentType<IconProps>> = {
+  home: HomeIcon,
+  books: BooksIcon,
+  notebook: NotebookIcon,
+  repeat: RepeatIcon,
+  grammar: BookOpenIcon,
+  headphones: HeadphonesIcon,
+  volume: VolumeIcon,
+  mic: MicIcon,
+  pen: PenIcon,
+  test: TestIcon,
+  trend: TrendUpIcon,
+  folders: FoldersIcon,
+  bot: BotIcon,
+  user: UserIcon,
+  sliders: SlidersIcon,
+  feedback: FeedbackIcon,
+};
 
 interface SidebarProps {
   open?: boolean;
@@ -83,13 +91,6 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
     },
     [router]
   );
-
-  const linkClass = (isActive: boolean) =>
-    `flex items-center gap-3 px-4 py-2.5 rounded-full text-body-sm font-medium transition-colors duration-fast ease-soft ${
-      isActive
-        ? 'bg-on-dark text-navy-deep'
-        : 'text-on-dark-muted hover:bg-white/10 hover:text-on-dark'
-    }`;
 
   return (
     <>
@@ -121,46 +122,68 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
           <LexiSign pageKey={pathname} className="ml-auto h-6 w-6 shrink-0" />
         </div>
 
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-          {navigation.map(({ name, href, Icon }) => {
-            const isActive = pathname === href || pathname?.startsWith(href + '/');
+        <nav className="flex-1 px-3 py-4 overflow-y-auto" aria-label="Разделы">
+          {NAV_GROUPS.map((group, groupIndex) => (
+            <div key={group.label} className={groupIndex > 0 ? 'mt-5' : undefined}>
+              {/*
+               * Лейбл группы — ориентир, а не пункт меню: он не кликается
+               * и не должен читаться скринридером как элемент навигации.
+               */}
+              <p className="px-4 pb-1.5 text-caption uppercase tracking-wider text-on-dark-muted" aria-hidden="true">
+                {group.label}
+              </p>
 
-            return (
-              <Link
-                key={name}
-                href={href}
-                onClick={onClose}
-                onMouseEnter={() => warmRoute(href)}
-                onFocus={() => warmRoute(href)}
-                onTouchStart={() => warmRoute(href)}
-                className={linkClass(isActive)}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                <Icon size={20} className="shrink-0" />
-                {name}
-              </Link>
-            );
-          })}
+              <div className="space-y-0.5">
+                {group.items.map(({ name, href, icon }) => {
+                  const Icon = ICONS[icon];
+                  const isFeedback = href.startsWith('#');
+                  const isActive = isRouteActive(pathname, href);
+
+                  const itemClass = `flex h-9 items-center gap-3 px-4 rounded-full text-body-sm font-medium transition-colors duration-fast ease-soft ${
+                    isActive
+                      ? 'bg-on-dark text-navy-deep'
+                      : 'text-on-dark-muted hover:bg-white/10 hover:text-on-dark'
+                  }`;
+
+                  // Обратная связь открывает виджет, а не переходит по адресу.
+                  if (isFeedback) {
+                    return (
+                      <FeedbackTrigger
+                        key={name}
+                        onClick={onClose}
+                        className={`${itemClass} w-full`}
+                      >
+                        <Icon size={20} className="shrink-0" />
+                        {name}
+                      </FeedbackTrigger>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={name}
+                      href={href}
+                      onClick={onClose}
+                      onMouseEnter={() => warmRoute(href)}
+                      onFocus={() => warmRoute(href)}
+                      onTouchStart={() => warmRoute(href)}
+                      className={itemClass}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <Icon size={20} className="shrink-0" />
+                      {name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        <div className="p-4 pt-2">
-          <FeedbackTrigger
-            onClick={onClose}
-            className={`${linkClass(false)} mb-3 w-full`}
-          >
-            <FeedbackIcon size={20} className="shrink-0" />
-            Обратная связь
-          </FeedbackTrigger>
-          <Link
-            href="/settings"
-            onClick={onClose}
-            className={`${linkClass(pathname === '/settings')} mb-3`}
-            aria-current={pathname === '/settings' ? 'page' : undefined}
-          >
-            <SlidersIcon size={20} className="shrink-0" />
-            Настройки
-          </Link>
-          <div className="flex items-center gap-3 px-2 py-2">
+        {/* Подвал сайдбара: только текущий пользователь. Настройки и
+            обратная связь переехали в группу «Аккаунт», чтобы не дублироваться. */}
+        <div className="border-t border-white/10 p-3">
+          <div className="flex items-center gap-3 px-2 py-1.5">
             <Link
               href="/profile"
               onClick={onClose}

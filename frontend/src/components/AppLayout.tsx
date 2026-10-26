@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Sidebar from './Sidebar';
+import MobileTabBar from './MobileTabBar';
 import AchievementCelebration from './progress/AchievementCelebration';
 import LexiSign from './brand/lexi/LexiSign';
 import Button from './ui/Button';
@@ -204,13 +205,15 @@ export default function AppLayout({
         <div
           className={
             width === 'full'
-              ? 'animate-page-in px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
-              : 'animate-page-in mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8'
+              ? // pb-24 на мобиле — место под нижнюю панель навигации (56px) плюс запас.
+                'animate-page-in px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:pb-8 lg:py-8'
+              : 'animate-page-in mx-auto max-w-6xl px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:pb-8 lg:py-8'
           }
         >
           {children}
         </div>
       </main>
+      <MobileTabBar />
       <AchievementCelebration />
     </div>
   );

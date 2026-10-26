@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs src/lib/pulse.test.mjs src/lib/tts.test.mjs src/lib/reader/pagination.test.mjs src/lib/reader/sentences.test.mjs src/lib/listening.test.mjs src/lib/proxy-path.test.mjs src/lib/api-cache.test.mjs src/lib/api-error.test.mjs src/lib/guest-reader.test.mjs src/lib/srs-buckets.test.mjs src/lib/speech-rate.test.mjs src/lib/proxy-public-paths.test.mjs src/lib/display-name.test.mjs",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test src/lib/bulkWords.test.mjs src/lib/attribution.test.mjs src/lib/placement.test.mjs src/lib/ref-link.test.mjs src/lib/signup-payload.test.mjs src/lib/beta.test.mjs src/lib/library.test.mjs src/lib/page-view.test.mjs src/lib/pulse.test.mjs src/lib/tts.test.mjs src/lib/reader/pagination.test.mjs src/lib/reader/sentences.test.mjs src/lib/listening.test.mjs src/lib/proxy-path.test.mjs src/lib/api-cache.test.mjs src/lib/api-error.test.mjs src/lib/guest-reader.test.mjs src/lib/srs-buckets.test.mjs src/lib/speech-rate.test.mjs src/lib/proxy-public-paths.test.mjs src/lib/display-name.test.mjs src/lib/sidebar-nav.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:lab": "playwright test e2e/reader-lab.spec.ts"
   },

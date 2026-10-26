@@ -4,7 +4,6 @@ import AppLayout from '@/components/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
-import Badge from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/LoadingState';
 import { BooksIcon, CheckIcon, AlertIcon, UploadIcon, SpinnerIcon } from '@/components/ui/icons';
 import { invalidateCache } from '@/app/lib/api-client';
@@ -15,7 +14,7 @@ import { pluralBooks } from '@/lib/plural';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import LevelChip, { normalizeLevel } from '@/components/ui/LevelChip';
+import { normalizeLevel } from '@/components/ui/LevelChip';
 import MyBookCard, { type UserBook } from '@/components/library/MyBookCard';
 import StoryCard, { type Story } from '@/components/library/StoryCard';
 import ClassicCard, { type PopularBook } from '@/components/library/ClassicCard';
@@ -24,13 +23,14 @@ import type { Paged } from '@/app/lib/paged';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
 
-const LEVEL_CAPTIONS: Record<string, string> = {
-  A1: 'лёгкое',
-  A2: 'лёгкое',
-  B1: 'среднее',
-  B2: 'среднее',
-  C1: 'сложное',
-};
+/** Класс чипа-фильтра уровня: выбранный — акцентом, остальные — контуром. */
+function filterChipClass(active: boolean): string {
+  return `inline-flex h-8 items-center rounded-full px-3 text-caption font-medium transition-colors duration-fast ease-soft ${
+    active
+      ? 'bg-primary text-on-primary'
+      : 'border border-hairline-strong text-charcoal hover:border-primary hover:text-primary'
+  }`;
+}
 
 function sameTitle(a: string, b: string): boolean {
   return a.trim().toLowerCase().replace(/\s+/g, ' ') === b.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -68,6 +68,8 @@ export default function BooksPage() {
 
   const [addingPopularId, setAddingPopularId] = useState<string | null>(null);
   const [addingStoryIndex, setAddingStoryIndex] = useState<number | null>(null);
+  /** Уровень, выбранный в фильтре каталога. 'all' — показать всё. */
+  const [levelFilter, setLevelFilter] = useState<string>('all');
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
 
@@ -126,6 +128,15 @@ export default function BooksPage() {
   const uncategorized = popular.filter(
     (b) => !(LEVELS as readonly string[]).includes(normalizeLevel(b.cefrLevel))
   );
+
+  /*
+   * Фильтр по уровню вместо секций. 'all' — весь каталог плюс книги без
+   * уровня; конкретный уровень — только его книги.
+   */
+  const visibleClassics = useMemo(() => {
+    if (levelFilter === 'all') return popular;
+    return popular.filter((b) => normalizeLevel(b.cefrLevel) === levelFilter);
+  }, [popular, levelFilter]);
 
   const isInLibrary = useCallback(
     (title: string) => books.some((b) => sameTitle(b.title, title)),
@@ -370,7 +381,7 @@ export default function BooksPage() {
           {stories.length > 0 && (
             <section className="mb-10">
               <h2 className="mb-4 text-h2 text-ink">Рассказы для вашего уровня</h2>
-              <div className="stagger grid gap-4 md:grid-cols-2">
+              <div className="stagger grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                 {stories.map((story) => (
                   <StoryCard
                     key={story.index}
@@ -387,38 +398,59 @@ export default function BooksPage() {
 
           {classicGroups.length > 0 && (
             <section>
-              <h2 className="mb-4 text-h2 text-ink">Классика по уровням</h2>
-              {classicGroups.map(({ level, items }) => {
-                const recommended = userLevel === level;
-                return (
-                  <div key={level} className="mb-8">
-                    <div className="mb-4 flex flex-wrap items-center gap-2">
-                      <LevelChip level={level} />
-                      <h3 className="text-body-lg font-semibold text-ink">
-                        {level} — {LEVEL_CAPTIONS[level]}
-                      </h3>
-                      <span className="text-caption tabular-nums text-slate">{items.length}</span>
-                      {/* Уровень отмечен плашкой, а не тонированным блоком:
-                          заливать целую секцию пастелью нельзя — под ней
-                          исчезнут hairline-границы карточек */}
-                      {recommended && <Badge tone="accent">для вас</Badge>}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-                      {items.map((book) => (
-                        <ClassicCard
-                          key={book.gutenbergId}
-                          book={book}
-                          inLibrary={isInLibrary(book.title)}
-                          adding={addingPopularId === book.gutenbergId}
-                          onAdd={addPopularBook}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              {uncategorized.length > 0 && (
-                <div className="mb-8">
+              <h2 className="mb-4 text-h2 text-ink">Классика</h2>
+
+              {/*
+               * Уровень — фильтр, а не группировка. Раньше каталог резался на
+               * секции по уровням, и они выходили по 1, 3, 5, 1 книге: сетка
+               * по пять в ряд заканчивалась дырами на пол-экрана. Один список
+               * с чипами показывает то же самое без пустот.
+               */}
+              <div className="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Фильтр по уровню">
+                <button
+                  type="button"
+                  onClick={() => setLevelFilter('all')}
+                  aria-pressed={levelFilter === 'all'}
+                  className={filterChipClass(levelFilter === 'all')}
+                >
+                  Все
+                  <span className="ml-1 tabular-nums opacity-70">{popular.length}</span>
+                </button>
+                {classicGroups.map(({ level, items }) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setLevelFilter(level)}
+                    aria-pressed={levelFilter === level}
+                    className={filterChipClass(levelFilter === level)}
+                  >
+                    {level}
+                    <span className="ml-1 tabular-nums opacity-70">{items.length}</span>
+                    {userLevel === level && <span className="ml-1 text-[10px]">•</span>}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                {visibleClassics.map((book) => (
+                  <ClassicCard
+                    key={book.gutenbergId}
+                    book={book}
+                    inLibrary={isInLibrary(book.title)}
+                    adding={addingPopularId === book.gutenbergId}
+                    onAdd={addPopularBook}
+                  />
+                ))}
+              </div>
+
+              {visibleClassics.length === 0 && (
+                <p className="py-8 text-center text-body-sm text-slate">
+                  На этом уровне книг пока нет — выберите другой.
+                </p>
+              )}
+
+              {uncategorized.length > 0 && levelFilter === 'all' && (
+                <div className="mt-8">
                   <div className="mb-4 flex items-center gap-2">
                     <h3 className="text-body-lg font-semibold text-ink">Без указания уровня</h3>
                     <span className="text-caption tabular-nums text-slate">{uncategorized.length}</span>

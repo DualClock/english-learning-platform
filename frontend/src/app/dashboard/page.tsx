@@ -124,19 +124,70 @@ export default function DashboardPage() {
         <div className="animate-fade-in">
           <GreetingHeader name={userName} level={profile?.cefrLevel} />
 
-          <DailyPlan />
+          {/*
+           * Две колонки вместо стопки из десяти блоков равного веса.
+           * Слева — то, ради чего человек пришёл (продолжить чтение или
+           * начать первую книгу). Справа — состояние: серия и уровень.
+           * Раньше все блоки шли на всю ширину, и глазу не за что было
+           * зацепиться: шесть белых карточек подряд, у новичка — все с нулями.
+           */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              {booksState === 'error' ? (
+                <section className="mb-6">
+                  <ErrorState
+                    title="Библиотека не загрузилась"
+                    description="Остальное на этой странице может быть на месте — попробуйте обновить книги."
+                    onRetry={booksQuery.refresh}
+                  />
+                </section>
+              ) : bookList.length > 0 ? (
+                (() => {
+                  const hero = pickContinueBook(bookList);
+                  return hero ? (
+                    <ContinueReading
+                      hero={hero}
+                      others={bookList.filter((b) => b.id !== hero.id)}
+                    />
+                  ) : null;
+                })()
+              ) : booksState === 'empty' ? null : (
+                <section className="mb-6">
+                  <EmptyState
+                    lexi="stand"
+                    title="Библиотека пока пуста"
+                    description="Добавьте первую книгу — и начните читать на английском, сохраняя новые слова по пути."
+                    action={
+                      <Button href="/books">
+                        Перейти в библиотеку
+                        <ArrowRightIcon size={16} />
+                      </Button>
+                    }
+                  />
+                </section>
+              )}
 
-          {/* Ошибка книг не прячет остальной экран: счётчики, серия и повторение
-              показываются из своих запросов со своими состояниями. */}
-          {booksState === 'error' ? (
-            <section className="mb-8">
-              <ErrorState
-                title="Библиотека не загрузилась"
-                description="Остальное на этой странице может быть на месте — попробуйте обновить книги."
-                onRetry={booksQuery.refresh}
+              <DailyPlan />
+
+              {isNewAccount && <FirstLesson />}
+            </div>
+
+            <aside className="flex flex-col gap-6 lg:col-span-4">
+              <StreakCard
+                state={streakState}
+                streak={streakQuery.error ? null : (streakQuery.data ?? null)}
+                onRetry={streakQuery.refresh}
               />
-            </section>
-          ) : (
+              <LevelCard />
+              <CheckpointCard level={profile?.cefrLevel} />
+            </aside>
+          </div>
+
+          {/*
+           * Счётчики решают внутри себя: нулевые плитки и пустой ряд не
+           * рисуются. Комментировать логику здесь незачем — она в StatsRow.
+           */}
+          {booksState !== 'error' && (
             <StatsRow
               dictCount={dictCount}
               reviewCount={reviewCount}
@@ -145,43 +196,8 @@ export default function DashboardPage() {
             />
           )}
 
-          <StreakCard
-            state={streakState}
-            streak={streakQuery.error ? null : (streakQuery.data ?? null)}
-            onRetry={streakQuery.refresh}
-          />
-
-          <LevelCard />
-
-          <CheckpointCard level={profile?.cefrLevel} />
-
           {recommendedQuery.data != null && profile?.cefrLevel && (
             <RecommendedShelf level={profile.cefrLevel} books={recommendedQuery.data} />
-          )}
-
-          {isNewAccount && <FirstLesson />}
-
-          {booksState === 'error' ? null : bookList.length > 0 ? (
-            (() => {
-              const hero = pickContinueBook(bookList);
-              return hero ? (
-                <ContinueReading hero={hero} others={bookList.filter((b) => b.id !== hero.id)} />
-              ) : null;
-            })()
-          ) : booksState === 'empty' ? null : (
-            <section className="mb-8">
-              <EmptyState
-                lexi="stand"
-                title="Библиотека пока пуста"
-                description="Добавьте первую книгу — и начните читать на английском, сохраняя новые слова по пути."
-                action={
-                  <Button href="/books">
-                    Перейти в библиотеку
-                    <ArrowRightIcon size={16} />
-                  </Button>
-                }
-              />
-            </section>
           )}
 
           <TodayReview

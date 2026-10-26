@@ -56,7 +56,8 @@ function writeSeen(key: string, codes: string[]): void {
  * только запоминаются, чтобы не высыпать пачку уведомлений.
  */
 export default function AchievementCelebration() {
-  const { data: session } = useSession();
+  const { data: session } = useSession();
+
   const userKey = session?.user?.id || session?.user?.email || 'user';
   const [newAchievements, setNewAchievements] = useState<SmallAchievement[] | null>(null);
   const inFlightRef = useRef(false);
@@ -143,7 +144,12 @@ export default function AchievementCelebration() {
           data-achievement-toast
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 sm:left-auto sm:right-6 sm:w-[24rem]"
+          /*
+           * На мобиле карточка достижения поднимается над нижней панелью
+           * навигации: bottom-[4.5rem] = 56px панели + 16px зазора. Без этого
+           * тост упирался в таб-бар и обрезал собственную ссылку.
+           */
+          className="pointer-events-none fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 sm:bottom-[max(1rem,env(safe-area-inset-bottom))] sm:left-auto sm:right-6 sm:w-[24rem]"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}

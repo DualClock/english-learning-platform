@@ -74,9 +74,20 @@ export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }
       : []),
   ];
 
+  /*
+   * Нулевая плитка ничего не сообщает, кроме «здесь пока пусто», и в ряду из
+   * четырёх нолей занимает больше всего места при нуле смысла. Показываем
+   * только те счётчики, которые уже что-то значат; `null` — это «неизвестно»,
+   * его по-прежнему рисуем прочерком, потому что это утверждение о связи.
+   */
+  const visibleStats = stats.filter((stat) => stat.value !== 0);
+
+  // Все счётчики нулевые — ряда нет вовсе, иначе он превращается в пустоту.
+  if (visibleStats.length === 0) return null;
+
   return (
     <section className="stagger mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
+      {visibleStats.map((stat) => (
         <div key={stat.label} className="card flex items-center gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-accent text-primary">
             <stat.Icon size={20} />

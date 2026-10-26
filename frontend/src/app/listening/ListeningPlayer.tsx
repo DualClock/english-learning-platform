@@ -821,7 +821,12 @@ export default function ListeningPlayer({ stories }: ListeningPlayerProps) {
       )}
 
       <div className="card overflow-hidden">
-        <div className="max-h-[46vh] overflow-y-auto p-4 sm:max-h-[62vh] sm:p-6">
+        {/*
+         * Внутренний скролл текста. На мобиле высота считается от вьюпорта
+         * за вычетом нижней панели навигации (56px), иначе последнее
+         * предложение уходит под неё и до него не докрутить.
+         */}
+        <div className="max-h-[calc(46vh+2rem)] overflow-y-auto p-4 pb-20 sm:max-h-[62vh] sm:p-6 sm:pb-6">
           <p className="text-body leading-relaxed text-ink sm:text-body-lg" lang="en">
             {sentences.map((sentence) => {
               const paragraph = bounds.get(sentence.paragraph);
