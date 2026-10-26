@@ -7,6 +7,7 @@ import LexiSign from './brand/lexi/LexiSign';
 import FeedbackTrigger from './feedback/FeedbackTrigger';
 import UserAvatar from './UserAvatar';
 import { prefetchApi } from '@/app/lib/api-client';
+import { displayNameOf } from '@/lib/display-name';
 import { useCallback, type ComponentType } from 'react';
 import {
   BookOpenIcon,
@@ -174,7 +175,7 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
               />
               <div className="min-w-0">
                 <p className="truncate text-body-sm font-medium text-on-dark">
-                  {session?.user?.email}
+                  {displayNameOf(session?.user?.name || session?.user?.displayName)}
                 </p>
                 <span className="text-caption text-on-dark-muted">Профиль</span>
               </div>

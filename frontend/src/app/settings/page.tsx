@@ -26,6 +26,7 @@ import {
 import UserAvatar from '@/components/UserAvatar';
 import { CheckIcon, LockIcon } from '@/components/ui/icons';
 import Notice from '@/components/ui/Notice';
+import { displayNameOf } from '@/lib/display-name';
 import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -158,6 +159,11 @@ export default function SettingsPage() {
   });
 
   const [displayName, setDisplayName] = useState('');
+  /*
+   * Имя для превью аватара и подписи. Email сюда не попадает — иначе
+   * у нового аккаунта вместо имени виден локаль адреса.
+   */
+  const shownName = displayNameOf(displayName || session?.user?.name);
   const [cefrLevel, setCefrLevel] = useState<string>('');
   const [dailyGoalMinutes, setDailyGoalMinutes] = useState(10);
   const [dailyNewWords, setDailyNewWords] = useState(10);
@@ -466,12 +472,12 @@ export default function SettingsPage() {
               <UserAvatar
                 avatarUrl={avatarUrl}
                 frame={selectedFrame}
-                name={displayName || session?.user?.email}
+                name={shownName}
                 className="h-16 w-16 shrink-0"
               />
               <div>
                 <p className="text-body-sm font-medium text-ink">
-                  {displayName || session?.user?.email}
+                  {shownName}
                 </p>
                 <button
                   type="button"
@@ -741,7 +747,7 @@ export default function SettingsPage() {
                         <UserAvatar
                           avatarUrl={avatarUrl}
                           frame={frame.id}
-                          name={displayName || session?.user?.email}
+                          name={shownName}
                           className="h-12 w-12 shrink-0"
                         />
                         <span className="min-w-0">
@@ -768,12 +774,12 @@ export default function SettingsPage() {
                 <UserAvatar
                   avatarUrl={avatarUrl}
                   frame={selectedFrame}
-                  name={displayName || session?.user?.email}
+                  name={shownName}
                   className="h-14 w-14 shrink-0"
                 />
                 <div className="min-w-0">
                   <p className="truncate text-body-sm font-semibold text-ink">
-                    {displayName || session?.user?.email}
+                    {shownName}
                   </p>
                   <p className="mt-0.5 text-caption text-slate">
                     {frameLabel(selectedFrame)} ·{' '}

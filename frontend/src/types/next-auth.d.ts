@@ -18,6 +18,12 @@ declare module 'next-auth' {
     tokenError?: string | null;
     user: {
       id: string;
+      /*
+       * Отдельное имя пользователя из бэкенда. Живёт рядом с `name`,
+       * потому что `name` приходит из JWT и у незаполненного профиля
+       * равно null — на него одного опираться нельзя.
+       */
+      displayName?: string | null;
     } & DefaultSession['user'];
   }
 }

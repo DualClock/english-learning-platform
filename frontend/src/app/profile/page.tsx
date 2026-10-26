@@ -18,6 +18,7 @@ import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorState from '@/components/ui/ErrorState';
 import ProgressBar from '@/components/ui/ProgressBar';
+import { displayNameOf } from '@/lib/display-name';
 import { Skeleton } from '@/components/ui/LoadingState';
 import {
   ArrowRightIcon,
@@ -190,11 +191,11 @@ export default function ProfilePage() {
     );
   }
 
-  const name =
-    profile.displayName?.trim() ||
-    session?.user?.name ||
-    profile.email.split('@')[0] ||
-    'Читатель';
+  /*
+   * Имя для показа. `profile.email.split('@')[0]` убран: у нового аккаунта
+   * displayName пуст, и в заголовок профиля попадал локаль адреса.
+   */
+  const name = displayNameOf(profile.displayName?.trim() || session?.user?.name);
   const joined = joinedLabel(profile.createdAt);
   const currentStreak = streak?.currentStreak ?? profile.currentStreak;
   const longestStreak = streak?.longestStreak ?? profile.longestStreak;

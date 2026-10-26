@@ -57,6 +57,23 @@ EnglishLearningPlatform.API/uploads/
 .kimi/
 .tmp/
 
+# Артефакты UI-аудита и редизайна (скриншоты, сессии, рабочие скрипты).
+# В репозитории держим только сам отчёт и план — они в .design-audit/*.md.
+.design-audit/shots/
+.design-audit/shots-mobile/
+.design-audit/scripts/
+.design-audit/auth.json
+.design-audit/*.json
+.design-audit/reader-id.txt
+
+# Сессия для визуального гейта содержит живой токен — не коммитить
+frontend/e2e/.visual-auth.json
+frontend/e2e/.visual-reader-id
+
+# Результаты упавших прогонов (трейсы, диффы скриншотов)
+frontend/test-results/
+frontend/playwright-report/
+
 # Локальные артефакты с секретами (QA-пароли, конфиги Qoder) —
 # не коммитить и не публиковать
 .qoder/

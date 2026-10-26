@@ -18,6 +18,7 @@ import ErrorState from '@/components/ui/ErrorState';
 import Button from '@/components/ui/Button';
 import { ArrowRightIcon } from '@/components/ui/icons';
 import { Book, pickContinueBook } from '@/components/dashboard/utils';
+import { displayNameOf } from '@/lib/display-name';
 import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
 import DailyPlan from '@/components/dashboard/DailyPlan';
@@ -106,11 +107,11 @@ export default function DashboardPage() {
     ? null
     : (streakQuery.data?.totalXp ?? profile?.totalXp ?? null);
 
-  const userName =
-    session?.user?.name ||
-    profile?.displayName ||
-    session?.user?.email?.split('@')[0] ||
-    profile?.email?.split('@')[0];
+  /*
+   * Имя для приветствия. Никогда не email: у нового аккаунта displayName
+   * пуст, и раньше сюда попадал локаль адреса («audit-1793045167713»).
+   */
+  const userName = displayNameOf(session?.user?.name || profile?.displayName);
 
   const isNewAccount = booksState === 'empty' && (dictCount === null || dictCount === 0);
 
