@@ -1,186 +1,144 @@
 'use client';
 
-import AppLayout from '@/components/AppLayout';
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import AppLayout from '@/components/AppLayout';
+import AddWordForm from '@/components/dictionary/AddWordForm';
+import BulkAddForm from '@/components/dictionary/BulkAddForm';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import Button from '@/components/ui/Button';
+import {
+  ArrowLeftIcon,
+  NotebookIcon,
+  PenIcon,
+  UserIcon,
+} from '@/components/ui/icons';
 
-interface Word {
-  id: number;
-  text: string;
-  language?: string;
-  definitions: {
-    id: number;
-    definition: string;
-    partOfSpeech?: string;
-    example?: string;
-  }[];
-  createdAt: string;
-}
+type AddMode = 'single' | 'bulk';
 
-export default function DictionaryPage() {
-  const { data: session, status } = useSession();
-  const [words, setWords] = useState<Word[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+const TABS: { id: AddMode; label: string; icon: typeof PenIcon }[] = [
+  { id: 'single', label: 'Одно слово', icon: PenIcon },
+  { id: 'bulk', label: 'Списком', icon: NotebookIcon },
+];
 
-  useEffect(() => {
-    if (status === 'authenticated') {
-      loadWords();
-    }
-  }, [status, session]);
+export default function AddWordPage() {
+  const { status } = useSession();
+  const [mode, setMode] = useState<AddMode>('single');
+  const [bulkRunning, setBulkRunning] = useState(false);
 
-  const loadWords = async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/dictionary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!res.ok) throw new Error('Failed to load words');
-      
-      const data = await res.json();
-      setWords(data);
-      setIsLoading(false);
-    } catch {
-      setError('Ошибка загрузки слов');
-      setIsLoading(false);
-    }
+  const selectTab = (next: AddMode) => {
+    if (bulkRunning) return;
+    setMode(next);
+    requestAnimationFrame(() => document.getElementById(`add-tab-${next}`)?.focus());
   };
 
-  const searchWords = async () => {
-    if (!searchQuery.trim()) {
-      loadWords();
-      return;
-    }
-    
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`http://localhost:5226/api/dictionary/search?query=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (!res.ok) throw new Error('Search failed');
-      
-      const data = await res.json();
-      setWords(data);
-    } catch {
-      setError('Ошибка поиска');
-    }
+  const onTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, current: AddMode) => {
+    if (bulkRunning) return;
+    const index = TABS.findIndex((tab) => tab.id === current);
+    let nextIndex = index;
+
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % TABS.length;
+    else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + TABS.length) % TABS.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = TABS.length - 1;
+    else return;
+
+    event.preventDefault();
+    selectTab(TABS[nextIndex].id);
   };
 
-  const deleteWord = async (id: number) => {
-    if (!confirm('Удалить это слово?')) return;
-    
-    try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/dictionary/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      setWords(words.filter(w => w.id !== id));
-    } catch {
-      setError('Ошибка удаления');
-    }
-  };
-
-  const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    speechSynthesis.speak(utterance);
-  };
-
-  if (isLoading) {
+  if (status === 'unauthenticated') {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
-        </div>
+        <EmptyState
+          icon={<UserIcon size={24} />}
+          title="Нужен аккаунт"
+          description="Чтобы добавлять слова в словарь, войдите — словарь привязан к профилю."
+          action={
+            <Button href="/login" variant="primary">
+              Войти
+            </Button>
+          }
+        />
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#20231F] mb-2">Словарь</h1>
-        <p className="text-[#5A5F5A]">{words.length} слов изучается</p>
-      </div>
+      <div className="mx-auto max-w-2xl">
+        <Button href="/dictionary" variant="ghost" className="mb-3">
+          <ArrowLeftIcon size={16} />
+          К словарю
+        </Button>
 
-      {/* Поиск и добавление */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Поиск слов..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && searchWords()}
-            className="input pl-10"
-          />
-          <svg className="absolute left-3 top-3.5 w-5 h-5 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-        <button onClick={searchWords} className="btn-secondary">
-          Найти
-        </button>
-        <Link href="/dictionary/add" className="btn-primary">
-          + Добавить
-        </Link>
-      </div>
+        <PageHeader
+          title="Добавить слово"
+          subtitle="Одно слово или целый список. Перевод можно подставить AI, вписать вручную или оставить на потом."
+        />
 
-      {error && (
-        <div className="mb-6 p-4 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C]">
-          {error}
-        </div>
-      )}
-
-      {/* Список слов */}
-      {words.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-[#5A5F5A] mb-4">Словарь пуст</p>
-          <Link href="/dictionary/add" className="btn-primary">
-            Добавить первое слово
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {words.map((word) => (
-            <div key={word.id} className="card p-4 flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="text-lg font-semibold text-[#20231F] hover:text-[#356B52] transition-colors"
-                  >
-                    {word.text}
-                  </button>
-                  {word.definitions[0]?.partOfSpeech && (
-                    <span className="badge badge-primary text-xs">
-                      {word.definitions[0].partOfSpeech}
-                    </span>
-                  )}
-                </div>
-                <p className="text-[#5A5F5A]">{word.definitions[0]?.definition}</p>
-                {word.definitions[0]?.example && (
-                  <p className="text-sm text-[#5A5F5A] mt-1 italic">«{word.definitions[0].example}»</p>
-                )}
-              </div>
+        <div
+          role="tablist"
+          aria-label="Способ добавления слов"
+          className="mb-6 mt-5 inline-flex rounded-lg border border-hairline bg-surface-sunken p-1"
+        >
+          {TABS.map((tab) => {
+            const active = mode === tab.id;
+            const Icon = tab.icon;
+            return (
               <button
-                onClick={() => deleteWord(word.id)}
-                className="ml-4 p-2 text-[#5A5F5A] hover:text-[#B85C5C] transition-colors"
+                key={tab.id}
+                id={`add-tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls={`add-panel-${tab.id}`}
+                tabIndex={active ? 0 : -1}
+                disabled={bulkRunning}
+                onClick={() => selectTab(tab.id)}
+                onKeyDown={(event) => onTabKeyDown(event, tab.id)}
+                className={`inline-flex min-h-11 items-center gap-2 rounded-md px-4 py-2 text-body-sm font-medium transition-colors duration-fast disabled:cursor-not-allowed disabled:opacity-60 ${
+                  active
+                    ? 'bg-surface text-ink shadow-sm'
+                    : 'text-slate hover:text-ink'
+                }`}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Icon size={16} />
+                {tab.label}
               </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
-      )}
+
+        <div
+          id="add-panel-single"
+          role="tabpanel"
+          aria-labelledby="add-tab-single"
+          hidden={mode !== 'single'}
+        >
+          {mode === 'single' && <AddWordForm />}
+        </div>
+
+        <div
+          id="add-panel-bulk"
+          role="tabpanel"
+          aria-labelledby="add-tab-bulk"
+          hidden={mode !== 'bulk'}
+        >
+          {mode === 'bulk' && <BulkAddForm onRunningChange={setBulkRunning} />}
+        </div>
+
+        <p className="mt-6 max-w-measure text-caption text-slate">
+          Слова из книг можно добавлять прямо в читалке — нажмите на незнакомое слово и «В словарь».
+          Готовые подборки есть в{' '}
+          <Link href="/dictionary?tab=lists" className="text-primary hover:underline">
+            сборниках
+          </Link>
+          .
+        </p>
+      </div>
     </AppLayout>
   );
 }

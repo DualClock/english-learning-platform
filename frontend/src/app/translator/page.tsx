@@ -6,13 +6,49 @@ import AnalysisCard, {
   type AssistantAnalysis,
 } from '@/components/assistant/AnalysisCard';
 import WelcomeScreen from '@/components/assistant/WelcomeScreen';
-import { API_URL } from '@/app/lib/api-url';
+import Button from '@/components/ui/Button';
+import LoadingState from '@/components/ui/LoadingState';
+import Notice from '@/components/ui/Notice';
+import { PromptInput } from '@/components/ui/ai-chat-input';
+import {
+  BulbIcon,
+  ChevronDownIcon,
+  MicIcon,
+  PinIcon,
+  RefreshIcon,
+  SpinnerIcon,
+  StopIcon,
+  VolumeIcon,
+  VolumeOffIcon,
+} from '@/components/ui/icons';
+import { AnimatePresence, motion } from 'motion/react';
+import { variants } from '@/lib/motion';
+import { ApiError, apiMutate } from '@/app/lib/api-client';
+import { useApiQuery } from '@/app/lib/use-api';
+import { useTts } from '@/hooks/useTts';
+import { useRecorder } from '@/hooks/useRecorder';
+import { blobToWavBase64 } from '@/app/lib/wav';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
+  failed?: boolean;
+}
+
+interface ErrorBankEntry {
+  id: number;
+  original: string;
+  suggestion: string;
+  type: string;
+  explanation?: string | null;
+  createdAt: string;
+  resolved: boolean;
+}
+
+interface ErrorBankResponse {
+  items: ErrorBankEntry[];
+  unresolvedCount: number;
 }
 
 const SUGGESTION_CHIPS = [
@@ -22,7 +58,7 @@ const SUGGESTION_CHIPS = [
 ];
 
 export default function TranslatorPage() {
-  const { data: session } = useSession();
+  const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
 
   const [phase, setPhase] = useState<'loading' | 'welcome' | 'chat'>('loading');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -37,85 +73,122 @@ export default function TranslatorPage() {
 
   const [userLevel, setUserLevel] = useState<string | null>(null);
 
+  // Голос: озвучка ответов Alex и голосовой ввод с микрофона
+  const { speak, stop: stopSpeaking } = useTts();
+  const recorder = useRecorder();
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [micError, setMicError] = useState('');
+
+  // Банк типичных ошибок
+  const [showErrors, setShowErrors] = useState(false);
+  const {
+    data: errorBank,
+    refresh: refreshErrors,
+  } = useApiQuery<ErrorBankResponse>('/api/assistant/errors', {
+    enabled: phase === 'chat',
+  });
+
   const greetedRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const seen = localStorage.getItem('assistant_seen');
     setPhase(seen ? 'chat' : 'welcome');
+    setAutoSpeak(localStorage.getItem('assistant_autospeak') === '1');
   }, []);
 
   useEffect(() => {
-    const token = session?.accessToken;
-    if (!token) return;
-    fetch(`${API_URL}/api/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.cefrLevel) setUserLevel(String(data.cefrLevel).toUpperCase());
-      })
-      .catch(() => {});
-  }, [session?.accessToken]);
+    if (profileData?.cefrLevel) setUserLevel(String(profileData.cefrLevel).toUpperCase());
+  }, [profileData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, sending]);
 
   const requestChat = useCallback(
-    async (history: ChatMessage[]): Promise<string | null> => {
+    async (history: ChatMessage[]): Promise<{ reply: string | null; error: string | null }> => {
       try {
-        const res = await fetch(`${API_URL}/api/assistant/chat`, {
+        const data = await apiMutate<{ reply?: string }>('/api/assistant/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-          body: JSON.stringify({ messages: history, userLevel: userLevel || undefined }),
+          body: { messages: history, userLevel: userLevel || undefined },
         });
-        if (!res.ok) throw new Error('chat failed');
-        const data = await res.json();
-        return data.reply ?? null;
-      } catch {
-        setError('Alex временно недоступен. Попробуй ещё раз чуть позже.');
-        return null;
+        if (!data?.reply) {
+          return { reply: null, error: 'Alex временно недоступен. Попробуй ещё раз чуть позже.' };
+        }
+        return { reply: data.reply, error: null };
+      } catch (err) {
+        if (err instanceof ApiError) {
+          const message =
+            err.message && !err.message.startsWith('Ошибка запроса')
+              ? err.message
+              : 'Alex временно недоступен. Попробуй ещё раз чуть позже.';
+          return { reply: null, error: message };
+        }
+        return { reply: null, error: 'Нет соединения с сервером. Проверь интернет и попробуй ещё раз.' };
       }
     },
-    [session?.accessToken, userLevel]
+    [userLevel]
   );
 
   // Приветствие: если история пуста, Alex пишет первым
+  const greet = useCallback(async () => {
+    setSending(true);
+    setError('');
+    const { reply, error: chatError } = await requestChat([]);
+    if (reply) {
+      setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+      if (autoSpeak) speak(reply);
+    } else if (chatError) setError(chatError);
+    setSending(false);
+  }, [autoSpeak, requestChat, speak]);
+
   useEffect(() => {
     if (phase !== 'chat' || greetedRef.current || sending) return;
     greetedRef.current = true;
-    (async () => {
-      setSending(true);
-      const reply = await requestChat([]);
-      if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-      setSending(false);
-    })();
-  }, [phase, sending, requestChat]);
+    greet();
+  }, [phase, sending, greet]);
 
   const startChat = () => {
     localStorage.setItem('assistant_seen', '1');
     setPhase('chat');
   };
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  // Отправка истории в чат. При ошибке последнее сообщение пользователя
+  // остаётся в ленте со статусом «не отправлено» и кнопкой «Повторить».
+  const deliverMessage = async (history: ChatMessage[]) => {
+    setError('');
+    setSending(true);
+    const { reply, error: chatError } = await requestChat(history);
+    setSending(false);
+    if (reply) {
+      setMessages([...history, { role: 'assistant', text: reply }]);
+      if (autoSpeak) speak(reply);
+    } else {
+      setMessages(
+        history.map((m, i) =>
+          i === history.length - 1 && m.role === 'user' ? { ...m, failed: true } : m
+        )
+      );
+      if (chatError) setError(chatError);
+    }
+  };
+
+  const sendMessage = async (raw?: string) => {
+    const text = (raw ?? input).trim();
     if (!text || sending) return;
 
     const history = [...messages, { role: 'user' as const, text }];
     setMessages(history);
     setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    setError('');
-    setSending(true);
+    await deliverMessage(history);
+  };
 
-    const reply = await requestChat(history);
-    if (reply) setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-    setSending(false);
+  const retryMessage = (idx: number) => {
+    if (sending) return;
+    const history = messages.slice(0, idx + 1).map((m) => ({ ...m, failed: false }));
+    setMessages(history);
+    deliverMessage(history);
   };
 
   const toggleAnalysis = async (idx: number) => {
@@ -126,17 +199,13 @@ export default function TranslatorPage() {
     setAnalysisFailed((prev) => ({ ...prev, [idx]: false }));
     setAnalyzing((prev) => ({ ...prev, [idx]: true }));
     try {
-      const res = await fetch(`${API_URL}/api/assistant/analyze`, {
+      const data = await apiMutate<AssistantAnalysis>('/api/assistant/analyze', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({ text: messages[idx].text, userLevel: userLevel || undefined }),
+        body: { text: messages[idx].text, userLevel: userLevel || undefined },
       });
-      if (!res.ok) throw new Error('analyze failed');
-      const data: AssistantAnalysis = await res.json();
       setAnalyses((prev) => ({ ...prev, [idx]: data }));
+      // Разбор пополняет банк ошибок — обновляем счётчик
+      refreshErrors();
     } catch {
       setAnalysisFailed((prev) => ({ ...prev, [idx]: true }));
     } finally {
@@ -144,12 +213,65 @@ export default function TranslatorPage() {
     }
   };
 
-  const speak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    window.speechSynthesis.speak(utterance);
+  // Микрофон: запись -> распознавание -> текст в поле ввода.
+  // Alex отвечает голосом, но ввод остаётся обычным текстом — его можно поправить.
+  const toggleMic = async () => {
+    setMicError('');
+    stopSpeaking();
+
+    if (recorder.isRecording) {
+      const blob = await recorder.stop();
+      if (!blob) return;
+
+      setTranscribing(true);
+      try {
+        const audioBase64 = await blobToWavBase64(blob);
+        const result = await apiMutate<{ transcribed?: string }>('/api/pronunciation/transcribe', {
+          method: 'POST',
+          body: { audioBase64, mimeType: 'audio/wav' },
+        });
+
+        const text = result?.transcribed?.trim();
+        if (text) {
+          // Поле раскроется само: PromptInput следит за внешним значением.
+          setInput((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
+        } else {
+          setMicError('Не расслышали. Попробуйте сказать чуть громче.');
+        }
+      } catch (err) {
+        setMicError(
+          err instanceof ApiError
+            ? err.message
+            : 'Не удалось распознать речь. Попробуйте ещё раз.'
+        );
+      } finally {
+        setTranscribing(false);
+      }
+      return;
+    }
+
+    await recorder.start();
+  };
+
+  const toggleAutoSpeak = () => {
+    setAutoSpeak((value) => {
+      const next = !value;
+      localStorage.setItem('assistant_autospeak', next ? '1' : '0');
+      if (!next) stopSpeaking();
+      return next;
+    });
+  };
+
+  const resolveError = async (id: number) => {
+    try {
+      await apiMutate(`/api/assistant/errors/${id}/resolve`, {
+        method: 'POST',
+        invalidate: ['/api/assistant/errors'],
+      });
+      refreshErrors();
+    } catch {
+      // не критично: панель обновится при следующем заходе
+    }
   };
 
   const startNewConversation = () => {
@@ -165,23 +287,12 @@ export default function TranslatorPage() {
     greetedRef.current = false;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
   if (phase === 'loading') {
     return (
       <AppLayout>
-        <div className="max-w-3xl mx-auto" />
+        <div className="mx-auto max-w-3xl">
+          <LoadingState rows={4} label="Загрузка разговора" />
+        </div>
       </AppLayout>
     );
   }
@@ -191,59 +302,125 @@ export default function TranslatorPage() {
       {phase === 'welcome' ? (
         <WelcomeScreen onStart={startChat} />
       ) : (
-        <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
+        <div className="chat-shell mx-auto flex max-w-3xl flex-col">
           {/* Шапка */}
-          <div className="flex items-center gap-3 py-4 border-b border-[#D6D3CC]">
+          <div className="flex flex-wrap items-center gap-3 border-b border-hairline py-4">
             <AlexAvatar size="md" />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-[#20231F] leading-tight">Alex</h1>
-              <p className="text-xs text-[#5A5F5A]">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-h3 text-ink">Alex</h1>
+              <p className="text-caption text-slate">
                 AI-собеседник{userLevel ? ` · уровень ${userLevel}` : ''}
               </p>
             </div>
             <button
-              onClick={startNewConversation}
-              className="text-sm text-[#5A5F5A] hover:text-[#20231F] px-3 py-1.5 rounded-lg hover:bg-[#E7ECE4] transition-colors"
+              type="button"
+              onClick={toggleAutoSpeak}
+              aria-pressed={autoSpeak}
+              className={`${autoSpeak ? 'icon-chip-active' : 'icon-chip'}`}
             >
-              🔄 Новый разговор
+              {autoSpeak ? <VolumeIcon size={16} /> : <VolumeOffIcon size={16} />}
+              Голос
             </button>
+            <Button variant="ghost" onClick={startNewConversation}>
+              <RefreshIcon size={16} />
+              <span className="hidden sm:inline">Новый разговор</span>
+              <span className="sm:hidden">Заново</span>
+            </Button>
           </div>
 
+          {/* Банк типичных ошибок */}
+          {errorBank && errorBank.unresolvedCount > 0 && (
+            <div className="border-b border-hairline py-2">
+              <button
+                type="button"
+                onClick={() => setShowErrors((value) => !value)}
+                aria-expanded={showErrors}
+                className="btn-ghost px-2"
+              >
+                <PinIcon size={16} />
+                Мои типичные ошибки ({errorBank.unresolvedCount})
+                <ChevronDownIcon
+                  size={16}
+                  className={`transition-transform duration-fast ease-soft ${
+                    showErrors ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {showErrors && (
+                <ul className="stagger mt-2 max-h-56 space-y-2 overflow-y-auto">
+                  {errorBank.items.map((entry) => (
+                    <li key={entry.id} className="rounded-lg border border-hairline bg-canvas p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-body-sm leading-snug text-ink">
+                          <span className="text-semantic-error line-through">{entry.original}</span>
+                          <span className="mx-1.5 text-slate">→</span>
+                          <span className="text-semantic-success">{entry.suggestion}</span>
+                        </p>
+                        <Button
+                          variant="secondary"
+                          className="shrink-0 px-3 py-1 text-caption"
+                          onClick={() => resolveError(entry.id)}
+                        >
+                          Отработал
+                        </Button>
+                      </div>
+                      {entry.explanation && (
+                        <p className="mt-1 text-caption text-slate">{entry.explanation}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           {/* Лента сообщений */}
-          <div className="flex-1 overflow-y-auto py-4 space-y-4">
+          <div className="flex-1 space-y-4 overflow-y-auto py-4">
             {messages.map((message, idx) =>
               message.role === 'assistant' ? (
-                <div key={idx} className="flex gap-2 items-end assistant-message-in">
+                <div key={idx} className="assistant-message-in flex items-end gap-2">
                   <AlexAvatar size="sm" />
-                  <div className="max-w-[80%]">
-                    <div className="bg-white border border-[#D6D3CC] rounded-2xl rounded-bl-sm px-4 py-2.5 text-[#20231F] whitespace-pre-wrap">
-                      {message.text}
-                    </div>
+                  <div className="chat-col flex flex-col items-start gap-1">
+                    <div className="chat-bubble-in">{message.text}</div>
                     <button
+                      type="button"
                       onClick={() => speak(message.text)}
-                      title="Озвучить"
-                      className="mt-1 text-xs text-[#5A5F5A] hover:text-[#356B52] transition-colors"
+                      className="btn-ghost px-1 py-0 text-caption"
                     >
-                      🔊 Озвучить
+                      <VolumeIcon size={16} />
+                      Озвучить
                     </button>
                   </div>
                 </div>
               ) : (
-                <div key={idx} className="flex flex-col items-end assistant-message-in">
+                <div key={idx} className="assistant-message-in flex flex-col items-end gap-1">
                   <button
+                    type="button"
                     onClick={() => toggleAnalysis(idx)}
-                    title="Разбор сообщения"
-                    className="text-sm px-2 py-0.5 rounded-full text-[#5A5F5A] hover:text-[#EBCB75] hover:bg-white transition-colors mb-0.5"
+                    aria-expanded={Boolean(openAnalyses[idx])}
+                    aria-label="Разбор сообщения"
+                    className="btn-ghost px-2 py-0.5"
                   >
-                    💡
+                    <BulbIcon size={16} />
                   </button>
-                  <div className="max-w-[80%] bg-[#356B52] text-white rounded-2xl rounded-br-sm px-4 py-2.5 whitespace-pre-wrap">
-                    {message.text}
-                  </div>
+                  <div className="chat-col chat-bubble-out">{message.text}</div>
+                  {message.failed && (
+                    <div className="flex items-center gap-2 text-caption text-semantic-error">
+                      <span>Не отправлено</span>
+                      <button
+                        type="button"
+                        onClick={() => retryMessage(idx)}
+                        className="font-medium underline hover:text-ink transition-colors"
+                      >
+                        Повторить
+                      </button>
+                    </div>
+                  )}
                   {openAnalyses[idx] && (
                     <>
                       {analyzing[idx] && (
-                        <div className="mt-2 text-sm text-[#5A5F5A] inline-flex items-center gap-1">
+                        <div role="status" className="inline-flex items-center gap-1 text-body-sm text-slate">
                           Разбираем сообщение
                           <span className="inline-flex gap-0.5">
                             <span className="assistant-typing-dot">·</span>
@@ -253,7 +430,7 @@ export default function TranslatorPage() {
                         </div>
                       )}
                       {analysisFailed[idx] && !analyzing[idx] && (
-                        <div className="mt-2 text-sm text-[#B85C5C]">
+                        <div role="alert" className="text-body-sm text-semantic-error">
                           Не получилось разобрать сообщение. Попробуй ещё раз.
                         </div>
                       )}
@@ -264,24 +441,45 @@ export default function TranslatorPage() {
               )
             )}
 
-            {sending && (
-              <div className="flex gap-2 items-end">
-                <AlexAvatar size="sm" />
-                <div className="bg-white border border-[#D6D3CC] rounded-2xl rounded-bl-sm px-4 py-3 inline-flex items-center gap-2 text-sm text-[#5A5F5A]">
-                  Alex печатает
-                  <span className="inline-flex gap-0.5">
-                    <span className="assistant-typing-dot">·</span>
-                    <span className="assistant-typing-dot">·</span>
-                    <span className="assistant-typing-dot">·</span>
-                  </span>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {sending && (
+                <motion.div
+                  key="typing"
+                  variants={variants.fadeOnly}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="flex items-end gap-2"
+                >
+                  <AlexAvatar size="sm" />
+                  <div
+                    role="status"
+                    className="chat-bubble-in inline-flex items-center gap-2 text-body-sm text-slate"
+                  >
+                    Alex печатает
+                    <span className="inline-flex gap-0.5">
+                      <span className="assistant-typing-dot">·</span>
+                      <span className="assistant-typing-dot">·</span>
+                      <span className="assistant-typing-dot">·</span>
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {error && (
-              <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C]/40 text-[#B85C5C] text-sm text-center">
-                {error}
-              </div>
+              <Notice tone="danger">
+                <span>{error}</span>
+                {messages.length === 0 && !sending && (
+                  <button
+                    type="button"
+                    onClick={greet}
+                    className="ml-2 font-medium underline hover:text-ink transition-colors"
+                  >
+                    Повторить
+                  </button>
+                )}
+              </Notice>
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -291,11 +489,9 @@ export default function TranslatorPage() {
             {SUGGESTION_CHIPS.map((chip) => (
               <button
                 key={chip}
-                onClick={() => {
-                  setInput(chip);
-                  textareaRef.current?.focus();
-                }}
-                className="text-xs px-3 py-1.5 rounded-full bg-white border border-[#D6D3CC] text-[#5A5F5A] hover:border-[#356B52] hover:text-[#356B52] transition-colors"
+                type="button"
+                onClick={() => setInput(chip)}
+                className="chip-button"
               >
                 {chip}
               </button>
@@ -303,23 +499,58 @@ export default function TranslatorPage() {
           </div>
 
           {/* Поле ввода */}
-          <div className="flex items-end gap-2 pb-4 pt-1">
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              rows={1}
-              placeholder="Напиши сообщение на английском…"
-              className="input flex-1 resize-none max-h-[120px] py-2.5"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={sending || !input.trim()}
-              className="btn-primary px-5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+          {(micError || recorder.error || recorder.isRecording) && (
+            <p
+              role={micError || recorder.error ? 'alert' : 'status'}
+              aria-live={micError || recorder.error ? undefined : 'polite'}
+              className={`pb-1 text-caption ${
+                micError || recorder.error ? 'text-semantic-error' : 'text-slate'
+              }`}
             >
-              ➤
+              {micError || recorder.error
+                ? micError || recorder.error
+                : `Идёт запись · ${recorder.seconds} с из ${recorder.maxSeconds} — нажмите «Стоп», чтобы закончить`}
+            </p>
+          )}
+          <div className="flex items-end gap-2 pb-4 pt-1">
+            <button
+              type="button"
+              onClick={toggleMic}
+              disabled={transcribing}
+              aria-label={
+                transcribing
+                  ? 'Распознаём речь'
+                  : recorder.isRecording
+                    ? 'Остановить запись'
+                    : 'Голосовой ввод'
+              }
+              className={recorder.isRecording ? 'mic-chip-recording' : 'mic-chip'}
+            >
+              {transcribing ? (
+                <SpinnerIcon size={20} label="Распознаём речь" />
+              ) : recorder.isRecording ? (
+                <StopIcon size={20} />
+              ) : (
+                <MicIcon size={20} />
+              )}
             </button>
+            {/* Микрофон остаётся свой: он ходит в /api/pronunciation/transcribe,
+                а встроенный в PromptInput Web Speech дал бы второй, худший путь. */}
+            <PromptInput
+              value={input}
+              onChange={setInput}
+              onSubmit={(text) => void sendMessage(text)}
+              placeholder="Напиши сообщение на английском…"
+              models={['Alex']}
+              efforts={['Коротко', 'Обычно', 'Подробно']}
+              showModelPicker={false}
+              showEffort={false}
+              showAttachments={false}
+              showVoice={false}
+              disabled={sending}
+              fullWidth
+              className="min-w-0 flex-1"
+            />
           </div>
         </div>
       )}

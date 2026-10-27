@@ -1,76 +1,112 @@
-import { pluralize } from './utils';
+import type { ComponentType } from 'react';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import {
+  BookmarkIcon,
+  BookOpenIcon,
+  RepeatIcon,
+  StarIcon,
+  type IconProps,
+} from '@/components/ui/icons';
+import { plural, pluralBooks, pluralWords } from '@/lib/plural';
+import { MISSING_VALUE, displayCount } from '@/components/dashboard/dashboard-state';
+
+/*
+ * Четыре счётчика над планом на сегодня.
+ *
+ * Правило одно и то же для всех: `null` значит «неизвестно», и рисовать его
+ * нулём нельзя. Раньше при упавшем запросе интерфейс уверенно сообщал «0 слов
+ * в словаре» — человек делал вывод о себе вместо вывода о связи. Теперь
+ * отсутствующее значение показывается прочерком, а подпись не склоняется:
+ * «— в словаре» вместо «0 слов в словаре».
+ */
 
 interface Props {
   dictCount: number | null;
-  reviewCount: number;
-  booksCount: number;
+  reviewCount: number | null;
+  booksCount: number | null;
   totalXp?: number | null;
 }
 
+interface Stat {
+  value: number | null;
+  label: string;
+  Icon: ComponentType<IconProps>;
+}
+
+/** Подпись со склонением, если число известно, и без него — если нет. */
+function counterLabel(
+  value: number | null,
+  pluralize: (n: number) => string,
+  missing: string
+): string {
+  return value === null ? missing : pluralize(value);
+}
+
 export default function StatsRow({ dictCount, reviewCount, booksCount, totalXp }: Props) {
-  const stats = [
-    ...(dictCount !== null
-      ? [
-          {
-            value: dictCount,
-            label: pluralize(dictCount, 'слово', 'слова', 'слов') + ' в словаре',
-            icon: (
-              <svg className="w-5 h-5 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            ),
-          },
-        ]
-      : []),
+  const stats: Stat[] = [
+    {
+      value: dictCount,
+      label: counterLabel(dictCount, (n) => `${pluralWords(n)} в словаре`, 'слов в словаре'),
+      Icon: BookOpenIcon,
+    },
     {
       value: reviewCount,
-      label: pluralize(reviewCount, 'слово', 'слова', 'слов') + ' на повторении',
-      icon: (
-        <svg className="w-5 h-5 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
+      label: counterLabel(reviewCount, (n) => `${pluralWords(n)} на повторении`, 'слов на повторении'),
+      Icon: RepeatIcon,
     },
     {
       value: booksCount,
-      label: pluralize(booksCount, 'книга', 'книги', 'книг') + ' в работе',
-      icon: (
-        <svg className="w-5 h-5 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-        </svg>
-      ),
+      label: counterLabel(booksCount, (n) => `${pluralBooks(n)} в работе`, 'книг в работе'),
+      Icon: BookmarkIcon,
     },
-    ...(totalXp !== null && totalXp !== undefined
+    ...(totalXp !== undefined
       ? [
           {
             value: totalXp,
-            label: 'баллов набрано',
-            icon: (
-              <svg className="w-5 h-5 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.376 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.539 1.118l-3.377-2.455a1 1 0 00-1.175 0l-3.377 2.455c-.783.57-1.838-.196-1.538-1.118l1.286-3.966a1 1 0 00-.363-1.118L4.81 9.393c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.966z" />
-              </svg>
+            label: counterLabel(
+              totalXp,
+              (n) => `${plural(n, ['балл', 'балла', 'баллов'])} набрано`,
+              'баллов набрано'
             ),
+            Icon: StarIcon,
           },
         ]
       : []),
   ];
 
+  /*
+   * Нулевая плитка ничего не сообщает, кроме «здесь пока пусто», и в ряду из
+   * четырёх нолей занимает больше всего места при нуле смысла. Показываем
+   * только те счётчики, которые уже что-то значат; `null` — это «неизвестно»,
+   * его по-прежнему рисуем прочерком, потому что это утверждение о связи.
+   */
+  const visibleStats = stats.filter((stat) => stat.value !== 0);
+
+  // Все счётчики нулевые — ряда нет вовсе, иначе он превращается в пустоту.
+  if (visibleStats.length === 0) return null;
+
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      {stats.map((stat, i) => (
-        <div
-          key={i}
-          className="bg-white rounded-2xl border border-[#D6D3CC] p-5 flex items-center gap-4 shadow-sm"
-        >
-          <div className="w-11 h-11 rounded-xl bg-[#E7ECE4] flex items-center justify-center shrink-0">
-            {stat.icon}
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-[#20231F] leading-tight">{stat.value}</p>
-            <p className="text-sm text-[#5A5F5A]">{stat.label}</p>
-          </div>
+    <section className="stagger mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {visibleStats.map((stat) => (
+        <div key={stat.label} className="card flex items-center gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-accent text-primary">
+            <stat.Icon size={20} />
+          </span>
+          <span className="min-w-0">
+            {stat.value === null ? (
+              // Прочерк, а не анимированный ноль: анимация 0→0 выглядит как
+              // настоящий ноль, то есть как утверждение о данных.
+              <span className="block text-h2 text-slate tabular-nums">{MISSING_VALUE}</span>
+            ) : (
+              /* разряды через AnimatedNumber: тот же формат, что в карточке уровня */
+              <AnimatedNumber value={stat.value} className="block text-h2 text-ink tabular-nums" />
+            )}
+            <span className="block text-body-sm text-slate">{stat.label}</span>
+          </span>
         </div>
       ))}
     </section>
   );
 }
+
+export { displayCount };

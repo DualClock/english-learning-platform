@@ -2,18 +2,22 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using EnglishLearningPlatform.API.Data;
+using EnglishLearningPlatform.API.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace EnglishLearningPlatform.API.Services;
 
-public class AssistantService
+public class AssistantService : IAiBackedService
 {
+    // Резервные модели: 2.5/2.0-flash больше не выдаются новым проектам,
+    // основная модель берётся из Gemini:Model
     private static readonly string[] FallbackModels =
     {
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-1.5-flash"
+        "gemini-3.8-flash",
+        "gemini-flash-latest",
+        "gemini-3.5-flash"
     };
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -22,8 +26,6 @@ public class AssistantService
     };
 
     private static readonly TimeSpan AnalyzeCacheTtl = TimeSpan.FromHours(24);
-    private static readonly object HttpClientLock = new();
-    private static HttpClient? _sharedHttpClient;
     private static string? _resolvedModel;
 
     private const int MaxHistoryMessages = 12;
@@ -31,18 +33,24 @@ public class AssistantService
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _cache;
     private readonly ILogger<AssistantService> _logger;
+    private readonly ResilientAiService _resilient;
+    private readonly ApplicationDbContext _context;
 
     public AssistantService(
         IConfiguration configuration,
         IMemoryCache cache,
-        ILogger<AssistantService> logger)
+        ILogger<AssistantService> logger,
+        ResilientAiService resilient,
+        ApplicationDbContext context)
     {
         _configuration = configuration;
         _cache = cache;
         _logger = logger;
+        _resilient = resilient;
+        _context = context;
     }
 
-    public async Task<string?> ChatAsync(List<AssistantChatMessage>? messages, string? userLevel)
+    public async Task<string?> ChatAsync(List<AssistantChatMessage>? messages, string? userLevel, string? userId = null)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
@@ -94,7 +102,9 @@ public class AssistantService
             contents,
             temperature: 0.8,
             maxOutputTokens: 300,
-            apiKey);
+            apiKey,
+            requestType: "assistant_chat",
+            userId: userId);
 
         if (responseJson == null)
         {
@@ -111,7 +121,7 @@ public class AssistantService
         return reply.Trim();
     }
 
-    public async Task<AssistantAnalysis?> AnalyzeAsync(string text, string? userLevel)
+    public async Task<AssistantAnalysis?> AnalyzeAsync(string text, string? userLevel, string? userId = null)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -131,6 +141,9 @@ public class AssistantService
             SHA256.HashData(Encoding.UTF8.GetBytes($"{level}|{text.Trim()}")))[..32];
         if (_cache.TryGetValue(cacheKey, out AssistantAnalysis? cached) && cached != null)
         {
+            // Разбор мог быть получен другим запросом — в банк ошибок всё равно
+            // пишем: дедупликация не даст задвоить записи
+            await SaveIssuesAsync(userId, cached.Issues);
             return cached;
         }
 
@@ -156,7 +169,9 @@ public class AssistantService
             contents,
             temperature: 0.2,
             maxOutputTokens: 2048,
-            apiKey);
+            apiKey,
+            requestType: "assistant_analyze",
+            userId: userId);
 
         if (responseJson == null)
         {
@@ -172,7 +187,73 @@ public class AssistantService
         }
 
         _cache.Set(cacheKey, result, AnalyzeCacheTtl);
+
+        await SaveIssuesAsync(userId, result.Issues);
+
         return result;
+    }
+
+    /// <summary>
+    /// Складывает разобранные ошибки в банк пользователя. Дубликатом считается
+    /// пара original+suggestion среди нерешённых — повторный разбор того же
+    /// сообщения не плодит записи.
+    /// </summary>
+    private async Task SaveIssuesAsync(string? userId, List<AssistantIssue>? issues)
+    {
+        if (string.IsNullOrEmpty(userId) || issues == null || issues.Count == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var existing = await _context.UserErrorBankEntries
+                .Where(e => e.UserId == userId && e.ResolvedAt == null)
+                .Select(e => new { e.Original, e.Suggestion })
+                .ToListAsync();
+
+            var seen = existing
+                .Select(e => (e.Original.ToLowerInvariant(), e.Suggestion.ToLowerInvariant()))
+                .ToHashSet();
+
+            foreach (var issue in issues.Take(10))
+            {
+                var original = Cut(issue.Original, 500);
+                var suggestion = Cut(issue.Suggestion, 500);
+
+                if (original.Length == 0 || suggestion.Length == 0)
+                {
+                    continue;
+                }
+
+                if (!seen.Add((original.ToLowerInvariant(), suggestion.ToLowerInvariant())))
+                {
+                    continue;
+                }
+
+                _context.UserErrorBankEntries.Add(new UserErrorBankEntry
+                {
+                    UserId = userId,
+                    Original = original,
+                    Suggestion = suggestion,
+                    Type = Cut(issue.Type, 30) is { Length: > 0 } type ? type : "grammar",
+                    Explanation = Cut(issue.Explanation, 1000)
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Банк ошибок — побочный эффект разбора: его сбой не должен ломать ответ
+            _logger.LogWarning(ex, "Failed to save error bank entries");
+        }
+    }
+
+    private static string Cut(string? value, int maxLength)
+    {
+        var trimmed = value?.Trim() ?? string.Empty;
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
     }
 
     private async Task<string?> CallGeminiAsync(
@@ -180,7 +261,9 @@ public class AssistantService
         List<object> contents,
         double temperature,
         int maxOutputTokens,
-        string apiKey)
+        string apiKey,
+        string requestType,
+        string? userId)
     {
         var candidates = new List<string>();
         if (_resolvedModel != null)
@@ -219,7 +302,8 @@ public class AssistantService
                 generationConfig
             };
 
-            var (json, modelNotFound) = await SendRequestAsync(model, requestBody, apiKey);
+            var (json, modelNotFound) = await _resilient.SendAsync(
+                model, requestBody, apiKey, requestType, userId);
             if (json != null)
             {
                 if (_resolvedModel != model)
@@ -247,41 +331,6 @@ public class AssistantService
 
         _logger.LogError("No working Gemini model found for assistant");
         return null;
-    }
-
-    private async Task<(string? Json, bool ModelNotFound)> SendRequestAsync(
-        string model,
-        object requestBody,
-        string apiKey)
-    {
-        try
-        {
-            var json = JsonSerializer.Serialize(requestBody);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-
-            using var response = await GetHttpClient().PostAsync(url, content);
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                return (responseJson, false);
-            }
-
-            var modelNotFound = response.StatusCode == HttpStatusCode.NotFound ||
-                                responseJson.Contains("not found", StringComparison.OrdinalIgnoreCase);
-
-            _logger.LogError("Gemini API error for assistant (model {Model}): {Status}, {Response}",
-                model, response.StatusCode, TruncateForLog(responseJson));
-
-            return (null, modelNotFound);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling Gemini API for assistant (model {Model})", model);
-            return (null, false);
-        }
     }
 
     private AssistantAnalysis? ParseAnalysis(string? rawText)
@@ -325,51 +374,6 @@ public class AssistantService
             // битый JSON — вернём null и попробуем другой способ
             return null;
         }
-    }
-
-    private HttpClient GetHttpClient()
-    {
-        if (_sharedHttpClient != null)
-        {
-            return _sharedHttpClient;
-        }
-
-        lock (HttpClientLock)
-        {
-            _sharedHttpClient ??= CreateHttpClient();
-        }
-
-        return _sharedHttpClient;
-    }
-
-    private HttpClient CreateHttpClient()
-    {
-        var proxyUrl = _configuration["Gemini:ProxyUrl"];
-        var handler = new HttpClientHandler();
-
-        if (!string.IsNullOrEmpty(proxyUrl))
-        {
-            var uri = new Uri(proxyUrl);
-            var proxy = new WebProxy
-            {
-                Address = new Uri($"{uri.Scheme}://{uri.Host}:{uri.Port}"),
-                BypassProxyOnLocal = false,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(
-                    uri.UserInfo.Split(':')[0],
-                    uri.UserInfo.Split(':')[1]
-                )
-            };
-
-            handler.Proxy = proxy;
-            handler.UseProxy = true;
-            handler.PreAuthenticate = true;
-        }
-
-        return new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromSeconds(30)
-        };
     }
 
     private static string NormalizeLevel(string? userLevel)

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<title>Lexicon · food с иллюстрациями</title>
+<style>
+  /* Токены скопированы из frontend/src/app/globals.css, чтобы превью честно
+     показывало масштаб и контраст, а не «красивее, чем в продукте». */
+  :root{
+    --canvas:#FFFFFF; --surface:#F6F7F9; --surface-soft:#FAFAFB;
+    --ink:#1A1D23; --slate:#5D6470; --steel:#7A8089; --muted:#AEB3BB;
+    --hairline:#E5E7EB; --hairline-strong:#C9CDD4;
+    --primary:#0E7C7B; --primary-pressed:#0A6362;
+    --tint-yellow:#FEF7D6; --tint-mint:#D9F3E1; --tint-sky:#DCECFA;
+    --warning:#B45309; --success:#1A9C3C;
+    --illustration-paper:#FFFFFF;
+  }
+  :root[data-theme='dark']{
+    --canvas:#0A1B2E; --surface:#071426; --surface-soft:#0E2237;
+    --ink:#E8EEF7; --slate:#A8B3C7; --steel:#8695AC; --muted:#5E6E86;
+    --hairline:#1B3350; --hairline-strong:#2A4463;
+    --primary:#7FDCD5; --primary-pressed:#5FC4BD;
+    --warning:#E0A458; --success:#3DBB60;
+    --illustration-paper:#FFFFFF;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:32px 24px 64px;background:var(--surface);color:var(--ink);
+    font-family:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--slate);font-size:14px;margin:0 0 24px}
+  h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);
+     margin:32px 0 12px;font-weight:600}
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .tab{font-size:13px;padding:6px 14px;border-radius:999px;border:1px solid var(--hairline);
+       background:var(--canvas);color:var(--slate)}
+  .tab.on{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .card{background:var(--canvas);border:1px solid var(--hairline);border-radius:12px}
+
+  /* список */
+  ul.words{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  ul.words li{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:16px}
+  .text{min-width:0;flex:1 1 208px}
+  .en{font-size:16px;font-weight:600}
+  .tr{font-size:13px;color:var(--slate);font-weight:400;margin-left:6px}
+  .ru{font-size:15px}
+  .ex{font-size:13px;color:var(--slate);font-style:italic;margin-top:4px}
+  .right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .tag{font-size:12px;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .tag.learned{background:var(--tint-mint);color:#116329}
+  .tag.learning{background:var(--tint-yellow);color:#7A4B06}
+  .tag.none{background:var(--surface);color:var(--slate);border:1px solid var(--hairline)}
+  .btn{font-size:13px;font-weight:500;padding:7px 14px;border-radius:8px;
+       border:1px solid var(--hairline-strong);background:var(--canvas);color:var(--ink)}
+
+  /* иллюстрация */
+  .tile{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+        overflow:hidden;border-radius:12px;background:var(--illustration-paper)}
+  :root[data-theme='dark'] .tile{box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+  .tile.sm{width:56px;height:56px}
+  .tile.lg{width:208px;height:208px}
+  .tile img{width:100%;height:100%;object-fit:contain;display:block}
+
+  /* флэшкарта */
+  .flash{max-width:560px;padding:24px}
+  .flash .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+  .flash .head b{font-size:18px}
+  .flash .head span{font-size:13px;color:var(--slate);font-variant-numeric:tabular-nums}
+  .face{width:100%;border:1px solid var(--hairline);border-radius:12px;background:var(--canvas);
+        padding:32px 24px;text-align:center}
+  .face .word{font-size:34px;letter-spacing:-.02em;margin-top:16px}
+  .face .ipa{font-size:16px;color:var(--slate);margin-top:8px}
+  .face .hint{font-size:12px;color:var(--slate);margin-top:16px;display:block}
+  .actions{display:flex;justify-content:center;gap:12px;margin-top:24px}
+  .actions .btn{padding:9px 18px}
+  .actions .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .toggle{position:fixed;top:16px;right:16px;font-size:12px;padding:8px 14px;border-radius:999px;
+          border:1px solid var(--hairline-strong);background:var(--canvas);color:var(--ink);cursor:pointer}
+  .note{font-size:12px;color:var(--steel);margin-top:10px}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="
+  const r=document.documentElement;
+  r.dataset.theme = r.dataset.theme==='dark' ? 'light' : 'dark';
+  this.textContent = r.dataset.theme==='dark' ? 'светлая тема' : 'тёмная тема';
+">тёмная тема</button>
+
+<div class="wrap">
+  <h1>Еда</h1>
+  <p class="sub">20 слов · 0 выучено</p>
+
+  <div class="tabs">
+    <span class="tab on">Слова</span><span class="tab">Флэшкарты</span>
+    <span class="tab">Угадай перевод</span><span class="tab">Выбери вариант</span>
+  </div>
+
+  <h2>Режим «Слова» — картинка 56 px</h2>
+  <ul class="words">
+    <li class="card"><span class="tile sm"><img src="preview/food/recipe.webp" alt=""></span>
+      <div class="text"><div class="en">recipe<span class="tr">[ˈresəpi]</span></div>
+        <div class="ru">рецепт</div>
+        <div class="ex">She followed the recipe step by step.</div></div>
+      <div class="right"><span class="tag none">Не начато</span><span class="btn">В мой словарь</span></div></li>
+
+    <li class="card"><span class="tile sm"><img src="preview/food/dessert.webp" alt=""></span>
+      <div class="text"><div class="en">dessert<span class="tr">[dɪˈzɜːt]</span></div>
+        <div class="ru">десерт</div>
+        <div class="ex">We shared a slice of cake for dessert.</div></div>
+      <div class="right"><span class="tag learning">В процессе</span><span class="btn">В мой словарь</span></div></li>
+
+    <li class="card"><span class="tile sm"><img src="preview/food/ingredient.webp" alt=""></span>
+      <div class="text"><div class="en">ingredient<span class="tr">[ɪnˈɡriːdiənt]</span></div>
+        <div class="ru">ингредиент</div>
+        <div class="ex">Flour is the main ingredient.</div></div>
+      <div class="right"><span class="tag learned">Выучено</span><span class="btn">В мой словарь</span></div></li>
+
+    <li class="card"><span class="tile sm"><img src="preview/food/waiter.webp" alt=""></span>
+      <div class="text"><div class="en">waiter<span class="tr">[ˈweɪtə]</span></div>
+        <div class="ru">официант</div>
+        <div class="ex">The waiter brought the menu.</div></div>
+      <div class="right"><span class="tag none">Не начато</span><span class="btn">В мой словарь</span></div></li>
+  </ul>
+  <p class="note">Строки без иллюстрации выглядят как раньше: компонент возвращает null, отступ не появляется.</p>
+
+  <h2>Режим «Флэшкарты» — картинка 208 px</h2>
+  <div class="card flash">
+    <div class="head"><b>Флэшкарты</b><span>3 / 20</span></div>
+    <div class="face">
+      <span class="tile lg"><img src="preview/food/delicious.webp" alt=""></span>
+      <div class="word">delicious</div>
+      <div class="ipa">[dɪˈlɪʃəs]</div>
+      <span class="hint">Нажмите, чтобы перевернуть</span>
+    </div>
+    <div class="actions">
+      <span class="btn">Не знаю</span>
+      <span class="btn primary">Знаю</span>
+    </div>
+  </div>
+  <p class="note">На обороте картинка скрыта (она подсказала бы перевод), но слот того же размера остаётся — карточка не прыгает по высоте.</p>
+
+  <h2>Вся категория</h2>
+  <ul class="words" style="grid-template-columns:repeat(5,1fr);gap:10px">
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/appetite.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">appetite</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/appetizer.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">appetizer</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/beverage.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">beverage</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/flavor.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">flavor</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/fresh.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">fresh</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/frozen.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">frozen</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/hunger.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">hunger</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/hungry.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">hungry</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/meal.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">meal</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/menu.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">menu</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/portion.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">portion</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/salty.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">salty</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/snack.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">snack</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/spicy.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">spicy</div></li>
+    <li class="card" style="display:block;padding:8px"><span class="tile sm" style="width:100%;height:auto;aspect-ratio:1"><img src="preview/food/vegetarian.webp" alt=""></span><div style="font-size:11px;color:var(--slate);margin-top:6px">vegetarian</div></li>
+  </ul>
+</div>
+</body>
+</html>

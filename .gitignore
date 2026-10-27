@@ -29,7 +29,8 @@ next-env.d.ts
 .env.production.local
 
 # Docker
-*.dockerignore
+# (Не игнорировать .dockerignore: он security-relevant — без него в образ
+# на хосте сборки попадает appsettings.Development.json с живыми секретами)
 
 # OS
 Thumbs.db
@@ -44,3 +45,37 @@ logs/
 *.sqlite
 # Секреты
 EnglishLearningPlatform.API/appsettings.Development.json
+
+# Дампы БД: в них персональные данные пользователей, в репозиторий им нельзя.
+# Пишутся deploy/apply-migrations.sh до каждой миграции.
+backups/
+
+# Пользовательские загрузки (аватары)
+EnglishLearningPlatform.API/uploads/
+
+# Инструменты и временные файлы
+.kimi/
+.tmp/
+
+# Артефакты UI-аудита и редизайна (скриншоты, сессии, рабочие скрипты).
+# В репозитории держим только сам отчёт и план — они в .design-audit/*.md.
+.design-audit/shots/
+.design-audit/shots-mobile/
+.design-audit/scripts/
+.design-audit/auth.json
+.design-audit/*.json
+.design-audit/reader-id.txt
+
+# Сессия для визуального гейта содержит живой токен — не коммитить
+frontend/e2e/.visual-auth.json
+frontend/e2e/.visual-reader-id
+
+# Результаты упавших прогонов (трейсы, диффы скриншотов)
+frontend/test-results/
+frontend/playwright-report/
+
+# Локальные артефакты с секретами (QA-пароли, конфиги Qoder) —
+# не коммитить и не публиковать
+.qoder/
+.taste-skill/
+prompt-tunnel-brother.md

@@ -1,5 +1,23 @@
 'use client';
 
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { AlertIcon, CheckIcon, FlameIcon } from '@/components/ui/icons';
+import { pluralDays } from '@/lib/plural';
+import type { WidgetState } from '@/components/dashboard/dashboard-state';
+
+/*
+ * Карточка серии дней.
+ *
+ * Было: `if (!streak) return <Скелетон/>`. Ветка не различала «ещё грузится»
+ * и «не пришло никогда», поэтому при упавшем /api/progress/streak человек
+ * видел бесконечный пульсирующий прямоугольник — интерфейс, который выглядит
+ * сломанным и ничего не объясняет.
+ *
+ * Теперь состояние приходит снаружи: скелетон только на `loading`, на ошибке —
+ * короткая строка «не удалось загрузить» вместо украденного места на экране.
+ */
+
 export interface StreakData {
   currentStreak: number;
   longestStreak: number;
@@ -10,68 +28,89 @@ export interface StreakData {
 }
 
 interface Props {
+  state: WidgetState;
   streak: StreakData | null;
+  onRetry?: () => void;
 }
 
-function pluralizeDays(n: number) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return 'день';
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'дня';
-  return 'дней';
-}
-
-export default function StreakCard({ streak }: Props) {
-  if (!streak) {
+export default function StreakCard({ state, streak, onRetry }: Props) {
+  if (state === 'loading') {
     return (
-      <div className="animate-pulse bg-white rounded-2xl border border-[#D6D3CC] p-5 mb-8">
-        <div className="h-8 w-40 bg-[#E7ECE4] rounded mb-3"></div>
-        <div className="h-4 w-56 bg-[#E7ECE4] rounded mb-4"></div>
-        <div className="h-2 w-full bg-[#E7ECE4] rounded-full"></div>
-      </div>
+      <section className="card mb-8" aria-busy="true">
+        <Skeleton className="mb-3 h-8 w-44" />
+        <Skeleton className="mb-5 h-4 w-56" />
+        <Skeleton className="h-2 w-full rounded-full" />
+      </section>
+    );
+  }
+
+  if (state === 'error' || !streak) {
+    return (
+      <section className="card mb-8" aria-live="polite">
+        <div className="flex items-center gap-3 text-body-sm text-slate">
+          <AlertIcon size={16} className="shrink-0 text-semantic-error" />
+          <span>Серия дней не загрузилась.</span>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="ml-auto shrink-0 text-primary underline decoration-hairline-strong underline-offset-4 hover:text-ink"
+            >
+              Повторить
+            </button>
+          )}
+        </div>
+      </section>
     );
   }
 
   const { currentStreak, longestStreak, dailyGoalMinutes, today, week } = streak;
   const weekDays = week.slice(-7);
-  const progress = dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
+  const progress =
+    dailyGoalMinutes > 0 ? Math.min(100, (today.minutesRead / dailyGoalMinutes) * 100) : 0;
 
   return (
-    <section className="bg-white rounded-2xl border border-[#D6D3CC] p-5 shadow-sm mb-8">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <p className="text-2xl font-bold text-[#20231F] leading-tight">
-            🔥 {currentStreak} {pluralizeDays(currentStreak)} подряд
-          </p>
-          <p className="text-sm text-[#5A5F5A] mt-1">
-            Лучшая серия: {longestStreak} {pluralizeDays(longestStreak)}
-          </p>
+    <section className="card animate-rise-in mb-8" aria-label="Серия дней">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-highlight text-primary">
+            <FlameIcon size={20} />
+          </span>
+          <span>
+            <p className="text-h2 text-ink tabular-nums">
+              {currentStreak} {pluralDays(currentStreak)} подряд
+            </p>
+            <p className="mt-1 text-body-sm text-slate tabular-nums">
+              Лучшая серия: {longestStreak} {pluralDays(longestStreak)}
+            </p>
+          </span>
         </div>
-        <div className="flex gap-1.5 pt-1">
+
+        <ul className="flex gap-1.5 pt-2" aria-label="Последние семь дней">
           {weekDays.map((day) => (
-            <span
+            <li
               key={day.date}
               title={`${day.date}: ${day.goalMet ? 'цель выполнена' : 'цель не выполнена'}`}
-              className={`w-3 h-3 rounded-full ${
-                day.goalMet ? 'bg-[#EBCB75]' : 'bg-[#D6D3CC]'
+              className={`h-3 w-3 rounded-full ${
+                day.goalMet ? 'bg-primary' : 'bg-hairline-strong'
               }`}
             />
           ))}
-        </div>
+        </ul>
       </div>
 
-      <div className="flex items-center justify-between text-sm mb-1.5">
-        <span className="text-[#5A5F5A]">
+      <div className="mb-2 flex items-center justify-between text-body-sm">
+        <span className="text-slate tabular-nums">
           Сегодня: {today.minutesRead} из {dailyGoalMinutes} минут
         </span>
-        {today.goalMet && <span className="text-[#356B52] font-medium">Цель выполнена ✓</span>}
+        {today.goalMet && (
+          <span className="inline-flex items-center gap-1.5 font-medium text-primary">
+            <CheckIcon size={16} />
+            Цель выполнена
+          </span>
+        )}
       </div>
-      <div className="h-2 bg-[#E7ECE4] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-[#356B52] rounded-full transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+      <ProgressBar value={progress} />
     </section>
   );
 }

@@ -1,0 +1,141 @@
+{
+  "_comment": "Кадры, забракованные при приёмке набора. Поле scene — ПЕРЕПИСАННАЯ сцена, устраняющая конкретную поломку из problem. Генерировать строго по scene, не по старой сцене из art-direction.json.",
+  "items": [
+    {"category":"food","slug":"appetite","problem":"персонаж слился с пирогом в одно пятно","scene":"a round character with a wide open mouth leaning toward a steaming bowl, a fork in one hand, a clear white gap between the character and the bowl"},
+    {"category":"food","slug":"menu","problem":"читался как бумажный пакет","scene":"a rectangular folded card menu standing upright in a small stand on a table, one page slightly open, a tiny vase beside it"},
+    {"category":"food","slug":"snack","problem":"яблоко потерялось, остался только пакет","scene":"an open paper bag with nuts spilling out onto the table and one red apple standing beside it"},
+
+    {"category":"animals","slug":"breed","problem":"две бесформенные кляксы без породных признаков","scene":"two dogs side by side facing the viewer: one short and round with floppy ears, one tall and slim with a long snout, clearly different silhouettes"},
+    {"category":"animals","slug":"fur","problem":"просто клок меха, без животного","scene":"a fluffy orange cat curled up asleep seen from above, its striped fur forming a soft round shape, tail wrapped around"},
+    {"category":"animals","slug":"whiskers","problem":"бесформенная морда без кошачьих признаков","scene":"a close-up cat head with two pointed ears, two round eyes and three long whiskers on each side"},
+
+    {"category":"clothes","slug":"button","problem":"зелёный диск без отверстий","scene":"a round wooden button with four holes, a needle pulling red thread through two of them"},
+    {"category":"clothes","slug":"pattern","problem":"абстрактное пятно вместо ткани","scene":"a folded piece of fabric showing a repeating pattern of small stars and dots on a cream ground"},
+    {"category":"clothes","slug":"sleeve","problem":"тонкая палка вместо рукава","scene":"a shirt sleeve attached to a shoulder, ending in a cuff with two buttons"},
+    {"category":"clothes","slug":"tight","problem":"не читалось, вышел ботинок","scene":"a round character whose belt is squeezed too tight, cheeks puffed, shirt buttons straining at the middle"},
+
+    {"category":"transport","slug":"platform","problem":"читался как матрас с полосой","scene":"a station platform seen from the side: raised concrete edge with a yellow safety line along it, a bench and a signpost standing on top"},
+    {"category":"transport","slug":"harbour","problem":"лодки висели в воздухе","scene":"a wooden pier standing in water with two small boats tied to it by ropes, three round buoys floating beside"},
+    {"category":"transport","slug":"seatbelt","problem":"доминировало коричневое кольцо","scene":"a car seat seen from the front with a diagonal seatbelt strap crossing it and a metal buckle at the bottom"},
+    {"category":"transport","slug":"engine","problem":"читался как торт","scene":"a boxy car engine block with a round cooling fan on one side, two pipes and a belt"},
+    {"category":"transport","slug":"fare","problem":"огромная рука, ящик нечитаем","scene":"a small hand dropping one coin into a metal fare box with a slot on top, standing beside a bus door"},
+
+    {"category":"home","slug":"spacious","problem":"стул на висящей полосе, пустота не читалась","scene":"a large empty room with two tall windows and a wide wooden floor, one small chair standing in the middle far away"},
+    {"category":"home","slug":"rent","problem":"читался как воздушный змей","scene":"a house key on a ring lying on top of a folded paper document, one coin beside it"},
+    {"category":"home","slug":"tap","problem":"кремовое на белом, без контраста","scene":"a metal faucet with a round handle on top and one water drop falling from the spout, drawn in teal and terracotta for contrast"},
+    {"category":"home","slug":"basement","problem":"пёстрая каменная стена, персонаж конкурировал со лестницей","scene":"a stone staircase leading down into a cellar, a small high window on the back wall, one bare bulb above"},
+    {"category":"home","slug":"neighbour","problem":"низкий забор, две кляксы","scene":"two small houses standing side by side with a picket fence between them, one character waving from a window"},
+
+    {"category":"kitchen","slug":"grill","problem":"бледное розовое на кремовом, решётка не видна","scene":"a black barbecue grill with three sausages on the bars and small orange flames underneath"},
+    {"category":"kitchen","slug":"fry","problem":"сковалировка обрезана, читалась как тарелка","scene":"a frying pan seen from the side with a long handle and one egg frying inside, full pan visible in frame"},
+    {"category":"kitchen","slug":"measure","problem":"персонаж заслонил кувшин","scene":"a glass measuring jug half full of water with a spoon standing in it, no character"},
+    {"category":"kitchen","slug":"roast","problem":"плоский противень без печи","scene":"a whole roasted chicken on a tray with two potatoes around it, an open oven door glowing behind"},
+
+    {"category":"body","slug":"elbow","problem":"полный промах: ряд из пяти коробок","scene":"a bent arm seen from the side, the elbow joint pointing outward with a small plaster on it, hand resting on a table"},
+    {"category":"body","slug":"knee","problem":"читалось как локоть","scene":"a bent leg seen from the side with a round knee joint, a bandage wrapped around it and a foot on the ground"},
+    {"category":"body","slug":"heartbeat","problem":"тёмно-оливковое пятно вне палитры","scene":"a cream and terracotta heart with a stethoscope resting on it, drawn in warm cream and coral tones only"},
+    {"category":"body","slug":"hearing","problem":"колокольчик потерялся, вышли листья","scene":"a single human ear with three curved sound waves flowing into it"},
+    {"category":"body","slug":"muscle","problem":"читалось как ваза","scene":"a flexed arm with a round bicep bulge and a small dumbbell held in the fist"},
+
+    {"category":"shopping","slug":"discount","problem":"красный прямоугольник без одежды","scene":"a shirt on a hanger with a round red price tag hanging from the sleeve by a string"},
+    {"category":"shopping","slug":"expensive","problem":"часы превратились в палочку","scene":"a gold wristwatch with a round face and a leather strap, one coin lying beside it, filling the frame"},
+    {"category":"shopping","slug":"try-on","problem":"зеркало залито тёмно-коричневым","scene":"a round character standing in front of a tall oval mirror trying on a hat, the reflection visible inside the mirror"},
+    {"category":"shopping","slug":"queue","problem":"четыре блоба по диагонали","scene":"three characters standing in a straight line behind a counter, each holding a small basket"},
+    {"category":"shopping","slug":"warranty","problem":"щит мелкий, ноутбук как зелёный квадрат","scene":"a laptop with a round seal sticker on the lid and a small shield leaning against it"},
+
+    {"category":"money","slug":"budget","problem":"весы не отрисовались","scene":"a balance scale with three coins on one pan and a folded paper on the other, the beam tilted"},
+    {"category":"money","slug":"bank-account","problem":"вышла круглая печать вместо книжки","scene":"an open passbook booklet with a small bank building drawn on the page, a pen beside it"},
+    {"category":"money","slug":"coin","problem":"выцветшая монета без контраста","scene":"one large gold coin standing on its edge with a star embossed in the middle, strong terracotta shading"},
+    {"category":"money","slug":"currency","problem":"бледная композиция","scene":"three coins of different sizes and two folded paper notes fanned out beside them"},
+
+    {"category":"work","slug":"salary","problem":"НАРУШЕНИЕ: на купюрах символы $ и цифры","scene":"an open envelope with paper notes fanning out and one coin on top, the notes completely blank with no symbols, no letters, no digits"},
+    {"category":"work","slug":"teamwork","problem":"фигуры сжаты в плоскую полосу","scene":"three round characters standing around a small table pushing one puzzle piece into place together, seen from above"},
+    {"category":"work","slug":"contract","problem":"прочитался как монеты и график","scene":"a paper document with a ribbon and a wax seal at the bottom, a fountain pen lying across it"},
+    {"category":"work","slug":"schedule","problem":"тёмный фон вместо белого","scene":"a wall planner with blank grid squares pinned to a white wall, a pencil hanging on a string"},
+    {"category":"work","slug":"overtime","problem":"тёмный фон, часы без смысла","scene":"a character sitting at a desk at night with one desk lamp on and a wall clock with two hands but no numbers"},
+
+    {"category":"education","slug":"lecture","problem":"кафедра и студенты слиплись в бурый ком","scene":"a character standing behind a lectern pointing at a large blank board, one student seated at a desk in front"},
+    {"category":"education","slug":"exam","problem":"лист превратился в сердце","scene":"a rectangular sheet of paper with lines on a desk, a pencil lying across it and a small clock beside"},
+    {"category":"education","slug":"grade","problem":"бумага исчезла, осталась звезда","scene":"a sheet of paper with a large gold star sticker in the top corner, one corner curled"},
+    {"category":"education","slug":"research","problem":"лупа срослась с головой","scene":"a magnifying glass held over an open book, a small green sprout growing out of the pages"},
+    {"category":"education","slug":"attendance","problem":"пустые стулья слиплись","scene":"three empty chairs in a row with one round character standing beside them raising a hand"},
+
+    {"category":"technology","slug":"algorithm","problem":"три плоских квадрата, стрелки нечитаемы","scene":"a flowchart of three rounded boxes connected by thick arrows, one box containing a small gear"},
+    {"category":"technology","slug":"screen","problem":"читался как персонаж под одеялом","scene":"a smartphone standing upright with a spiderweb crack spreading across its screen"},
+    {"category":"technology","slug":"storage","problem":"диски не сложились в стопку","scene":"three hard drives stacked one on top of another with a small cloud floating above"},
+    {"category":"technology","slug":"password","problem":"вышел галстук","scene":"a closed padlock with a keyhole and a small key lying beside it"},
+    {"category":"technology","slug":"upload","problem":"путался с download","scene":"a cloud with a thick arrow pointing UP into it and a small box below the arrow"},
+
+    {"category":"sport","slug":"opponent","problem":"два бледных круга с линией","scene":"two round characters facing each other across a tennis net, both with fists raised"},
+    {"category":"sport","slug":"compete","problem":"два блоба, мелко в кадре","scene":"two round characters running side by side toward a finish ribbon, dust puffs behind their feet"},
+    {"category":"sport","slug":"medal","problem":"тонкая лента, медаль крошечная","scene":"a large round gold medal with a star on it hanging from a wide red ribbon, filling the frame"},
+    {"category":"sport","slug":"team","problem":"пять бледных фигур","scene":"five round characters in matching striped shirts standing in a row with arms linked"},
+
+    {"category":"music","slug":"audience","problem":"пять лиц в плоскую полосу","scene":"three round characters seated in a row seen from behind, clapping, a stage edge in front of them"},
+    {"category":"music","slug":"choir","problem":"четыре блоба, читалось как пятно","scene":"four round characters standing in a row singing with open mouths, each holding a small songbook"},
+    {"category":"music","slug":"lyrics","problem":"пустой блокнот, микрофон потерялся","scene":"an open notebook with a microphone lying across it and one music note floating above"},
+    {"category":"music","slug":"violin","problem":"читалось как виолончель","scene":"a violin seen from the front with f-holes, a chin rest and a bow crossing it diagonally"},
+    {"category":"music","slug":"genre","problem":"обложки мелкие","scene":"three square record sleeves standing in a row, each with a different simple cover design"},
+
+    {"category":"travel","slug":"boarding-pass","problem":"карточка распалась в кляксу","scene":"a rectangular boarding pass with a perforated stub on the right and a small plane icon in the corner, held by two fingers"},
+    {"category":"travel","slug":"visa","problem":"вышел терракотовый диск","scene":"an open passport page with a round entry stamp and a small photo square in the corner"},
+    {"category":"travel","slug":"abroad","problem":"переход границы не читался","scene":"a round character with a suitcase stepping over a painted border line between two flag poles"},
+    {"category":"travel","slug":"souvenir","problem":"снежный шар выцвел","scene":"a snow globe with a tiny house and snowflakes inside, standing on a small wooden shelf"},
+    {"category":"travel","slug":"destination","problem":"персонаж как красный шар с рукой","scene":"a folded map with a dotted route ending at a red pin flag stuck in the paper"},
+
+    {"category":"city","slug":"traffic-lights","problem":"тонкий столб, линзы бледные","scene":"a traffic light on a thick pole with three large round lenses, the top one glowing red"},
+    {"category":"city","slug":"square","problem":"мутный коричневый диск","scene":"a town square with a round stone fountain in the middle and two benches facing it"},
+    {"category":"city","slug":"facilities","problem":"тонкие линии, сцена мелкая","scene":"a playground with a slide and a swing standing side by side, drawn large and clear"},
+    {"category":"city","slug":"crowded","problem":"восемь шаров кучей","scene":"four round characters standing shoulder to shoulder squeezed together in a narrow street"},
+    {"category":"city","slug":"skyscraper","problem":"силуэт не читался как стеклянный","scene":"a tall glass tower with rows of square windows seen from below, two smaller buildings beside it"},
+
+    {"category":"nature","slug":"cave","problem":"СЕМАНТИЧЕСКИ НЕВЕРНО: существо с сумкой вместо пещеры","scene":"a dark rocky cave opening in a cliff face with stalactites hanging at the top and stones at the entrance"},
+    {"category":"nature","slug":"wildlife","problem":"один персонаж вместо группы животных","scene":"a deer, a rabbit and a bird standing together in a grassy clearing"},
+    {"category":"nature","slug":"forest","problem":"голые стволы без крон","scene":"five tall trees with full round green canopies standing in a row, trunks visible below"},
+    {"category":"nature","slug":"glacier","problem":"бледный блок с лицом между камнями","scene":"a sharp-edged block of blue-white ice floating in dark water, cracks across its face"},
+    {"category":"nature","slug":"shore","problem":"волна вместо полосы берега","scene":"a flat sandy beach strip with one gentle wave rolling in and a shell lying on the sand"},
+
+    {"category":"weather","slug":"chilly","problem":"читался как оранжевая булка","scene":"a round character shivering with arms crossed over its chest, breath puffing from its mouth, one small snowflake beside"},
+    {"category":"weather","slug":"hail","problem":"камни слиплись в кучу","scene":"five round ice stones falling from a dark cloud toward the ground, short motion lines behind each stone"},
+    {"category":"weather","slug":"thunder","problem":"линии звука читались как радуга","scene":"a dark cloud with one thick jagged lightning bolt striking down from it"},
+    {"category":"weather","slug":"flood","problem":"плоский серый кадр","scene":"water covering the ground up to a house door, one wooden chair floating on the surface"},
+    {"category":"weather","slug":"humidity","problem":"читалось как тарелка","scene":"a three-blade fan with drops of water hanging in the air around it"},
+
+    {"category":"time","slug":"fortnight","problem":"две пустые панели, петля нечитаема","scene":"a wall calendar with two full rows of blank squares and one thick loop circling those two rows"},
+    {"category":"time","slug":"soon","problem":"абстрактные красные блоки","scene":"a round character standing on a platform waiting as a small train appears far down the track"},
+    {"category":"time","slug":"duration","problem":"читалось как пустая рамка","scene":"an hourglass standing between two wooden posts with a long ribbon stretched between them"},
+
+    {"category":"health","slug":"insomnia","problem":"розовый диск вместо кровати","scene":"a round character lying awake in bed with wide open eyes, a crescent moon at the window"},
+    {"category":"health","slug":"prescription","problem":"пустой тюбик без деталей","scene":"a medicine bottle with a spoon leaning against it and two round pills beside it"},
+    {"category":"health","slug":"injury","problem":"нарисована вся рука вместо колена","scene":"a single knee with a plaster stuck across it and a small red bruise beside"},
+    {"category":"health","slug":"stress","problem":"провод читался как ручка чайника","scene":"a round character with a tangled knot of string wrapped around its shoulders, eyes squeezed shut"},
+    {"category":"health","slug":"immune","problem":"читалось как пончик","scene":"a shield with a small heart in the middle, two round germs bouncing off its surface"},
+
+    {"category":"directions","slug":"distance","problem":"два крошечных флажка на пустом фоне","scene":"two tall flag poles standing far apart with a long dotted line stretched between them, drawn large in frame"},
+    {"category":"directions","slug":"towards","problem":"направление не считывалось","scene":"a round character walking toward an open door with one foot lifted forward and an arm outstretched"},
+    {"category":"directions","slug":"map","problem":"бледная малоконтрастная сцена","scene":"a folded paper map with a blue river, one road and a red pin on it, drawn with strong terracotta and teal"},
+    {"category":"directions","slug":"north","problem":"без стрелки компаса","scene":"a round compass with a thick red needle pointing straight up to the top edge, no letters"},
+    {"category":"directions","slug":"south","problem":"без стрелки компаса","scene":"a round compass with a thick red needle pointing straight down to the bottom edge, no letters"},
+
+    {"category":"emotions","slug":"pride","problem":"медаль нечитаема, жест неясен","scene":"a round character standing tall with hands on hips and a large round medal pinned on its chest"},
+    {"category":"emotions","slug":"relief","problem":"шар читался как лист","scene":"a round character sitting down with head tilted back and eyes closed, a deflating balloon sagging beside it"},
+    {"category":"emotions","slug":"trust","problem":"две кляксы слились","scene":"two round characters leaning back to back with eyes closed and calm faces, a clear white gap between their bodies"},
+    {"category":"emotions","slug":"excitement","problem":"почти не отличался от joy (обе руки вверх)","scene":"a round character bouncing high on a trampoline with both fists up and three sparkles around, trampoline clearly visible"},
+    {"category":"emotions","slug":"surprise","problem":"почти не отличался от shame (руки к лицу)","scene":"a round character jumping back with wide eyes and an open mouth as a jack-in-the-box springs open in front of it"},
+    {"category":"emotions","slug":"boredom","problem":"почти не отличался от relief (открытый рот)","scene":"a round character slumped at a desk with chin on one hand, doodling on a paper, a small fly circling above"},
+
+    {"category":"personality","slug":"tolerant","problem":"тёмно-коричневый вне палитры, фигуры слились","scene":"two round characters of different sizes standing calmly side by side, one resting a hand on the other's shoulder, drawn in cream and sage"},
+    {"category":"personality","slug":"patient","problem":"песочные часы заняли кадр","scene":"a round character sitting cross-legged with hands on knees, a small hourglass the size of its hand beside it"},
+    {"category":"personality","slug":"optimistic","problem":"солнца не видно, остались капли","scene":"a round character looking up at a large round sun with both arms open wide"},
+    {"category":"personality","slug":"modest","problem":"жест с кубком не читался","scene":"a round character standing with hands behind its back and head slightly down, a small trophy on a shelf behind"},
+    {"category":"personality","slug":"impulsive","problem":"бассейн не опознавался","scene":"a round character jumping into a swimming pool with both arms up, a big splash around the water line"},
+
+    {"category":"communication","slug":"conversation","problem":"два круга и тень, нарушавшая правило","scene":"two round characters facing each other with one large speech bubble floating between them"},
+    {"category":"communication","slug":"reply","problem":"выцвело, штрихи не читались","scene":"a round character holding a phone with an envelope flying out of the screen"},
+    {"category":"communication","slug":"suggest","problem":"лампочка тонкая, невидима","scene":"a round character pointing one finger up with a large glowing lightbulb above its head"},
+
+    {"category":"politeness","slug":"greeting","problem":"руки-культи, жест не читался","scene":"two round characters shaking hands, the other hand of one raised in an open wave"},
+    {"category":"politeness","slug":"refuse","problem":"ладонь выглядела рукавицей","scene":"a round character with one open palm raised forward and its head turned away from a plate"},
+    {"category":"politeness","slug":"complaint","problem":"выпадал из стиля: красное злое лицо и пустой лист","scene":"a round character standing at a counter pointing at a cracked cup, a paper slip in its other hand, calm cream palette"}
+  ]
+}

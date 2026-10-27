@@ -22,11 +22,12 @@ const faceSizes = {
 export default function AlexAvatar({ size = 'md', animated = false }: AlexAvatarProps) {
   const circle = (
     <div
-      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-[#356B52] to-[#2A5542] flex items-center justify-center shrink-0 ${
+      className={`${sizeClasses[size]} flex shrink-0 items-center justify-center rounded-full bg-primary ${
         animated ? 'assistant-glow' : ''
       }`}
     >
-      <svg className={`${faceSizes[size]} text-[#EBCB75]`} viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      {/* Черты лица — цветом плашки-надписи: в тёмной теме жёлтый тон ушёл бы в фон */}
+      <svg className={`${faceSizes[size]} text-on-primary`} viewBox="0 0 64 64" fill="none" aria-hidden="true">
         {/* глаза */}
         <circle cx="22" cy="26" r="3.2" fill="currentColor" />
         <circle cx="42" cy="26" r="3.2" fill="currentColor" />
@@ -45,8 +46,8 @@ export default function AlexAvatar({ size = 'md', animated = false }: AlexAvatar
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <div className="absolute inset-0 rounded-full border-2 border-[#356B52] assistant-wave" />
-      <div className="absolute inset-0 rounded-full border-2 border-[#356B52] assistant-wave" />
+      <div className="assistant-wave absolute inset-0 rounded-full border-2 border-primary" />
+      <div className="assistant-wave absolute inset-0 rounded-full border-2 border-primary" />
       <div className="assistant-float">{circle}</div>
     </div>
   );

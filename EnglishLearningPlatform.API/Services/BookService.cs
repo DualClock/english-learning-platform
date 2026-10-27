@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 using EnglishLearningPlatform.API.Data;
@@ -17,6 +18,20 @@ public class BookService
 
     private static readonly TimeSpan PagesCacheTtl = TimeSpan.FromHours(1);
 
+    private const long MaxUploadBytes = 50 * 1024 * 1024;
+
+    // Защита от zip-бомб: сжатый архив ≤ 50 МБ может развернуться в гигабайты.
+    // Ограничиваем заявленный распакованный объём и число записей до чтения EPUB.
+    private const long MaxExpandedBytes = 150L * 1024 * 1024;
+    private const long MaxSingleEntryBytes = 50L * 1024 * 1024;
+    private const int MaxArchiveEntries = 5000;
+
+    // Полный текст книги — десятки мегабайт. Кэшируем только книги в рамках
+    // бюджета: иначе несколько больших EPUB вытеснят память инстанса.
+    public const int MaxCachedTextChars = 2_000_000;
+
+    public static bool ShouldCacheText(long totalChars) => totalChars <= MaxCachedTextChars;
+
     public BookService(
         ApplicationDbContext context,
         IWebHostEnvironment environment,
@@ -34,9 +49,26 @@ public class BookService
         if (file.Length == 0)
             return null;
 
+        // Защита от гигантских загрузок: EPUB больше 50 МБ не принимаем
+        if (file.Length > MaxUploadBytes)
+            return null;
+
         var extension = Path.GetExtension(file.FileName).ToLower();
         if (extension != ".epub")
             return null;
+
+        // Проверяем архив до записи на диск и до EpubReader: «бомба» с
+        // заявленным распакованным объёмом в гигабайты отклоняется сразу.
+        await using (var validationStream = file.OpenReadStream())
+        {
+            if (!IsArchiveWithinLimits(validationStream, MaxSingleEntryBytes, MaxExpandedBytes, MaxArchiveEntries))
+            {
+                _logger.LogWarning(
+                    "EPUB upload rejected: archive exceeds safe expansion limits (file {FileName}, {Size} bytes)",
+                    file.FileName, file.Length);
+                return null;
+            }
+        }
 
         var uploadsFolder = Path.Combine(_environment.ContentRootPath, "uploads", "books");
         Directory.CreateDirectory(uploadsFolder);
@@ -62,7 +94,7 @@ public class BookService
             var book = await EpubReader.ReadBookAsync(filePath);
             title = book.Title;
             author = book.Author;
-            language = book.Schema.Package.Metadata.Languages?.FirstOrDefault()?.ToString();
+            language = book.Schema.Package.Metadata.Languages?.FirstOrDefault()?.Language;
 
             // Извлекаем обложку
             var coverImage = book.CoverImage;
@@ -98,12 +130,59 @@ public class BookService
         return newBook;
     }
 
-    public async Task<List<Book>> GetUserBooksAsync(string userId)
+    /// <summary>
+    /// Проверяет, что zip-архив не развернётся за пределы лимитов.
+    /// Смотрит заявленные размеры записей в центральном каталоге и не
+    /// распаковывает данные, поэтому дешёв для больших «бомб».
+    /// </summary>
+    public static bool IsArchiveWithinLimits(Stream stream, long maxEntryBytes, long maxTotalBytes, int maxEntries)
     {
-        return await _context.Books
+        try
+        {
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+            if (archive.Entries.Count > maxEntries)
+            {
+                return false;
+            }
+
+            long totalLength = 0;
+            foreach (var entry in archive.Entries)
+            {
+                if (entry.Length > maxEntryBytes)
+                {
+                    return false;
+                }
+
+                totalLength += entry.Length;
+                if (totalLength > maxTotalBytes)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            // Не zip — это не EPUB
+            return false;
+        }
+    }
+
+    public async Task<(List<Book> Items, int TotalCount)> GetUserBooksAsync(string userId, int page, int pageSize)
+    {
+        var query = _context.Books
             .Where(b => b.UploadedByUserId == userId)
-            .OrderByDescending(b => b.CreatedAt)
+            .OrderByDescending(b => b.CreatedAt);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<Book?> GetBookAsync(string userId, int bookId)
@@ -150,7 +229,14 @@ public class BookService
                 .ToList();
 
             if (pages.Count == 0) pages.Add(string.Empty);
-            _cache.Set(cacheKey, pages, PagesCacheTtl);
+
+            // Большие книги не кэшируем целиком: страница будет перечитываться,
+            // зато память не растёт пропорционально библиотеке пользователя
+            if (ShouldCacheText(pages.Sum(p => (long)p.Length)))
+            {
+                _cache.Set(cacheKey, pages, PagesCacheTtl);
+            }
+
             return pages;
         }
         catch (Exception ex)
@@ -215,7 +301,7 @@ public class BookService
         return content.Trim();
     }
 
-    private string CleanHtml(string html)
+    internal static string CleanHtml(string html)
     {
         if (string.IsNullOrEmpty(html))
             return string.Empty;
@@ -267,7 +353,138 @@ public class BookService
 
         return true;
     }
+
+    /// <summary>
+    /// Оглавление книги: главы из EPUB-навигации с номером страницы, на которой
+    /// глава начинается. Глава ищется по первым словам её текста — точнее
+    /// привязка к страницам ~300 слов не строится. Результат кэшируется:
+    /// содержимое книги неизменно.
+    /// </summary>
+    public async Task<List<BookTocItem>?> GetTableOfContentsAsync(int bookId, int pageSize = 300)
+    {
+        var cacheKey = $"booktoc:{bookId}:{pageSize}";
+        if (_cache.TryGetValue(cacheKey, out List<BookTocItem>? cached) && cached != null)
+        {
+            return cached;
+        }
+
+        var book = await _context.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == bookId);
+        if (book == null) return null;
+
+        var filePath = Path.Combine(_environment.ContentRootPath, "uploads", "books", book.FilePath);
+        if (!File.Exists(filePath)) return null;
+
+        var pages = await GetPagesAsync(bookId, pageSize);
+        if (pages == null || pages.Count == 0) return null;
+
+        try
+        {
+            var epubBook = await EpubReader.ReadBookAsync(filePath);
+
+            var navigation = new List<NavEntry>();
+            FlattenNavigation(epubBook.Navigation, 0, navigation);
+
+            var items = new List<BookTocItem>();
+            var lastPage = 1;
+
+            foreach (var entry in navigation)
+            {
+                var page = lastPage;
+
+                var chapterHtml = entry.Content;
+                if (chapterHtml == null && !string.IsNullOrWhiteSpace(entry.FilePath))
+                {
+                    chapterHtml = epubBook.ReadingOrder
+                        .FirstOrDefault(c => FileNamesMatch(c.FilePath, entry.FilePath))?.Content;
+                }
+
+                if (!string.IsNullOrWhiteSpace(chapterHtml))
+                {
+                    var snippet = BuildSnippet(CleanHtml(chapterHtml));
+                    if (snippet.Length > 0)
+                    {
+                        var found = pages.FindIndex(p => p.Contains(snippet, StringComparison.OrdinalIgnoreCase));
+                        if (found >= 0)
+                        {
+                            page = found + 1;
+                        }
+                    }
+                }
+
+                lastPage = page;
+                items.Add(new BookTocItem(entry.Title, page, entry.Level));
+            }
+
+            _cache.Set(cacheKey, items, TocCacheTtl);
+            return items;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to read EPUB navigation for book {BookId}", bookId);
+            return null;
+        }
+    }
+
+    private static readonly TimeSpan TocCacheTtl = TimeSpan.FromHours(6);
+
+    private sealed record NavEntry(string Title, string? Content, string? FilePath, int Level);
+
+    private static void FlattenNavigation(
+        List<EpubNavigationItem>? source,
+        int level,
+        List<NavEntry> target)
+    {
+        if (source == null) return;
+
+        foreach (var item in source)
+        {
+            var title = item.Title?.Trim();
+            if (!string.IsNullOrEmpty(title))
+            {
+                target.Add(new NavEntry(
+                    title,
+                    item.HtmlContentFile?.Content,
+                    item.HtmlContentFile?.FilePath ?? item.Link?.ContentFilePath,
+                    level));
+            }
+
+            FlattenNavigation(item.NestedItems, level + 1, target);
+        }
+    }
+
+    private static bool FileNamesMatch(string? filePath, string? contentFileName)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) || string.IsNullOrWhiteSpace(contentFileName))
+        {
+            return false;
+        }
+
+        var left = filePath.Replace('\\', '/');
+        var right = contentFileName.Replace('\\', '/');
+
+        return left.Equals(right, StringComparison.OrdinalIgnoreCase) ||
+               left.EndsWith("/" + right, StringComparison.OrdinalIgnoreCase) ||
+               right.EndsWith("/" + left, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(Path.GetFileName(left), Path.GetFileName(right), StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Первые слова главы — маркер для поиска страницы. Шесть слов достаточно,
+    // чтобы не спутать главы, и мало, чтобы не разорваться на границе страницы.
+    private static string BuildSnippet(string chapterText)
+    {
+        if (string.IsNullOrWhiteSpace(chapterText))
+        {
+            return string.Empty;
+        }
+
+        var words = chapterText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var snippet = string.Join(' ', words.Take(6));
+
+        return snippet.Length >= 15 ? snippet : string.Empty;
+    }
 }
+
+public record BookTocItem(string Title, int Page, int Level);
 
 public class BookContent
 {

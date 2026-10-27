@@ -1,0 +1,30 @@
+{
+  "_comment": "Второй проход: кадры, которые агенты после первой полировки честно назвали неидеальными. Сцены переписаны так, чтобы убрать конкретную причину провала (мелкота, бледность, неоднозначность силуэта). Генерировать строго по scene.",
+  "items": [
+    {"category":"clothes","slug":"sleeve","problem":"рукав читался как палка/кокон, плечо — как кулак","scene":"a whole long-sleeved shirt seen from the front, the right sleeve stretched out to the side with a clear cuff and two buttons at the end"},
+    {"category":"body","slug":"elbow","problem":"вышла буква V из двух досок","scene":"a round character standing at a table with one arm bent and the elbow resting on the tabletop, the other hand on its hip"},
+    {"category":"home","slug":"spacious","problem":"слишком бледно, на 40 px размывается","scene":"a wide empty room with a large window casting a strong terracotta sunlight patch on the wooden floor, one small chair standing far away in the corner"},
+    {"category":"transport","slug":"harbour","problem":"настил занял полкадра, лодки спрятались под ним","scene":"two small boats tied by ropes to one short wooden pier post standing in blue water, no large deck"},
+    {"category":"transport","slug":"platform","problem":"выцвело, табличка — тонкая палка","scene":"a station platform edge with a thick yellow safety line along it, one bench and a round blue station sign on a post, drawn large in frame"},
+    {"category":"animals","slug":"breed","problem":"в углу остался водяной знак генератора","scene":"two dogs standing side by side facing the viewer, one short and round with floppy ears, one tall and slim with a long snout, both large and centered"},
+    {"category":"kitchen","slug":"fry","problem":"яйцо распалось на два белых кома","scene":"a frying pan seen from above with one fried egg inside, a round yellow yolk in the middle of a white, and a long handle"},
+    {"category":"kitchen","slug":"measure","problem":"кувшин читался как колба","scene":"a measuring jug with a handle and a pouring spout, half filled with blue water, standing on a table"},
+
+    {"category":"education","slug":"grade","problem":"бумага кремовая на белом, контраст почти нулевой","scene":"a white sheet of paper with a large gold star sticker in the corner, the paper outlined by a thick terracotta border so it reads on white"},
+    {"category":"work","slug":"schedule","problem":"бледная сетка на белом, не видно на 40 px","scene":"a wall planner with a thick dark teal grid of blank squares, a pencil hanging on a string beside it"},
+    {"category":"work","slug":"teamwork","problem":"не было стола, пазл выцвел","scene":"three round characters each holding one large puzzle piece and joining them together in the middle, seen from above"},
+    {"category":"time","slug":"soon","problem":"поезд крошечный, на 40 px исчезает","scene":"a round character standing on a platform waiting while a train arrives close by on the track, the train large and clearly visible"},
+    {"category":"weather","slug":"hail","problem":"по краям остались чужие кремовые пятна","scene":"five round white ice stones falling from one small dark cloud toward the ground, short motion lines behind each stone, clean empty background"},
+    {"category":"weather","slug":"flood","problem":"вода как лужа, стул не плавает","scene":"water risen up to a house door with a small wooden boat floating on the surface in front of the door"},
+    {"category":"personality","slug":"optimistic","problem":"солнце и персонаж читались как два отдельных объекта","scene":"a round character with both arms wide open raised toward one big round sun, arms thick and connected to the body, one single gesture"},
+    {"category":"money","slug":"budget","problem":"бледная балка весов","scene":"a balance scale with a thick dark teal beam, three coins on one pan and a folded paper on the other, the beam clearly tilted"},
+
+    {"category":"emotions","slug":"pride","problem":"медаль читалась как обруч","scene":"a round character standing with hands on its hips and one large five-pointed gold star badge pinned on its chest"},
+    {"category":"emotions","slug":"surprise","problem":"тонкий ободок работал как запрещённый контур","scene":"a round character with both hands up beside its head and its mouth open in a small O, three short burst lines above"},
+    {"category":"nature","slug":"wildlife","problem":"олень с огромными ушами читался как лиса","scene":"a fox, a rabbit and a bird standing together in a grassy clearing, the fox with a pointed snout and a bushy tail"},
+    {"category":"music","slug":"choir","problem":"фигуры мелкие и бледные","scene":"three round characters standing large in frame singing with open mouths, one music note floating above them"},
+    {"category":"sport","slug":"team","problem":"не было полосатых футболок, фигуры однотонные","scene":"five round characters in matching striped teal shirts standing in one row with arms linked"},
+    {"category":"travel","slug":"abroad","problem":"не было флаговых столбов","scene":"a round character with a suitcase stepping over a thick striped border line painted on the ground, two tall flag poles standing on either side"},
+    {"category":"technology","slug":"algorithm","problem":"шестерёнка в блоке не отрисовалась","scene":"a flowchart of three rounded boxes connected by thick arrows, the middle box containing a large gear wheel"}
+  ]
+}

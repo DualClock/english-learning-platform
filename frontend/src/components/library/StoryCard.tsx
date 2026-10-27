@@ -1,8 +1,11 @@
 'use client';
 
-import BookCover from './BookCover';
-import LevelChip from './LevelChip';
+import BookCard from './BookCard';
 
+/**
+ * Рассказ для уровня. Отличается от классики только типом на карточке —
+ * геометрия общая, см. BookCard.
+ */
 export interface Story {
   index: number;
   title: string;
@@ -22,40 +25,16 @@ interface StoryCardProps {
 
 export default function StoryCard({ story, addedBookId, adding, onAdd, onOpen }: StoryCardProps) {
   return (
-    <div className="flex gap-4 rounded-2xl border border-[#D6D3CC] bg-white p-4 transition-all duration-200 hover:border-[#C4A77D] hover:shadow-md">
-      <BookCover
-        title={story.title}
-        coverUrl={story.coverUrl}
-        className="aspect-[2/3] w-14 shrink-0 rounded-lg"
-        size="sm"
-      />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="truncate font-semibold text-[#20231F]">{story.title}</h3>
-          <LevelChip level={story.cefrLevel} />
-        </div>
-        {story.description && (
-          <p className="mt-1 line-clamp-2 text-sm text-[#5A5F5A]">{story.description}</p>
-        )}
-        <div className="mt-3">
-          {addedBookId !== null ? (
-            <button
-              onClick={() => onOpen(addedBookId)}
-              className="btn-secondary py-1.5 px-4 text-sm"
-            >
-              Открыть
-            </button>
-          ) : (
-            <button
-              onClick={() => onAdd(story)}
-              disabled={adding}
-              className="btn-primary py-1.5 px-4 text-sm disabled:opacity-60"
-            >
-              {adding ? 'Добавляем…' : 'Добавить и читать'}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    <BookCard
+      kind="story"
+      title={story.title}
+      description={story.description}
+      level={story.cefrLevel}
+      coverUrl={story.coverUrl}
+      addedBookId={addedBookId}
+      adding={adding}
+      onAdd={() => onAdd(story)}
+      onOpen={onOpen}
+    />
   );
 }

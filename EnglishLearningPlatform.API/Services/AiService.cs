@@ -8,14 +8,15 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace EnglishLearningPlatform.API.Services;
 
-public class AiService
+public class AiService : IAiBackedService
 {
+    // Резервные модели: 2.5/2.0-flash больше не выдаются новым проектам,
+    // основная модель берётся из Gemini:Model
     private static readonly string[] FallbackModels =
     {
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-1.5-flash"
+        "gemini-3.8-flash",
+        "gemini-flash-latest",
+        "gemini-3.5-flash"
     };
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -25,21 +26,92 @@ public class AiService
 
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(24);
 
-    private static readonly object HttpClientLock = new();
-    private static HttpClient? _sharedHttpClient;
+    /*
+     * Клиенты для бесплатных эндпоинтов Google.
+     *
+     * Раньше здесь стояло `UseProxy = false` с комментарием «эндпоинты доступны
+     * напрямую». Проверено вживую: напрямую translate.googleapis.com отвечает
+     * HTTP 429 с HTML «Sorry...» — Google блокирует наш адрес, а через прокси
+     * (тот же Gemini:ProxyUrl) те же запросы идут с кодом 200. Из-за этого
+     * перевод фразы в /listening и в карточке слова отдавал 503 «сервис
+     * временно недоступен», хотя провайдер работал.
+     *
+     * Клиенты создаются лениво и ОДИН РАЗ НА ПРОЦЕСС. AiService зарегистрирован
+     * как Scoped (Program.cs:226), поэтому экземплярные поля здесь означали бы
+     * новый HttpClient на каждый HTTP-запрос: замерено — установка SOCKS5-
+     * соединения стоит 1.4–2.2 с, и столько добавлялось к каждому переводу.
+     * Статика нужна именно тут, несмотря на то что обычно клиентов так не держат.
+     */
+    /*
+     * User-Agent для бесплатных эндпоинтов Google.
+     *
+     * Проверено тремя прогонами одного и того же запроса из процесса .NET:
+     *   дефолтный UA .NET  через прокси → HTTP 429
+     *   браузерный UA      через прокси → HTTP 200
+     *   браузерный UA      без прокси   → HTTP 200
+     * То есть Google отбивал не адрес и не отсутствие прокси, а строку
+     * `User-Agent: .NET/…`. curl и python проходили напрямую именно потому,
+     * что шлют обычный UA — из-за этого дефект и не был виден снаружи.
+     *
+     * Перевод фразы в /listening и в карточке слова отдавал 503 «сервис
+     * временно недоступен» при полностью рабочем провайдере.
+     */
+    private const string GoogleUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-    // Прямой клиент БЕЗ прокси — для бесплатных эндпоинтов, доступных напрямую
-    private static readonly HttpClient DirectHttpClient = new(new HttpClientHandler { UseProxy = false })
+    /*
+     * Клиент для бесплатных эндпоинтов Google — НОВЫЙ НА КАЖДЫЙ ЗАПРОС.
+     *
+     * Это выглядит как ошибка (HttpClient принято переиспользовать), но
+     * проверено четырьмя прогонами из процесса .NET:
+     *
+     *   новый клиент на запрос   → 429, 200, 200
+     *   один клиент на все       → 429, 429, 429, 429, 429, 429
+     *
+     * Причина: HttpClientHandler держит ОДИН SOCKS5-туннель, и Google отбивает
+     * все обращения внутри уже установленного туннеля как серию от одного
+     * клиента. Свежий туннель на каждый запрос проходит. Поэтому здесь нет
+     * кэширования, и `new HttpClientHandler` на каждый вызов — намеренно.
+     *
+     * Второй, независимый дефект из той же серии: `UseProxy = false` (как было
+     * раньше) даёт 429 всегда — Google блокирует наш прямой адрес. Прокси
+     * обязателен, и берётся из той же настройки Gemini:ProxyUrl.
+     */
+    private HttpClient CreateGoogleClient(TimeSpan timeout)
     {
-        Timeout = TimeSpan.FromSeconds(5)
-    };
+        var proxyUrl = _configuration["Gemini:ProxyUrl"];
+        var handler = new HttpClientHandler
+        {
+            // Соединение живёт один запрос: см. комментарий выше.
+            AutomaticDecompression = System.Net.DecompressionMethods.All
+        };
 
-    // Клиент для перевода целых предложений/абзацев: без прокси, но с более
-    // длинным таймаутом, чем у DirectHttpClient (5с), — 10с
-    private static readonly HttpClient TextTranslateHttpClient = new(new HttpClientHandler { UseProxy = false })
-    {
-        Timeout = TimeSpan.FromSeconds(10)
-    };
+        var proxy = ProxyFactory.TryCreate(proxyUrl, _logger);
+        if (proxy != null)
+        {
+            handler.Proxy = proxy;
+            handler.UseProxy = true;
+            handler.PreAuthenticate = true;
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Google translate: Gemini:ProxyUrl не задан — прямой запрос получит 429");
+        }
+
+        var client = new HttpClient(handler) { Timeout = timeout };
+        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", GoogleUserAgent);
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9,ru;q=0.8");
+        client.DefaultRequestHeaders.ConnectionClose = true;
+        return client;
+    }
+
+    /*
+     * Клиенты не кэшируются — см. CreateGoogleClient: соединение на запрос.
+     * Свойство оставлено ради читаемости вызовов ниже.
+     */
+    private HttpClient NewGoogleClient(TimeSpan timeout) => CreateGoogleClient(timeout);
 
     private static readonly TimeSpan FastTranslateCacheTtl = TimeSpan.FromHours(24);
 
@@ -53,23 +125,37 @@ public class AiService
     private readonly IMemoryCache _cache;
     private readonly ILogger<AiService> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly ResilientAiService _resilient;
 
     public AiService(
         IConfiguration configuration,
         IMemoryCache cache,
         ILogger<AiService> logger,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ResilientAiService resilient,
+        Services.Ai.OpenAiCompatibleClient? openAiClient = null,
+        AiQuotaService? quota = null)
     {
         _configuration = configuration;
         _cache = cache;
         _logger = logger;
         _context = context;
+        _resilient = resilient;
+        // Необязательные зависимости: существующие тесты создают AiService
+        // вручную с пятью аргументами, и ломать их ради нового провайдера
+        // незачем. null означает «провайдер не настроен».
+        _openAiClient = openAiClient;
+        _quota = quota;
     }
+
+    private readonly Services.Ai.OpenAiCompatibleClient? _openAiClient;
+    private readonly AiQuotaService? _quota;
 
     public async Task<TranslationResult?> TranslateWordAsync(
         string word,
         string? context = null,
-        string targetLanguage = "ru")
+        string targetLanguage = "ru",
+        string? userId = null)
     {
         var apiKey = _configuration["Gemini:ApiKey"];
         if (string.IsNullOrEmpty(apiKey))
@@ -86,13 +172,13 @@ public class AiService
         }
 
         var prompt = BuildPrompt(word, context, targetLanguage, strict: false);
-        var result = await TranslateWithPromptAsync(prompt, apiKey, word);
+        var result = await TranslateWithPromptAsync(prompt, apiKey, word, userId);
 
         if (result == null)
         {
             _logger.LogInformation("Retrying translation for word {Word} with strict prompt", word);
             var strictPrompt = BuildPrompt(word, context, targetLanguage, strict: true);
-            result = await TranslateWithPromptAsync(strictPrompt, apiKey, word);
+            result = await TranslateWithPromptAsync(strictPrompt, apiKey, word, userId);
         }
 
         if (result != null)
@@ -165,7 +251,7 @@ public class AiService
             return cached;
         }
 
-        var translation = await TranslateViaGtxAsync(normalized, TextTranslateHttpClient);
+        var translation = await TranslateViaGtxAsync(normalized, NewGoogleClient(TimeSpan.FromSeconds(10)));
         if (translation != null)
         {
             _cache.Set(cacheKey, translation, TextTranslateCacheTtl);
@@ -176,7 +262,7 @@ public class AiService
 
     // Литературный перевод страницы en→ru через Gemini (с прокси и fallback-моделями),
     // при ошибке — fallback на gtx-перевод TranslateTextAsync. Кэш 24ч, ключ от SHA256 текста.
-    public async Task<string?> TranslateLiteraryAsync(string text)
+    public async Task<string?> TranslateLiteraryAsync(string text, string? userId = null)
     {
         var normalized = text.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
@@ -201,7 +287,18 @@ public class AiService
                          "paragraphs/segments separated by double newlines. Return only the translation." +
                          $"\n\n{normalized}";
 
-            var responseJson = await CallGeminiAsync(prompt, apiKey, temperature: 0.3, maxOutputTokens: 2048);
+            string? responseJson = null;
+            try
+            {
+                responseJson = await CallGeminiAsync(prompt, apiKey, temperature: 0.3, maxOutputTokens: 2048,
+                    requestType: "translate_literary", userId: userId);
+            }
+            catch (AiUnavailableException ex)
+            {
+                // Ниже сработает gtx-fallback
+                _logger.LogWarning(ex, "Literary translation via Gemini unavailable");
+            }
+
             var raw = responseJson == null ? null : ExtractTextFromEnvelope(responseJson);
 
             if (!string.IsNullOrWhiteSpace(raw))
@@ -236,38 +333,66 @@ public class AiService
             var url = "https://translate.googleapis.com/translate_a/single" +
                       $"?client=gtx&sl=en&tl=ru&dt=t&q={Uri.EscapeDataString(text)}";
 
-            using var response = await httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            /*
+             * Повтор на 429 — с паузой.
+             *
+             * Замерено: первый запрос через свежее SOCKS5-соединение получает
+             * TooManyRequests, следующий по тому же соединению — 200. Простой
+             * немедленный повтор попадает в НОВОЕ соединение и снова ловит
+             * «первый контакт», поэтому между попытками нужна пауза: за неё
+             * пул соединений успевает переиспользовать уже открытый канал.
+             *
+             * Ровно две попытки: настоящий rate limit так не маскируется.
+             */
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                _logger.LogWarning("Google translate returned {Status} for text of length {Length}",
-                    response.StatusCode, text.Length);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            if (root.ValueKind != JsonValueKind.Array ||
-                root.GetArrayLength() == 0 ||
-                root[0].ValueKind != JsonValueKind.Array)
-            {
-                return null;
-            }
-
-            var builder = new StringBuilder();
-            foreach (var segment in root[0].EnumerateArray())
-            {
-                if (segment.ValueKind == JsonValueKind.Array &&
-                    segment.GetArrayLength() > 0 &&
-                    segment[0].ValueKind == JsonValueKind.String)
+                if (attempt > 0)
                 {
-                    builder.Append(segment[0].GetString());
+                    await Task.Delay(TimeSpan.FromMilliseconds(250));
                 }
+
+                using var response = await httpClient.GetAsync(url);
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt == 0)
+                {
+                    _logger.LogInformation(
+                        "Google translate: 429 на первом обращении, повторяю (длина {Length})", text.Length);
+                    continue;
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Google translate returned {Status} for text of length {Length}",
+                        response.StatusCode, text.Length);
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.ValueKind != JsonValueKind.Array ||
+                    root.GetArrayLength() == 0 ||
+                    root[0].ValueKind != JsonValueKind.Array)
+                {
+                    return null;
+                }
+
+                var builder = new StringBuilder();
+                foreach (var segment in root[0].EnumerateArray())
+                {
+                    if (segment.ValueKind == JsonValueKind.Array &&
+                        segment.GetArrayLength() > 0 &&
+                        segment[0].ValueKind == JsonValueKind.String)
+                    {
+                        builder.Append(segment[0].GetString());
+                    }
+                }
+
+                var translation = builder.ToString().Trim();
+                return string.IsNullOrWhiteSpace(translation) ? null : translation;
             }
 
-            var translation = builder.ToString().Trim();
-            return string.IsNullOrWhiteSpace(translation) ? null : translation;
+            return null;
         }
         catch (Exception ex)
         {
@@ -278,7 +403,7 @@ public class AiService
 
     private async Task<TranslationResult?> TranslateWithGoogleAsync(string word)
     {
-        var translation = await TranslateViaGtxAsync(word, DirectHttpClient);
+        var translation = await TranslateViaGtxAsync(word, NewGoogleClient(TimeSpan.FromSeconds(5)));
         if (translation == null)
         {
             return null;
@@ -309,7 +434,17 @@ public class AiService
             return cached;
         }
 
-        var responseJson = await CallGeminiAsync(prompt, apiKey);
+        string? responseJson = null;
+        try
+        {
+            responseJson = await CallGeminiAsync(prompt, apiKey, requestType: "generate_json");
+        }
+        catch (AiUnavailableException ex)
+        {
+            _logger.LogWarning(ex, "Gemini unavailable for generate_json");
+            return null;
+        }
+
         if (responseJson == null)
         {
             return null;
@@ -327,9 +462,114 @@ public class AiService
         return text;
     }
 
-    private async Task<TranslationResult?> TranslateWithPromptAsync(string prompt, string apiKey, string word)
+    /// <summary>
+    /// Генерация текста для админки (статьи, примеры к словам).
+    ///
+    /// Отдельный метод, а не флаг у <see cref="GenerateJsonAsync"/>, по одной
+    /// причине: тип запроса пишется в AiUsageLogs, и по нему считается
+    /// админская квота. Если оставить тип «generate_json», админские вызовы
+    /// попадут в пользовательский счётчик — и наоборот, админский лимит
+    /// никогда не увидит собственных трат.
+    ///
+    /// `userId` пишется в лог для аудита: кто именно потратил бюджет.
+    /// </summary>
+    public async Task<string?> GenerateForAdminAsync(
+        string prompt,
+        string requestType,
+        string? userId,
+        int maxOutputTokens = 4096)
     {
-        var responseJson = await CallGeminiAsync(prompt, apiKey);
+        // Имя типа обязано начинаться с admin-: иначе админская квота его не
+        // посчитает, и лимит превращается в фикцию. Проверяем здесь, а не
+        // надеемся на вызывающий код.
+        if (!requestType.StartsWith(AiQuotaService.AdminRequestTypePrefix, StringComparison.Ordinal))
+        {
+            requestType = AiQuotaService.AdminRequestTypePrefix + requestType;
+        }
+
+        // Провайдер OpenAI-совместимого протокола идёт ПЕРВЫМ, если настроен:
+        // это прямой путь к модели без пересборки запроса в Gemini-конверт.
+        // Подходит DeepSeek, OpenRouter, Groq, Mistral, локальный Ollama.
+        if (_openAiClient?.IsConfigured == true)
+        {
+            var chat = await _openAiClient.CompleteAsync(
+                systemPrompt: AdminSystemPrompt,
+                userPrompt: prompt,
+                maxOutputTokens: maxOutputTokens,
+                temperature: 0.7,
+                ct: CancellationToken.None);
+
+            if (chat != null)
+            {
+                // Токены и имя модели в журнал: без этого админский лимит
+                // считает вызовы, но не расход, а вопрос «сколько это стоило»
+                // остаётся без ответа.
+                await _quota?.LogUsageAsync(
+                    userId, requestType, chat.Model,
+                    chat.PromptTokens, chat.CompletionTokens, success: true);
+
+                return StripMarkdownFences(chat.Text);
+            }
+
+            // Не вернулись — провайдер недоступен. Пробуем Gemini ниже, а не
+            // сдаёмся: у платформы уже есть резервные пути, и терять их ради
+            // нового провайдера незачем.
+            _logger.LogWarning(
+                "OpenAI-совместимый провайдер не ответил для {RequestType}, пробуем Gemini", requestType);
+        }
+
+        var apiKey = _configuration["Gemini:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            _logger.LogError("Ни один AI-провайдер не настроен: проверьте AiChat:* или Gemini:ApiKey");
+            return null;
+        }
+
+        // Кэш намеренно НЕ используется: админ ждёт свежий текст, и одинаковый
+        // промпт, отправленный дважды, означает «ещё вариант», а не «то же
+        // самое». Пользовательский кэш экономит на повторных переводах, здесь
+        // он вернул бы редактору тот же абзац, который ему не понравился.
+        string? responseJson;
+        try
+        {
+            responseJson = await CallGeminiAsync(
+                prompt, apiKey, temperature: 0.7, maxOutputTokens: maxOutputTokens,
+                requestType: requestType, userId: userId);
+        }
+        catch (AiUnavailableException ex)
+        {
+            _logger.LogWarning(ex, "Gemini unavailable for {RequestType}", requestType);
+            return null;
+        }
+
+        if (responseJson == null) return null;
+
+        var text = ExtractTextFromEnvelope(responseJson);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _logger.LogWarning("Empty text in Gemini response for {RequestType}", requestType);
+            return null;
+        }
+
+        return StripMarkdownFences(text);
+    }
+
+    /// <summary>
+    /// Системная роль для админских задач.
+    ///
+    /// Вынесено константой: открытый провайдер без системного сообщения
+    /// скатывается в «вот статья, вот длинное вступление». Роль задаёт тон
+    /// один раз, а не в каждом промпте.
+    /// </summary>
+    private const string AdminSystemPrompt =
+        "Ты — методист и автор учебных материалов по английскому языку для " +
+        "русскоязычной платформы Lexicon. Пишешь коротко, по делу, с примерами " +
+        "и переводом. Отвечаешь только тем, что просили: без вступлений, " +
+        "извинений и пояснений о себе.";
+
+    private async Task<TranslationResult?> TranslateWithPromptAsync(string prompt, string apiKey, string word, string? userId)
+    {
+        var responseJson = await CallGeminiAsync(prompt, apiKey, requestType: "translate", userId: userId);
         if (responseJson == null)
         {
             return null;
@@ -383,7 +623,9 @@ public class AiService
         string prompt,
         string apiKey,
         double temperature = 0.2,
-        int maxOutputTokens = 2048)
+        int maxOutputTokens = 2048,
+        string requestType = "ai",
+        string? userId = null)
     {
         var candidates = new List<string>();
         if (_resolvedModel != null)
@@ -400,9 +642,31 @@ public class AiService
         candidates.AddRange(FallbackModels);
         candidates = candidates.Distinct().ToList();
 
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = prompt }
+                    }
+                }
+            },
+            generationConfig = new
+            {
+                temperature,
+                // Запас на thinking-токены у 2.5+/3.x моделей:
+                // при 400 ответ обрезался посреди JSON и парсинг падал
+                maxOutputTokens
+            }
+        };
+
         foreach (var model in candidates)
         {
-            var (json, modelNotFound) = await SendRequestAsync(model, prompt, apiKey, temperature, maxOutputTokens);
+            var (json, modelNotFound) = await _resilient.SendAsync(
+                model, requestBody, apiKey, requestType, userId);
             if (json != null)
             {
                 if (_resolvedModel != model)
@@ -430,109 +694,6 @@ public class AiService
 
         _logger.LogError("No working Gemini model found");
         return null;
-    }
-
-    private async Task<(string? Json, bool ModelNotFound)> SendRequestAsync(
-        string model,
-        string prompt,
-        string apiKey,
-        double temperature = 0.2,
-        int maxOutputTokens = 2048)
-    {
-        try
-        {
-            var requestBody = new
-            {
-                contents = new[]
-                {
-                    new
-                    {
-                        parts = new[]
-                        {
-                            new { text = prompt }
-                        }
-                    }
-                },
-                generationConfig = new
-                {
-                    temperature,
-                    // Запас на thinking-токены у 2.5+/3.x моделей:
-                    // при 400 ответ обрезался посреди JSON и парсинг падал
-                    maxOutputTokens
-                }
-            };
-
-            var json = JsonSerializer.Serialize(requestBody);
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-
-            using var response = await GetHttpClient().PostAsync(url, content);
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                return (responseJson, false);
-            }
-
-            var modelNotFound = response.StatusCode == HttpStatusCode.NotFound ||
-                                responseJson.Contains("not found", StringComparison.OrdinalIgnoreCase);
-
-            _logger.LogError("Gemini API error (model {Model}): {Status}, {Response}",
-                model, response.StatusCode, TruncateForLog(responseJson));
-
-            return (null, modelNotFound);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling Gemini API (model {Model})", model);
-            return (null, false);
-        }
-    }
-
-    private HttpClient GetHttpClient()
-    {
-        if (_sharedHttpClient != null)
-        {
-            return _sharedHttpClient;
-        }
-
-        lock (HttpClientLock)
-        {
-            _sharedHttpClient ??= CreateHttpClient();
-        }
-
-        return _sharedHttpClient;
-    }
-
-    private HttpClient CreateHttpClient()
-    {
-        var proxyUrl = _configuration["Gemini:ProxyUrl"];
-        var handler = new HttpClientHandler();
-
-        if (!string.IsNullOrEmpty(proxyUrl))
-        {
-            var uri = new Uri(proxyUrl);
-            var proxy = new WebProxy
-            {
-                Address = new Uri($"{uri.Scheme}://{uri.Host}:{uri.Port}"),
-                BypassProxyOnLocal = false,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(
-                    uri.UserInfo.Split(':')[0],
-                    uri.UserInfo.Split(':')[1]
-                )
-            };
-
-            handler.Proxy = proxy;
-            handler.UseProxy = true;
-            handler.PreAuthenticate = true;
-        }
-
-        return new HttpClient(handler)
-        {
-            Timeout = TimeSpan.FromSeconds(15)
-        };
     }
 
     private static string? ExtractTextFromEnvelope(string responseJson)

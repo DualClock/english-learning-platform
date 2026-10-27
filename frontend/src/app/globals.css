@@ -3,25 +3,718 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #F7F5EF;
-  --bg-secondary: #E7ECE4;
-  --text-primary: #20231F;
-  --text-secondary: #5A5F5A;
-  --accent-primary: #356B52;
-  --accent-secondary: #EBCB75;
-  --accent-warm: #C4A77D;
-  --error: #B85C5C;
-  --success: #4A7C59;
-  --border: #D6D3CC;
+  /* Нативные контролы (чекбоксы, скроллбары) идут за темой */
+  color-scheme: light;
+
+  /* Brand */
+  --color-primary: #0E7C7B;
+  --color-primary-pressed: #0A6362;
+  --color-primary-deep: #084F4E;
+  --color-navy: #0B2545;
+  --color-navy-deep: #081A33;
+  --color-link: #0B5FA5;
+
+  /* Surfaces */
+  --color-canvas: #FFFFFF;
+  --color-surface: #F6F7F9;
+  --color-surface-soft: #FAFAFB;
+  /*
+   * Тёплое поле публичных страниц. Глубже tint-peach: на нём белая карточка
+   * читается как лист бумаги, а не растворяется в фоне.
+   */
+  --color-ground-warm: #F7DAC1;
+  --color-hairline: #E5E7EB;
+  --color-hairline-soft: #EEF0F3;
+  --color-hairline-strong: #C9CDD4;
+
+  /* Text */
+  --color-ink: #1A1D23;
+  --color-ink-deep: #000000;
+  --color-charcoal: #373B44;
+  --color-slate: #5D6470;
+  --color-steel: #7A8089;
+  --color-muted: #AEB3BB;
+  --color-on-dark: #FFFFFF;
+  --color-on-dark-muted: #A8B3C7;
+
+  /* Pastel tints */
+  --color-tint-peach: #FFE8D4;
+  --color-tint-rose: #FDE0EC;
+  --color-tint-mint: #D9F3E1;
+  --color-tint-lavender: #E6E0F5;
+  --color-tint-sky: #DCECFA;
+  --color-tint-yellow: #FEF7D6;
+  --color-tint-yellow-bold: #F9E79F;
+  --color-tint-teal: #D6EFEE;
+
+  /*
+   * Маскот Lexi остаётся бумажным в обеих темах: это физический объект,
+   * а не поверхность интерфейса. Меняются только яркость бумаги и линия.
+   */
+  --color-lexi-paper: #FFF2D8;
+  --color-lexi-fold: #F3D3A6;
+  --color-lexi-line: #17314C;
+  --color-lexi-blush: #F3B39B;
+  --color-lexi-accent: #0E7C7B;
+
+  /*
+   * Бумага иллюстраций слов. Не поверхность интерфейса, а часть самих ассетов:
+   * белый фон запечён в WebP, поэтому подложка под картинкой обязана совпадать
+   * с ним — иначе на скруглённых углах проступает прямоугольник другого тона.
+   * В светлой теме совпадает с canvas, и картинка растворяется в карточке.
+   */
+  --color-illustration-paper: #FFFFFF;
+
+  /* Semantic */
+  --color-success: #1A9C3C;
+  --color-warning: #B45309;
+  --color-error: #D92D20;
+
+  /*
+   * Семантические поверхности. Единственный источник цвета карточек и плашек:
+   * класс описывает смысл (информация/успех/предупреждение/ошибка/акцент),
+   * а не оттенок. Значения меняются вместе с темой.
+   */
+  --surface-info: var(--color-tint-sky);
+  --surface-success: var(--color-tint-mint);
+  --surface-warning: var(--color-tint-yellow);
+  --surface-danger: var(--color-tint-rose);
+  --surface-accent: var(--color-tint-teal);
+  --surface-decor: var(--color-tint-lavender);
+  --surface-highlight: var(--color-tint-yellow-bold);
+  --surface-sunken: #F1F3F6;
+  --surface-inverse: var(--color-navy);
+
+  /* Текст на семантических поверхностях */
+  --on-info: #0B4A7A;
+  --on-success: #14662B;
+  --on-warning: #7A3A00;
+  --on-danger: #B42318;
+  --on-accent: #0A6362;
+  --on-decor: #3D2463;
+  /* Текст на фирменной плашке: в светлой теме белый, в тёмной — тёмный */
+  --on-primary: #FFFFFF;
+
+  /* Читалка: значения переопределяются настройками чтения на контейнере текста */
+  --reader-size: 1.25rem;
+  --reader-leading: 1.85;
+  --reader-measure: 68ch;
+  --reader-ui-size: 0.9375rem;
+
+  /*
+   * Бумага и чернила читальни. Это отдельная семантическая пара: страница
+   * книги не равна интерфейсной поверхности. Тёплая бумага отделяет текст
+   * от холодного canvas и держит «тихую библиотеку» в светлой и тёмной теме.
+   */
+  --reader-paper: #FBF7ED;
+  --reader-paper-deep: #F4EDDF;
+  --reader-ink: #2B2620;
+  --reader-ink-soft: #6E6557;
+  --reader-hairline: rgba(43, 38, 32, 0.13);
+  --reader-wash: rgba(14, 124, 123, 0.10);
+  --reader-mark: #F5E6AE;
+  --reader-mark-strong: #ECD98C;
+  --reader-paper-glow: rgba(255, 255, 255, 0.55);
+
+  /* Затемнение под плавающими слоями: drawer, bottom-sheet, диалог */
+  --color-scrim: rgba(11, 37, 69, 0.35);
+
+  /* Анимация: единая шкала длительностей и кривых */
+  --duration-tap: 120ms;
+  --duration-fast: 180ms;
+  --duration-base: 260ms;
+  --duration-slow: 420ms;
+  /* Вход кадра: длиннее base, короче entrance */
+  --duration-page: 300ms;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Тёмная тема: переворачиваются те же имена токенов, поэтому весь UI,
+ * собранный на классах primary, navy, canvas, surface, ink, tint и
+ * surface-подповерхностей, переключается без правок в компонентах.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Brand */
+  --color-primary: #2FB0A8;
+  --color-primary-pressed: #46C2BB;
+  --color-primary-deep: #0C4342;
+  --color-navy: #0A1A2F;
+  --color-navy-deep: #060F1D;
+  --color-link: #6FA8DC;
+
+  /*
+   * Surfaces. Роли те же, что в светлой теме: canvas — поднятая плоскость
+   * карточки, surface — поле страницы и второстепенные плашки. Иначе в тёмной
+   * теме карточки тонули бы в фоне, а в светлой — поднимались над ним.
+   */
+  --color-canvas: #0A1B2E;
+  --color-surface: #071426;
+  --color-surface-soft: #0E2237;
+  --color-ground-warm: #3A2717;
+  --color-hairline: #1F3550;
+  --color-hairline-soft: #18283D;
+  --color-hairline-strong: #33506B;
+
+  /* Text */
+  --color-ink: #E8ECF3;
+  --color-ink-deep: #FFFFFF;
+  --color-charcoal: #C9D3E2;
+  --color-slate: #9AA9BF;
+  --color-steel: #8493A8;
+  --color-muted: #6B7A90;
+  --color-on-dark: #F4F7FB;
+  --color-on-dark-muted: #9FB0C7;
+
+  /* Pastel tints → приглушённые поля того же тона */
+  --color-tint-peach: #33230F;
+  --color-tint-rose: #3A1626;
+  --color-tint-mint: #123327;
+  --color-tint-lavender: #221A38;
+  --color-tint-sky: #10283E;
+  --color-tint-yellow: #33301A;
+  --color-tint-yellow-bold: #4A441F;
+  --color-tint-teal: #0F3534;
+
+  /* Бумага не светит в темноте: чуть приглушаем, но оставляем тёплой */
+  --color-lexi-paper: #F6E6C6;
+  --color-lexi-fold: #E5C59A;
+  --color-lexi-line: #102A44;
+  --color-lexi-blush: #EFA992;
+  --color-lexi-accent: #7FDCD5;
+
+  /* Иллюстрации нарисованы на белом — это часть ассета, а не поверхность темы.
+     В тёмной теме белый лист остаётся белым, но получает тонкое световое ребро
+     (см. .word-illustration-img ниже), чтобы читаться как стикер, а не как засвет. */
+  --color-illustration-paper: #FFFFFF;
+
+  /* Semantic */
+  --color-success: #3DBB60;
+  --color-warning: #E0A458;
+  --color-error: #F2685C;
+
+  --surface-info: var(--color-tint-sky);
+  --surface-success: var(--color-tint-mint);
+  --surface-warning: var(--color-tint-yellow);
+  --surface-danger: var(--color-tint-rose);
+  --surface-accent: var(--color-tint-teal);
+  --surface-decor: var(--color-tint-lavender);
+  --surface-highlight: var(--color-tint-yellow-bold);
+  --surface-sunken: #050E1B;
+  --surface-inverse: #0E2237;
+
+  /* Текст на семантических поверхностях в тёмной теме светлеет */
+  --on-info: #8FC4F2;
+  --on-success: #7AD79B;
+  --on-warning: #F0BE7E;
+  --on-danger: #FFA79E;
+  --on-accent: #7FDCD5;
+  --on-decor: #C9B8F0;
+  --on-primary: #06202B;
+
+  /* В тёмной теме затемнение нейтрально-чёрное: синева поля его подсвечивает */
+  --color-scrim: rgba(2, 8, 18, 0.66);
+
+  /* Читалка ночью: страница на тон светлее полки, с тёплыми чернилами */
+  --reader-paper: #122538;
+  --reader-paper-deep: #0C1C2D;
+  --reader-ink: #E9E2D4;
+  --reader-ink-soft: #A79D8B;
+  --reader-hairline: rgba(233, 226, 212, 0.14);
+  --reader-wash: rgba(127, 220, 213, 0.14);
+  --reader-mark: #3D3921;
+  --reader-mark-strong: #514A27;
+  --reader-paper-glow: rgba(255, 255, 255, 0.025);
+}
+
+/*
+ * Акцентные темы. Меняется только рабочий акцент и его мягкие поверхности:
+ * семантика успеха/ошибки, бумага читалки и navy остаются на месте.
+ */
+:root[data-accent='warm'] {
+  --color-primary: #A84F2A;
+  --color-primary-pressed: #8C3E1E;
+  --color-primary-deep: #6E2F16;
+  --color-tint-teal: #FCE8D7;
+  --on-accent: #7A3416;
+}
+
+:root[data-theme='dark'][data-accent='warm'] {
+  --color-primary: #E0A06A;
+  --color-primary-pressed: #F0B98E;
+  --color-primary-deep: #7A3A1C;
+  --color-tint-teal: #33221A;
+  --on-accent: #F1C39D;
+}
+
+:root[data-accent='ink'] {
+  --color-primary: #3E4E8D;
+  --color-primary-pressed: #2E3B66;
+  --color-primary-deep: #202A50;
+  --color-tint-teal: #E4E8F6;
+  --on-accent: #2E3B66;
+}
+
+:root[data-theme='dark'][data-accent='ink'] {
+  --color-primary: #9FB2E8;
+  --color-primary-pressed: #B8C8F5;
+  --color-primary-deep: #1B2747;
+  --color-tint-teal: #1C2540;
+  --on-accent: #C4D1F4;
+}
+
+/* Рамки аватара: отдельная косметика, не зависящая от акцента интерфейса */
+.avatar-frame-paper { background: #F0E3C9; box-shadow: inset 0 0 0 1px rgba(42, 37, 31, 0.14); }
+.avatar-frame-teal { background: linear-gradient(135deg, #0E7C7B, #7FDCD5); }
+.avatar-frame-ink { background: linear-gradient(135deg, #0B2545, #3E4E8D); }
+.avatar-frame-gold { background: linear-gradient(135deg, #F3D98B, #B8860B); }
+
+:root[data-theme='dark'] .avatar-frame-paper { background: #4A3B29; box-shadow: inset 0 0 0 1px rgba(233, 226, 212, 0.18); }
+:root[data-theme='dark'] .avatar-frame-teal { background: linear-gradient(135deg, #0F5D5B, #2FB0A8); }
+:root[data-theme='dark'] .avatar-frame-ink { background: linear-gradient(135deg, #1A2940, #5A6FA8); }
+:root[data-theme='dark'] .avatar-frame-gold { background: linear-gradient(135deg, #6B5A25, #D9B45A); }
+
+/*
+ * Иллюстрация слова нарисована на белом — это часть ассета, а не поверхность
+ * темы, поэтому подменять ей фон нельзя: объект и поле разъедутся по тону.
+ * В светлой теме белый лист совпадает с canvas и растворяется в карточке;
+ * в тёмной он неизбежно остаётся светлым, и единственное, что нужно, — тонкое
+ * ребро, чтобы это читалось как стикер, а не как засвет. Гасить картинку
+ * фильтром нельзя: палитра и без того мягкая, brightness съедает её совсем.
+ */
+:root[data-theme='dark'] .word-illustration-tile {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/*
+ * Флэшкарта — тёплая бумажная сцена внутри интерфейса. Карточка держит 4:5,
+ * поэтому переворот не меняет высоту и не двигает стрелки с кнопками.
+ * Палитра локальная: это физическая бумага, а не поверхность темы, и она
+ * не должна следовать за акцентом пользователя.
+ */
+.flashcard-stage {
+  --fc-stage: #f1efe5;
+  --fc-stage-text: #3c4535;
+  --fc-stage-muted: #646a58;
+  --fc-stage-line: rgba(60, 69, 53, 0.08);
+  --fc-card: #faf7ef;
+  --fc-card-border: #e4dfd1;
+  --fc-card-ink: #3c4535;
+  --fc-card-muted: #626858;
+  --fc-rose: #b87865;
+  --fc-sage: #7f8c6c;
+  --fc-green: #667751;
+  --fc-green-strong: #566646;
+  --fc-green-ink: #fcfbee;
+  --fc-paper-mid: #efe9da;
+  --fc-paper-back: #e6e8d9;
+  --fc-paper-line: #e4dfd1;
+  --fc-arrow-bg: #f8f7ee;
+  --fc-arrow-line: #d8dccb;
+  --fc-arrow-text: #7b8c66;
+  --fc-arrow-shadow: #e5e5d8;
+  --fc-ghost-line: #d8dccb;
+  --fc-shadow:
+    0 18px 40px -18px rgba(93, 81, 48, 0.35),
+    0 2px 6px rgba(91, 78, 56, 0.06),
+    0 1px 0 rgba(255, 254, 247, 0.9) inset;
+  position: relative;
+  padding: clamp(22px, 4vw, 40px) clamp(16px, 3vw, 32px);
+  border: 1px solid var(--fc-stage-line);
+  border-radius: 28px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 58%),
+    var(--fc-stage);
+  color: var(--fc-stage-text);
+}
+
+:root[data-theme='dark'] .flashcard-stage {
+  --fc-stage: #17140f;
+  --fc-stage-text: #e9e3d4;
+  --fc-stage-muted: #a79f8f;
+  --fc-stage-line: rgba(255, 255, 255, 0.07);
+  --fc-card: #f7f1e4;
+  --fc-card-border: #e4dfd1;
+  --fc-card-ink: #3c4535;
+  --fc-card-muted: #626858;
+  --fc-rose: #b87865;
+  --fc-sage: #7f8c6c;
+  --fc-green: #8fa276;
+  --fc-green-strong: #74845f;
+  --fc-green-ink: #17140f;
+  --fc-paper-mid: #2a251c;
+  --fc-paper-back: #232a1f;
+  --fc-paper-line: #3b3528;
+  --fc-arrow-bg: #221e16;
+  --fc-arrow-line: #3d3a2e;
+  --fc-arrow-text: #c9d3b9;
+  --fc-arrow-shadow: #0d0b08;
+  --fc-ghost-line: #3d3a2e;
+  --fc-shadow:
+    0 24px 50px -20px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  background:
+    radial-gradient(120% 70% at 50% 0%, #211c14 0%, var(--fc-stage) 62%);
+}
+
+.flashcard-swipe {
+  touch-action: pan-y;
+}
+
+.flashcard-stack {
+  position: relative;
+  width: min(100%, 500px);
+  margin-inline: auto;
+}
+
+.flashcard-paper {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--fc-paper-line);
+  border-radius: 27px;
+  background: var(--fc-paper-back);
+  box-shadow: 0 8px 22px rgba(87, 76, 53, 0.06);
+  pointer-events: none;
+}
+
+.flashcard-paper-middle {
+  z-index: 1;
+  background: var(--fc-paper-mid);
+  transform: rotate(-2.4deg) translate(-6px, -6px);
+}
+
+.flashcard-paper-back {
+  z-index: 0;
+  transform: rotate(1.8deg) translate(6px, 5px);
+}
+
+.flashcard-card-shell {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 27px;
+  box-shadow: var(--fc-shadow);
+  perspective: 1500px;
+}
+
+.flashcard-flipper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 27px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.22, 0.8, 0.28, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flashcard-flipper.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-flipper:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 4px;
+}
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--fc-card-border);
+  border-radius: 27px;
+  background: var(--fc-card);
+  color: var(--fc-card-ink);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flashcard-face-front {
+  padding: clamp(20px, 4.5vw, 40px) clamp(18px, 4vw, 35px) clamp(16px, 3vw, 30px);
+}
+
+.flashcard-face-back {
+  gap: clamp(8px, 1.2vw, 14px);
+  padding: clamp(28px, 5vw, 48px) clamp(24px, 4.5vw, 40px);
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.flashcard-art {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 1;
+  /* 3D-слой карточки изолирует blend от фона бумаги, поэтому подложка
+     повторяет цвет карточки. darken, а не multiply: у части WebP фон
+     почти белый (248–249), и multiply оставлял бы visible прямоугольник. */
+  background: var(--fc-card);
+  isolation: isolate;
+}
+
+.flashcard-word {
+  margin-top: clamp(8px, 1.6vw, 14px);
+  font-family: var(--font-literata), Literata, Georgia, Cambria, serif;
+  font-size: clamp(2.75rem, 5.2vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--fc-rose);
+  text-align: center;
+}
+
+.flashcard-phonetic {
+  margin-top: 4px;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  letter-spacing: 0.02em;
+  color: var(--fc-card-muted);
+  text-align: center;
+}
+
+.flashcard-back-label {
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fc-card-muted);
+}
+
+.flashcard-translation {
+  max-width: 100%;
+  font-family: var(--font-literata), Literata, Georgia, Cambria, serif;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--fc-rose);
+  overflow-wrap: anywhere;
+}
+
+.flashcard-example {
+  max-width: 34ch;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--fc-card-muted);
+}
+
+/* Перевод примера — подсказка, а не второй заголовок: мельче английского и
+   без курсива, иначе две наклонные строки сливаются в одну. */
+.flashcard-example-translation {
+  max-width: 34ch;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+  line-height: 1.45;
+  color: var(--fc-card-muted);
+}
+
+.flashcard-sound {
+  position: absolute;
+  top: clamp(10px, 2vw, 16px);
+  right: clamp(10px, 2vw, 16px);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fc-sage);
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.flashcard-sound:hover {
+  background: rgba(127, 140, 108, 0.16);
+}
+
+.flashcard-sound:focus-visible {
+  outline: 2px solid var(--fc-green);
+  outline-offset: 2px;
+}
+
+.flashcard-sound.is-speaking {
+  color: var(--fc-green-strong);
+}
+
+.flashcard-hint {
+  min-height: 1.25rem;
+  margin: 16px auto 0;
+  font-size: 0.78rem;
+  line-height: 1.25rem;
+  color: var(--fc-stage-muted);
+  text-align: center;
+}
+
+.flashcard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 26px);
+  margin-top: 8px;
+}
+
+.flashcard-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--fc-arrow-line);
+  border-radius: 50%;
+  background: var(--fc-arrow-bg);
+  color: var(--fc-arrow-text);
+  box-shadow: 0 3px 0 var(--fc-arrow-shadow);
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 160ms ease;
+}
+
+.flashcard-arrow:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.flashcard-arrow:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--fc-arrow-shadow);
+}
+
+.flashcard-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.flashcard-arrow:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 3px;
+}
+
+.flashcard-arrow-next {
+  border-color: var(--fc-green);
+  background: var(--fc-green);
+  color: var(--fc-green-ink);
+  box-shadow: 0 3px 0 var(--fc-green-strong);
+}
+
+.flashcard-progress {
+  min-width: 74px;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+  color: var(--fc-stage-muted);
+  text-align: center;
+}
+
+.flashcard-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.flashcard-action {
+  min-height: 46px;
+  padding: 0 22px;
+  border: 1px solid var(--fc-ghost-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fc-stage-text);
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+
+.flashcard-action:hover {
+  background: rgba(116, 132, 95, 0.1);
+}
+
+.flashcard-action:active {
+  transform: scale(0.98);
+}
+
+.flashcard-action:focus-visible {
+  outline: 2px solid var(--fc-rose);
+  outline-offset: 2px;
+}
+
+.flashcard-action-primary {
+  border-color: var(--fc-green);
+  background: var(--fc-green);
+  color: var(--fc-green-ink);
+  box-shadow: 0 3px 0 var(--fc-green-strong);
+}
+
+.flashcard-action-primary:hover {
+  background: var(--fc-green-strong);
+}
+
+.flashcard-action-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--fc-green-strong);
+}
+
+@media (max-width: 480px) {
+  .flashcard-stage {
+    padding: 22px 16px 24px;
+    border-radius: 24px;
+  }
+
+  .flashcard-paper,
+  .flashcard-face,
+  .flashcard-card-shell,
+  .flashcard-flipper {
+    border-radius: 24px;
+  }
+
+  .flashcard-arrow {
+    width: 52px;
+    height: 52px;
+  }
+
+  .flashcard-action {
+    min-height: 44px;
+    padding: 0 20px;
+  }
 }
 
 @layer base {
   body {
-    @apply bg-[#F7F5EF] text-[#20231F] font-sans antialiased;
+    @apply bg-surface text-ink antialiased;
+    font-family: var(--font-inter), Inter, system-ui, sans-serif;
   }
-  
+
+  /* Заголовки наследуют чернила своего поля, а не тянут ink из светлой темы */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    font-family: var(--font-manrope), var(--font-inter), system-ui, sans-serif;
+    @apply font-semibold tracking-tight text-inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -39,76 +732,620 @@
   }
 
   .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
+    animation: fade-in var(--duration-base) var(--ease-out-soft) both;
+  }
+
+  /*
+   * Маскированный заголовок: каждая строка поднимается из-за своей базовой.
+   * Переносы задаёт вёрстка, маска — overflow по строке.
+   */
+  .mask-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  .mask-line > span {
+    display: block;
+  }
+
+  @keyframes line-up {
+    to {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .mask-line > span {
+      transform: translateY(105%);
+      animation: line-up 900ms var(--ease-out-soft) forwards;
+    }
+
+    .mask-line:nth-child(2) > span { animation-delay: 260ms; }
+    .mask-line:nth-child(3) > span { animation-delay: 370ms; }
+
+    /* Реплика под заголовком входит после последней строки */
+    .mask-after {
+      opacity: 0;
+      animation: fade-in var(--duration-slow) var(--ease-out-soft) 700ms both;
+    }
+  }
+
+  /* Появление блока снизу вверх — общий вход блоков и карточек */
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rise-in {
+    animation: rise-in 0.45s var(--ease-out-soft) both;
+  }
+
+  /* Лёгкое «выпрыгивание» — акцентные элементы */
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-pop-in {
+    animation: pop-in 0.35s var(--ease-out-soft) both;
+  }
+
+  /* Поочерёдное появление детей контейнера: stagger на сетке/списке */
+  .stagger > * {
+    animation: rise-in 0.45s var(--ease-out-soft) both;
+  }
+
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.12s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.19s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.26s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.33s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.40s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.47s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.54s; }
+  .stagger > *:nth-child(n + 9) { animation-delay: 0.6s; }
+
+  /* Смена страницы в читалке — деликатное проявление текста */
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* backwards, а не both: заполненный forwards transform делает обёртку
+     containing block, и fixed-элементы внутри (bottom-sheet читалки) считаются от неё */
+  .animate-page-in {
+    animation: page-in var(--duration-page) var(--ease-out-soft) backwards;
   }
 
   /* Кнопки */
   .btn-primary {
-    @apply bg-[#356B52] text-white px-6 py-3 rounded-lg font-medium
-           hover:bg-[#2A5542] transition-colors duration-200
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
-  }
-  
-  .btn-secondary {
-    @apply bg-transparent text-[#20231F] px-6 py-3 rounded-lg font-medium
-           border border-[#D6D3CC] hover:bg-[#E7ECE4] transition-colors duration-200
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:ring-offset-2;
-  }
-  
-  .btn-ghost {
-    @apply text-[#5A5F5A] px-4 py-2 rounded-lg font-medium
-           hover:text-[#20231F] hover:bg-[#E7ECE4] transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-md text-body-sm font-medium
+           hover:bg-primary-pressed transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97
+           disabled:bg-surface disabled:text-slate disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
-  /* Карточки */
-  .card {
-    @apply bg-white rounded-xl border border-[#D6D3CC] 
-           hover:border-[#C4A77D] transition-colors duration-200;
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-ink px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-hairline-strong hover:bg-surface transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97
+           disabled:text-slate disabled:border-hairline disabled:cursor-not-allowed disabled:active:scale-100;
   }
-  
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 text-slate px-3 py-2 rounded-md text-body-sm font-medium
+           hover:text-ink hover:bg-surface transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-semantic-error px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-semantic-error hover:bg-surface-danger transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
+  }
+
+  .btn-on-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-on-dark text-navy px-5 py-2.5 rounded-md text-body-sm font-medium
+           hover:bg-surface-soft transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
+  }
+
+  .btn-secondary-on-dark {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-on-dark px-5 py-2.5 rounded-md text-body-sm font-medium
+           border border-on-dark-muted hover:border-on-dark transition-[background-color,color,transform,box-shadow] duration-fast ease-soft active:scale-97;
+  }
+
+  /* Карточки: в покое — шаг тона и hairline, тень только у поднимаемого слоя */
+  .card {
+    @apply bg-canvas rounded-lg border border-hairline p-6;
+  }
+
   .card-interactive {
-    @apply bg-white rounded-xl border border-[#D6D3CC] 
-           hover:border-[#356B52] hover:shadow-lg transition-all duration-200
+    @apply bg-canvas rounded-lg border border-hairline
+           hover:border-primary hover:shadow-card hover:-translate-y-0.5 transition-[border-color,box-shadow,transform] duration-fast ease-soft
            cursor-pointer;
   }
 
-  /* Поля ввода */
-  .input {
-    @apply w-full px-4 py-3 rounded-lg border border-[#D6D3CC] bg-white
-           text-[#20231F] placeholder-[#5A5F5A]
-           focus:outline-none focus:ring-2 focus:ring-[#356B52] focus:border-transparent
-           transition-shadow duration-200;
+  /*
+   * Действие на карточке (удалить, закрепить). Прятать контрол только за hover
+   * нельзя: на тач-экранах hover не бывает, и кнопка становится недостижимой.
+   * Поэтому по умолчанию контрол виден, а лёгкое проявление — только там,
+   * где есть точный курсор.
+   */
+  .card-action {
+    @apply transition-opacity duration-fast ease-soft;
   }
 
-  /* Заголовки секций */
-  .section-title {
-    @apply text-2xl md:text-3xl font-bold text-[#20231F] mb-2;
+  @media (hover: hover) and (pointer: fine) {
+    .card-action {
+      @apply opacity-0;
+    }
+    .group:hover .card-action,
+    .card-action:focus-visible,
+    .card-action:focus {
+      @apply opacity-100;
+    }
   }
-  
+
+  /*
+   * Сторона флэшкарты. Перевод почти всегда длиннее слова, поэтому высота
+   * резервируется: без резерва карточка растёт при каждом перевороте, и кнопки
+   * «Знаю / Не знаю» уезжают из-под пальца.
+   */
+  .flip-face {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 15rem;
+  }
+
+  /* Поверхности по смыслу вместо декоративных оттенков */
+  .card-tint-peach    { @apply rounded-lg p-6 text-ink bg-surface-warning; }
+  .card-tint-rose     { @apply rounded-lg p-6 text-ink bg-surface-danger; }
+  .card-tint-mint     { @apply rounded-lg p-6 text-ink bg-surface-success; }
+  .card-tint-lavender { @apply rounded-lg p-6 text-ink bg-surface-decor; }
+  .card-tint-sky      { @apply rounded-lg p-6 text-ink bg-surface-info; }
+  .card-tint-yellow   { @apply rounded-lg p-6 text-ink bg-surface-warning; }
+  .card-tint-yellow-bold { @apply rounded-lg p-6 text-ink bg-surface-highlight; }
+  .card-tint-teal     { @apply rounded-lg p-6 text-ink bg-surface-accent; }
+
+  /* Поля ввода */
+  .input {
+    @apply w-full h-11 px-4 rounded-md border border-hairline-strong bg-canvas
+           text-ink placeholder:text-muted text-body
+           focus:border-primary focus:ring-2 focus:ring-primary focus:ring-opacity-20
+           transition-[border-color,box-shadow] duration-fast ease-soft;
+  }
+
+  /* Заголовки секций и страниц */
+  .section-title {
+    @apply text-h1 text-ink mb-2;
+  }
+
   .section-subtitle {
-    @apply text-[#5A5F5A] text-lg mb-8;
+    @apply text-slate text-body-lg mb-8;
+  }
+
+  .page-header {
+    @apply mb-8;
   }
 
   /* Бейджи */
   .badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-caption font-semibold;
   }
-  
+
   .badge-primary {
-    @apply bg-[#E7ECE4] text-[#356B52];
+    @apply bg-primary text-on-primary;
   }
-  
+
   .badge-secondary {
-    @apply bg-[#EBCB75] text-[#20231F];
+    @apply bg-surface text-slate border border-hairline;
+  }
+
+  .badge-tag {
+    @apply inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded-md text-caption font-semibold;
+  }
+
+  .badge-tag-green  { @apply badge-tag bg-surface-success text-on-success; }
+  .badge-tag-orange { @apply badge-tag bg-surface-warning text-on-warning; }
+  .badge-tag-purple { @apply badge-tag bg-surface-decor text-on-decor; }
+  .badge-tag-sky    { @apply badge-tag bg-surface-info text-on-info; }
+  .badge-tag-teal   { @apply badge-tag bg-surface-accent text-on-accent; }
+  .badge-tag-red    { @apply badge-tag bg-surface-danger text-on-danger; }
+
+  /* Читалка: комната, бумага и текст страницы */
+  .reader-room {
+    background: var(--reader-paper);
+    color: var(--reader-ink);
+  }
+
+  /*
+   * Бумага занимает всё поле чтения. Свет идёт сверху и чуть сбоку, как от
+   * настольной лампы: без фотографий и текстур, только два мягких слоя.
+   */
+  .reader-paper {
+    background-color: var(--reader-paper);
+    background-image:
+      radial-gradient(120% 70% at 50% -12%, var(--reader-paper-glow), transparent 62%),
+      linear-gradient(180deg, var(--reader-paper) 0%, var(--reader-paper-deep) 100%);
+    color: var(--reader-ink);
+  }
+
+  .reader-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--reader-hairline) transparent;
+  }
+
+  .reader-text {
+    @apply mx-auto font-reading text-reading;
+    color: var(--reader-ink);
+    max-width: min(var(--reader-measure, 68ch), 100%);
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    letter-spacing: 0.002em;
+  }
+
+  .reader-text[data-parallel='true'] {
+    text-align: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  /*
+   * На узкой колонке выключка по формату рвёт строку широкими пробелами.
+   * Телефон читает неровный правый край — как бумажная книга в карманном издании.
+   */
+  @media (max-width: 639px) {
+    .reader-text {
+      text-align: left;
+    }
+  }
+
+  /*
+   * Слова идут в тексте, как в книге: пробелы остаются настоящими пробелами,
+   * поэтому выключка по формату работает. Фон и подчёркивание не двигают строку.
+   */
+  .reader-word {
+    @apply cursor-pointer rounded-[3px];
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .reader-word:hover {
+    background: var(--reader-wash);
+  }
+
+  .reader-word-selected {
+    background: var(--reader-mark-strong);
+    color: var(--reader-ink);
+  }
+
+  .reader-marker {
+    @apply cursor-pointer rounded-[3px];
+    text-decoration: underline dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--color-primary);
+    transition: background-color var(--duration-fast) var(--ease-out-soft);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .reader-marker:hover {
+    background: var(--reader-wash);
+  }
+
+  .reader-marker-collected {
+    background: var(--reader-mark);
+    text-decoration: none;
+  }
+
+  /* Слово без букв (знаки препинания, дефисы) — не кликается */
+  .reader-plain {
+    color: inherit;
+  }
+
+  /* Тихие кнопки верхней панели и подвала — цвет бумаги, а не приложения */
+  .reader-icon-btn {
+    @apply inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-md px-2 text-caption font-medium;
+    color: var(--reader-ink-soft);
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .reader-icon-btn:hover:not(:disabled) {
+    background: var(--reader-wash);
+    color: var(--reader-ink);
+  }
+
+  .reader-icon-btn:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+
+  .reader-icon-btn[aria-pressed='true'],
+  .reader-icon-btn[data-active='true'] {
+    background: var(--reader-mark);
+    color: var(--reader-ink);
+  }
+
+  /* Кнопки книжной полки: тёмный navy, светлые чернила */
+  .rail-icon-btn {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md;
+    color: var(--color-on-dark-muted);
+    transition: background-color var(--duration-fast) var(--ease-out-soft),
+      color var(--duration-fast) var(--ease-out-soft);
+  }
+
+  .rail-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-on-dark);
+  }
+
+  /* На тёмной полке фирменный teal в фокусе читается лучше светлой мяты */
+  aside[aria-label='Книжная полка'] :focus-visible {
+    outline-color: var(--color-tint-teal);
+  }
+
+  /* Ползунок страниц живёт на тёмной полке */
+  .rail-range {
+    --rail-progress: 0%;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .rail-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-tint-teal) 0%,
+      var(--color-tint-teal) var(--rail-progress),
+      rgba(255, 255, 255, 0.18) var(--rail-progress),
+      rgba(255, 255, 255, 0.18) 100%
+    );
+  }
+
+  .rail-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    margin-top: -5px;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+    box-shadow: 0 0 0 3px rgba(214, 239, 238, 0.14);
+  }
+
+  .rail-range::-moz-range-track {
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .rail-range::-moz-range-progress {
+    height: 3px;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+  }
+
+  .rail-range::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-tint-teal);
+  }
+
+  /* Смена страницы в читалке — деликатное проявление текста */
+  .reader-page-enter {
+    animation: page-in var(--duration-page) var(--ease-out-soft) backwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reader-page-enter {
+      animation: none !important;
+    }
+
+    .reader-room,
+    .reader-room * {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* HTML теории из API: разметка приходит с сервера, поэтому стили здесь,
+     а не в className страницы. Все значения — из токенов. */
+  .theory-text {
+    @apply text-body-lg leading-relaxed text-ink;
+  }
+  .theory-text p {
+    @apply mb-3;
+  }
+  .theory-text h1 {
+    @apply mb-3 text-h2 text-ink;
+  }
+  .theory-text h2 {
+    @apply mb-2 mt-5 text-h3 text-ink;
+  }
+  .theory-text h3 {
+    @apply mb-2 mt-4 text-body-lg font-semibold text-ink;
+  }
+  .theory-text ul {
+    @apply mb-3 list-disc pl-6;
+  }
+  .theory-text ol {
+    @apply mb-3 list-decimal pl-6;
+  }
+  .theory-text li {
+    @apply mb-1;
+  }
+  .theory-text strong {
+    @apply font-semibold;
+  }
+  .theory-text em {
+    @apply italic;
+  }
+  .theory-text code {
+    @apply rounded bg-surface px-1 font-mono text-body-sm;
+  }
+  .theory-text blockquote {
+    @apply my-3 border-l-4 border-surface-highlight pl-3 italic text-slate;
+  }
+  .theory-text a {
+    @apply text-primary underline;
+  }
+  .theory-text table {
+    @apply mb-4 w-full border-collapse;
+  }
+  .theory-text th {
+    @apply border border-hairline-strong bg-surface px-2 py-1 text-left font-semibold;
+  }
+  .theory-text td {
+    @apply border border-hairline-strong px-2 py-1;
+  }
+
+  /* Квадратный контрол панели: в покое без тени, отклик — тон и сжатие */
+  .icon-chip {
+    @apply inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-md
+           border border-hairline-strong bg-canvas px-2.5 text-body-sm font-medium text-slate
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft active:scale-97
+           hover:bg-surface hover:text-ink disabled:opacity-40 disabled:active:scale-100;
+  }
+
+  /* Тот же контрол во включённом состоянии */
+  .icon-chip-active {
+    @apply inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-md
+           border border-transparent bg-surface-highlight px-2.5 text-body-sm font-semibold text-ink
+           transition-[background-color,color,transform] duration-fast ease-soft active:scale-97;
+  }
+
+  /* Маркер завершённого действия: письмо отправлено, пароль сменён */
+  .state-orb {
+    @apply mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full;
+  }
+
+  /*
+   * Чат с Alex: лента прокручивается внутри, поле ввода прижато к низу.
+   * 4rem — вертикальные отступы main на десктопе; на мобильном к ним
+   * добавляется шапка с бургером (h-14). dvh вместо vh — иначе адресная
+   * строка браузера на телефоне съедает строку ввода.
+   */
+  .chat-shell {
+    height: calc(100vh - 6.5rem);
+    height: calc(100dvh - 6.5rem);
+  }
+
+  @media (min-width: 1024px) {
+    .chat-shell {
+      height: calc(100vh - 4rem);
+      height: calc(100dvh - 4rem);
+    }
+  }
+
+  /* Колонка сообщения: 80% ленты, чтобы реплика не растягала всю ленту */
+  .chat-col {
+    min-width: 0;
+    max-width: 80%;
+  }
+
+  .chat-bubble {
+    @apply whitespace-pre-wrap break-words rounded-xl px-4 py-2.5 text-body;
+  }
+
+  /* Ответ Alex — приподнятая плоскость, моя реплика — фирменный цвет */
+  .chat-bubble-in {
+    @apply chat-bubble rounded-bl-sm border border-hairline bg-canvas text-ink;
+  }
+
+  .chat-bubble-out {
+    @apply chat-bubble rounded-br-sm bg-primary text-on-primary;
+  }
+
+  /* Быстрая реплика: подставляется в поле ввода, а не отправляется сразу */
+  .chip-button {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-canvas
+           px-3 py-1.5 text-caption text-slate
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-primary active:scale-97;
+  }
+
+  /* Выбранный чип — фирменная плашка: тот же силуэт, другой смысл */
+  .chip-button-active {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary
+           px-3 py-1.5 text-caption font-medium text-on-primary
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-on-primary active:scale-97;
+  }
+
+  /* Кнопка записи: круглая, отклик — тон и пульс во время записи */
+  .mic-chip {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full
+           border border-hairline-strong bg-canvas text-slate
+           transition-[background-color,color,border-color,transform] duration-fast ease-soft
+           hover:border-primary hover:text-primary active:scale-97 disabled:opacity-60;
+  }
+
+  .mic-chip-recording {
+    @apply inline-flex h-11 w-11 shrink-0 animate-pulse items-center justify-center rounded-full
+           border border-transparent bg-semantic-error text-on-primary;
+  }
+
+  /* Табы */
+  .pill-tab {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium text-slate
+           border border-hairline hover:text-ink transition-[background-color,color,transform,box-shadow] duration-fast ease-soft;
+  }
+
+  .pill-tab-active {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-body-sm font-medium
+           bg-navy text-on-dark border border-navy;
   }
 
   /* Прогресс-бар */
   .progress-bar {
-    @apply h-2 bg-[#E7ECE4] rounded-full overflow-hidden;
+    @apply h-2 bg-hairline-soft rounded-full overflow-hidden;
   }
-  
+
   .progress-fill {
-    @apply h-full bg-[#356B52] rounded-full transition-all duration-500;
+    @apply h-full bg-primary rounded-full transition-[width] duration-slow;
+    /* Полоса «вырастает» из левого края при появлении */
+    transform-origin: left center;
+    animation: bar-grow 0.8s var(--ease-out-soft) both;
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
   }
 }
 
@@ -119,22 +1356,22 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F7F5EF;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D6D3CC;
+  background: var(--color-hairline-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C4A77D;
+  background: var(--color-steel);
 }
 
 /* Выделение текста */
 ::selection {
-  background: #EBCB75;
-  color: #20231F;
+  background: rgba(14, 124, 123, 0.2);
+  color: var(--color-ink);
 }
 
 /* Анимация курсора печатания */
@@ -143,8 +1380,21 @@
   51%, 100% { opacity: 0; }
 }
 
-.animate-pulse {
+.typing-cursor {
   animation: blink 1s infinite;
+}
+
+/* Три точки ожидания: фаза задаётся порядком в разметке, а не inline-стилем */
+.typing-dot {
+  animation: assistant-typing 1.1s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 /* === Hero: живое демо ИИ-перевода === */
@@ -152,17 +1402,18 @@
 /* Приглашающая пульсация слова */
 @keyframes hero-word-invite {
   0%, 100% {
-    background-color: rgba(235, 203, 117, 0.30);
-    box-shadow: 0 0 0 0 rgba(235, 203, 117, 0.35);
+    background-color: rgba(14, 124, 123, 0.12);
+    box-shadow: 0 0 0 0 rgba(14, 124, 123, 0.25);
   }
   50% {
-    background-color: rgba(235, 203, 117, 0.65);
-    box-shadow: 0 0 0 5px rgba(235, 203, 117, 0.18);
+    background-color: rgba(14, 124, 123, 0.28);
+    box-shadow: 0 0 0 5px rgba(14, 124, 123, 0.12);
   }
 }
 
 .hero-word-invite {
   animation: hero-word-invite 1.8s ease-in-out infinite;
+  border-radius: 4px;
 }
 
 /* Кольцо-ripple в точке касания */
@@ -263,10 +1514,10 @@
 /* Пульс свечения аватара */
 @keyframes assistant-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(53, 107, 82, 0.25);
+    box-shadow: 0 0 0 0 rgba(14, 124, 123, 0.25);
   }
   50% {
-    box-shadow: 0 0 0 14px rgba(53, 107, 82, 0);
+    box-shadow: 0 0 0 14px rgba(14, 124, 123, 0);
   }
 }
 
@@ -335,7 +1586,8 @@
   .assistant-float,
   .assistant-wave,
   .assistant-glow,
-  .assistant-typing-dot {
+  .assistant-typing-dot,
+  .typing-dot {
     animation: none !important;
   }
 
@@ -343,5 +1595,307 @@
   .assistant-message-in {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* Общий запрет анимаций интерфейса при «уменьшить анимацию» */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-pop-in,
+  .animate-page-in,
+  .stagger > *,
+  .progress-fill {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Маска строк заголовка: без анимации строка просто стоит на своём месте */
+  .mask-line > span,
+  .mask-after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * Единая деградация при «уменьшить анимацию»: все CSS-переходы и keyframes
+ * схлопываются в мгновенное состояние, содержимое остаётся видимым.
+ * Motion-анимации обрабатывает <MotionConfig reducedMotion="user">.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-rise-in,
+  .animate-pop-in,
+  .animate-fade-in,
+  .animate-page-in,
+  .stagger > *,
+  .assistant-fade-up,
+  .assistant-message-in,
+  .progress-fill {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Reader 3.0: постраничная книга.
+ *
+ * Вьюпорт неподвижен, поток внутри разложен CSS-колонками шириной в целую
+ * страницу; перелистывание — translate всего потока. Поэтому текст переносится
+ * браузером, как в книге, а не режется сервером по словам.
+ * ------------------------------------------------------------------ */
+.reader-stage {
+  --reader-desk: #e9e1d2;
+  /* Тень листа держим «под» страницей: отрицательный spread уводит её от
+     боковых кромок. Раньше гало вокруг кромки было темнее самого стола
+     (≈208 против 226 luma) и читалось как нарисованная рамка — теперь край
+     листа отделяет только контраст бумаги и стола. */
+  --reader-page-shadow: 0 20px 70px -20px rgba(48, 39, 25, 0.1), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+  background: var(--reader-desk);
+  color: var(--reader-ink);
+}
+
+.reader-stage[data-reader-theme='day'] {
+  --reader-desk: #ece9e2;
+  --reader-paper: #fcfaf5;
+  --reader-paper-deep: #f5f0e7;
+  --reader-ink: #1f1c18;
+  --reader-ink-soft: #6d655b;
+  --reader-hairline: rgba(31, 28, 24, 0.13);
+  --reader-wash: rgba(14, 124, 123, 0.09);
+  --reader-mark: #f3e6b4;
+  --reader-mark-strong: #ecd98c;
+  --reader-paper-glow: rgba(255, 255, 255, 0.65);
+}
+
+.reader-stage[data-reader-theme='sepia'] {
+  --reader-desk: #e9e1d2;
+  --reader-paper: #fbf7ed;
+  --reader-paper-deep: #f4eddf;
+  --reader-ink: #2b2620;
+  --reader-ink-soft: #6e6557;
+  --reader-hairline: rgba(43, 38, 32, 0.13);
+  --reader-wash: rgba(14, 124, 123, 0.1);
+  --reader-mark: #f5e6ae;
+  --reader-mark-strong: #ecd98c;
+  --reader-paper-glow: rgba(255, 255, 255, 0.55);
+}
+
+.reader-stage[data-reader-theme='night'] {
+  --reader-desk: #0a1118;
+  --reader-paper: #121a24;
+  --reader-paper-deep: #0e151d;
+  --reader-ink: #e6dfd2;
+  --reader-ink-soft: #a9a093;
+  --reader-hairline: rgba(230, 223, 210, 0.16);
+  --reader-wash: rgba(214, 239, 238, 0.1);
+  --reader-mark: #3a3a2a;
+  --reader-mark-strong: #55513a;
+  --reader-paper-glow: rgba(255, 255, 255, 0.04);
+}
+
+.reader-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 780px;
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: var(--reader-paper);
+  background-image:
+    radial-gradient(110% 62% at 50% -10%, var(--reader-paper-glow), transparent 64%),
+    linear-gradient(180deg, var(--reader-paper) 0%, var(--reader-paper-deep) 100%);
+  box-shadow: var(--reader-page-shadow);
+}
+
+.reader-page-pad {
+  height: 100%;
+  box-sizing: border-box;
+  /*
+   * Верхний отступ не меньше высоты постоянного хедера читалки (48px):
+   * хедер больше не прячется, и без этого запаса первая строка подходила
+   * под него вплотную.
+   */
+  padding: clamp(56px, 4.6vh, 72px) var(--reader-page-margin, 8%)
+    clamp(22px, 4.6vh, 52px);
+}
+
+.reader-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.reader-flow {
+  column-count: auto;
+  column-fill: auto;
+  column-gap: 0;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-literata), Literata, Georgia, Cambria, serif;
+  font-size: var(--reader-size, 20px);
+  line-height: var(--reader-leading, 1.8);
+  color: var(--reader-ink);
+  transform: translate3d(0, 0, 0);
+  transition: transform 220ms var(--ease-out-soft);
+  will-change: transform;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+}
+
+.reader-flow[data-reflowing='true'] {
+  transition: none !important;
+}
+
+.reader-flow ::selection {
+  background: var(--reader-mark-strong);
+  color: var(--reader-ink);
+}
+
+/* Озвучка: подсвечивается предложение, а не слово. Фон не меняет метрики
+   строки, поэтому страница не перевёрстывается под звук. */
+.reader-flow [data-listening='true'] {
+  background: var(--reader-mark);
+  color: var(--reader-ink);
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.reader-block {
+  margin: 0;
+}
+
+.reader-paragraph {
+  text-indent: 1.25em;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  orphans: 2;
+  widows: 2;
+}
+
+.reader-heading {
+  margin: 0.9em 0 0.45em;
+  font-family: var(--font-manrope), var(--font-literata), serif;
+  font-size: 1.45em;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-indent: 0;
+  break-after: avoid;
+}
+
+.reader-heading:first-child {
+  margin-top: 0;
+}
+
+.reader-heading + .reader-paragraph {
+  text-indent: 0;
+}
+
+.reader-quote {
+  margin: 0.8em 0;
+  padding-left: 1.15em;
+  border-left: 2px solid var(--reader-hairline);
+  font-style: italic;
+  color: var(--reader-ink-soft);
+  break-inside: avoid;
+}
+
+.reader-list-item {
+  padding-left: 1.25em;
+  text-indent: 0;
+  text-align: left;
+  hyphens: none;
+  break-inside: avoid;
+}
+
+.reader-list-item::before {
+  content: '·';
+  display: inline-block;
+  width: 1.25em;
+  margin-left: -1.25em;
+  color: var(--reader-ink-soft);
+}
+
+.reader-verse {
+  margin: 0.7em 0;
+  white-space: pre-wrap;
+  text-indent: 0;
+  text-align: left;
+  hyphens: none;
+  font-style: italic;
+  break-inside: avoid;
+}
+
+.reader-figure {
+  margin: 1em 0;
+  break-inside: avoid;
+}
+
+.reader-figure img {
+  display: block;
+  width: 100%;
+  max-height: 52vh;
+  object-fit: contain;
+  border-radius: 2px;
+  background: var(--reader-paper-deep);
+}
+
+.reader-figcaption {
+  margin-top: 0.45em;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.78em;
+  line-height: 1.45;
+  color: var(--reader-ink-soft);
+  text-align: center;
+}
+
+.reader-separator {
+  width: 28%;
+  margin: 1.4em auto;
+  border: 0;
+  border-top: 1px solid var(--reader-hairline);
+}
+
+/* Раньше здесь жил 18px градиент у правого края .reader-viewport. Вьюпорт —
+   это и есть текстовая колонка, поэтому градиент ложился поверх последних
+   18px каждой строки: справа текст темнел, а на его кромке оставался резкий
+   перепад (≈12 luma на один пиксель) — «страница обрезана справа». Плюс правое
+   поле выглядело уже левого. Тень листа теперь живёт только на .reader-sheet. */
+
+@media (max-width: 639px) {
+  .reader-sheet {
+    max-width: none;
+    box-shadow: none;
+  }
+
+  .reader-flow {
+    text-align: left;
+  }
+
+  .reader-paragraph {
+    text-align: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reader-flow {
+    transition: none !important;
   }
 }

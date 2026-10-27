@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Рабочий лист — Alice's Adventures in Wonderland, глава I — Lexicon</title>
+<style>
+  /* Печатный рабочий лист, 2 страницы A4. Только системные шрифты, без внешних зависимостей. */
+  @page {
+    size: A4;
+    margin: 14mm 15mm;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #e8e8e6;
+    color: #1c1c1c;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  .sheet {
+    width: 180mm;
+    margin: 24px auto;
+    padding: 14mm 15mm;
+    background: #fff;
+    box-shadow: 0 2px 14px rgba(0,0,0,.18);
+  }
+
+  h1 {
+    font-size: 15pt;
+    margin: 0 0 2mm;
+    line-height: 1.25;
+  }
+  h2 {
+    font-size: 12pt;
+    margin: 5mm 0 2mm;
+    padding-bottom: 1mm;
+    border-bottom: 1.5px solid #1c1c1c;
+  }
+  p { margin: 0 0 2mm; }
+  ol, ul { margin: 0 0 2mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 4mm;
+    font-size: 9.5pt;
+    color: #444;
+    margin-bottom: 3mm;
+    flex-wrap: wrap;
+  }
+
+  .byline { font-size: 9pt; color: #555; margin-bottom: 4mm; }
+
+  .fill {
+    display: flex;
+    gap: 8mm;
+    margin: 0 0 4mm;
+    font-size: 10.5pt;
+  }
+  .fill span { white-space: nowrap; }
+  .fill i {
+    display: inline-block;
+    width: 42mm;
+    border-bottom: 1px solid #999;
+    height: 1em;
+    vertical-align: -2px;
+  }
+  .fill .short i { width: 22mm; }
+
+  .excerpt {
+    font-family: Georgia, "Times New Roman", "PT Serif", serif;
+    font-size: 11.5pt;
+    line-height: 1.5;
+    border: 1px solid #bbb;
+    border-left: 3px solid #1c1c1c;
+    padding: 4mm 5mm;
+    margin: 0 0 3mm;
+    background: #fbfbf9;
+  }
+  .excerpt p { margin: 0 0 2mm; text-indent: 0; }
+  .excerpt p:last-child { margin-bottom: 0; }
+  .excerpt-src { font-size: 8.5pt; color: #555; font-style: italic; margin: 0 0 4mm; }
+
+  table { border-collapse: collapse; width: 100%; margin: 0 0 3mm; }
+  th, td { border: 1px solid #999; padding: 1.4mm 2mm; text-align: left; vertical-align: top; }
+  th { background: #efefed; font-size: 9.5pt; }
+  td.num { width: 7mm; text-align: center; color: #555; }
+  td.word { font-weight: 600; width: 28mm; }
+  td.ipa { width: 34mm; font-family: "Segoe UI", Arial, sans-serif; }
+  .vocab td { font-size: 10pt; }
+
+  .task { margin-bottom: 4mm; }
+  .task h3 { font-size: 10.5pt; margin: 3mm 0 1.5mm; }
+
+  .tf td, .tf th { font-size: 9.5pt; }
+  .tf td.mark { text-align: center; width: 24mm; color: #777; }
+
+  .order li { font-family: Georgia, "Times New Roman", serif; margin-bottom: 1.8mm; }
+  .order i {
+    display: inline-block;
+    width: 8mm;
+    border: 1px solid #999;
+    height: 4.2mm;
+    margin-right: 2.5mm;
+    vertical-align: middle;
+  }
+
+  .writeline {
+    border-bottom: 1px dotted #888;
+    height: 7mm;
+    margin-bottom: 1mm;
+  }
+
+  .match td { font-size: 10pt; }
+  .match td.blank { width: 12mm; background: #f4f4f2; }
+
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 9mm;
+    margin-bottom: 2mm;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0.3mm;
+    width: 6mm; height: 6mm;
+    border: 1.4px solid #1c1c1c;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 9pt;
+    line-height: 5.6mm;
+    font-weight: 700;
+  }
+
+  .note {
+    font-size: 9.5pt;
+    background: #f2f4f3;
+    border-left: 3px solid #6f7f7a;
+    padding: 2.5mm 3.5mm;
+    margin: 0 0 3mm;
+  }
+
+  .footer {
+    margin-top: 5mm;
+    padding-top: 2.5mm;
+    border-top: 1px solid #bbb;
+    font-size: 8.5pt;
+    color: #555;
+  }
+
+  .answer-key { display: none; }
+
+  @media print {
+    html, body { background: #fff; }
+    .sheet {
+      width: auto;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+      page-break-after: always;
+    }
+    .sheet:last-of-type { page-break-after: auto; }
+    .excerpt { background: #fff; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- СТРАНИЦА 1 -->
+<div class="sheet">
+  <div class="meta">
+    <span><b>Lexicon</b> · рабочий лист к книге</span>
+    <span>Уровень A2–B1 · 2 страницы A4</span>
+  </div>
+
+  <h1>Alice's Adventures in Wonderland · Глава I «Down the Rabbit-Hole»</h1>
+  <p class="byline">Lewis Carroll, текст в общественном достоянии (Project&nbsp;Gutenberg, Millennium Fulcrum Edition&nbsp;3.0). Работаем с началом главы: фрагмент 1–4-го абзацев, пропуск внутри главы помечен&nbsp;[…].</p>
+
+  <div class="fill">
+    <span>Имя: <i></i></span>
+    <span class="short">Класс/группа: <i></i></span>
+    <span class="short">Дата: <i></i></span>
+  </div>
+
+  <h2>1. Перед чтением (2–3 минуты)</h2>
+  <p>Ответьте письменно, до того как прочитаете текст.</p>
+  <ol>
+    <li>О чём, как вы думаете, будет глава с названием «Down the Rabbit-Hole» («В кроличью нору»)?
+      <div class="writeline"></div><div class="writeline"></div></li>
+    <li>Пробовали ли вы читать книгу на английском в оригинале и бросили? Где обычно происходит «бросил»?
+      <div class="writeline"></div><div class="writeline"></div></li>
+    <li>Первое слово фрагмента: «Alice was beginning to get very tired…». Алисе скучно или весело? Почему, судя по первому же предложению, она скучает?
+      <div class="writeline"></div><div class="writeline"></div></li>
+  </ol>
+
+  <h2>2. Фрагмент главы I</h2>
+  <div class="excerpt">
+    <p>Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, “and what is the use of a book,” thought Alice “without pictures or conversations?”</p>
+    <p>So she was considering in her own mind (as well as she could, for the hot day made her feel very sleepy and stupid), whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her.</p>
+    <p>There was nothing so very remarkable in that; nor did Alice think it so very much out of the way to hear the Rabbit say to itself, “Oh dear! Oh dear! I shall be late!” […] but when the Rabbit actually took a watch out of its waistcoat-pocket, and looked at it, and then hurried on, Alice started to her feet, for it flashed across her mind that she had never before seen a rabbit with either a waistcoat-pocket, or a watch to take out of it, and burning with curiosity, she ran across the field after it, and fortunately was just in time to see it pop down a large rabbit-hole under the hedge.</p>
+    <p>In another moment down went Alice after it, never once considering how in the world she was to get out again.</p>
+  </div>
+  <p class="excerpt-src">Читать глазами, без словаря и перевода: непонятное слово подчеркнуть карандашом — вернёмся к нему в разделе 3.</p>
+
+  <h2>3. Слова из фрагмента</h2>
+  <p style="font-size:9.5pt;color:#444;margin-bottom:2mm">Переводы — прямые значения в этом контексте (в Lexicon клик по слову даёт тот же перевод и может предложить варианты). Транскрипция — словарная, британский вариант; в самом приложении транскрипции нет, слово озвучивается кнопкой-динамиком.</p>
+  <table class="vocab">
+    <tr><th>#</th><th>Слово</th><th>Транскрипция</th><th>Перевод</th></tr>
+    <tr><td class="num">1</td><td class="word">bank</td><td class="ipa">/bæŋk/</td><td>берег реки</td></tr>
+    <tr><td class="num">2</td><td class="word">peep</td><td class="ipa">/piːp/</td><td>мельком посмотреть, заглянуть</td></tr>
+    <tr><td class="num">3</td><td class="word">daisy</td><td class="ipa">/ˈdeɪzi/</td><td>маргаритка (daisy-chain — цепочка из маргариток)</td></tr>
+    <tr><td class="num">4</td><td class="word">(be) worth</td><td class="ipa">/wɜːθ/</td><td>сто́ить (делать что-то)</td></tr>
+    <tr><td class="num">5</td><td class="word">remarkable</td><td class="ipa">/rɪˈmɑːkəbl/</td><td>замечательный, необычный</td></tr>
+    <tr><td class="num">6</td><td class="word">waistcoat</td><td class="ipa">/ˈweskoʊt/</td><td>жилет</td></tr>
+    <tr><td class="num">7</td><td class="word">start</td><td class="ipa">/stɑːt/</td><td>вздрогнуть, резко вскочить (от неожиданности)</td></tr>
+    <tr><td class="num">8</td><td class="word">flash</td><td class="ipa">/flæʃ/</td><td>мелькнуть (о мысли)</td></tr>
+    <tr><td class="num">9</td><td class="word">curiosity</td><td class="ipa">/ˌkjʊəriˈɒsəti/</td><td>любопытство</td></tr>
+    <tr><td class="num">10</td><td class="word">hurry</td><td class="ipa">/ˈhʌri/</td><td>спешить</td></tr>
+    <tr><td class="num">11</td><td class="word">rabbit-hole</td><td class="ipa">/ˈræbɪthəʊl/</td><td>кроличья нора</td></tr>
+    <tr><td class="num">12</td><td class="word">hedge</td><td class="ipa">/hedʒ/</td><td>живая изгородь</td></tr>
+  </table>
+
+  <div class="footer">Продолжение на странице 2 · Условия беты: бесплатно, без карты · два коротких ответа за 14 дней (первый — кнопка в читалке) · [ССЫЛКА]</div>
+</div>
+
+<!-- СТРАНИЦА 2 -->
+<div class="sheet">
+  <div class="meta">
+    <span><b>Lexicon</b> · рабочий лист, страница 2</span>
+    <span>Alice. Chapter I «Down the Rabbit-Hole»</span>
+  </div>
+
+  <h2>4. Работа с текстом</h2>
+
+  <div class="task">
+    <h3>Задание A. Верно / неверно / в тексте не сказано — обведите один вариант</h3>
+    <table class="tf">
+      <tr><th>Утверждение</th><th style="text-align:center">В</th><th style="text-align:center">Н</th><th style="text-align:center">Не&nbsp;сказано</th></tr>
+      <tr><td>1. У книги, которую читает сестра, много картинок.</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td></tr>
+      <tr><td>2. Был жаркий день.</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td></tr>
+      <tr><td>3. Алиса сделала цепочку из маргариток.</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td></tr>
+      <tr><td>4. Кролик достал часы из кармана жилета.</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td></tr>
+      <tr><td>5. Перед прыжком в нору Алиса подумала, как будет выбираться обратно.</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td><td class="mark">✓ / ✗</td></tr>
+    </table>
+  </div>
+
+  <div class="task">
+    <h3>Задание B. Расставьте события в порядке появления в тексте (1–5)</h3>
+    <ul class="order" style="list-style:none;padding-left:0">
+      <li><i></i> Alice jumped down the hole after the Rabbit.</li>
+      <li><i></i> Alice sat by her sister and had nothing to do.</li>
+      <li><i></i> The Rabbit took a watch out of its waistcoat-pocket.</li>
+      <li><i></i> A White Rabbit with pink eyes ran close by Alice.</li>
+      <li><i></i> Alice ran across the field to the hedge.</li>
+    </ul>
+  </div>
+
+  <div class="task">
+    <h3>Задание C. Ответьте по-английски, одним-двумя предложениями</h3>
+    <ol>
+      <li>Why did Alice not like her sister’s book?
+        <div class="writeline"></div><div class="writeline"></div></li>
+      <li>What was so unusual about the Rabbit that Alice started to her feet?
+        <div class="writeline"></div><div class="writeline"></div></li>
+      <li>What did Alice forget to think about when she was falling down?
+        <div class="writeline"></div><div class="writeline"></div></li>
+    </ol>
+  </div>
+
+  <div class="task">
+    <h3>Задание D. Соедините слово и определение линией</h3>
+    <table class="match">
+      <tr><th>Слово</th><th></th><th>Определение</th></tr>
+      <tr><td class="word">1. hedge</td><td class="blank"></td><td>a. a hole in the ground where a rabbit lives</td></tr>
+      <tr><td class="word">2. curiosity</td><td class="blank"></td><td>b. unusual and surprising</td></tr>
+      <tr><td class="word">3. rabbit-hole</td><td class="blank"></td><td>c. a line of bushes around a field or garden</td></tr>
+      <tr><td class="word">4. remarkable</td><td class="blank"></td><td>d. a sleeveless piece of clothing worn under a jacket</td></tr>
+      <tr><td class="word">5. waistcoat</td><td class="blank"></td><td>e. a strong wish to know or learn something</td></tr>
+    </table>
+  </div>
+
+  <h2>5. После чтения: вернуться два раза</h2>
+  <p>Смысл листа не в том, чтобы выучить 12 слов сегодня, а в том, чтобы вернуться к ним, пока они не выветрились.</p>
+  <p><b>Завтра (1-й день, ~4 минуты).</b> Закройте колонку «Перевод» в разделе 3. Напишите по-русски значение всех 12 слов по памяти. Проверьте, промахнувшиеся отметьте «+» слева от номера.</p>
+  <p><b>Через 3 дня (3-й день, ~6 минут).</b> Сначала проверьте только слова с «+», потом все 12 снова. Затем напишите 3 своих предложения по-английски с любыми тремя словами из списка.</p>
+  <div class="writeline"></div><div class="writeline"></div><div class="writeline"></div>
+
+  <h2>6. Как это же сделать в Lexicon</h2>
+  <ol class="steps">
+    <li>Откройте <b>[ССЫЛКА]</b> и на первом экране нажмите «Пройти тест на уровень»: 16 вопросов, 3–5&nbsp;минут, регистрация не нужна — тест покажет уровень (A1–C1) и ничего не сохранит.</li>
+    <li>Зарегистрируйтесь: имя, email, пароль. Карта не нужна, доступ на бете бесплатный.</li>
+    <li>В «Библиотеке» откройте <i>Alice's Adventures in Wonderland</i>, глава I. Кликайте незнакомые слова: в панели появятся перевод, часть речи и примеры, кнопка-динамик озвучит слово. Узнали — «Уже знаю», учите — «В словарь». Свой текст можно загрузить в формате EPUB.</li>
+    <li>Завтра в разделе «Повторение» слова вернутся карточками с кнопками «Не знаю / Трудно / Хорошо / Легко». Интервалы сервис считает сам: вспомнил — следующий показ примерно через день, потом через 6&nbsp;дней и дальше растёт; не вспомнил — слово вернётся через 10&nbsp;минут. То, что вы делали линейкой в разделе 5, здесь происходит автоматически.</li>
+  </ol>
+
+  <div class="note">
+    <b>Для учителя.</b> Ответы к заданию A: 1 — Н, 2 — В, 3 — Не сказано, 4 — В, 5 — Н.
+    Задание B: 4, 1, 3, 2, 5. Задание D: 1-c, 2-e, 3-a, 4-b, 5-d.
+  </div>
+
+  <div class="footer">Lexicon · закрытая бета · бесплатно, без карты · два коротких ответа за 14 дней (первый — одна кнопка в читалке, не анкета) · [ССЫЛКА] · Текст главы — общественное достояние (Project Gutenberg).</div>
+</div>
+
+</body>
+</html>

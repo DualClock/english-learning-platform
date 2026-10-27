@@ -1,81 +1,185 @@
-# Деплой Lexicon — пошаговая инструкция (бесплатно)
+# Деплой Lexicon — реальная архитектура
 
-Три бесплатных сервиса: **Neon** (база данных) → **Render** (API) → **Vercel** (сайт).
-Общее время: ~30 минут. Нужен только аккаунт GitHub (у тебя уже есть).
+**Этот документ описывает то, что действительно работает.**
+Прежняя версия описывала Neon → Render → Vercel. Этой инфраструктуры **не существует**:
+боевой сервер — VPS с `systemd` и `nginx`, API и фронт живут на одной машине, база — там же.
+Файл `render.yaml` (Render free) удалён: он описывал инфраструктуру, которой не существует.
 
----
-
-## Шаг 1. База данных — Neon (5 минут)
-
-1. Открой https://neon.tech → **Sign up with GitHub**.
-2. При создании проекта: имя `lexicon`, регион выбери ближе к тестерам (Frankfurt/Amsterdam).
-3. После создания открой **Dashboard → Connection string → скопируй** строку вида:
-   `postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`
-4. **Пришли мне эту строку** (или вставь сам в шаг 2) — она пойдёт в переменную `ConnectionStrings__DefaultConnection` на Render.
-
-Миграции я применю сам после того, как строка будет на месте.
+Всё, что помечено **НЕ ПРОВЕРЕНО**, нельзя установить из репозитория. Не верьте такой
+строке на слово — там указано, как её проверить.
 
 ---
 
-## Шаг 2. API — Render (10 минут)
+## 0. Что где
 
-1. Открой https://dashboard.render.com → **Sign in with GitHub**.
-2. **New → Blueprint** → выбери репозиторий `DualClock/english-learning-platform` → Apply.
-   (Blueprint возьмёт `render.yaml` из корня — сервис `lexicon-api` создастся сам.)
-3. Если Blueprint недоступен: **New → Web Service → выбери репозиторий**:
-   - Runtime: **Docker**
-   - Dockerfile Path: `./EnglishLearningPlatform.API/Dockerfile`
-   - Docker Context: `./`
-   - Instance Type: **Free**
-4. Заполни переменные окружения (Environment):
+| Слой | Технология | Где живёт |
+|---|---|---|
+| API | ASP.NET Core, self-contained publish | VPS, `systemd`-юнит `lexicon-api` |
+| БД | PostgreSQL | тот же VPS |
+| Фронт | Next.js 14, `next start` | тот же VPS, `systemd`-юнит `lexicon-frontend` |
+| TLS | nginx + Let's Encrypt | тот же VPS |
+
+Конфигурация nginx и systemd-юнитов **в репозитории отсутствует** — одна из причин,
+по которой деплой невоспроизводим. Нужны `deploy/nginx/` и `deploy/systemd/` с
+санитизированными шаблонами (без значений секретов).
+
+**НЕ ПРОВЕРЕНО:** точные имена юнитов и пути. Из `docs/beta-launch/KNOWN_GAPS.md`
+известны `/etc/systemd/system/lexicon-api.service` и дроп-ины
+`…service.d/{feedback,proxy,prod-runtime}.conf`. Проверить: `systemctl list-units 'lexicon*' --all`.
+
+---
+
+## 1. Переменные окружения API
+
+Значения **не** задаются в юните — только через `EnvironmentFile` (см.
+`docs/execution/SECRET_ROTATION.md`).
+
+| Переменная | Значение | Зачем |
+|---|---|---|
+| `ASPNETCORE_ENVIRONMENT` | `Production` | иначе dev-поведение: креды из `appsettings.Development.json`, подробные ошибки |
+| `ConnectionStrings__DefaultConnection` | строка Postgres | без неё стартует на дефолте `localhost:5433` и отдаёт 503 |
+| `Jwt__Key` | ≥ 64 символа | подписывает access и refresh; слабый ключ = подделка любого аккаунта |
+| `Jwt__Issuer` / `Jwt__Audience` | `EnglishLearningPlatform` / `…Users` | сверка токена |
+| `Gemini__ApiKey` | ключ Gemini | разбор ошибок, ассистент, перевод по контексту, TTS |
+| `Gemini__ProxyUrl` | прокси, если регион не поддерживается | пусто = напрямую |
+| `Gemini__Model` | `gemini-2.5-flash` | — |
+| `Azure__Speech__Key` / `Region` / `Voice` | ключ Azure, `westeurope`, `en-US-AriaNeural` | озвучка глав; пусто = голос браузера |
+| `Azure__Speech__MonthlyCharLimit` | `400000` | **потолок 400k символов в месяц на весь сервис ≈ 16,7 минут аудио в сутки.** Поднять до реального AP-плана или перейти на предгенерацию по главам |
+| `Seeder__Key` | секрет | доступ к сидированию |
+| `Feedback__AdminKey` | секрет | доступ к `/admin/feedback` |
+| `Analytics__GuestIpSalt` | ≥ 16 символов | соль хеша IP гостевой воронки; пусто = случайный ключ процесса, «уникальные гости за сутки» не сходятся между рестартами |
+| `Analytics__GuestRetentionDays` | `30` | срок хранения гостевых событий; `0`/мусор не отключают чистку, а дают 30 |
+| `Proxy__TrustedCidrs` | `127.0.0.1/32` | **без этого все лимиты партицируются по адресу прокси: один клиент блокирует всю бету.** При старте пишется WRN «задайте Proxy__TrustedCidrs» |
+| `Registration__DailyGlobalLimit` | `500` | суточный кап регистраций на сервис |
+| `Ai__GlobalDailyRequestLimit` | `2000` | дневной бюджет обращений к Gemini на сервис |
+| `Ai__PerMinuteUserRequestLimit` | `30` | burst-тормоз на аккаунт |
+| `Email__Smtp__{Host,Port,User,Password}` | SMTP | **без транспорта нет ни сброса пароля, ни подтверждения почты.** Сейчас на сервере SMTP нет — это блокер первого публичного трафика |
+| `Email__From` | адрес отправителя | валидный `no-reply@lexicon.local` проходит проверку на абсолютность и молча ломает письма |
+| `App__FrontendUrl` | боевой адрес | дефолт `http://localhost:3000` тоже «абсолютный» — проверка старта его пропускает |
+| `Cors__Origins` | боевой домен | пусто = только `localhost:3000`, фронт не заработает |
+
+> **SMTP обязателен.** Сброс пароля и подтверждение email работают только через письма:
+> токен в ответе API не отдаётся ни в Development, ни в Production. Если
+> `Email__Smtp__Host` пуст, письма остаются в журнале (`/api/notifications/outbox`).
+
+### Лимиты и доверие прокси
+
+`RemoteIpAddress` у всех запросов — адрес nginx, а не клиента. Пока прокси не описан в
+`Proxy__TrustedCidrs`, `X-Forwarded-For` игнорируется, и **все** IP-лимиты делят одну
+корзину на всю бету. При старте пишется WARNING «лимиты партицируются по IP прокси».
+
+| Лимит | Значение | Где задаётся |
+|---|---|---|
+| Регистрации на один email | 5 / час | `RateLimitPolicies.SignupEmailPermitLimit` |
+| Регистрации на один IP | 50 / час | `RateLimitPolicies.SignupIpPermitLimit` |
+| Регистраций в сутки на сервис | 500 | `Registration__DailyGlobalLimit` |
+| Обращений к Gemini в сутки | 2000 | `Ai__GlobalDailyRequestLimit` |
+| Вход на связку IP+email | 10 / мин | политика `auth` |
+| Админ-эндпоинты | 10 / 5 мин | политика `admin` |
+| Гостевые события `/test` | 20 / мин на IP | политика `guest-analytics` |
+
+> **Обратная связь беты.** Форма шлёт отзыв на `Feedback__ToEmail` (по умолчанию
+> `kompasmini@yandex.com`). Копия всегда сохраняется в `EmailMessages` с `Kind = "feedback"`,
+> поэтому отзыв не теряется даже при сбое SMTP. Все отзывы — на `/admin/feedback`,
+> страница попросит `Feedback__AdminKey` (отдельно от `Seeder__Key`).
+
+## 2. Переменные окружения фронта
 
 | Переменная | Значение |
 |---|---|
-| `ASPNETCORE_ENVIRONMENT` | `Production` |
-| `Cors__Origins` | домен Vercel из шага 3 (например `https://lexicon-xxx.vercel.app`) |
-| `ConnectionStrings__DefaultConnection` | строка из Neon |
-| `Jwt__Key` | `q9-vgVrOrN6xM41_AaeRX8m4Cm65kF2eb7YaTPJGR2NKKG0sPJcuXNdr00gjNsTH` |
-| `Jwt__Issuer` | `EnglishLearningPlatform` |
-| `Jwt__Audience` | `EnglishLearningPlatform.Users` |
-| `Gemini__ApiKey` | ключ Gemini из appsettings (возьми локально) |
-| `Gemini__ProxyUrl` | **оставь пустым** — с серверов Render Gemini доступен напрямую |
-| `Gemini__Model` | `gemini-2.5-flash` |
-| `Seeder__Key` | любой секрет, напр. `lexicon-seed-2026` |
-
-5. Deploy. Через 5-10 минут API поднимется на `https://lexicon-api.onrender.com`.
-   Проверка: открой `https://lexicon-api.onrender.com/health` → `{"status":"ok"}`.
-
-⚠️ Free-инстанс **засыпает после 15 минут** без запросов; первый запрос после сна занимает ~1 минуту. Для одного тестера — норм.
+| `NEXT_PUBLIC_API_URL` | `http://127.0.0.1:<порт API>` — **не публичный адрес**: он нужен только серверным route-handler'ам, браузер ходит на `/api/next/*` своего origin |
+| `NEXT_PUBLIC_SITE_URL` | боевой адрес без завершающего слэша: от него строятся `metadataBase`, OG, `sitemap.xml`, `robots.txt` |
+| `NEXTAUTH_URL` | боевой адрес |
+| `NEXTAUTH_SECRET` | ≥ 64 символа из `scripts/generate-secrets.sh` |
 
 ---
 
-## Шаг 3. Сайт — Vercel (10 минут)
+## 3. Порядок деплоя
 
-1. Открой https://vercel.com → **Continue with GitHub**.
-2. **Add New → Project** → импортируй `DualClock/english-learning-platform`.
-3. **Root Directory**: `frontend`. Framework: Next.js (определится сам).
-4. Environment Variables:
+Порядок обязателен: **сначала БД, потом API, потом фронт**. Новый API без применённых
+миграций падает на первом INSERT в регистрацию — так случился инцидент, когда из 30
+миграций были применены 27, а `/health` при этом показывал зелёный (он проверяет
+`CanConnectAsync`, а не схему).
 
-| Переменная | Значение |
-|---|---|
-| `NEXT_PUBLIC_API_URL` | `https://lexicon-api.onrender.com` (адрес API из шага 2) |
-| `NEXTAUTH_URL` | адрес сайта Vercel (например `https://english-learning-platform-xxx.vercel.app`) |
-| `NEXTAUTH_SECRET` | `3DJcV4HSPmf09HxZ0TFAjSQu1nNOsAh7UVkkAcq85mY` |
+### Шаг 1. Бэкап и миграции
 
-5. Deploy. Сайт поднимется на `https://....vercel.app`.
+```bash
+cd /opt/lexicon
+export ConnectionStrings__DefaultConnection='<строка подключения>'
+bash deploy/apply-migrations.sh
+```
+
+Скрипт: `pg_dump -Fc` в `backups/predeploy-<дата-время>.dump` → **до** любой миграции;
+затем `dotnet ef database update --no-build`; затем печатает список применённых миграций
+и падает, если хоть одна из кода осталась неприменённой.
+
+### Шаг 2. Проверить, что бэкап восстанавливается
+
+```bash
+bash deploy/restore-check.sh backups/predeploy-<дата>.dump
+```
+
+Скрипт разворачивает дамп в **отдельную** БД `lexicon_restore_check`, считает строки в
+`AspNetUsers`, `Books`, `WordLevels`, `UserWords`, печатает результат и удаляет временную
+БД. «Бэкап есть» без этого шага — не бэкап, а надежда.
+
+### Шаг 3. API
+
+```bash
+sudo systemctl restart lexicon-api
+sudo systemctl is-active lexicon-api
+curl -fsS http://127.0.0.1:5226/health
+curl -fsS http://127.0.0.1:5226/api/catalog/books | head -c 300
+```
+
+Второй `curl` обязателен: `/health` не знает про схему.
+
+### Шаг 4. Фронт
+
+**НЕ ПРОВЕРЕНО:** собирается ли фронт в юните или вручную. Из
+`.workbuddy-ai/memory/MEMORY.md` известно, что сборка идёт на сервере с 886 МБ RAM и
+2 ГБ swap. Проверить: `systemctl cat lexicon-frontend`.
+
+```bash
+sudo systemctl restart lexicon-frontend
+curl -fsS -o /dev/null -w '%{http_code}\n' https://<домен>/
+```
+
+### Шаг 5. Смок живого продукта
+
+Не «страница открылась», а «продукт работает». Ручной прогон в браузере:
+войти → открыть главу → кликнуть слово → увидеть перевод → ответить на карточку в
+`/review`. Это и есть критерий «деплой удался», а не зелёный `/health`.
 
 ---
 
-## Шаг 4. Финал (я сделаю сам, когда пришлёшь строки)
+## 4. Откат
 
-1. Применю миграции и залью контент (грамматика/слова/рассказы) в Neon.
-2. Обновлю `Cors__Origins` на Render доменом Vercel → redeploy.
-3. Живая проверка: регистрация → первый урок → читалка → Alex.
+Прод собирается **не из коммита**, а архивом (`tar` → `rsync`), поэтому `git revert`
+невозможен. Пока это так, единственный откат — вернуть предыдущий бинарь/`.next` из
+каталога прошлого деплоя и восстановить дамп, снятый на шаге 1.
+
+**Это дыра, а не процедура.** Закрывается деплоем по SHA (сборка в CI, артефакт привязан
+к коммиту) — задача следующего цикла, а не этого.
 
 ---
 
-## Важные ограничения бесплатного тарифа
+## 5. Бэкапы
 
-- **API засыпает** через 15 мин простоя (первый запрос ~1 мин). Лечится бесплатным пингером (UptimeRobot каждые 10 мин) — настроим после деплоя.
-- **Файлы эфемерны**: при рестарте Render загруженные пользователем EPUB пропадают (рассказы и обложки пересоздаются автоматически). Для беты — ок.
-- **Neon**: 0.5 ГБ — для беты хватает с запасом.
+| Что | Чем | Куда |
+|---|---|---|
+| БД | `pg_dump -Fc` | `/opt/lexicon/backups/` **и** вне VPS |
+
+Второго места сейчас нет: БД, `uploads/`, TTS-кэш и сами бэкапы лежат на одном диске.
+Потеря диска = потеря всего одновременно.
+
+**Не сделано:** ежедневный `systemd`-таймер для `pg_dump`, выгрузка в S3-совместимое
+хранилище. Оба — Must Have до реальных пользователей на сервере.
+
+---
+
+## 6. Чего в этом документе больше нет
+
+Удалены как вводящие в заблуждение: инструкции Neon/Render/Vercel, `plan: free`,
+«инстанс засыпает через 15 минут», «файлы эфемерны», «миграции применю я». Ни одно из
+этих утверждений не описывает боевую систему.

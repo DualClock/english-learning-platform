@@ -1,73 +1,217 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, useCallback } from 'react';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import { useTrack } from '@/app/lib/analytics';
-import { useSpeech } from '@/hooks/useSpeech';
+import { useTts } from '@/hooks/useTts';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
+import { pluralWords } from '@/lib/plural';
+import { formatNextInterval, LEECH_THRESHOLD, pluralRu } from '@/lib/srs-buckets';
+import { formatNumber } from '@/lib/format';
+import { slideVariants, variants } from '@/lib/motion';
+import Button from '@/components/ui/Button';
+import WordVisual from '@/components/dictionary/WordVisual';
+import ErrorState from '@/components/ui/ErrorState';
+import Notice from '@/components/ui/Notice';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { Tag } from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { ArrowLeftIcon, SpinnerIcon, VolumeIcon } from '@/components/ui/icons';
 
 interface Word {
   wordId: number;
   text: string;
+  emoji?: string | null;
+  imageUrl?: string | null;
   definitions: {
     definition: string;
     partOfSpeech?: string;
     example?: string;
   }[];
+  isNew?: boolean;
+  isLeech?: boolean;
+  interval?: number;
+  intervalMinutes?: number;
+  repetitionCount?: number;
+  lapses?: number;
+}
+
+interface ReviewTodayResponse {
+  totalCount?: number;
+  reviewCount?: number;
+  newCount?: number;
+  words?: Word[];
+}
+
+interface ReviewResponse {
+  undoToken?: string;
+  xpEarned?: number;
+}
+
+interface AnswerRecord {
+  index: number;
+  wordId: number;
+  quality: number;
+  undoToken: string;
+  xpEarned: number;
+}
+
+const QUALITY = [
+  {
+    value: 1,
+    key: '1',
+    label: 'Не знаю',
+    className: 'bg-surface-danger text-on-danger hover:bg-semantic-error hover:text-on-primary',
+  },
+  {
+    value: 3,
+    key: '2',
+    label: 'Трудно',
+    className: 'bg-surface-warning text-on-warning hover:bg-surface-highlight',
+  },
+  {
+    value: 4,
+    key: '3',
+    label: 'Хорошо',
+    className: 'bg-surface-success text-on-success hover:bg-semantic-success hover:text-on-primary',
+  },
+  {
+    value: 5,
+    key: '4',
+    label: 'Легко',
+    className: 'bg-primary text-on-primary hover:bg-primary-pressed',
+  },
+];
+
+/**
+ * «Почему это слово сегодня» — одна строка под карточкой.
+ * Интервал, который вернёт следующий ответ, уже пришёл от API (`/api/review/today`
+ * отдаёт interval/intervalMinutes/repetitionCount), но раньше не показывался:
+ * человек не видел, что оценка меняет расписание. Срыв показываем отдельно —
+ * он объясняет, почему слово часто возвращается, даже если оценка «хорошо».
+ */
+function whyToday(word: Word): string | null {
+  const lapses = word.lapses ?? 0;
+  if (lapses >= LEECH_THRESHOLD) {
+    return `Трудное слово: ${lapses} ${pluralRu(lapses, ['срыв', 'срыва', 'срывов'])} — вернётся через день-два.`;
+  }
+  const intervalMinutes = word.intervalMinutes ?? 0;
+  const interval = word.interval ?? 0;
+  if (intervalMinutes === 0 && interval === 0) return null;
+
+  const repetitions = word.repetitionCount ?? 0;
+  const show = formatNextInterval(interval, intervalMinutes);
+  if (repetitions <= 1) return `После первого ответа вернётся ${show}.`;
+  return `Следующий показ — ${show}, интервал уже вырос до ${formatIntervalDays(interval, intervalMinutes)}.`;
+}
+
+/** Один и тот же срок словами: «10 минут», «1 день», «15 дней». */
+function formatIntervalDays(intervalDays: number, intervalMinutes: number): string {
+  if (intervalMinutes > 0) {
+    return `${intervalMinutes} ${pluralRu(intervalMinutes, ['минута', 'минуты', 'минут'])}`;
+  }
+  const days = Math.max(1, Math.round(intervalDays));
+  return `${days} ${pluralRu(days, ['день', 'дня', 'дней'])}`;
+}
+
+/** Общая рамка фокусной сессии: тихая шапка и одна колонка по центру. */
+function ReviewShell({ children }: { children: React.ReactNode }) {
+  return (
+    <AppLayout immersive>
+      <div className="min-h-[100dvh] bg-surface">
+        <header className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between px-4 sm:px-6">
+          <Link href="/dictionary" className="icon-chip" aria-label="К словарю">
+            <ArrowLeftIcon size={20} />
+          </Link>
+          <span className="text-caption font-semibold uppercase tracking-[0.16em] text-slate">
+            Повторение
+          </span>
+          <span className="h-10 w-10" aria-hidden="true" />
+        </header>
+        <main className="mx-auto w-full max-w-2xl px-4 pb-12 sm:px-6">{children}</main>
+      </div>
+    </AppLayout>
+  );
 }
 
 export default function ReviewPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const trackEvent = useTrack();
-  const { speak } = useSpeech();
-  
+  const { speak, isLoading: isSpeakingLoading } = useTts();
+
+  const { data, error: loadError, isLoading, refresh } = useApiQuery<ReviewTodayResponse>('/api/review/today', {
+    maxAgeMs: 0,
+    enabled: status === 'authenticated',
+  });
+
   const [words, setWords] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [lastAnswer, setLastAnswer] = useState<AnswerRecord | null>(null);
+  const [ratings, setRatings] = useState<number[]>([]);
+  const [sessionXp, setSessionXp] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [undoBusy, setUndoBusy] = useState(false);
+  const [undoError, setUndoError] = useState('');
 
-  const loadWords = useCallback(async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/review/today', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setWords(data.words);
-      setTotalCount(data.totalCount);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to load words:', error);
-      setIsLoading(false);
-    }
-  }, [session]);
-
+  // Колода — снимок на момент входа: ответы и позиция не должны «мигать» из-за фона.
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadWords();
-    }
-  }, [status, loadWords]);
+    if (!data || sessionStarted) return;
+    setWords(data.words ?? []);
+    setSessionStarted(true);
+  }, [data, sessionStarted]);
 
-  // Авто-озвучка при показе нового слова
+  // Авто-озвучка нового слова; на паузе и в итоге не мешаем.
   useEffect(() => {
-    if (words.length > 0 && currentIndex < words.length) {
+    if (!paused && !isFinished && words.length > 0 && currentIndex < words.length) {
       speak(words[currentIndex].text);
     }
-  }, [currentIndex, words]);
+  }, [currentIndex, words, speak, paused, isFinished]);
 
-  const handleQuality = async (quality: number) => {
+  const currentWord = words[currentIndex];
+
+  const handleQuality = useCallback(async (quality: number) => {
     const word = words[currentIndex];
-    
+    if (!word || isSaving) return;
+
+    setIsSaving(true);
+    setSaveError('');
+    setUndoError('');
+
     try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/review/${word.wordId}/quality/${quality}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const outcome = await apiMutate<ReviewResponse>(
+        `/api/review/${word.wordId}/quality/${quality}`,
+        {
+          method: 'POST',
+          invalidate: ['/api/review/today', '/api/progress/streak'],
+        }
+      );
+
+      const xp = Number(outcome?.xpEarned) || 1;
+      setSessionXp((value) => value + xp);
+      setRatings((value) => [...value, quality]);
+      setLastAnswer(
+        outcome?.undoToken
+          ? {
+              index: currentIndex,
+              wordId: word.wordId,
+              quality,
+              undoToken: outcome.undoToken,
+              xpEarned: xp,
+            }
+          : null
+      );
       trackEvent('word_reviewed', word.text);
 
       if (currentIndex < words.length - 1) {
@@ -76,167 +220,457 @@ export default function ReviewPage() {
       } else {
         setIsFinished(true);
       }
-    } catch (error) {
-      console.error('Failed to review word:', error);
+    } catch {
+      setSaveError('Не удалось сохранить ответ. Проверьте соединение и попробуйте ещё раз.');
+    } finally {
+      setIsSaving(false);
     }
-  };
+  }, [words, currentIndex, isSaving, trackEvent]);
 
-  if (isLoading) {
+  const handleUndo = useCallback(async () => {
+    if (!lastAnswer || undoBusy) return;
+    setUndoBusy(true);
+    setUndoError('');
+
+    try {
+      await apiMutate(`/api/review/${lastAnswer.wordId}/undo`, {
+        method: 'POST',
+        body: { token: lastAnswer.undoToken },
+        invalidate: ['/api/review/today', '/api/progress/streak'],
+      });
+
+      setSessionXp((value) => Math.max(0, value - lastAnswer.xpEarned));
+      setRatings((value) => value.slice(0, -1));
+      setIsFinished(false);
+      setCurrentIndex(lastAnswer.index);
+      setShowAnswer(true);
+      setLastAnswer(null);
+    } catch {
+      setUndoError('Этот ответ уже нельзя отменить.');
+      setLastAnswer(null);
+    } finally {
+      setUndoBusy(false);
+    }
+  }, [lastAnswer, undoBusy, ]);
+
+  // Клавиатура: Space/Enter — ответ, 1–4 — оценка, Escape — пауза.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        if (isFinished) return;
+        event.preventDefault();
+        setPaused((value) => !value);
+        return;
+      }
+
+      if (paused || isFinished || isSaving || !currentWord) return;
+
+      if (!showAnswer) {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          setShowAnswer(true);
+        }
+        return;
+      }
+
+      const qualityByKey: Record<string, number> = { '1': 1, '2': 3, '3': 4, '4': 5 };
+      const quality = qualityByKey[event.key];
+      if (quality && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        event.preventDefault();
+        void handleQuality(quality);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [paused, isFinished, isSaving, currentWord, showAnswer, handleQuality]);
+
+  if (isLoading && data === undefined) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
-        </div>
-      </AppLayout>
+      <ReviewShell>
+        <ReviewSkeleton />
+      </ReviewShell>
     );
   }
 
-  if (isFinished) {
+  if (loadError && data === undefined) {
     return (
-      <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#356B52]/10 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#356B52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Повторение завершено</h1>
-          <p className="text-[#5A5F5A] mb-8">Повторено {words.length} слов</p>
-          <button onClick={() => router.push('/dashboard')} className="btn-primary">
-            На главную
-          </button>
+      <ReviewShell>
+        <div className="card mt-4 p-6 sm:p-8">
+          <ErrorState
+            title="Расписание повторений не загрузилось"
+            description="Сервер не прислал колоду на сегодня. Проверьте соединение и попробуйте снова."
+            onRetry={refresh}
+            action={
+              <Button variant="secondary" href="/dictionary">
+                К словарю
+              </Button>
+            }
+          />
         </div>
-      </AppLayout>
+      </ReviewShell>
     );
   }
 
   if (words.length === 0) {
     return (
-      <AppLayout>
-        <div className="max-w-md mx-auto text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#E7ECE4] flex items-center justify-center">
-            <svg className="w-8 h-8 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
+      <ReviewShell>
+        <div className="card mt-4 p-8 text-center">
+          <LexiMascot pose="sleep" className="mx-auto mb-2 w-36" />
+          <h1 className="mb-2 text-h1 text-ink">На сегодня слов нет</h1>
+          <p className="mb-8 text-body-lg text-slate">
+            Расписание пустое: все сохранённые слова уже повторены. Добавьте новые из читалки или словаря.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button href="/dictionary/add">Добавить слово</Button>
+            <Button variant="secondary" href="/dictionary">
+              К словарю
+            </Button>
           </div>
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Нет слов на сегодня</h1>
-          <p className="text-[#5A5F5A] mb-8">Добавь новые слова в словарь</p>
-          <button onClick={() => router.push('/dictionary/add')} className="btn-primary">
-            Добавить слово
-          </button>
         </div>
-      </AppLayout>
+      </ReviewShell>
     );
   }
 
-  const currentWord = words[currentIndex];
+  if (isFinished) {
+    const counts = QUALITY.map((item) => ({
+      ...item,
+      count: ratings.filter((rating) => rating === item.value).length,
+    }));
+
+    return (
+      <ReviewShell>
+        <motion.div
+          variants={variants.enter}
+          initial="hidden"
+          animate="visible"
+          className="card mt-4 p-8 text-center"
+        >
+          <LexiMascot pose="celebrate" className="mx-auto mb-1 w-40" />
+          <h1 className="mb-2 text-h1 text-ink">Повторение завершено</h1>
+          <p className="mb-1 text-body-lg text-slate">
+            Повторено {formatNumber(words.length)} {pluralWords(words.length)}
+          </p>
+          <p className="mb-1 text-body font-semibold text-primary">
+            +{formatNumber(sessionXp)} XP за сессию
+          </p>
+          {sessionXp > ratings.length && (
+            <p className="text-caption text-slate">Включая бонус за дневную цель</p>
+          )}
+
+          <div className="mx-auto my-6 grid max-w-md grid-cols-2 gap-2 sm:grid-cols-4">
+            {counts.map((item) => (
+              <div key={item.value} className="rounded-lg border border-hairline bg-surface p-3">
+                <p className="text-h3 tabular-nums text-ink">{item.count}</p>
+                <p className="text-caption text-slate">{item.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button href="/dictionary" className="h-11">К словарю</Button>
+            <Button variant="secondary" href="/dashboard" className="h-11">
+              На главную
+            </Button>
+          </div>
+
+          {lastAnswer && (
+            <button
+              type="button"
+              onClick={() => void handleUndo()}
+              disabled={undoBusy}
+              className="mt-5 text-caption font-medium text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast hover:text-ink disabled:opacity-50"
+            >
+              {undoBusy ? 'Отменяем…' : 'Отменить последний ответ'}
+            </button>
+          )}
+          {undoError && <p className="mt-3 text-caption text-semantic-error">{undoError}</p>}
+        </motion.div>
+      </ReviewShell>
+    );
+  }
+
+  const progress = (ratings.length / words.length) * 100;
 
   return (
-    <AppLayout>
-      <div className="max-w-2xl mx-auto">
-        {/* Прогресс */}
-        <div className="mb-8">
-          <div className="flex justify-between text-sm text-[#5A5F5A] mb-2">
-            <span>Слово {currentIndex + 1} из {words.length}</span>
-            <span>Всего на сегодня: {totalCount}</span>
+    <AppLayout immersive>
+      <div className="min-h-[100dvh] bg-surface">
+        <header className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between px-4 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setPaused(true)}
+            className="icon-chip h-11 w-11"
+            aria-label="Выйти из повторения"
+            title="Выйти из повторения"
+          >
+            <ArrowLeftIcon size={20} />
+          </button>
+          <div className="text-center">
+            <p className="text-caption font-semibold uppercase tracking-[0.16em] text-slate">Повторение</p>
+            <p className="text-caption tabular-nums text-slate">
+              Слово {currentIndex + 1} из {words.length}
+            </p>
           </div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${((currentIndex + 1) / words.length) * 100}%` }}
-            />
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={() => setPaused(true)}
+            className="btn-secondary h-11 px-3 text-caption"
+          >
+            Пауза
+          </button>
+        </header>
 
-        {/* Карточка */}
-        <div className="card p-8 mb-6">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => speak(currentWord.text)}
-                className="text-4xl font-bold text-[#20231F] hover:text-[#356B52] transition-colors"
-              >
-                {currentWord.text}
-              </button>
-              <button
-                onClick={() => speak(currentWord.text)}
-                className="p-2 text-xl rounded-full hover:bg-[#E7ECE4] transition-colors"
-                title="Произнести"
-                aria-label="Произнести слово"
-              >
-                🔊
-              </button>
+        <main className="mx-auto w-full max-w-2xl px-4 pb-12 sm:px-6">
+          <div className="mb-4">
+            <div className="mb-2 flex justify-between text-caption text-slate">
+              <span className="tabular-nums">Пройдено {ratings.length}</span>
+              <span className="tabular-nums">{Math.round(progress)}%</span>
             </div>
-            <p className="text-sm text-[#5A5F5A] mt-2">Нажми для озвучки</p>
+            <ProgressBar value={progress} label={`Слово ${currentIndex + 1} из ${words.length}`} />
           </div>
 
-          {showAnswer ? (
-            <div className="border-t border-[#D6D3CC] pt-6">
-              {currentWord.definitions.map((def, idx) => (
-                <div key={idx} className="text-center">
-                  <p className="text-xl text-[#20231F]">{def.definition}</p>
-                  {def.partOfSpeech && (
-                    <span className="badge badge-primary mt-2">{def.partOfSpeech}</span>
-                  )}
-                  {def.example && (
-                    <div className="mt-4">
-                      <p className="text-[#5A5F5A] italic">«{def.example}»</p>
-                      <button
-                        onClick={() => speak(def.example!)}
-                        className="text-sm text-[#356B52] hover:underline mt-1 flex items-center gap-1"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                        </svg>
-                        Озвучить пример
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center">
-              <button
-                onClick={() => setShowAnswer(true)}
-                className="btn-secondary"
-              >
-                Показать ответ
-              </button>
+          {saveError && (
+            <div className="mb-4">
+              <Notice tone="danger">{saveError}</Notice>
             </div>
           )}
-        </div>
 
-        {/* Кнопки оценки */}
-        {showAnswer && (
-          <div className="grid grid-cols-4 gap-3">
-            <button
-              onClick={() => handleQuality(1)}
-              className="py-4 rounded-xl bg-[#B85C5C]/10 text-[#B85C5C] font-medium hover:bg-[#B85C5C] hover:text-white transition-colors"
+          <span className="sr-only" aria-live="polite">
+            {currentWord?.text}. Слово {currentIndex + 1} из {words.length}
+          </span>
+
+          <AnimatePresence mode="wait" custom={1}>
+            <motion.div
+              key={currentWord?.wordId}
+              variants={slideVariants(1)}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="card flex min-h-[20rem] flex-col p-6 text-center sm:min-h-[22rem] sm:p-10"
             >
-              Забыл
-            </button>
-            <button
-              onClick={() => handleQuality(3)}
-              className="py-4 rounded-xl bg-[#EBCB75]/20 text-[#8B6914] font-medium hover:bg-[#EBCB75] hover:text-[#20231F] transition-colors"
-            >
-              Трудно
-            </button>
-            <button
-              onClick={() => handleQuality(4)}
-              className="py-4 rounded-xl bg-[#4A7C59]/10 text-[#4A7C59] font-medium hover:bg-[#4A7C59] hover:text-white transition-colors"
-            >
-              Хорошо
-            </button>
-            <button
-              onClick={() => handleQuality(5)}
-              className="py-4 rounded-xl bg-[#356B52] text-white font-medium hover:bg-[#2A5542] transition-colors"
-            >
-              Легко
-            </button>
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex min-h-6 flex-wrap items-center justify-center gap-2">
+                  {currentWord?.isNew && <Tag tone="info">Новое слово</Tag>}
+                  {currentWord?.isLeech && <Tag tone="warning">Трудное слово</Tag>}
+                  {currentWord?.definitions[0]?.partOfSpeech && (
+                    <Tag tone="neutral">{currentWord.definitions[0].partOfSpeech}</Tag>
+                  )}
+                </div>
+
+                {currentWord && (currentWord.emoji || currentWord.imageUrl) && (
+                  <div className="mb-4">
+                    <WordVisual
+                      word={currentWord.text}
+                      emoji={currentWord.emoji}
+                      imageUrl={currentWord.imageUrl}
+                      size="lg"
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <h1 className="break-words text-h1 text-ink">
+                    <button
+                      type="button"
+                      onClick={() => currentWord && speak(currentWord.text)}
+                      className="transition-colors duration-fast hover:text-primary"
+                    >
+                      {currentWord?.text}
+                    </button>
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={() => currentWord && speak(currentWord.text)}
+                    className="icon-chip shrink-0 border-transparent bg-transparent hover:bg-surface"
+                    title="Произнести"
+                    aria-label="Произнести слово"
+                  >
+                    {isSpeakingLoading
+                      ? <SpinnerIcon size={20} className="animate-spin" label="Озвучиваем" />
+                      : <VolumeIcon size={20} />}
+                  </button>
+                </div>
+                <p className="mt-2 text-caption text-slate">Нажмите на слово или динамик, чтобы услышать</p>
+                {currentWord && (
+                  <p className="mt-1 text-caption text-slate">{whyToday(currentWord)}</p>
+                )}
+              </div>
+
+              <div className="mt-6 flex flex-1 flex-col justify-center border-t border-hairline pt-6">
+                <AnimatePresence mode="wait">
+                  {showAnswer ? (
+                    <motion.div
+                      key="answer"
+                      variants={variants.fadeOnly}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="space-y-5"
+                    >
+                      {currentWord?.definitions.length ? (
+                        currentWord.definitions.map((definition, index) => (
+                          <div key={`${definition.definition}-${index}`}>
+                            <p className="text-h3 text-ink">{definition.definition}</p>
+                            {definition.partOfSpeech && index > 0 && (
+                              <span className="mt-1 inline-block">
+                                <Tag tone="neutral">{definition.partOfSpeech}</Tag>
+                              </span>
+                            )}
+                            {definition.example && (
+                              <div className="mt-2">
+                                <p className="text-body italic text-slate">«{definition.example}»</p>
+                                <button
+                                  type="button"
+                                  onClick={() => speak(definition.example!)}
+                                  className="mx-auto mt-1 inline-flex items-center gap-1.5 text-body-sm font-medium text-primary hover:underline"
+                                >
+                                  <VolumeIcon size={16} />
+                                  Озвучить пример
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-body-sm text-slate">Перевод для этого слова пока не добавлен.</p>
+                      )}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="question"
+                      variants={variants.fadeOnly}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="flex flex-col items-center gap-3"
+                    >
+                      <Button variant="primary" onClick={() => setShowAnswer(true)} className="h-12 px-6">
+                        Показать ответ
+                      </Button>
+                      <span className="text-caption text-slate">
+                        или нажмите пробел
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {showAnswer && (
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+              {QUALITY.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => void handleQuality(option.value)}
+                  disabled={isSaving}
+                  aria-keyshortcuts={option.key}
+                  className={`flex h-12 items-center justify-center gap-1.5 rounded-lg text-body-sm font-semibold transition-[background-color,color,transform] duration-fast ease-soft active:scale-97 disabled:cursor-not-allowed disabled:opacity-60 ${option.className}`}
+                >
+                  {option.label}
+                  <kbd className="hidden rounded border border-current px-1 text-[11px] font-normal opacity-70 sm:inline-block">
+                    {option.key}
+                  </kbd>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            {lastAnswer ? (
+              <button
+                type="button"
+                onClick={() => void handleUndo()}
+                disabled={undoBusy || isSaving}
+                className="text-caption font-medium text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast hover:text-ink disabled:opacity-50"
+              >
+                {undoBusy ? 'Отменяем…' : 'Отменить последний ответ'}
+              </button>
+            ) : (
+              <span />
+            )}
+            <p className="hidden text-caption text-slate sm:block">
+              1–4 — оценка · Пробел — показать ответ · Esc — пауза
+            </p>
           </div>
-        )}
+          {undoError && <p className="mt-2 text-caption text-semantic-error">{undoError}</p>}
+        </main>
+
+        <AnimatePresence>
+          {paused && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-scrim p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPaused(false)}
+            >
+              <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="pause-title"
+                className="card w-full max-w-sm p-6"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <h2 id="pause-title" className="text-h2 text-ink">Пауза</h2>
+                <p className="mt-2 text-body-sm leading-relaxed text-slate">
+                  Пройдено {ratings.length} из {words.length}. Ответы сохранены,
+                  можно продолжить с этого же слова или выйти.
+                </p>
+                <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+                  <Button autoFocus onClick={() => setPaused(false)} className="h-11 flex-1">
+                    Продолжить
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => router.push('/dictionary')}
+                    className="h-11 flex-1"
+                  >
+                    Выйти
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
+  );
+}
+
+/** Скелетон повторяет фокусный экран: та же шапка, прогресс и карточка. */
+function ReviewSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="mt-4">
+      <span className="sr-only">Загрузка слов на сегодня</span>
+      <div className="mb-2 flex justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-10" />
+      </div>
+      <Skeleton className="mb-5 h-2 w-full rounded-full" />
+      <div className="card flex min-h-[20rem] flex-col p-6 text-center sm:min-h-[22rem] sm:p-10">
+        <Skeleton className="mx-auto mb-4 h-5 w-16 rounded-full" />
+        <Skeleton className="mx-auto mb-3 h-10 w-56" />
+        <Skeleton className="mx-auto mb-8 h-4 w-40" />
+        <div className="mt-auto flex justify-center">
+          <Skeleton className="h-11 w-40 rounded-lg" />
+        </div>
+      </div>
+    </div>
   );
 }

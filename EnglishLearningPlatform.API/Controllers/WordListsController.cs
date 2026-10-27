@@ -1,9 +1,11 @@
 using System.Security.Claims;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EnglishLearningPlatform.API.Controllers;
@@ -98,26 +100,15 @@ public class WordListsController : ControllerBase
 
     [HttpPost]
     [Route("/api/admin/seed-wordlists")]
+    [Authorize(Roles = AppRoles.Admin)]
+    [EnableRateLimiting("admin")]
     public async Task<ActionResult<object>> SeedWordLists(
         [FromServices] WordListSeeder seeder,
-        [FromServices] IConfiguration configuration,
-        [FromServices] IWebHostEnvironment env,
-        [FromHeader(Name = "X-Seed-Key")] string? seedKey)
+        [FromServices] ContentCacheInvalidator cache)
     {
-        var configuredKey = configuration["Seeder:Key"];
-        if (!string.IsNullOrEmpty(configuredKey))
-        {
-            if (seedKey != configuredKey)
-            {
-                return Unauthorized(new { message = "Invalid seed key" });
-            }
-        }
-        else if (!env.IsDevelopment())
-        {
-            return Forbid();
-        }
-
         var result = await seeder.SeedAsync();
+
+        cache.InvalidateCategories();
 
         if (result.Error != null)
         {
@@ -173,6 +164,11 @@ public class WordListsController : ControllerBase
         var added = 0;
         var skipped = 0;
 
+        // Батчевое сохранение: раньше внутри цикла был SaveChanges на каждое слово
+        // (до 500 запросов). Теперь два SaveChanges внутри одной транзакции:
+        // EF раздаёт сгенерированные ID всем отслеженным словам сразу.
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
         foreach (var text in words)
         {
             if (existingUserWordTexts.Contains(text))
@@ -201,7 +197,6 @@ public class WordListsController : ControllerBase
                 }
 
                 _context.Words.Add(word);
-                await _context.SaveChangesAsync();
                 wordByText[text] = word;
             }
             else if (word.Definitions.Count == 0 &&
@@ -215,14 +210,14 @@ public class WordListsController : ControllerBase
                     PartOfSpeech = null,
                     DisplayOrder = 0
                 });
-                await _context.SaveChangesAsync();
                 word.Definitions.Clear();
             }
 
+            // Привязка через навигацию, а не WordId: у новых слов ID появится только при SaveChanges
             _context.UserWords.Add(new UserWord
             {
                 UserId = userId,
-                WordId = word.Id,
+                Word = word,
                 Source = "list",
                 NextReviewDate = DateTime.UtcNow
             });
@@ -230,7 +225,7 @@ public class WordListsController : ControllerBase
             _context.Interactions.Add(new Interaction
             {
                 UserId = userId,
-                WordId = word.Id,
+                Word = word,
                 Source = "list",
                 ContextSentence = null
             });
@@ -239,6 +234,7 @@ public class WordListsController : ControllerBase
         }
 
         await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
 
         return Ok(new { added, skipped });
     }

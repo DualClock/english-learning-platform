@@ -1,7 +1,10 @@
 'use client';
 
 import BookCover from './BookCover';
-import LevelChip from './LevelChip';
+import LevelChip from '@/components/ui/LevelChip';
+import ProgressBar from '@/components/ui/ProgressBar';
+import { CardInteractive } from '@/components/ui/Card';
+import { CloseIcon } from '@/components/ui/icons';
 
 export interface UserBook {
   id: number;
@@ -36,49 +39,48 @@ export default function MyBookCard({ book, onOpen, onDelete }: MyBookCardProps) 
         : 0;
 
   return (
-    <div className="group">
-      <div
+    <div className="group relative flex h-full">
+      <CardInteractive
         onClick={() => onOpen(book.id)}
-        className="cursor-pointer rounded-2xl border border-[#D6D3CC] bg-white p-2 transition-all duration-200 hover:-translate-y-1 hover:border-[#C4A77D] hover:shadow-lg"
+        ariaLabel={`Открыть «${book.title}»`}
+        className="flex h-full flex-col p-2"
       >
-        <div className="relative">
-          <BookCover
-            title={book.title}
-            coverUrl={book.coverUrl}
-            className="aspect-[2/3] w-full rounded-xl"
-          />
-          {book.cefrLevel && (
-            <div className="absolute top-2 right-2">
-              <LevelChip level={book.cefrLevel} />
-            </div>
-          )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm(`Удалить «${book.title}»?`)) onDelete(book);
-            }}
-            className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-sm text-[#5A5F5A] opacity-0 shadow transition-opacity hover:bg-[#B85C5C] hover:text-white group-hover:opacity-100"
-            aria-label="Удалить книгу"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="px-1 pb-1 pt-2">
-          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-[#20231F]">
-            {book.title}
-          </h3>
-          <p className="mt-0.5 truncate text-xs text-[#5A5F5A]">{book.author || '—'}</p>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#E7ECE4]">
-              <div
-                className="h-full rounded-full bg-[#356B52] transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <span className="text-[11px] tabular-nums text-[#5A5F5A]">{progress}%</span>
+        <BookCover
+          title={book.title}
+          coverUrl={book.coverUrl}
+          className="aspect-book w-full"
+        />
+        <div className="flex flex-1 flex-col px-1 pb-1 pt-2">
+          <h3 className="line-clamp-2 text-body-sm font-semibold leading-snug text-ink">{book.title}</h3>
+          <p className="mt-0.5 truncate text-caption text-slate">{book.author || '—'}</p>
+          {/* mt-auto держит полосу на одной линии по всему ряду, даже если
+              заголовок занял одну строку вместо двух */}
+          <div className="mt-auto flex items-center gap-2 pt-2">
+            <ProgressBar
+              value={progress}
+              label={`Прочитано «${book.title}»`}
+              className="h-1 bg-hairline"
+            />
+            <span className="shrink-0 text-caption tabular-nums text-slate">{progress}%</span>
           </div>
         </div>
-      </div>
+      </CardInteractive>
+
+      {book.cefrLevel && (
+        <div className="pointer-events-none absolute right-3 top-3">
+          <LevelChip level={book.cefrLevel} />
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => {
+          if (confirm(`Удалить «${book.title}»?`)) onDelete(book);
+        }}
+        className="card-action icon-chip absolute left-3 top-3 h-8 min-w-8 border-canvas bg-canvas shadow-soft hover:bg-surface-danger hover:text-semantic-error"
+        aria-label={`Удалить «${book.title}»`}
+      >
+        <CloseIcon size={16} />
+      </button>
     </div>
   );
 }

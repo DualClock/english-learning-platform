@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
+import { apiGet } from '@/app/lib/api-client';
 import { useTrack } from '@/app/lib/analytics';
+import Button from '@/components/ui/Button';
+import { CheckIcon, RocketIcon, TrophyIcon } from '@/components/ui/icons';
 
 const TARGET_WORDS = 5;
 const DONE_KEY = 'first_lesson_done';
@@ -14,15 +16,17 @@ interface StepState {
   wordsCount: number;
 }
 
-function Check({ done }: { done: boolean }) {
+function StepMark({ done }: { done: boolean }) {
   return (
     <span
-      className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-        done ? 'bg-[#356B52] text-white' : 'bg-white border-2 border-[#D6D3CC] text-transparent'
+      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-fast ease-soft ${
+        done
+          ? 'bg-primary text-on-primary'
+          : 'border border-hairline-strong bg-canvas text-transparent'
       }`}
       aria-hidden="true"
     >
-      ✓
+      <CheckIcon size={16} />
     </span>
   );
 }
@@ -46,23 +50,18 @@ export default function FirstLesson() {
   }, [state.bookAdded, trackEvent]);
   const [doneShown, setDoneShown] = useState(false);
 
-  // Загрузка статуса: книги + размер словаря
+  // Загрузка статуса: книги + размер словаря (через кэш, чтобы не дёргать API зря)
   const refreshStatus = useCallback(async () => {
-    const token = session?.accessToken;
-    if (!token) return;
-    const headers = { Authorization: `Bearer ${token}` };
     try {
-      const [booksRes, dictRes] = await Promise.all([
-        fetch(`${API_URL}/api/books`, { headers }),
-        fetch(`${API_URL}/api/dictionary`, { headers }),
+      const [books, words] = await Promise.all([
+        apiGet<unknown[]>('/api/books', { maxAgeMs: 15_000 }),
+        apiGet<unknown[]>('/api/dictionary', { maxAgeMs: 15_000 }),
       ]);
-      const bookAdded = booksRes.ok ? ((await booksRes.json()) as unknown[]).length > 0 : false;
-      const wordsCount = dictRes.ok ? ((await dictRes.json()) as unknown[]).length : 0;
-      setState({ bookAdded, wordsCount });
+      setState({ bookAdded: books.length > 0, wordsCount: words.length });
     } catch {
       // тихо: чек-лист не критичен
     }
-  }, [session]);
+  }, []);
 
   useEffect(() => {
     if (!session) return;
@@ -102,10 +101,8 @@ export default function FirstLesson() {
     setIsAdding(true);
     setAddError('');
     try {
-      const token = session?.accessToken;
-      const res = await fetch(`${API_URL}/api/books/story/0`, {
+      const res = await fetch(`/api/next/books/story/0`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
       await refreshStatus();
@@ -119,121 +116,106 @@ export default function FirstLesson() {
   // Полностью готово и уже поздравляли — скрываем
   if (complete && doneShown) return null;
 
+  const stepTitle = (done: boolean) =>
+    `text-body-sm font-medium ${done ? 'text-slate line-through' : 'text-ink'}`;
+
   return (
-    <div className="card p-6 mb-6 border-[#EBCB75] bg-gradient-to-br from-white to-[#EBCB75]/10">
-      <div className="flex items-start justify-between gap-4 mb-5">
+    <section className="card mb-8" aria-label="Первый урок">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[#20231F]">Твой первый урок — 15 минут</h2>
-          <p className="text-sm text-[#5A5F5A] mt-1">
+          <h2 className="text-h2 text-ink">Твой первый урок — 15 минут</h2>
+          <p className="mt-1 text-body-sm text-slate">
             Добавь рассказ, собери слова и пройди мини-тест
           </p>
         </div>
-        <span className="text-3xl">🚀</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-accent text-primary">
+          <RocketIcon size={20} />
+        </span>
       </div>
 
       {complete ? (
-        <div className="rounded-xl bg-[#356B52]/10 border border-[#356B52]/30 p-5 text-center">
-          <p className="text-lg font-semibold text-[#356B52] mb-1">🎉 Поздравляем!</p>
-          <p className="text-sm text-[#5A5F5A]">Первый урок пройден — так держать!</p>
+        <div className="rounded-md bg-surface-accent p-5 text-center">
+          <p className="inline-flex items-center gap-2 text-h3 text-on-accent">
+            <TrophyIcon size={20} />
+            Первый урок пройден
+          </p>
+          <p className="mt-1 text-body-sm text-on-accent">Так держать — впереди ещё книги.</p>
         </div>
       ) : (
-        <>
-          <ol className="space-y-4">
-            {/* Шаг 1 — добавить рассказ */}
-            <li className="flex items-center gap-3">
-              <Check done={state.bookAdded} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
-                  Добавь первый рассказ
-                </p>
-                {!state.bookAdded && (
-                  <p className="text-xs text-[#5A5F5A] mt-0.5">
-                    «The Lost Kitten» — короткая история уровня A1
-                  </p>
-                )}
-              </div>
+        <ol className="space-y-4">
+          <li className="flex items-center gap-3">
+            <StepMark done={state.bookAdded} />
+            <div className="min-w-0 flex-1">
+              <p className={stepTitle(state.bookAdded)}>Добавь первый рассказ</p>
               {!state.bookAdded && (
-                <button
-                  onClick={addFirstStory}
-                  disabled={isAdding}
-                  className="btn-primary text-sm py-2 px-4 shrink-0 disabled:opacity-50"
-                >
-                  {isAdding ? 'Добавляем…' : 'Добавить'}
-                </button>
-              )}
-            </li>
-
-            {/* Шаг 2 — открыть читалку */}
-            <li className="flex items-center gap-3">
-              <Check done={state.bookAdded} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.bookAdded ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
-                  Прочитай первую страницу
+                <p className="mt-0.5 text-caption text-slate">
+                  «The Lost Kitten» — короткая история уровня A1
                 </p>
-                {state.bookAdded && (
-                  <p className="text-xs text-[#5A5F5A] mt-0.5">
-                    Кликай по словам — увидишь перевод
-                  </p>
-                )}
-              </div>
+              )}
+            </div>
+            {!state.bookAdded && (
+              <Button onClick={addFirstStory} disabled={isAdding} className="shrink-0">
+                {isAdding ? 'Добавляем…' : 'Добавить'}
+              </Button>
+            )}
+          </li>
+
+          <li className="flex items-center gap-3">
+            <StepMark done={state.bookAdded} />
+            <div className="min-w-0 flex-1">
+              <p className={stepTitle(state.bookAdded)}>Прочитай первую страницу</p>
               {state.bookAdded && (
-                <button
-                  onClick={() => router.push('/books')}
-                  className="btn-secondary text-sm py-2 px-4 shrink-0"
-                >
-                  Открыть читалку
-                </button>
+                <p className="mt-0.5 text-caption text-slate">Кликай по словам — увидишь перевод</p>
               )}
-            </li>
+            </div>
+            {state.bookAdded && (
+              <Button variant="secondary" onClick={() => router.push('/books')} className="shrink-0">
+                Открыть читалку
+              </Button>
+            )}
+          </li>
 
-            {/* Шаг 3 — собрать слова */}
-            <li className="flex items-center gap-3">
-              <Check done={state.wordsCount >= TARGET_WORDS} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
-                  Собери {TARGET_WORDS} слов в конспект
-                </p>
-                <p className="text-xs text-[#5A5F5A] mt-0.5">
-                  В читалке кликай по словам с ✦ — они попадут в конспект
-                </p>
-                {state.bookAdded && state.wordsCount < TARGET_WORDS && (
-                  <p className="text-xs font-semibold text-[#356B52] mt-1">
-                    Слов собрано: {state.wordsCount} из {TARGET_WORDS}
-                  </p>
-                )}
-              </div>
-            </li>
-
-            {/* Шаг 4 — мини-тест */}
-            <li className="flex items-center gap-3">
-              <Check done={state.wordsCount >= TARGET_WORDS} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${state.wordsCount >= TARGET_WORDS ? 'text-[#5A5F5A] line-through' : 'text-[#20231F]'}`}>
-                  Пройди мини-тест
-                </p>
-                <p className="text-xs text-[#5A5F5A] mt-0.5">
-                  Появится после нажатия «Завершить чтение» в читалке
-                </p>
-              </div>
-            </li>
-          </ol>
-
-          {state.bookAdded && state.wordsCount < TARGET_WORDS && (
-            <div className="mt-5 rounded-xl bg-[#E7ECE4] p-4 text-center">
-              <p className="text-sm text-[#20231F]">
-                Отлично! Продолжай в читалке: кликай по словам с ✦
+          <li className="flex items-center gap-3">
+            <StepMark done={state.wordsCount >= TARGET_WORDS} />
+            <div className="min-w-0 flex-1">
+              <p className={stepTitle(state.wordsCount >= TARGET_WORDS)}>
+                Собери {TARGET_WORDS} слов в конспект
               </p>
-              <p className="text-sm font-semibold text-[#356B52] mt-1">
-                Слов собрано: {state.wordsCount} из {TARGET_WORDS}
+              <p className="mt-0.5 text-caption text-slate">
+                В читалке кликай по словам-маркерам — они попадут в конспект
+              </p>
+              {state.bookAdded && state.wordsCount < TARGET_WORDS && (
+                <p className="mt-1 text-caption font-medium text-primary tabular-nums">
+                  Слов собрано: {state.wordsCount} из {TARGET_WORDS}
+                </p>
+              )}
+            </div>
+          </li>
+
+          <li className="flex items-center gap-3">
+            <StepMark done={state.wordsCount >= TARGET_WORDS} />
+            <div className="min-w-0 flex-1">
+              <p className={stepTitle(state.wordsCount >= TARGET_WORDS)}>Пройди мини-тест</p>
+              <p className="mt-0.5 text-caption text-slate">
+                Появится после нажатия «Завершить чтение» в читалке
               </p>
             </div>
-          )}
-
-          {addError && (
-            <p className="mt-4 text-sm text-[#B85C5C]">{addError}</p>
-          )}
-        </>
+          </li>
+        </ol>
       )}
-    </div>
+
+      {state.bookAdded && state.wordsCount < TARGET_WORDS && !complete && (
+        <p className="mt-5 rounded-md bg-surface-success p-4 text-center text-body-sm text-on-success">
+          Отлично! Продолжай в читалке: кликай по словам-маркерам — собрано {state.wordsCount} из{' '}
+          {TARGET_WORDS}
+        </p>
+      )}
+
+      {addError && (
+        <p role="alert" className="mt-4 text-body-sm text-semantic-error">
+          {addError}
+        </p>
+      )}
+    </section>
   );
 }

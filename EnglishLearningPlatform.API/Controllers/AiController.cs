@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +10,7 @@ namespace EnglishLearningPlatform.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[RequireConfirmedEmail]
 public class AiController : ControllerBase
 {
     private readonly AiService _aiService;
@@ -20,6 +23,7 @@ public class AiController : ControllerBase
     [HttpPost("translate")]
     public async Task<IActionResult> Translate([FromBody] TranslateRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var hasContext = !string.IsNullOrWhiteSpace(request.Context);
         var targetLanguage = request.TargetLanguage ?? "ru";
 
@@ -34,7 +38,16 @@ public class AiController : ControllerBase
             }
         }
 
-        var result = await _aiService.TranslateWordAsync(request.Word, request.Context, targetLanguage);
+        TranslationResult? result = null;
+        try
+        {
+            result = await _aiService.TranslateWordAsync(request.Word, request.Context, targetLanguage, userId);
+        }
+        catch (AiUnavailableException)
+        {
+            // ИИ недоступен после всех ретраев — попробуем быстрый fallback ниже
+        }
+
         if (result != null)
         {
             return Ok(result);
@@ -51,12 +64,42 @@ public class AiController : ControllerBase
             }
         }
 
-        return BadRequest(new { message = "Translation failed" });
+        return StatusCode(503, new { error = "Не удалось перевести слово: сервис перевода временно недоступен. Попробуйте позже." });
+    }
+
+    // POST: api/ai/translate-sentence — перевод фразы для карточки слова.
+    // Быстрый бесплатный контур, без Gemini: смысл слова остаётся в контексте,
+    // а ожидание не превращается в несколько секунд на каждый тап.
+    [HttpPost("translate-sentence")]
+    public async Task<IActionResult> TranslateSentence([FromBody] TranslateSentenceRequest request)
+    {
+        var text = request.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return BadRequest(new { error = "Укажите фразу." });
+        }
+
+        if (text.Length > 1000)
+        {
+            return BadRequest(new { error = "Фраза слишком длинная (максимум 1000 символов)." });
+        }
+
+        var translation = await _aiService.TranslateTextAsync(text);
+        if (string.IsNullOrWhiteSpace(translation))
+        {
+            return StatusCode(503, new { error = "Не удалось перевести фразу. Попробуйте позже." });
+        }
+
+        return Ok(new { translation, source = "gtx" });
     }
 }
 
 public record TranslateRequest(
-    string Word,
-    string? Context,
-    string? TargetLanguage
+    [property: Required, MaxLength(200)] string Word,
+    [property: MaxLength(1000)] string? Context,
+    [property: MaxLength(10)] string? TargetLanguage
+);
+
+public record TranslateSentenceRequest(
+    [property: Required, MaxLength(1000)] string Text
 );

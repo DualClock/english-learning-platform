@@ -1,35 +1,39 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { API_URL } from '@/app/lib/api-url';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import { Skeleton } from '@/components/ui/LoadingState';
+import { BooksIcon, CheckIcon, AlertIcon, UploadIcon, SpinnerIcon } from '@/components/ui/icons';
+import { invalidateCache } from '@/app/lib/api-client';
+import { useApiQuery } from '@/app/lib/use-api';
+import { AnimatePresence, motion } from 'motion/react';
+import { transition, variants } from '@/lib/motion';
+import { pluralBooks } from '@/lib/plural';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import LevelChip, { normalizeLevel } from '@/components/library/LevelChip';
+import { normalizeLevel } from '@/components/ui/LevelChip';
 import MyBookCard, { type UserBook } from '@/components/library/MyBookCard';
 import StoryCard, { type Story } from '@/components/library/StoryCard';
 import ClassicCard, { type PopularBook } from '@/components/library/ClassicCard';
+import Pager from '@/components/Pager';
+import type { Paged } from '@/app/lib/paged';
 
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
 
-const LEVEL_CAPTIONS: Record<string, string> = {
-  A1: 'лёгкое',
-  A2: 'лёгкое',
-  B1: 'среднее',
-  B2: 'среднее',
-  C1: 'сложное',
-};
+/** Класс чипа-фильтра уровня: выбранный — акцентом, остальные — контуром. */
+function filterChipClass(active: boolean): string {
+  return `inline-flex h-8 items-center rounded-full px-3 text-caption font-medium transition-colors duration-fast ease-soft ${
+    active
+      ? 'bg-primary text-on-primary'
+      : 'border border-hairline-strong text-charcoal hover:border-primary hover:text-primary'
+  }`;
+}
 
 function sameTitle(a: string, b: string): boolean {
   return a.trim().toLowerCase().replace(/\s+/g, ' ') === b.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function pluralBooks(n: number): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return `${n} книга`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} книги`;
-  return `${n} книг`;
 }
 
 interface Toast {
@@ -38,17 +42,34 @@ interface Toast {
 }
 
 export default function BooksPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
-  const [books, setBooks] = useState<UserBook[]>([]);
-  const [popular, setPopular] = useState<PopularBook[]>([]);
-  const [stories, setStories] = useState<Story[]>([]);
-  const [profileLevel, setProfileLevel] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+
+  const {
+    data: booksData,
+    error: booksError,
+    isLoading: booksLoading,
+    refresh: refreshBooks,
+  } = useApiQuery<Paged<UserBook>>(`/api/books?page=${page}&pageSize=100`);
+  const { data: popularData } = useApiQuery<PopularBook[]>('/api/books/popular');
+  const { data: storiesData } = useApiQuery<Story[]>('/api/books/stories');
+  const { data: profileData } = useApiQuery<{ cefrLevel?: string | null }>('/api/profile');
+
+  const books = useMemo(() => booksData?.items ?? [], [booksData]);
+  const totalCount = booksData?.totalCount ?? 0;
+  const totalPages = booksData?.totalPages ?? 1;
+  const popular = useMemo(() => popularData ?? [], [popularData]);
+  const stories = useMemo(() => storiesData ?? [], [storiesData]);
+  const profileLevel = profileData?.cefrLevel ?? '';
+  const isLoading = booksLoading && booksData === undefined;
+  const error = booksError ? 'Не удалось загрузить библиотеку. Попробуйте обновить страницу.' : '';
+
   const [addingPopularId, setAddingPopularId] = useState<string | null>(null);
   const [addingStoryIndex, setAddingStoryIndex] = useState<number | null>(null);
+  /** Уровень, выбранный в фильтре каталога. 'all' — показать всё. */
+  const [levelFilter, setLevelFilter] = useState<string>('all');
   const [uploading, setUploading] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
 
@@ -61,71 +82,41 @@ export default function BooksPage() {
     toastTimer.current = setTimeout(() => setToast(null), 2800);
   }, []);
 
-  const authHeaders = useCallback(
-    (): Record<string, string> =>
-      session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {},
-    [session]
+  // Тост живёт дольше, чем страница: таймер снимаем при размонтировании
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    []
   );
 
+
   const reloadBooks = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/books`, { headers: authHeaders() });
-      if (res.ok) setBooks(await res.json());
-    } catch {
-      // тихо: основная загрузка уже сообщила об ошибке сети
-    }
-  }, [authHeaders]);
+    invalidateCache('/api/books');
+    refreshBooks();
+  }, [refreshBooks]);
 
+  // Если у каких-то книг нет обложки — просим бэкенд подтянуть их (один раз за сессию страницы)
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== 'authenticated' || booksData === undefined) return;
+    if (coverRefreshRef.current || !books.some((b) => !b.coverUrl)) return;
+    coverRefreshRef.current = true;
 
-    const load = async () => {
-      setIsLoading(true);
-      setError('');
+    const refreshCovers = async () => {
       try {
-        const [booksRes, popularRes, storiesRes, profileRes] = await Promise.all([
-          fetch(`${API_URL}/api/books`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/books/popular`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/books/stories`, { headers: authHeaders() }),
-          fetch(`${API_URL}/api/profile`, { headers: authHeaders() }),
-        ]);
-
-        if (!booksRes.ok) throw new Error('books');
-        const loadedBooks: UserBook[] = await booksRes.json();
-        setBooks(loadedBooks);
-
-        if (popularRes.ok) setPopular(await popularRes.json());
-        if (storiesRes.ok) setStories(await storiesRes.json());
-        if (profileRes.ok) {
-          const profile = await profileRes.json();
-          setProfileLevel(profile?.cefrLevel ?? '');
-        }
-
-        // Если у каких-то книг нет обложки — просим бэкенд подтянуть их (один раз за сессию страницы)
-        if (!coverRefreshRef.current && loadedBooks.some((b) => !b.coverUrl)) {
-          coverRefreshRef.current = true;
-          try {
-            const res = await fetch(`${API_URL}/api/books/refresh-covers`, {
-              method: 'POST',
-              headers: authHeaders(),
-            });
-            if (res.ok) {
-              const data = await res.json().catch(() => null);
-              if (data?.updated > 0) await reloadBooks();
-            }
-          } catch {
-            // обложки не критичны — молча пропускаем
-          }
+        const res = await fetch(`/api/next/books/refresh-covers`, {
+          method: 'POST',
+        });
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data?.updated > 0) await reloadBooks();
         }
       } catch {
-        setError('Не удалось загрузить библиотеку. Попробуйте обновить страницу.');
-      } finally {
-        setIsLoading(false);
+        // обложки не критичны — молча пропускаем
       }
     };
-
-    load();
-  }, [status, authHeaders]);
+    void refreshCovers();
+  }, [status, books, reloadBooks]);
 
   const userLevel = normalizeLevel(profileLevel);
 
@@ -138,10 +129,23 @@ export default function BooksPage() {
     (b) => !(LEVELS as readonly string[]).includes(normalizeLevel(b.cefrLevel))
   );
 
+  /*
+   * Фильтр по уровню вместо секций. 'all' — весь каталог плюс книги без
+   * уровня; конкретный уровень — только его книги.
+   */
+  const visibleClassics = useMemo(() => {
+    if (levelFilter === 'all') return popular;
+    return popular.filter((b) => normalizeLevel(b.cefrLevel) === levelFilter);
+  }, [popular, levelFilter]);
+
   const isInLibrary = useCallback(
     (title: string) => books.some((b) => sameTitle(b.title, title)),
     [books]
   );
+
+  // Каталог пуст: показывать два пустых блока подряд незачем —
+  // «Каталог пока недоступен» с загрузкой EPUB закрывает оба случая.
+  const catalogEmpty = classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0;
 
   const findStoryBookId = useCallback(
     (story: Story): number | null => {
@@ -161,9 +165,16 @@ export default function BooksPage() {
   const addPopularBook = async (book: PopularBook) => {
     setAddingPopularId(book.gutenbergId);
     try {
-      const res = await fetch(`${API_URL}/api/books/popular/${book.gutenbergId}`, {
+      /*
+       * ВАЖНО: путь к прокси — `/api/next/books/...`, без второго `/api`.
+       *
+       * Прокси сам строит адрес как `${API_URL}/api/${path}` (см.
+       * app/api/next/[...path]/route.ts, buildTargetUrl). Лишний `/api` в
+       * аргументе давал запрос на `/api/api/books/popular/84` — 404, и
+       * «добавить книгу» молча не работало (нашёл в логе фронта).
+       */
+      const res = await fetch(`/api/next/books/popular/${book.gutenbergId}`, {
         method: 'POST',
-        headers: authHeaders(),
       });
       if (!res.ok) throw new Error('failed');
       await reloadBooks();
@@ -178,9 +189,8 @@ export default function BooksPage() {
   const addStory = async (story: Story) => {
     setAddingStoryIndex(story.index);
     try {
-      const res = await fetch(`${API_URL}/api/books/story/${story.index}`, {
+      const res = await fetch(`/api/next/books/story/${story.index}`, {
         method: 'POST',
-        headers: authHeaders(),
       });
       if (!res.ok) throw new Error('failed');
       const created = await res.json().catch(() => null);
@@ -199,11 +209,10 @@ export default function BooksPage() {
 
   const deleteBook = async (book: UserBook) => {
     try {
-      await fetch(`${API_URL}/api/books/${book.id}`, {
+      await fetch(`/api/next/books/${book.id}`, {
         method: 'DELETE',
-        headers: authHeaders(),
       });
-      setBooks((prev) => prev.filter((b) => b.id !== book.id));
+      await reloadBooks();
       showToast('Книга удалена');
     } catch {
       showToast('Не удалось удалить книгу', 'err');
@@ -224,9 +233,8 @@ export default function BooksPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_URL}/api/books/upload`, {
+      const res = await fetch(`/api/next/books/upload`, {
         method: 'POST',
-        headers: authHeaders(),
         body: formData,
       });
       if (!res.ok) {
@@ -242,103 +250,138 @@ export default function BooksPage() {
     }
   };
 
+  // Файловый инпут остаётся в дереве доступности (sr-only, а не display:none):
+  // label не является контролом, и без фокусируемого input загрузка
+  // была бы недоступна с клавиатуры.
+  const uploadButton = (variant: 'primary' | 'secondary') => (
+    <label
+      className={`${
+        variant === 'primary' ? 'btn-primary' : 'btn-secondary'
+      } cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-opacity-20`}
+    >
+      {uploading ? <SpinnerIcon size={16} /> : <UploadIcon size={16} />}
+      {uploading ? 'Загрузка…' : 'Загрузить свою книгу'}
+      <input
+        type="file"
+        accept=".epub"
+        onChange={handleFileUpload}
+        disabled={uploading}
+        className="sr-only"
+      />
+    </label>
+  );
+
   return (
     <AppLayout>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-[#20231F]">Библиотека</h1>
-          <p className="mt-1 text-[#5A5F5A]">Читайте то, что по силам — и чуть сложнее</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {!isLoading && <span className="text-sm text-[#5A5F5A]">{pluralBooks(books.length)}</span>}
-          <label className="btn-secondary flex cursor-pointer items-center gap-2 px-4 py-2 text-sm">
-            {uploading ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#D6D3CC] border-t-[#356B52]" />
-                Загрузка…
-              </>
-            ) : (
-              <>
-                <span className="text-base font-bold leading-none text-[#356B52]">+</span>
-                Загрузить свою книгу
-              </>
+      <PageHeader
+        title="Библиотека"
+        subtitle="Читайте то, что по силам — и чуть сложнее"
+        actions={
+          <>
+            {!isLoading && (
+              <span className="text-body-sm tabular-nums text-slate">
+                {totalCount} {pluralBooks(totalCount)}
+              </span>
             )}
-            <input
-              type="file"
-              accept=".epub"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="hidden"
-            />
-          </label>
-        </div>
+            {uploadButton('secondary')}
+          </>
+        }
+      />
+
+      {/* Живая область смонтирована заранее: появляющийся вместе с текстом
+          region экранные читатели обычно не объявляют. */}
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 md:justify-end md:px-6"
+      >
+        <AnimatePresence initial={false}>
+          {toast && (
+            <motion.div
+              key={toast.text}
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className={`pointer-events-auto flex items-center gap-2 rounded-lg border px-4 py-3 text-body-sm font-medium shadow-card ${
+                toast.kind === 'ok'
+                  ? 'border-hairline bg-canvas text-ink'
+                  : 'border-semantic-error bg-surface-danger text-on-danger'
+              }`}
+            >
+              {toast.kind === 'ok' ? (
+                <CheckIcon size={20} className="shrink-0 text-semantic-success" />
+              ) : (
+                <AlertIcon size={20} className="shrink-0" />
+              )}
+              {toast.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-xl border border-[#B85C5C] bg-[#B85C5C]/10 p-4 text-[#B85C5C]">
-          {error}
+        <div className="mb-8">
+          <ErrorState
+            title="Библиотека не загрузилась"
+            description={error}
+            onRetry={reloadBooks}
+          />
         </div>
       )}
 
       {isLoading ? (
-        <div>
-          <div className="mb-10 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border border-[#D6D3CC] bg-white p-3">
-                <div className="aspect-[2/3] w-full rounded-xl bg-[#E7ECE4]" />
-                <div className="mt-3 h-3 w-full rounded bg-[#E7ECE4]" />
-                <div className="mt-2 h-3 w-2/3 rounded bg-[#E7ECE4]" />
-              </div>
-            ))}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-28 rounded-2xl border border-[#D6D3CC] bg-white p-4">
-                <div className="flex h-full items-center gap-4">
-                  <div className="h-20 w-14 shrink-0 rounded-lg bg-[#E7ECE4]" />
-                  <div className="flex-1">
-                    <div className="h-4 w-2/3 rounded bg-[#E7ECE4]" />
-                    <div className="mt-2 h-3 w-full rounded bg-[#E7ECE4]" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-[#E7ECE4]" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <LibrarySkeleton />
       ) : (
         <>
           {books.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">Мои книги</h2>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-                {books.map((book) => (
-                  <MyBookCard
-                    key={book.id}
-                    book={book}
-                    onOpen={openBook}
-                    onDelete={deleteBook}
-                  />
-                ))}
+              <div className="mb-4 flex items-baseline gap-2">
+                <h2 className="text-h2 text-ink">Мои книги</h2>
+                <span className="text-caption tabular-nums text-slate">
+                  {books.length} {pluralBooks(books.length)}
+                </span>
               </div>
+              <motion.ul
+                className="stagger grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5"
+                initial={false}
+              >
+                <AnimatePresence initial={false}>
+                  {books.map((book) => (
+                    <motion.li
+                      key={book.id}
+                      exit={{ opacity: 0, scale: 0.96, transition: transition.fast }}
+                    >
+                      <MyBookCard book={book} onOpen={openBook} onDelete={deleteBook} />
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </motion.ul>
+              <Pager
+                page={page}
+                totalPages={totalPages}
+                onPageChange={(next) => {
+                  setPage(next);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             </section>
           )}
 
-          {books.length === 0 && (
-            <div className="mb-10 rounded-2xl border border-dashed border-[#D6D3CC] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[#20231F]">В библиотеке пока пусто</p>
-              <p className="mt-1 text-sm text-[#5A5F5A]">
-                Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB.
-              </p>
+          {books.length === 0 && !catalogEmpty && (
+            <div className="mb-10">
+              <EmptyState
+                lexi="stand"
+                title="В библиотеке пока пусто"
+                description="Начните с рассказа для вашего уровня ниже — или загрузите свой EPUB."
+              />
             </div>
           )}
 
           {stories.length > 0 && (
             <section className="mb-10">
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">
-                Рассказы для вашего уровня
-              </h2>
-              <div className="grid gap-4 md:grid-cols-2">
+              <h2 className="mb-4 text-h2 text-ink">Рассказы для вашего уровня</h2>
+              <div className="stagger grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                 {stories.map((story) => (
                   <StoryCard
                     key={story.index}
@@ -355,47 +398,62 @@ export default function BooksPage() {
 
           {classicGroups.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold text-[#20231F]">Классика по уровням</h2>
-              {classicGroups.map(({ level, items }) => {
-                const recommended = userLevel === level;
-                return (
-                  <div
+              <h2 className="mb-4 text-h2 text-ink">Классика</h2>
+
+              {/*
+               * Уровень — фильтр, а не группировка. Раньше каталог резался на
+               * секции по уровням, и они выходили по 1, 3, 5, 1 книге: сетка
+               * по пять в ряд заканчивалась дырами на пол-экрана. Один список
+               * с чипами показывает то же самое без пустот.
+               */}
+              <div className="mb-5 flex flex-wrap items-center gap-2" role="group" aria-label="Фильтр по уровню">
+                <button
+                  type="button"
+                  onClick={() => setLevelFilter('all')}
+                  aria-pressed={levelFilter === 'all'}
+                  className={filterChipClass(levelFilter === 'all')}
+                >
+                  Все
+                  <span className="ml-1 tabular-nums opacity-70">{popular.length}</span>
+                </button>
+                {classicGroups.map(({ level, items }) => (
+                  <button
                     key={level}
-                    className={`relative mb-8 rounded-2xl p-4 ${
-                      recommended ? 'bg-[#EBCB75]/10 ring-2 ring-[#EBCB75]' : ''
-                    }`}
+                    type="button"
+                    onClick={() => setLevelFilter(level)}
+                    aria-pressed={levelFilter === level}
+                    className={filterChipClass(levelFilter === level)}
                   >
-                    {recommended && (
-                      <span className="absolute -top-3 left-4 rounded-full bg-[#EBCB75] px-3 py-1 text-xs font-semibold text-[#20231F] shadow-sm">
-                        для вас
-                      </span>
-                    )}
-                    <div className="mb-4 flex items-center gap-2">
-                      <LevelChip level={level} />
-                      <h3 className="font-semibold text-[#20231F]">
-                        {level} — {LEVEL_CAPTIONS[level]}
-                      </h3>
-                      <span className="text-sm text-[#5A5F5A]">{items.length}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-                      {items.map((book) => (
-                        <ClassicCard
-                          key={book.gutenbergId}
-                          book={book}
-                          inLibrary={isInLibrary(book.title)}
-                          adding={addingPopularId === book.gutenbergId}
-                          onAdd={addPopularBook}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              {uncategorized.length > 0 && (
-                <div className="mb-8 rounded-2xl p-4">
+                    {level}
+                    <span className="ml-1 tabular-nums opacity-70">{items.length}</span>
+                    {userLevel === level && <span className="ml-1 text-[10px]">•</span>}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                {visibleClassics.map((book) => (
+                  <ClassicCard
+                    key={book.gutenbergId}
+                    book={book}
+                    inLibrary={isInLibrary(book.title)}
+                    adding={addingPopularId === book.gutenbergId}
+                    onAdd={addPopularBook}
+                  />
+                ))}
+              </div>
+
+              {visibleClassics.length === 0 && (
+                <p className="py-8 text-center text-body-sm text-slate">
+                  На этом уровне книг пока нет — выберите другой.
+                </p>
+              )}
+
+              {uncategorized.length > 0 && levelFilter === 'all' && (
+                <div className="mt-8">
                   <div className="mb-4 flex items-center gap-2">
-                    <h3 className="font-semibold text-[#20231F]">Без указания уровня</h3>
-                    <span className="text-sm text-[#5A5F5A]">{uncategorized.length}</span>
+                    <h3 className="text-body-lg font-semibold text-ink">Без указания уровня</h3>
+                    <span className="text-caption tabular-nums text-slate">{uncategorized.length}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                     {uncategorized.map((book) => (
@@ -413,26 +471,48 @@ export default function BooksPage() {
             </section>
           )}
 
-          {classicGroups.length === 0 && uncategorized.length === 0 && stories.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-[#D6D3CC] bg-white/60 p-8 text-center">
-              <p className="font-medium text-[#20231F]">Каталог пока недоступен</p>
-              <p className="mt-1 text-sm text-[#5A5F5A]">
-                Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги».
-              </p>
-            </div>
+          {catalogEmpty && (
+            <EmptyState
+              icon={<BooksIcon size={24} />}
+              title="Каталог пока недоступен"
+              description="Загрузите свою книгу в формате EPUB — она появится в разделе «Мои книги»."
+              action={uploadButton('primary')}
+            />
           )}
         </>
       )}
-
-      {toast && (
-        <div
-          className={`animate-fade-in fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
-            toast.kind === 'ok' ? 'bg-[#356B52] text-white' : 'bg-[#B85C5C] text-white'
-          }`}
-        >
-          {toast.text}
-        </div>
-      )}
     </AppLayout>
+  );
+}
+
+/** Заглушка совпадает с реальной сеткой: при замене контента строки не прыгают. */
+function LibrarySkeleton() {
+  return (
+    <div role="status" aria-busy="true" aria-live="polite" className="space-y-10">
+      <span className="sr-only">Загрузка библиотеки</span>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="card p-2">
+            <Skeleton className="aspect-book w-full" />
+            <Skeleton className="mt-3 h-3 w-full" />
+            <Skeleton className="mt-2 h-3 w-2/3" />
+            <Skeleton className="mt-3 h-1 w-full" />
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="card flex gap-4">
+            <Skeleton className="aspect-book w-14 shrink-0" />
+            <div className="flex-1 space-y-2 py-1">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="mt-3 h-9 w-36" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

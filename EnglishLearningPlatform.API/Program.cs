@@ -1,20 +1,31 @@
 using System.Text;
 using EnglishLearningPlatform.API.Data;
+using EnglishLearningPlatform.API.Middleware;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
+using EnglishLearningPlatform.API.Services.Reader;
+using EnglishLearningPlatform.API.Services.Guest;
+using EnglishLearningPlatform.API.Services.News;
+using EnglishLearningPlatform.API.Services.Seed;
 using EnglishLearningPlatform.API.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 // Настройка Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
+    // AspNetCore пишет по 5+ INF-строк на запрос; одну сводку даёт
+    // UseSerilogRequestLogging, остальное от него не нужно
+    .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
     .WriteTo.Console()
     .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
@@ -26,6 +37,14 @@ builder.Host.UseSerilog();
 
 // Add services
 builder.Services.AddControllers();
+
+// Наблюдаемость: единый формат ошибок (ProblemDetails) и глобальный обработчик
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// Health check с реальной проверкой БД: деплой-скрипты видят падение Postgres
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database");
 
 
 // FluentValidation
@@ -68,14 +87,115 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+
+    // Блокировка после неудачных входов: без неё CheckPasswordAsync позволяет
+    // перебирать пароль неограниченно с одного аккаунта
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
 // JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"]!;
+var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
+
+// Не даём приложению молча стартовать с публичным ключом-заглушкой:
+// иначе любой может подделать JWT. В Development это только предупреждение.
+if (string.IsNullOrWhiteSpace(jwtKey)
+    || jwtKey.StartsWith("SET_IN_ENV", StringComparison.OrdinalIgnoreCase)
+    || jwtKey.Length < 32)
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException(
+            "Jwt:Key не настроен. Задайте секрет длиной не менее 32 символов через переменную окружения Jwt__Key.");
+    }
+
+    Log.Warning("Jwt:Key не настроен — используется ключ-заглушка из appsettings.json. Для реальной работы задайте Jwt__Key.");
+}
+
+// Проверка почты и ссылок: в Production напоминания без SMTP и FrontendUrl
+// молча не доходят, поэтому валидируем на старте. В Development — только предупреждение.
+var emailFrom = builder.Configuration["Email:From"];
+var frontendUrl = builder.Configuration["App:FrontendUrl"];
+var smtpHost = builder.Configuration["Email:Smtp:Host"];
+var emailProvider = builder.Configuration["Email:Provider"];
+var brevoApiKey = builder.Configuration["Email:Brevo:ApiKey"];
+var configProblems = new List<string>();
+
+// Транспорт выбирает ровно тот же код, что и сам отправщик, — иначе на старте
+// можно потребовать SMTP-хост там, где письма идут через HTTP-API, или наоборот.
+var emailTransport = EmailSender.ResolveTransport(
+    emailProvider,
+    brevoApiKey,
+    smtpHost,
+    builder.Configuration["Email:Smtp:User"],
+    builder.Configuration["Email:Smtp:Password"]);
+
+var configErrors = new List<string>();
+var configWarnings = new List<string>();
+
+if (string.IsNullOrWhiteSpace(emailFrom) || !System.Net.Mail.MailAddress.TryCreate(emailFrom, out _))
+    configErrors.Add("Email:From должен быть корректным адресом отправителя.");
+
+if (string.IsNullOrWhiteSpace(frontendUrl) || !Uri.TryCreate(frontendUrl, UriKind.Absolute, out _))
+    configErrors.Add("App:FrontendUrl должен быть абсолютным URL (ссылки из писем строятся от него).");
+
+// Отсутствие транспорта почты — предупреждение, а не остановка процесса: письма
+// не уходят из этого региона в принципе (SMTP-порты режет хостер), а сайт без
+// напоминаний живёт, без API — нет. Молчать при этом нельзя: ровно так бета и
+// получила «письмо есть только в журнале».
+if (emailTransport == "log")
+    configWarnings.Add(
+        "почта не настроена (" +
+        EmailSender.ExplainLogOnly(
+            emailProvider,
+            brevoApiKey,
+            smtpHost,
+            builder.Configuration["Email:Smtp:User"],
+            builder.Configuration["Email:Smtp:Password"]) + ") — письма пишутся в журнал EmailMessages");
+
+if (!builder.Configuration.GetValue(RequireConfirmedEmailAttribute.ConfigKey, defaultValue: true))
+    configWarnings.Add(
+        "Auth:RequireConfirmedEmail=false — ИИ-функции доступны без подтверждения почты, " +
+        "бюджет Gemini держат только лимиты Ai__DailyUserRequestLimit / Ai__GlobalDailyRequestLimit");
+
+if (configWarnings.Count > 0)
+{
+    Log.Warning("Конфигурация почты и доступов: {Warnings}", string.Join("; ", configWarnings));
+}
+
+if (configErrors.Count > 0)
+{
+    var message = string.Join(" ", configErrors);
+    if (!builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException(
+            "Конфигурация почты неполна: " + message + " Задайте переменные Email__From и App__FrontendUrl.");
+    }
+
+    Log.Warning("Проверка конфигурации: {ConfigProblems}", message);
+}
+
+// Rate limiting: защита логина/регистрации/сброса пароля от брутфорса.
+// Политики и партиции — в Security/RateLimitPolicies (покрыто юнит-тестами).
+// Переопределения лимитов из конфигурации — до регистрации rate limiter'а.
+// На стенде поднимаем порог регистрации (Auth__SignupIpPermitLimit), на проде
+// значения остаются продовыми.
+RateLimitPolicies.ApplyOverrides(builder.Configuration);
+builder.Services.AddRateLimiter(RateLimitPolicies.Configure);
+
+// ForwardedHeaders: настоящий IP клиента виден лимитеру только если мы доверяем
+// X-Forwarded-* нашему реверс-прокси. Источник доверия — Proxy__TrustedCidrs
+// (CIDR/IP через запятую); пустое значение = не доверять никому, поведение
+// ровно как раньше (партиция по адресу непосредственного пира).
+// Настройка должна быть применена ДО UseRateLimiter в конвейере (см. ниже).
+var trustedProxyCidrs = builder.Configuration["Proxy:TrustedCidrs"];
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    TrustedProxySetup.Configure(options, trustedProxyCidrs));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -92,7 +212,19 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+
+        // RoleClaimType — ключ, по которому проверяется роль в
+        // [Authorize(Roles = "...")]. Без него проверка идёт по
+        // ClaimTypes.Role из ClaimsIdentity — и не находит claim, выписанный
+        // под этим же URI, если mapping разошёлся. Значение совпадает с тем,
+        // что пишет AuthController (AppClaims.Role).
+        //
+        // NameClaimType намеренно не трогаем: 'sub' в Identity.Name не
+        // превращается, а userId в коде берут через ClaimTypes.NameIdentifier
+        // или FindFirst(sub). Настроить его на 'sub' — значит promised
+        // Identity.Name, которого не будет.
+        RoleClaimType = AppClaims.Role
     };
 });
 
@@ -100,19 +232,159 @@ builder.Services.AddAuthorization();
 
 // Наши сервисы
 builder.Services.AddMemoryCache();
+builder.Services.AddScoped<AiQuotaService>();
+builder.Services.AddScoped<RegistrationQuotaService>();
+builder.Services.AddSingleton(sp => new ResilientAiService(
+    sp.GetRequiredService<IConfiguration>(),
+    sp.GetRequiredService<ILogger<ResilientAiService>>(),
+    scopeFactory: sp.GetRequiredService<IServiceScopeFactory>()));
 builder.Services.AddScoped<DictionaryService>();
 builder.Services.AddScoped<SrsService>();
+builder.Services.AddScoped<SrsBreakdownService>();
 builder.Services.AddScoped<AiService>();
 builder.Services.AddScoped<AssistantService>();
+builder.Services.AddScoped<SpeechService>();
+builder.Services.AddScoped<PronunciationService>();
+builder.Services.AddScoped<LemmatizerService>();
+builder.Services.AddScoped<ReaderDifficultyService>();
+builder.Services.AddScoped<ReaderAssetService>();
+builder.Services.AddScoped<BookSnapshotParser>();
+builder.Services.AddScoped<ReaderContentService>();
+builder.Services.AddScoped<ReaderProgressService>();
+builder.Services.AddScoped<ReaderPocketService>();
+builder.Services.AddScoped<AzureSpeechService>();
+// Прогрев — синглтон: идемпотентность держится на памяти процесса. Оба его
+// сервиса scoped, поэтому каждое обращение открывает собственный scope — так
+// фоновый прогрев не берёт DbContext запроса, который уже утилизирован.
+builder.Services.AddSingleton(sp =>
+{
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+    return new ChapterSpeechPrefetcher(
+        () => scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ReaderContentService>(),
+        () => scopeFactory.CreateScope().ServiceProvider.GetRequiredService<AzureSpeechService>(),
+        sp.GetRequiredService<ILogger<ChapterSpeechPrefetcher>>());
+});
+// Гостевой режим (docs/execution/EXECUTION_CONTRACT.md, R2): каталог публичных
+// книг и словарная справка без записи в БД. Без этих регистраций контроллер
+// `GuestReaderController` не резолвится и /api/guest/* отдаёт 500 при старте.
+builder.Services.Configure<GuestPreviewOptions>(
+    builder.Configuration.GetSection(GuestPreviewOptions.SectionName));
+builder.Services.AddScoped<GuestReaderCatalog>();
+builder.Services.AddScoped<GuestWordLookup>();
+builder.Services.AddScoped<GuestCatalogSeeder>();
+builder.Services.AddHttpClient("azure-speech", client =>
+{
+    // Синтез одной фразы у Azure — сотни миллисекунд; 30 с хватает даже
+    // на холодный старт, а зависший запрос не должен держать главу.
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddScoped<BookService>();
 builder.Services.AddScoped<PopularBooksService>();
+builder.Services.AddScoped<PublicCatalogService>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<AchievementService>();
+builder.Services.AddScoped<LeagueService>();
+builder.Services.AddScoped<EmailSender>();
+builder.Services.AddScoped<AuthEmailService>();
+builder.Services.AddScoped<ReminderService>();
+builder.Services.AddHostedService<ReminderBackgroundService>();
+// Синхронизация новостной ленты. NewsOptions собирается из секции «News»
+// один раз при старте: дефолты (2 ч / 2 мин / 120 дн) и их проверка живут
+// в NewsOptions.FromConfiguration, а не в виде `?? 2` по коду.
+builder.Services.AddSingleton(NewsOptions.FromConfiguration(builder.Configuration));
+
+// Источник подключается как INewsSource, а не как конкретный RssNewsSource:
+// NewsFetchService опрашивает ВСЕ источники из DI. Без этой регистрации он
+// получает пустую коллекцию и молча работает вхолостую — новостей нет, ошибок
+// в журнале тоже.
+//
+// HTTP-клиент создаёт сам RssNewsSource (статический, без прокси) — та же
+// причина, что у PopularBooksService: на машинах с локальным MITM-прокси
+// запрос к newsinlevels падает по таймауту. Поэтому AddHttpClient здесь не
+// используется: он инжектит клиент в конструктор, которого у класса нет.
+builder.Services.AddScoped<INewsSource, RssNewsSource>();
+
+builder.Services.AddScoped<NewsFetchService>();
+builder.Services.AddScoped<NewsCleanupService>();
+builder.Services.AddHostedService<NewsFetchBackgroundService>();
+builder.Services.AddScoped<GuestAnalyticsCleanupService>();
+builder.Services.AddHostedService<GuestAnalyticsCleanupBackgroundService>();
 builder.Services.AddScoped<BookAnalyzerService>();
 builder.Services.AddScoped<WordListSeeder>();
+builder.Services.AddScoped<WordExampleSeeder>();
+builder.Services.AddScoped<CategorySeeder>();
+builder.Services.AddScoped<RoleSeeder>();
+builder.Services.AddScoped<ContentCacheInvalidator>();
+
+// Singleton, а не Scoped: MarkdownRenderer держит собранный Markdig-pipeline
+// и экземпляр санитайзера. Ни того, ни другого нельзя пересоздавать на
+// каждый запрос — иначе теряется внутренний кэш парсера, и рендер статьи
+// становится дороже, чем сама отдача из базы. Состояния у класса нет.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Articles.MarkdownRenderer>();
+
+// Медиа-хранилище за интерфейсом: переезд на S3/MinIO не должен менять
+// контроллеры. Локальная реализация пишет под ContentRoot/uploads, а адреса
+// отдаёт относительными — платформа работает и с localhost, и по внешнему
+// адресу, и с телефона, а абсолютный адрес, собранный из base-url запроса,
+// ломается на каждом из этих случаев.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Media.IMediaStorage>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    return new EnglishLearningPlatform.API.Services.Media.LocalMediaStorage(
+        Path.Combine(env.ContentRootPath, "uploads"),
+        "/uploads",
+        sp.GetRequiredService<ILogger<EnglishLearningPlatform.API.Services.Media.LocalMediaStorage>>());
+});
+
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Import.WordImportParser>();
+
+// OpenAI-совместимый провайдер (DeepSeek, OpenRouter, Groq, Ollama).
+// Регистрируется всегда: если BaseUrl/ApiKey/Model пусты, IsConfigured
+// вернёт false, и AiService пойдёт прежним путём через Gemini.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Ai.OpenAiCompatibleClient>();
 builder.Services.AddScoped<GrammarSeeder>();
 builder.Services.AddScoped<StorySeeder>();
 
+builder.Services.AddScoped<EnglishLearningPlatform.API.Services.Seed.ArticleSeeder>();
+builder.Services.AddHttpClient<FeedbackNotifier>();
+// Именованный клиент для HTTP-API почты (Brevo): переиспользует соединения и
+// не зависит от закрытых хостером SMTP-портов. Таймаут ставится на запрос.
+builder.Services.AddHttpClient(EmailSender.BrevoClientName);
+
 var app = builder.Build();
+
+// W1.4.2: пустой Proxy__TrustedCidrs не выглядит как поломка — приложение
+// отвечает 200 и имеет зелёный /health, просто все лимиты по IP начинают
+// делить одну корзину на всю бету, а HSTS не доезжает до клиента. Оставить
+// это молча — значит пропустить дыру повторно на следующем деплое.
+BareProxyGuard.WarnIfBareProxy(
+    app.Services.GetRequiredService<IConfiguration>(),
+    app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup"),
+    RateLimitPolicies.AnyPartitionDependsOnClientIp());
+
+// ForwardedHeaders — самым первым middleware: всё, что ниже (логирование
+// запросов и особенно UseRateLimiter с партицией по IP), должно видеть
+// настоящий адрес клиента, а не адрес прокси.
+app.UseForwardedHeaders();
+
+// Одна строка на каждый HTTP-запрос в журнал; /health опрашивается часто —
+// успешные его пробы не пишем, чтобы не засорять журнал
+app.UseSerilogRequestLogging(options =>
+{
+    options.GetLevel = (httpContext, elapsed, exception) =>
+        exception != null || httpContext.Response.StatusCode >= 500
+            ? Serilog.Events.LogEventLevel.Error
+            : httpContext.Request.Path.StartsWithSegments("/health")
+                ? Serilog.Events.LogEventLevel.Verbose
+                : Serilog.Events.LogEventLevel.Information;
+});
+
+// Защитные заголовки — до обработчика исключений, чтобы они попадали
+// и на ответы об ошибках
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// Ловит необработанные исключения из всего, что ниже по конвейеру
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
@@ -122,24 +394,135 @@ if (app.Environment.IsDevelopment())
 
 // app.UseHttpsRedirection();
 
-// Статические файлы для обложек и загрузок
+// Публично раздаём только обложки книг: они не содержат персональных данных.
+// Аватары и EPUB отдаёт FilesController с проверкой владельца.
+var coversDirectory = Path.Combine(app.Environment.ContentRootPath, "uploads", "covers");
+Directory.CreateDirectory(coversDirectory);
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
-    RequestPath = "/uploads"
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(coversDirectory),
+    RequestPath = "/uploads/covers"
 });
 
 // CORS должен быть ДО UseAuthentication
 app.UseCors("Frontend");
 
+// Порядок: аутентификация ДО rate limiter.
+//
+// Партиция админских запросов строится по id пользователя (см.
+// RateLimitPartitionKeys.AdminIdentity). Если лимитер стоит раньше
+// UseAuthentication, User в HttpContext ещё пуст, и все админские вызовы мира
+// схлопываются в одну корзину по IP: 10 запросов на 5 минут на всех, включая
+// владельца. Лимитер, который читает claims, обязан идти после их разбора.
+//
+// Остальные партиции (auth, signup, upload, feedback) читают заголовки и тело
+// запроса — им порядок безразличен.
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check для деплоя
-app.MapGet("/health", () => Results.Ok(new { status = "ok", time = DateTime.UtcNow }));
+// Health check для деплоя: 200, когда БД отвечает, иначе 503.
+// Формат совместим со старой заглушкой: { status: "ok", time }
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var payload = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy
+                ? "ok"
+                : report.Status.ToString().ToLowerInvariant(),
+            time = DateTime.UtcNow,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString().ToLowerInvariant()
+            })
+        });
+        await context.Response.WriteAsync(payload, context.RequestAborted);
+    }
+});
+
+// В Development засеваем контент при старте. Сидеры идемпотентны, поэтому
+// повторный запуск ничего не дублирует. Без этого «Сборники», «Категории»
+// и «Грамматика» на фронтенде остаются пустыми, пока кто-нибудь вручную
+// не дёрнет /api/admin/seed-* с JWT.
+if (app.Environment.IsDevelopment())
+{
+    using var seedScope = app.Services.CreateScope();
+    var seedProvider = seedScope.ServiceProvider;
+    var seedLogger = seedProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        // Роли — первыми: остальные сиды не зависят от них, но bootstrap
+        // админа должен отработать до того, как кто-то откроет /admin.
+        var roleSeed = await seedProvider.GetRequiredService<RoleSeeder>().SeedAsync();
+
+        var wordListsSeed = await seedProvider.GetRequiredService<WordListSeeder>().SeedAsync();
+
+        // Примеры к словам идут ПОСЛЕ словаря: сидер ищет WordLevel по тексту,
+        // и на чистой базе заполнять нечего, пока WordLevels пуста.
+        var wordExamplesSeed = await seedProvider.GetRequiredService<WordExampleSeeder>().SeedAsync();
+
+        var categoriesSeed = await seedProvider.GetRequiredService<CategorySeeder>().SeedAsync();
+        var grammarSeed = await seedProvider.GetRequiredService<GrammarSeeder>().SeedAsync();
+
+        // Системные копии рассказов для гостевого чтения. Без этого шага
+        // /api/guest/books отдаёт пустой список: строки Books с
+        // UploadedByUserId == null не создаёт больше никто (пользовательские
+        // копии всегда имеют владельца). Идемпотентно: повторный старт
+        // пропускает уже созданные заголовки.
+        var guestSeed = await seedProvider.GetRequiredService<GuestCatalogSeeder>().SeedAsync();
+
+        // Разделы статей и стартовый черновик. Без этого /articles открывается
+        // с пустой навигацией, а первый заход в админку начинается с ручного
+        // создания рубрик. Идемпотентно: удалённое и переименованное не
+        // воскрешается и не откатывается.
+        await seedProvider.GetRequiredService<ArticleSeeder>().SeedAsync();
+
+        seedLogger.LogInformation(
+            "Роли: создано {Created}, уже было {Existing}, админ {AdminState}",
+            roleSeed.RolesCreated,
+            roleSeed.RolesExisting,
+            roleSeed.AdminAssigned
+                ? $"назначен ({roleSeed.BootstrapUserId})"
+                : roleSeed.AdminAlreadyAssigned
+                    ? "уже был"
+                    : "не назначался");
+
+        seedLogger.LogInformation(
+            "Сиды: сборники — {WordLists} (списков {Lists}, слов {Words}), категории — {Categories}, грамматика — {Grammar} (юнитов {Units})",
+            wordListsSeed.AlreadySeeded ? "уже были" : "засеяны",
+            wordListsSeed.ListsCreated,
+            wordListsSeed.WordLevelsSeeded,
+            categoriesSeed.AlreadySeeded ? "уже были" : "засеяны",
+            grammarSeed.AlreadySeeded ? "уже были" : "засеяны",
+            grammarSeed.UnitsCreated);
+
+        seedLogger.LogInformation(
+            "Гостевой каталог: новые копии {Created}, уже были {Skipped}",
+            guestSeed.Created,
+            guestSeed.Skipped);
+
+        seedLogger.LogInformation(
+            "Примеры к словам: обновлено {Updated}, пропущено {Skipped}, не найдено {NotFound}, отклонено {Rejected}{Error}",
+            wordExamplesSeed.Updated,
+            wordExamplesSeed.Skipped,
+            wordExamplesSeed.NotFound,
+            wordExamplesSeed.Rejected,
+            wordExamplesSeed.Error == null ? string.Empty : ", ошибка: " + wordExamplesSeed.Error);
+    }
+    catch (Exception ex)
+    {
+        // Не валим старт API из-за контента: без сидов приложение работает,
+        // просто соответствующие разделы будут пустыми.
+        seedLogger.LogError(ex, "Автозасев контента не удался, приложение продолжает работу");
+    }
+}
 
 // Логируем запуск
 Log.Information("English Learning Platform API started");

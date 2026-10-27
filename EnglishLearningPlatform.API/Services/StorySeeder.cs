@@ -185,6 +185,11 @@ public class StorySeeder
     // Генерирует EPUB из абзацев рассказа и создаёт Book для пользователя.
     // UploadedByUserId = userId — книга видна только этому пользователю.
     // index нужен для SVG-обложки (uploads/covers/story-{index}.svg).
+    //
+    // public: тем же генератором пользуется GuestCatalogSeeder, который кладёт
+    // системные копии рассказов (UploadedByUserId = null) для гостевого чтения.
+    // Один формат файла на оба пути — иначе гостевой EPUB не разберётся тем
+    // же BookSnapshotParser, и превью окажется пустым при живом каталоге.
     public async Task<Book?> CreateBookForUserAsync(string userId, StorySeedData story, int index)
     {
         try
@@ -224,7 +229,11 @@ public class StorySeeder
 
     // Минимальный валидный EPUB: mimetype + container.xml + OPF + EPUB3 nav + главы.
     // VersOne.Epub 3.3.6 умеет только читать, поэтому EPUB собираем ZipArchive-ом.
-    private static void WriteEpub(StorySeedData story, string filePath)
+    //
+    // public static: тем же генератором пользуется GuestCatalogSeeder. Файл
+    // обязан совпадать байт-в-байт по структуре с пользовательской копией —
+    // его разбирает тот же BookSnapshotParser.
+    public static void WriteEpub(StorySeedData story, string filePath)
     {
         using var stream = new FileStream(filePath, FileMode.Create);
         using var zip = new ZipArchive(stream, ZipArchiveMode.Create);

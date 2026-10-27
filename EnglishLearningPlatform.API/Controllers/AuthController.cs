@@ -1,31 +1,89 @@
+﻿using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
+using EnglishLearningPlatform.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EnglishLearningPlatform.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("auth")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly AuthEmailService _authEmail;
+    private readonly ILogger<AuthController> _logger;
+    private readonly IMemoryCache _cache;
+    private readonly RegistrationQuotaService _registrationQuota;
 
-    public AuthController(UserManager<User> userManager, IConfiguration configuration)
+    // Пауза между письмами на один адрес: защита от email-бомбинга
+    private static readonly TimeSpan AuthEmailCooldown = TimeSpan.FromMinutes(5);
+
+    public AuthController(
+        UserManager<User> userManager,
+        IConfiguration configuration,
+        AuthEmailService authEmail,
+        ILogger<AuthController> logger,
+        IMemoryCache cache,
+        RegistrationQuotaService registrationQuota)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _authEmail = authEmail;
+        _logger = logger;
+        _cache = cache;
+        _registrationQuota = registrationQuota;
+    }
+
+    private bool TryAcquireEmailSendSlot(string kind, string email)
+    {
+        var key = $"auth-email:{kind}:{email.Trim().ToLowerInvariant()}";
+        if (_cache.TryGetValue(key, out _))
+        {
+            return false;
+        }
+
+        _cache.Set(key, true, AuthEmailCooldown);
+        return true;
     }
 
     // POST: api/auth/register
     [HttpPost("register")]
+    [EnableRateLimiting("signup")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         var email = dto.Email.Trim();
+
+        // Honeypot: невидимое поля формы. Человек его не видит и не заполняет,
+        // бот-автозаполнитель — да. Дешевле капчи и не ломает UX.
+        if (!string.IsNullOrWhiteSpace(dto.Website))
+        {
+            _logger.LogWarning("Регистрация отклонена honeypot-полем: {Email}", email);
+            return BadRequest(new { message = "Invalid sign-up request" });
+        }
+
+        // Суточный кап на весь сервис (W1.4.1): почасовые лимиты по email и IP
+        // обходятся сплэмом на тысячу разных адресов — этот не обходится,
+        // он считается по созданным пользователям.
+        if (!await _registrationQuota.IsWithinDailyCapAsync())
+        {
+            _logger.LogWarning(
+                "Регистрация отклонена: суточный кап {Limit} исчерпан, попытка с {Email}",
+                _registrationQuota.DailyGlobalLimit, email);
+            return StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                new { message = "Регистрации на сегодня закрыты — дневной лимит исчерпан. Попробуйте завтра." });
+        }
 
         var user = new User
         {
@@ -34,10 +92,27 @@ public class AuthController : ControllerBase
             DisplayName = dto.DisplayName?.Trim(),
             CefrLevel = dto.CefrLevel,
             StudyGoal = dto.StudyGoal,
-            DailyGoalMinutes = dto.DailyGoalMinutes ?? 10
+            DailyGoalMinutes = Math.Clamp(dto.DailyGoalMinutes ?? 10, 1, 240),
+            TimeZoneId = UserTime.Normalize(dto.TimeZoneId),
+            // true по умолчанию: без письма-напоминания у нового пользователя нет
+            // ни одного канала возврата (пуш не спрашиваем, письмо подтверждения
+            // не уходит — почтового транспорта нет). Отписка остаётся в настройках,
+            // и там же стоят время и часовой пояс напоминания.
+            NotifyEnabled = dto.NotifyEnabled ?? true,
+            ReminderHour = Math.Clamp(dto.ReminderHour ?? 9, 0, 23),
+            // Если пользователь пропустит выбор аватара, остаётся базовый по умолчанию
+            AvatarUrl = AvatarService.DefaultAvatarUrl("avatar-1")
         };
 
-        
+        // Атрибуция канала фиксируется здесь и больше нигде: ни вход, ни
+        // повторная попытка регистрации не должны её переписывать.
+        AcquisitionNormalizer.ApplyOnCreate(
+            user,
+            refCode: dto.Ref,
+            utmSource: dto.UtmSource,
+            utmMedium: dto.UtmMedium,
+            utmContent: dto.UtmContent);
+
         var result = await _userManager.CreateAsync(user, dto.Password);
 
         if (!result.Succeeded)
@@ -45,9 +120,40 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        var token = GenerateJwtToken(user);
+        // Кап считается по созданным пользователям, поэтому фиксируем успех
+        // сразу — иначе счётчик отстаёт на TTL кэша
+        _registrationQuota.OnRegistrationCreated();
 
-        return Ok(new { token, userId = user.Id, email = user.Email, displayName = user.DisplayName });
+        // Новый пользователь ролей не имеет — явный пустой список, а не
+        // «прочитаем из базы на всякий случай»: регистрация не может выдать Admin.
+        var token = GenerateJwtToken(user, Array.Empty<string>());
+        var refreshToken = GenerateRefreshJwtToken(user);
+
+        // Письмо-подтверждение не должно ломать регистрацию: если SMTP недоступен,
+        // пользователь всё равно попадёт в приложение и сможет переслать письмо позже.
+        try
+        {
+            var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            await _authEmail.SendEmailConfirmationAsync(user, confirmToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Не удалось отправить письмо-подтверждение для {UserId}", user.Id);
+        }
+
+        return Ok(new
+        {
+            token,
+            refreshToken,
+            userId = user.Id,
+            email = user.Email,
+            displayName = user.DisplayName,
+            avatarUrl = user.AvatarUrl,
+            avatarFrame = user.AvatarFrame,
+            accentTheme = user.AccentTheme,
+            emailConfirmed = user.EmailConfirmed,
+            roles = Array.Empty<string>()
+        });
     }
 
     // POST: api/auth/login
@@ -61,42 +167,213 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid email or password" });
         }
 
+        // Заблокированный аккаунт: сообщение то же, что и при неверном пароле,
+        // чтобы не раскрывать существование аккаунта перебором почт.
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            _logger.LogWarning("Попытка входа в заблокированный аккаунт: {UserId}", user.Id);
+            return Unauthorized(new { message = "Invalid email or password" });
+        }
+
         var result = await _userManager.CheckPasswordAsync(user, dto.Password);
 
         if (!result)
         {
+            // Считаем неудачу: после MaxFailedAccessAttempts аккаунт блокируется
+            // на DefaultLockoutTimeSpan, и перебор пароля перестаёт работать.
+            await _userManager.AccessFailedAsync(user);
             return Unauthorized(new { message = "Invalid email or password" });
         }
 
-        // Генерируем JWT
-        var token = GenerateJwtToken(user);
+        // Успешный вход сбрасывает счётчик неудач
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        // Генерируем JWT. Роли читаются из AspNetUserRoles: без них админский
+        // токен неотличим от пользовательского и [Authorize(Roles="Admin")]
+        // отвечает 403 даже владельцу.
+        var userRoles = await _userManager.GetRolesAsync(user);
+        var token = GenerateJwtToken(user, userRoles);
+        var refreshToken = GenerateRefreshJwtToken(user);
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
 
-        return Ok(new { token, userId = user.Id, email = user.Email, displayName = user.DisplayName });
+        return Ok(new
+        {
+            token,
+            refreshToken,
+            userId = user.Id,
+            email = user.Email,
+            displayName = user.DisplayName,
+            avatarUrl = user.AvatarUrl,
+            avatarFrame = user.AvatarFrame,
+            accentTheme = user.AccentTheme,
+            emailConfirmed = user.EmailConfirmed,
+            // Фронту нужен признак админа, чтобы нарисовать ссылку в /admin.
+            // Это подсказка для UI, а не защита: настоящий гейт — [Authorize]
+            // на бэкенде и middleware на /admin.
+            roles = userRoles
+        });
+    }
+
+    // POST: api/auth/refresh
+    // Обновляет короткоживущий access-токен по refresh-токену из зашифрованной
+    // сессии NextAuth. Refresh-токен подписан отдельной аудиторией, поэтому его
+    // нельзя использовать как обычный bearer для API.
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+    {
+        try
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var validation = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = true,
+                // Своя проверка аудитории: refresh-токен не должен приниматься
+                // обычным JWT-bearer middleware и наоборот.
+                AudienceValidator = (audiences, _, _) =>
+                    audiences.Contains(RefreshAudience, StringComparer.Ordinal),
+                ValidateLifetime = true,
+                RequireExpirationTime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = key,
+                ClockSkew = TimeSpan.FromMinutes(1)
+            };
+
+            // MapInboundClaims=false сохраняет sub и typ в исходном виде:
+            // иначе sub превращается в NameIdentifier и пользователь не находится.
+            var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+            var principal = handler.ValidateToken(
+                dto.RefreshToken,
+                validation,
+                out var validatedToken);
+            if (validatedToken is not JwtSecurityToken jwt ||
+                !string.Equals(jwt.Header.Alg, SecurityAlgorithms.HmacSha256, StringComparison.Ordinal) ||
+                !string.Equals(principal.FindFirst("typ")?.Value, "refresh", StringComparison.Ordinal))
+            {
+                return Unauthorized(new { message = "Invalid refresh token" });
+            }
+
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var user = string.IsNullOrWhiteSpace(userId)
+                ? null
+                : await _userManager.FindByIdAsync(userId);
+
+            if (user == null || await _userManager.IsLockedOutAsync(user))
+            {
+                return Unauthorized(new { message = "Invalid refresh token" });
+            }
+
+            // Роли перечитываются при каждом refresh, а не переносятся из
+            // старого токена: снятие админки должно отзываться за один цикл
+            // обновления, иначе украденный токен живёт admin'ом до 7 дней.
+            var refreshedRoles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                token = GenerateJwtToken(user, refreshedRoles),
+                refreshToken = GenerateRefreshJwtToken(user)
+            });
+        }
+        catch (SecurityTokenException ex)
+        {
+            _logger.LogInformation(ex, "Отклонён refresh-токен");
+            return Unauthorized(new { message = "Invalid refresh token" });
+        }
     }
 
     // POST: api/auth/forgot-password
-    // BETA: SMTP не настроен — токен возвращается в ответе напрямую.
-    // ПЕРЕД ПРОДАКШЕНОМ заменить отправкой письма и убрать токен из ответа!
+    // Токен уходит письмом. В ответе его нет ни в Development, ни в Production —
+    // иначе сброс пароля зависел бы от того, настроен ли SMTP.
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
+        const string neutral = "Если аккаунт существует, письмо со ссылкой уже отправлено.";
+
+        if (string.IsNullOrWhiteSpace(dto.Email))
+        {
+            return Ok(new { message = neutral });
+        }
+
         var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
         if (user == null)
         {
             // Не раскрываем существование аккаунта
-            return Ok(new { message = "If the account exists, a reset token has been generated." });
+            return Ok(new { message = neutral });
+        }
+
+        // Один адрес получает письмо не чаще раза в 5 минут
+        if (!TryAcquireEmailSendSlot("password-reset", user.Email ?? dto.Email))
+        {
+            return Ok(new { message = neutral });
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        return Ok(new
+        await _authEmail.SendPasswordResetAsync(user, token);
+
+        return Ok(new { message = neutral });
+    }
+
+    // POST: api/auth/confirm-email
+    // Принимает токен из письма и подтверждает адрес.
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Token))
         {
-            message = "Reset token generated.",
-            resetToken = token,
-            note = "BETA: SMTP не настроен, токен возвращён в ответе. Перед продакшеном — отправка письмом."
-        });
+            return BadRequest(new { message = "Ссылка неполная — запросите письмо заново." });
+        }
+
+        var user = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        if (user == null)
+        {
+            return BadRequest(new { message = "Ссылка недействительна или устарела." });
+        }
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            return Ok(new { message = "Email уже подтверждён.", alreadyConfirmed = true });
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, dto.Token);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { message = "Ссылка недействительна или устарела. Запросите письмо заново." });
+        }
+
+        return Ok(new { message = "Email подтверждён. Спасибо!" });
+    }
+
+    // POST: api/auth/resend-confirmation — повторное письмо для вошедшего пользователя
+    [HttpPost("resend-confirmation")]
+    [Authorize]
+    public async Task<IActionResult> ResendConfirmation()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = userId == null ? null : await _userManager.FindByIdAsync(userId);
+
+        if (user == null) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            return BadRequest(new { message = "У аккаунта не указан email." });
+        }
+
+        if (await _userManager.IsEmailConfirmedAsync(user))
+        {
+            return Ok(new { message = "Email уже подтверждён.", alreadyConfirmed = true });
+        }
+
+        if (!TryAcquireEmailSendSlot("confirm-email", user.Email))
+        {
+            return Ok(new { message = "Письмо уже отправлено недавно — проверьте почту." });
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        await _authEmail.SendEmailConfirmationAsync(user, token);
+
+        return Ok(new { message = "Письмо отправлено — проверьте почту." });
     }
 
     // POST: api/auth/reset-password
@@ -124,17 +401,70 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Password reset successfully" });
     }
 
-    private string GenerateJwtToken(User user)
+    private string RefreshAudience => $"{_configuration["Jwt:Audience"]}.Refresh";
+
+    private string GenerateRefreshJwtToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var days = Math.Clamp(
+            Convert.ToDouble(_configuration["Jwt:RefreshExpiryDays"] ?? "60"),
+            1,
+            365);
 
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("typ", "refresh")
         };
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: RefreshAudience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(days),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private string GenerateJwtToken(User user) => BuildAccessToken(user, roles: Array.Empty<string>());
+
+    /// <summary>
+    /// Собирает access-токен. Роли читаются из AspNetUserRoles, а не берутся из
+    /// утверждения вызывающего: иначе любой код с доступом к сервису мог бы
+    /// выписать себе Admin. Единственный источник правды — база.
+    /// </summary>
+    internal string GenerateJwtToken(User user, IEnumerable<string> roles)
+        => BuildAccessToken(user, roles);
+
+    public async Task<IReadOnlyList<string>> GetRolesAsync(User user)
+        => (await _userManager.GetRolesAsync(user)).ToList();
+
+    private string BuildAccessToken(User user, IEnumerable<string> roles)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        // Роль — отдельным claim на каждую (пользователь может иметь несколько).
+        // ClaimTypes.Role, а не "role": это ключ, который читает
+        // [Authorize(Roles = "Admin")] при любом значении MapInboundClaims.
+        foreach (var role in roles)
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                claims.Add(new Claim(AppClaims.Role, role));
+            }
+        }
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
@@ -149,7 +479,35 @@ public class AuthController : ControllerBase
 }
 
 // DTOs
-public record RegisterDto(string Email, string Password, string? DisplayName, string? CefrLevel, string? StudyGoal, int? DailyGoalMinutes);
-public record LoginDto(string Email, string Password);
-public record ForgotPasswordDto(string Email);
-public record ResetPasswordDto(string Email, string ResetToken, string NewPassword);
+public record RegisterDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(128)] string Password,
+    [property: MaxLength(100)] string? DisplayName,
+    [property: MaxLength(10)] string? CefrLevel,
+    [property: MaxLength(200)] string? StudyGoal,
+    int? DailyGoalMinutes,
+    [property: MaxLength(64)] string? TimeZoneId = null,
+    bool? NotifyEnabled = null,
+    int? ReminderHour = null,
+    // Honeypot-поле: всегда null/пусто для живого пользователя
+    [property: MaxLength(200)] string? Website = null,
+    // Атрибуция канала (W2.1): метки приходят прямо из URL, поэтому длина
+    // ограничена, а значение нормализуется на сервере (AcquisitionNormalizer).
+    [property: MaxLength(200)] string? UtmSource = null,
+    [property: MaxLength(200)] string? UtmMedium = null,
+    [property: MaxLength(200)] string? UtmContent = null,
+    [property: MaxLength(200)] string? Ref = null);
+public record LoginDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(128)] string Password);
+public record RefreshTokenDto(
+    [property: Required, MaxLength(4096)] string RefreshToken);
+public record ForgotPasswordDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email);
+public record ResetPasswordDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(200)] string ResetToken,
+    [property: Required, MaxLength(128)] string NewPassword);
+public record ConfirmEmailDto(
+    [property: Required, EmailAddress, MaxLength(256)] string Email,
+    [property: Required, MaxLength(200)] string Token);

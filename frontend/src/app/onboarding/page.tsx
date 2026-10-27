@@ -1,143 +1,172 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import ChoiceCard from '@/components/ui/ChoiceCard';
+import LexiMascot from '@/components/brand/lexi/LexiMascot';
+import FeedbackTrigger from '@/components/feedback/FeedbackTrigger';
+import Notice from '@/components/ui/Notice';
+import ProgressBar from '@/components/ui/ProgressBar';
+import {
+  BriefcaseIcon,
+  HomeIcon,
+  NotebookIcon,
+  PlaneIcon,
+  SpinnerIcon,
+  type IconProps,
+} from '@/components/ui/icons';
+import { AnimatePresence, motion } from 'motion/react';
+import { variants } from '@/lib/motion';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { API_URL } from '@/app/lib/api-url';
 import { useTrack } from '@/app/lib/analytics';
+import { getActiveAttribution, registrationPayload } from '@/lib/attribution';
+import {
+  POST_SIGNUP_PATH,
+  NOTIFY_COPY,
+  canSubmitAccount,
+  isValidEmail,
+  isValidPassword,
+  levelFromQuery,
+  stepNumber,
+  totalSteps,
+  welcomeHeadline,
+  type OnboardingStep,
+} from '@/lib/onboarding-flow';
+import {
+  INTERESTS,
+  interestSavePath,
+  interestsButtonLabel,
+  normalizeInterests,
+  toggleInterest,
+} from '@/lib/interests';
+import {
+  HONEYPOT_WRAPPER_STYLE,
+  buildRegistrationPayload,
+  detectTimeZoneId,
+  honeypotInputProps,
+} from '@/lib/signup-payload';
 
-type Step = 'level' | 'placement' | 'goal' | 'time' | 'account' | 'processing' | 'welcome';
+/*
+ * Онбординг: три шага и ни одного обязательного вопроса сверх доступа.
+ *
+ * Что было и почему это дорого стоило. Путь начинался с выбора уровня, затем
+ * шёл тест из 16 вопросов, затем цель, затем время в день, и только на
+ * четвёртом шаге появлялась форма. Человек, который пришёл «читать книгу»,
+ * три минуты отвечал на вопросы до первого слова — причём тест уровня он к
+ * этому моменту мог уже пройти на /test, и проходил его заново.
+ *
+ * Что теперь. Шаг 1 — email и пароль; имя необязательно и спрятано, бэкенд
+ * выводит его из адреса. Шаг 2 — зачем пришёл, и его можно пропустить одной
+ * кнопкой. Шаг 3 — какие новости показывать на дашборде, тоже необязательный.
+ * Уровень приходит адресом (`?level=b1`) из /test или из ссылки
+ * лендинга; если его нет — остаётся пустым, а не «a1 по умолчанию»: уровень
+ * влияет на рекомендации книг, и врать в профиле нельзя.
+ *
+ * Почему интересы спрашиваем ПОСЛЕ регистрации, а не до неё. Регистрация —
+ * это создание аккаунта, и всё, что стоит до неё, читается как условие
+ * входа. Интересы — настройка уже существующего аккаунта: ставятся отдельным
+ * шагом после входа (`POST /api/next/interests`), а пропуск ничего не ломает —
+ * без выбранных тем блок новостей показывает свежий микс. Заодно это
+ * единственный порядок, в котором запрос проходит: до входа прокси отдал бы 401.
+ * Меню это не затрагивает: отдельного пункта у новостей нет, сайдбар на 16
+ * пунктов уже не помещается в окно.
+ *
+ * После регистрации ведём в библиотеку (`/books?first=1`), а не на дашборд:
+ * дашборд у нового аккаунта состоит из нулей и пустых карточек, библиотека —
+ * из книг, и первое действие там осмысленное.
+ */
 
-interface PlacementQuestion {
-  id: number;
-  prompt: string;
-  options: string[];
+type Step = OnboardingStep | 'processing' | 'welcome';
+
+const goals: { value: string; name: string; Icon: (p: IconProps) => JSX.Element }[] = [
+  { value: 'work', name: 'Для работы', Icon: BriefcaseIcon },
+  { value: 'travel', name: 'Для путешествий', Icon: PlaneIcon },
+  { value: 'study', name: 'Для учёбы', Icon: NotebookIcon },
+  { value: 'life', name: 'Для повседневной жизни', Icon: HomeIcon },
+];
+
+/** Заголовок шага: вопрос сверху, пояснение под ним. */
+function StepHeading({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div className="mb-8">
+      <h1 className="text-h1 text-ink">{title}</h1>
+      {hint && <p className="mt-2 text-body text-slate">{hint}</p>}
+    </div>
+  );
 }
 
-interface PlacementResult {
-  cefrLevel: string;
-  correctCount: number;
-  total: number;
+/**
+ * Сохранение интересов. Вынесено отдельной функцией, потому что вызов идёт
+ * после `signIn`, а вход и запись настройки — разные вещи: неудачная запись
+ * не должна отменять созданный аккаунт и не должна держать человека на
+ * экране «Создаём…». Поэтому ошибка сохранения только пишется в консоль —
+ * темы можно выбрать позже, а блок новостей без них показывает микс.
+ */
+async function saveInterests(selected: readonly string[]): Promise<void> {
+  const interests = normalizeInterests(selected);
+  if (interests.length === 0) return;
+  try {
+    const res = await fetch(interestSavePath(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interests }),
+    });
+    if (!res.ok) {
+      // Диагностика в консоль: экран об этом молчит намеренно, но при
+      // разборе «темы не сохранились» нужен статус, а не догадки.
+      console.error('[интересы] ответ сервера', res.status, res.url);
+    }
+  } catch {
+    // Сеть недоступна — настройка не сохранилась, но аккаунт жив. Не мешаем.
+  }
 }
 
-const levels = [
-  { value: 'a1', name: 'A1 — Начальный', description: 'Я понимаю простые фразы' },
-  { value: 'a2', name: 'A2 — Элементарный', description: 'Я могу вести базовый диалог' },
-  { value: 'b1', name: 'B1 — Средний', description: 'Я понимаю основные идеи' },
-  { value: 'b2', name: 'B2 — Выше среднего', description: 'Я свободно общаюсь' },
-  { value: 'c1', name: 'C1 — Продвинутый', description: 'Я понимаю сложный текст' },
-];
-
-const goals = [
-  { value: 'work', name: 'Для работы', icon: '💼' },
-  { value: 'travel', name: 'Для путешествий', icon: '✈️' },
-  { value: 'study', name: 'Для учёбы', icon: '📚' },
-  { value: 'life', name: 'Для повседневной жизни', icon: '🏠' },
-  { value: 'movies', name: 'Фильмы и сериалы', icon: '🎬' },
-  { value: 'books', name: 'Читать книги', icon: '📖' },
-  { value: 'friends', name: 'Общение с людьми', icon: '💬' },
-  { value: 'brain', name: 'Тренировка мозга', icon: '🧠' },
-];
-
-const timeOptions = [
-  { value: '5-10', name: '5–10 минут в день', minutes: 10 },
-  { value: '15-20', name: '15–20 минут в день', minutes: 20 },
-  { value: '30+', name: '30+ минут в день', minutes: 30 },
-];
-
-const goalName = (value: string) => goals.find((g) => g.value === value)?.name ?? value;
-
-const levelLabel = (value: string) =>
-  levels.find((l) => l.value === value)?.name.split(' — ')[0].toUpperCase() || value.toUpperCase();
-
-export default function OnboardingPage() {
+/**
+ * `useSearchParams` в Next 14 требует границы Suspense при пререндере:
+ * без неё сборка ругается и страница уходит в клиентский рендер целиком.
+ */
+function OnboardingForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const trackEvent = useTrack();
-  const [step, setStep] = useState<Step>('level');
+
+  // Уровень из адреса читается один раз на монтирование: если позже он
+  // появится в URL, анкета не должна перерисовываться под человеком.
+  const levelFromUrl = levelFromQuery(searchParams?.get('level'));
+  const cameFromTest = Boolean(levelFromUrl);
+
+  const [step, setStep] = useState<Step>('account');
   const [data, setData] = useState({
-    level: '',
     goals: [] as string[],
-    time: '',
     name: '',
     email: '',
     password: '',
-    notifications: false,
+    // Напоминания включены по умолчанию: без письма у нового пользователя нет
+    // ни одного канала возврата (пушей в продукте нет, подтверждение почты не
+    // требуется), а отписка есть в настройках.
+    notifications: true,
+    // Темы новостей. По умолчанию пусто: интересы — не обязательный вопрос,
+    // и «отметим всё за человека» значило бы записать в профиль догадку.
+    interests: [] as string[],
+    // Honeypot (W1.4.4): поле «website» для ботов-автозаполнителей. Человек его
+    // не видит и не трогает, поэтому для живого пользователя это всегда ''.
+    website: '',
   });
   const [accountError, setAccountError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showName, setShowName] = useState(false);
 
-  // Тест уровня
-  const [placementQuestions, setPlacementQuestions] = useState<PlacementQuestion[]>([]);
-  const [placementIndex, setPlacementIndex] = useState(0);
-  const [placementChoice, setPlacementChoice] = useState<number | null>(null);
-  const [placementAnswers, setPlacementAnswers] = useState<{ id: number; choice: number }[]>([]);
-  const [placementResult, setPlacementResult] = useState<PlacementResult | null>(null);
-  const [placementError, setPlacementError] = useState('');
-  const [isPlacementLoading, setIsPlacementLoading] = useState(false);
+  // Сколько времени в день человек готов тратить. Отдельным шагом больше не
+  // спрашиваем: уходит вместе с целью, по умолчанию 20 минут — середина из
+  // трёх вариантов, которые были раньше.
+  const minutes = 20;
 
-  const totalSteps = 4;
-  const currentStepNumber = step === 'level' ? 1 :
-                          step === 'goal' ? 2 :
-                          step === 'time' ? 3 :
-                          step === 'account' ? 4 : 4;
-
-  const startPlacement = async () => {
-    setPlacementError('');
-    setIsPlacementLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/profile/placement`);
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const body = await res.json();
-      setPlacementQuestions(body.questions || []);
-      setPlacementIndex(0);
-      setPlacementChoice(null);
-      setPlacementAnswers([]);
-      setPlacementResult(null);
-      setStep('placement');
-    } catch {
-      setPlacementError('Не удалось загрузить тест. Попробуйте ещё раз или выберите уровень вручную.');
-    } finally {
-      setIsPlacementLoading(false);
-    }
-  };
-
-  const submitPlacementAnswer = async () => {
-    if (placementChoice === null) return;
-    const answers = [...placementAnswers, { id: placementQuestions[placementIndex].id, choice: placementChoice }];
-    setPlacementAnswers(answers);
-
-    if (placementIndex < placementQuestions.length - 1) {
-      setPlacementIndex(placementIndex + 1);
-      setPlacementChoice(null);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/api/profile/placement/result`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers }),
-      });
-      if (!res.ok) throw new Error(`status ${res.status}`);
-      const result: PlacementResult = await res.json();
-      setPlacementResult(result);
-    } catch {
-      setPlacementError('Не удалось отправить результаты. Попробуйте ещё раз.');
-    }
-  };
-
-  const handleNext = () => {
-    if (step === 'level') setStep('goal');
-    else if (step === 'goal') setStep('time');
-    else if (step === 'time') setStep('account');
-  };
-
-  const handleBack = () => {
-    if (step === 'level') setStep('level');
-    else if (step === 'goal') setStep('level');
-    else if (step === 'time') setStep('goal');
-    else if (step === 'account') setStep('time');
-  };
+  const currentStepNumber = stepNumber(
+    step === 'goal' || step === 'interests' ? step : 'account'
+  );
+  const stepsTotal = totalSteps();
 
   const toggleGoal = (value: string) => {
     setData((prev) => ({
@@ -148,39 +177,95 @@ export default function OnboardingPage() {
     }));
   };
 
-  const register = async () => {
+  // Порядок в выборе — как в справочнике, а не как нажимали: при возврате на
+  // шаг галочки не должны оказаться вразнобой.
+  const toggleInterestKey = (key: string) => {
+    setData((prev) => ({ ...prev, interests: toggleInterest(prev.interests, key) }));
+  };
+
+  const register = async (aheadGoal?: string[]) => {
     setAccountError('');
     setIsRegistering(true);
     setStep('processing');
 
-    const timeOption = timeOptions.find((t) => t.value === data.time);
+    const goalsToSend = aheadGoal ?? data.goals;
+
+    // Канал, по которому человек пришёл (utm/ref из cookie). Пустой объект,
+    // если меток не было: аккаунт остаётся «без источника», а не «с пустым».
+    const attribution =
+      typeof window === 'undefined'
+        ? {}
+        : registrationPayload(getActiveAttribution(document.cookie, window.sessionStorage));
 
     try {
-      const res = await fetch(`${API_URL}/api/auth/register`, {
+      const res = await fetch('/api/next/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          displayName: data.name || undefined,
-          cefrLevel: data.level || undefined,
-          studyGoal: data.goals.length > 0 ? data.goals.join(',') : undefined,
-          dailyGoalMinutes: timeOption?.minutes,
-        }),
+        // Тело собирается в одном месте (src/lib/signup-payload.ts), потому что
+        // имена ключей — контракт с серверным RegisterDto: опечатку MVC не
+        // показывает, поле просто перестаёт приходить.
+        body: JSON.stringify(
+          buildRegistrationPayload(
+            {
+              email: data.email.trim(),
+              password: data.password,
+              name: data.name.trim(),
+              level: levelFromUrl ?? '',
+              goals: goalsToSend,
+              minutes,
+              notifications: data.notifications,
+              // Часовой пояс нужен, чтобы стрик и дневная цель считались по местному времени
+              timezone: detectTimeZoneId(),
+              website: data.website,
+            },
+            attribution
+          )
+        ),
       });
 
       if (!res.ok) {
-        let message = 'Не удалось создать аккаунт. Попробуйте ещё раз.';
+        /*
+         * Сообщение строится по КОДУ ответа, а не одной фразой «попробуйте ещё раз».
+         *
+         * Живой случай: сервер отвечал 429 (лимит 50 регистраций в час на IP),
+         * а форма показывала «Не удалось создать аккаунт. Попробуйте ещё раз» —
+         * человек повторял действие, упирался в тот же лимит и не понимал
+         * причины. Код ответа известен здесь же, скрывать его незачем.
+         */
+        let message = `Не удалось создать аккаунт (код ${res.status}). Попробуйте ещё раз.`;
+
+        if (res.status === 429) {
+          message =
+            'Слишком много попыток регистрации с этого адреса. ' +
+            'Лимит — 50 в час. Попробуйте позже или войдите в существующий аккаунт.';
+        } else if (res.status === 409) {
+          message = 'Аккаунт с таким email уже существует. Войдите или восстановите пароль.';
+        } else if (res.status === 502 || res.status === 503) {
+          message = 'Сервер недоступен (код ' + res.status + '). Проверьте, запущен ли API.';
+        }
+
         try {
           const body = await res.json();
           if (Array.isArray(body) && body.length > 0) {
-            message = body.map((e: { description?: string }) => e.description).filter(Boolean).join(' ');
+            // Ошибки валидации модели: MVC отдаёт массив с описаниями.
+            const details = body
+              .map((e: { description?: string }) => e.description)
+              .filter(Boolean)
+              .join(' ');
+            if (details) message = details;
           } else if (typeof body?.message === 'string') {
             message = body.message;
+          } else if (typeof body?.error === 'string') {
+            message = body.error + ' (код ' + res.status + ')';
           }
         } catch {
-          // оставляем сообщение по умолчанию
+          // тело не JSON — оставляем сообщение по коду
         }
+
+        // Диагностика в консоль браузера: при разборе жалоб «не создаётся
+        // аккаунт» первым делом нужно видеть статус и тело ответа.
+        console.error('[регистрация] ответ сервера', res.status, res.url);
+
         setAccountError(message);
         setStep('account');
         setIsRegistering(false);
@@ -188,7 +273,7 @@ export default function OnboardingPage() {
       }
 
       const result = await signIn('credentials', {
-        email: data.email,
+        email: data.email.trim(),
         password: data.password,
         redirect: false,
       });
@@ -199,7 +284,7 @@ export default function OnboardingPage() {
         return;
       }
 
-      setStep('welcome');
+      setStep('interests');
       trackEvent('register');
     } catch {
       setAccountError('Сервер недоступен, попробуйте позже');
@@ -209,396 +294,403 @@ export default function OnboardingPage() {
     }
   };
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
-
   const handleAccountSubmit = () => {
-    if (!data.name.trim() || !emailValid || data.password.length < 6) return;
-    register();
+    if (!canSubmitAccount({ email: data.email, password: data.password })) return;
+    setStep('goal');
+  };
+
+  /*
+   * Шаг цели остаётся точкой регистрации: аккаунт создаётся здесь, а шаг
+   * интересов идёт уже после входа и только дописывает настройку. Так
+   * цепочка не зависит от того, вернулся ли человек назад: пока аккаунта
+   * нет, `POST /api/next/interests` ответил бы 401.
+   */
+  const skipGoal = () => {
+    trackEvent('onboarding_goal_skipped');
+    void register([]);
+  };
+
+  /**
+   * Завершение шага интересов: после успешной регистрации и входа (шаг
+   * `interests` открывается только из `register`) темы уходят отдельным
+   * запросом. Пропуск — не «стереть темы», а «пока без них»: `POST` с
+   * пустым массивом значил бы очистку, которой человек не просил.
+   */
+  const finishInterests = async (selected: string[]): Promise<void> => {
+    // Шаг отвечает за настройку, а не за аккаунт — ошибка записи не держит
+    // человека: он идёт дальше, блок новостей покажет свежий микс.
+    await saveInterests(selected);
+    setStep('welcome');
+  };
+
+  const skipInterests = () => {
+    trackEvent('onboarding_interests_skipped');
+    void finishInterests([]);
   };
 
   const handleComplete = () => {
-    router.push('/dashboard');
+    router.push(POST_SIGNUP_PATH);
   };
+
+  const emailValid = isValidEmail(data.email);
+  const passwordValid = isValidPassword(data.password);
 
   if (step === 'processing') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F5EF] px-4">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#356B52] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-          <p className="text-[#20231F] text-lg">Создаём ваш аккаунт...</p>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-surface px-4">
+        <div role="status" className="text-center">
+          <span className="state-orb bg-surface-accent text-on-accent">
+            <SpinnerIcon size={24} className="h-8 w-8" />
+          </span>
+          <p className="text-body-lg text-ink">Создаём ваш аккаунт…</p>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (step === 'welcome') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F5EF] px-4">
-        <div className="max-w-md w-full text-center">
-          <div className="text-6xl mb-6">🎉</div>
-          <h1 className="text-3xl font-bold text-[#20231F] mb-4">
-            Добро пожаловать, {data.name || 'друг'}!
-          </h1>
-          <p className="text-[#5A5F5A] text-lg mb-8">
-            Ваш аккаунт готов. Уровень: <b>{levelLabel(data.level)}</b>
-            {data.goals.length > 0 && (
-              <> · Цели: {data.goals.map(goalName).join(', ')}</>
-            )}
+      <main className="flex min-h-screen flex-col items-center justify-center bg-surface px-4">
+        <div className="w-full max-w-md text-center">
+          <LexiMascot pose="wave" className="mx-auto -mt-4 mb-3 w-40" />
+          <h1 className="mb-4 text-h1 text-ink">{welcomeHeadline(data.name)}</h1>
+          <p className="mb-8 text-body-lg text-slate">
+            Аккаунт готов. Первый шаг — открыть книгу: слова попадут в словарь сами,
+            когда вы нажмёте на них в тексте.
           </p>
-          <button
-            onClick={handleComplete}
-            className="btn-primary w-full"
-          >
-            Начать обучение
-          </button>
+          <Button onClick={handleComplete} className="w-full" data-testid="onboarding-finish">
+            Выбрать первую книгу
+          </Button>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] flex flex-col">
-      {/* Header */}
-      <header className="border-b border-[#D6D3CC]">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <span className="text-xl font-semibold text-[#20231F]">Lexicon</span>
-          <span className="text-sm text-[#5A5F5A]">
-            Шаг {currentStepNumber} из {totalSteps}
-          </span>
+    <div className="flex min-h-screen flex-col bg-surface">
+      <header className="border-b border-hairline">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
+          <span className="font-heading text-h2 text-ink">Lexicon</span>
+          <div className="flex items-center gap-4">
+            <FeedbackTrigger className="text-caption text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink">
+              Отзыв
+            </FeedbackTrigger>
+            <span className="text-body-sm text-slate">
+              Шаг {currentStepNumber} из {stepsTotal}
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* Progress bar */}
-      <div className="bg-white border-b border-[#D6D3CC]">
-        <div className="max-w-4xl mx-auto px-6 py-3">
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${(currentStepNumber / totalSteps) * 100}%` }}
-            />
-          </div>
+      <div className="border-b border-hairline bg-canvas">
+        <div className="mx-auto w-full max-w-4xl px-6 py-3">
+          <ProgressBar
+            value={(currentStepNumber / stepsTotal) * 100}
+            label={`Шаг ${currentStepNumber} из ${stepsTotal}`}
+          />
         </div>
       </div>
 
-      {/* Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-2xl w-full">
-          {step === 'level' && (
-            <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-[#20231F] mb-2">
-                Какой у вас уровень?
-              </h1>
-              <p className="text-[#5A5F5A] mb-8">Это поможет подобрать подходящий материал</p>
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <div className="w-full max-w-2xl">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              variants={variants.enter}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {step === 'account' && (
+                <div>
+                  <StepHeading
+                    title="Создайте аккаунт"
+                    hint={
+                      cameFromTest
+                        ? 'Уровень из теста уже учтён — остались почта и пароль.'
+                        : 'Email и пароль — всё, что нужно. Имя спросим позже, если захотите.'
+                    }
+                  />
 
-              <div className="space-y-3 mb-6">
-                {levels.map((level) => (
-                  <button
-                    key={level.value}
-                    onClick={() => setData({ ...data, level: level.value })}
-                    className={`w-full p-5 rounded-xl border-2 text-left transition-all ${
-                      data.level === level.value
-                        ? 'border-[#356B52] bg-[#E7ECE4]'
-                        : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
-                    }`}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleAccountSubmit();
+                    }}
+                    className="mb-8 space-y-5"
                   >
-                    <div className="font-medium text-[#20231F] mb-1">{level.name}</div>
-                    <div className="text-sm text-[#5A5F5A]">{level.description}</div>
-                  </button>
-                ))}
-              </div>
+                    <div>
+                      <label
+                        htmlFor="onboarding-email"
+                        className="mb-2 block text-body-sm font-medium text-ink"
+                      >
+                        Email
+                      </label>
+                      <input
+                        id="onboarding-email"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        value={data.email}
+                        onChange={(e) => setData({ ...data, email: e.target.value })}
+                        placeholder="example@mail.com"
+                        className="input"
+                        data-testid="onboarding-email"
+                      />
+                      {data.email && !emailValid && (
+                        <p className="mt-1 text-body-sm text-semantic-error">
+                          Введите корректный email
+                        </p>
+                      )}
+                    </div>
 
-              <button
-                onClick={startPlacement}
-                disabled={isPlacementLoading}
-                className="w-full mb-8 py-3 rounded-xl border-2 border-dashed border-[#C4A77D] text-[#356B52] font-medium hover:bg-[#E7ECE4] disabled:opacity-50 transition-all"
-              >
-                {isPlacementLoading ? 'Загружаем тест...' : 'Не знаю свой уровень — пройти тест'}
-              </button>
+                    <div>
+                      <label
+                        htmlFor="onboarding-password"
+                        className="mb-2 block text-body-sm font-medium text-ink"
+                      >
+                        Пароль
+                      </label>
+                      <input
+                        id="onboarding-password"
+                        type="password"
+                        required
+                        autoComplete="new-password"
+                        value={data.password}
+                        onChange={(e) => setData({ ...data, password: e.target.value })}
+                        placeholder="Минимум 6 символов"
+                        className="input"
+                        data-testid="onboarding-password"
+                      />
+                      {data.password && !passwordValid && (
+                        <p className="mt-1 text-body-sm text-semantic-error">
+                          Пароль должен быть не короче 6 символов
+                        </p>
+                      )}
+                    </div>
 
-              {placementError && step === 'level' && (
-                <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm mb-6">
-                  {placementError}
+                    {/* Имя — необязательное и спрятанное: требовать строку ради
+                        доступа к продукту незачем, бэкенд выведет её из email. */}
+                    {showName ? (
+                      <div>
+                        <label
+                          htmlFor="onboarding-name"
+                          className="mb-2 block text-body-sm font-medium text-ink"
+                        >
+                          Имя <span className="font-normal text-slate">(необязательно)</span>
+                        </label>
+                        <input
+                          id="onboarding-name"
+                          type="text"
+                          autoComplete="given-name"
+                          value={data.name}
+                          onChange={(e) => setData({ ...data, name: e.target.value })}
+                          placeholder="Как к вам обращаться"
+                          className="input"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowName(true)}
+                        className="text-body-sm text-primary underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink"
+                      >
+                        Указать имя (необязательно)
+                      </button>
+                    )}
+
+                    <label
+                      htmlFor="onboarding-notify"
+                      className="flex cursor-pointer items-start gap-3"
+                    >
+                      <input
+                        id="onboarding-notify"
+                        type="checkbox"
+                        checked={data.notifications}
+                        onChange={(e) => setData({ ...data, notifications: e.target.checked })}
+                        className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                        data-testid="onboarding-notify"
+                      />
+                      <span className="text-body-sm text-slate">
+                        {NOTIFY_COPY.label}
+                        <span className="block text-caption text-slate">{NOTIFY_COPY.hint}</span>
+                      </span>
+                    </label>
+
+                    {/* Honeypot (W1.4.4, SECURITY_GATE R-09): автозаполнитель
+                        бота заполняет всё, что видит в разметке, — человек это
+                        поле не видит и не трогает. Спрятано смещением и
+                        clipping-ом вокруг самого поля, а не display:none над
+                        блоком полей: во втором случае из доступности выпадала бы
+                        вся форма. tabIndex={-1} и aria-hidden выносят поле из
+                        клавиатурной обходки и из озвучки скринридером. */}
+                    <div aria-hidden="true" style={HONEYPOT_WRAPPER_STYLE}>
+                      <label htmlFor="onboarding-website">Website</label>
+                      <input
+                        id="onboarding-website"
+                        {...honeypotInputProps(data.website, (event) =>
+                          setData({ ...data, website: event.target.value })
+                        )}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 pt-1">
+                      <Link
+                        href="/login"
+                        className="text-body-sm text-slate underline decoration-hairline-strong underline-offset-4 transition-colors duration-fast ease-soft hover:text-ink"
+                      >
+                        У меня есть аккаунт
+                      </Link>
+                      <Button
+                        type="submit"
+                        disabled={!emailValid || !passwordValid}
+                        data-testid="onboarding-submit"
+                      >
+                        Далее
+                      </Button>
+                    </div>
+
+                    {/*
+                     * Согласие просим в тот момент, когда его действительно
+                     * дают: человек вводит email и пароль. Ссылки ведут на
+                     * /privacy (что делаем с данными) и /terms (правила беты) —
+                     * обе страницы публичные и открываются без аккаунта.
+                     */}
+                    <p className="text-caption leading-snug text-slate">
+                      Создавая аккаунт, вы принимаете{' '}
+                      <Link
+                        href="/terms"
+                        className="underline decoration-hairline-strong underline-offset-2 hover:text-ink"
+                      >
+                        правила беты
+                      </Link>{' '}
+                      и ознакомляетесь с{' '}
+                      <Link
+                        href="/privacy"
+                        className="underline decoration-hairline-strong underline-offset-2 hover:text-ink"
+                      >
+                        политикой конфиденциальности
+                      </Link>
+                      . Удалить аккаунт и все данные можно в настройках.
+                    </p>
+                  </form>
+
+                  {accountError && <Notice tone="danger">{accountError}</Notice>}
                 </div>
               )}
 
-              <div className="flex justify-between">
-                <button onClick={handleBack} className="btn-ghost">
-                  Назад
-                </button>
-                <button
-                  onClick={handleNext}
-                  disabled={!data.level}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Продолжить
-                </button>
-              </div>
-            </div>
-          )}
+              {step === 'goal' && (
+                <div>
+                  <StepHeading
+                    title="Зачем вам английский?"
+                    hint="Это необязательно — можно пропустить и сразу начать читать."
+                  />
 
-          {step === 'placement' && (
-            <div className="animate-fade-in">
-              {placementResult ? (
-                <>
-                  <div className="text-center">
-                    <div className="text-6xl mb-6">🎯</div>
-                    <h1 className="text-3xl font-bold text-[#20231F] mb-4">
-                      Ваш уровень: {levelLabel(placementResult.cefrLevel)}
-                    </h1>
-                    <p className="text-[#5A5F5A] text-lg mb-8">
-                      Правильных ответов: {placementResult.correctCount} из {placementResult.total}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setData({ ...data, level: placementResult.cefrLevel.toLowerCase() });
-                        setStep('goal');
-                      }}
-                      className="btn-primary w-full"
-                    >
-                      Продолжить
-                    </button>
-                  </div>
-                </>
-              ) : placementQuestions.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-12 h-12 border-4 border-[#356B52] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                  <p className="text-[#5A5F5A]">Загружаем вопросы...</p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-sm font-medium text-[#C4A77D] mb-1">
-                    Вопрос {placementIndex + 1} из {placementQuestions.length}
-                  </p>
-                  <div className="progress-bar mb-6">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${((placementIndex + 1) / placementQuestions.length) * 100}%` }}
-                    />
-                  </div>
-
-                  <h1 className="text-2xl font-bold text-[#20231F] mb-8">
-                    {placementQuestions[placementIndex].prompt}
-                  </h1>
-
-                  <div className="space-y-3 mb-8">
-                    {placementQuestions[placementIndex].options.map((option, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setPlacementChoice(i)}
-                        className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                          placementChoice === i
-                            ? 'border-[#356B52] bg-[#E7ECE4]'
-                            : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
-                        }`}
-                      >
-                        <span className="font-medium text-[#20231F]">{option}</span>
-                      </button>
+                  <div className="mb-6 space-y-3">
+                    {goals.map((goal) => (
+                      <ChoiceCard
+                        key={goal.value}
+                        title={goal.name}
+                        selected={data.goals.includes(goal.value)}
+                        onSelect={() => toggleGoal(goal.value)}
+                      />
                     ))}
                   </div>
 
-                  {placementError && (
-                    <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm mb-6">
-                      {placementError}
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <button
-                      onClick={() => setStep('level')}
-                      className="btn-ghost"
+                  <div className="flex items-center justify-between gap-3">
+                    <Button variant="ghost" onClick={skipGoal} disabled={isRegistering}>
+                      Пропустить
+                    </Button>
+                    <Button
+                      onClick={() => void register()}
+                      disabled={isRegistering}
+                      data-testid="onboarding-goal-continue"
                     >
-                      Назад
-                    </button>
-                    <button
-                      onClick={submitPlacementAnswer}
-                      disabled={placementChoice === null}
-                      className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {placementIndex < placementQuestions.length - 1 ? 'Далее' : 'Завершить тест'}
-                    </button>
+                      {isRegistering ? 'Создаём…' : 'Начать'}
+                    </Button>
                   </div>
-                </>
+                </div>
               )}
-            </div>
-          )}
 
-          {step === 'goal' && (
-            <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-[#20231F] mb-2">
-                Зачем вам английский?
-              </h1>
-              <p className="text-[#5A5F5A] mb-2">Можно выбрать несколько вариантов</p>
-              <p className="text-xs text-[#5A5F5A] mb-8">Выбрано: {data.goals.length}</p>
+              {step === 'interests' && (
+                <div>
+                  <StepHeading
+                    title="Какие темы вам интересны?"
+                    hint="На дашборде появятся короткие новости по этим темам. Можно выбрать несколько — или пропустить: тогда покажем самый свежий микс."
+                  />
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {goals.map((goal) => {
-                  const selected = data.goals.includes(goal.value);
-                  return (
-                    <button
-                      key={goal.value}
-                      onClick={() => toggleGoal(goal.value)}
-                      className={`relative p-6 rounded-xl border-2 transition-all ${
-                        selected
-                          ? 'border-[#356B52] bg-[#E7ECE4]'
-                          : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
-                      }`}
-                    >
-                      {selected && (
-                        <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#356B52] text-white text-xs flex items-center justify-center">
-                          ✓
-                        </span>
-                      )}
-                      <div className="text-3xl mb-3">{goal.icon}</div>
-                      <div className="font-medium text-[#20231F]">{goal.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-between">
-                <button onClick={handleBack} className="btn-ghost">
-                  Назад
-                </button>
-                <button
-                  onClick={handleNext}
-                  disabled={data.goals.length === 0}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Продолжить
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'time' && (
-            <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-[#20231F] mb-2">
-                Сколько времени вы сможете уделять?
-              </h1>
-              <p className="text-[#5A5F5A] mb-8">Это поможет составить оптимальный план</p>
-
-              <div className="space-y-3 mb-8">
-                {timeOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setData({ ...data, time: option.value })}
-                    className={`w-full p-5 rounded-xl border-2 text-left transition-all ${
-                      data.time === option.value
-                        ? 'border-[#356B52] bg-[#E7ECE4]'
-                        : 'border-[#D6D3CC] bg-white hover:border-[#C4A77D]'
-                    }`}
+                  {/*
+                   * Мультивыбор плашками, а не списком чекбоксов: тем десять,
+                   * и в карточках они занимают две-три строки вместо экрана.
+                   * `aria-pressed` — потому что визуально выбранная плашка
+                   * отличается только цветом, и скринридеру нужен явный статус.
+                   */}
+                  <div
+                    role="group"
+                    aria-label="Темы новостей"
+                    className="mb-8 flex flex-wrap gap-2"
                   >
-                    <div className="font-medium text-[#20231F]">{option.name}</div>
-                  </button>
-                ))}
-              </div>
+                    {INTERESTS.map((interest) => {
+                      const selected = data.interests.includes(interest.key);
+                      return (
+                        <button
+                          key={interest.key}
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => toggleInterestKey(interest.key)}
+                          data-testid={`onboarding-interest-${interest.key}`}
+                          className={`rounded-full border px-4 py-2 text-body-sm transition-[background-color,border-color,color] duration-fast ease-soft ${
+                            selected
+                              ? 'border-primary bg-surface-accent font-medium text-on-accent'
+                              : 'border-hairline-strong bg-canvas text-slate hover:border-primary hover:text-ink'
+                          }`}
+                        >
+                          {interest.label}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-              <div className="flex justify-between">
-                <button onClick={handleBack} className="btn-ghost">
-                  Назад
-                </button>
-                <button
-                  onClick={handleNext}
-                  disabled={!data.time}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Продолжить
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 'account' && (
-            <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-[#20231F] mb-2">
-                Создайте аккаунт
-              </h1>
-              <p className="text-[#5A5F5A] mb-8">Последний шаг перед началом</p>
-
-              <form onSubmit={(e) => { e.preventDefault(); handleAccountSubmit(); }} className="space-y-5 mb-8">
-                <div>
-                  <label className="block text-sm font-medium text-[#20231F] mb-2">
-                    Имя
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={data.name}
-                    onChange={(e) => setData({ ...data, name: e.target.value })}
-                    placeholder="Как к вам обращаться"
-                    className="input"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#20231F] mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={data.email}
-                    onChange={(e) => setData({ ...data, email: e.target.value })}
-                    placeholder="example@mail.com"
-                    className="input"
-                  />
-                  {data.email && !emailValid && (
-                    <p className="text-sm text-[#B85C5C] mt-1">Введите корректный email</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#20231F] mb-2">
-                    Пароль
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={data.password}
-                    onChange={(e) => setData({ ...data, password: e.target.value })}
-                    placeholder="Минимум 6 символов"
-                    className="input"
-                  />
-                  {data.password && data.password.length < 6 && (
-                    <p className="text-sm text-[#B85C5C] mt-1">Пароль должен быть не короче 6 символов</p>
-                  )}
-                </div>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={data.notifications}
-                    onChange={(e) => setData({ ...data, notifications: e.target.checked })}
-                    className="mt-1 w-4 h-4 rounded border-[#D6D3CC] text-[#356B52] focus:ring-[#356B52]"
-                  />
-                  <span className="text-sm text-[#5A5F5A]">
-                    Я согласен получать уведомления о прогрессе и напоминания о занятиях
-                  </span>
-                </label>
-              </form>
-
-              {accountError && (
-                <div className="p-3 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C] text-sm mb-6">
-                  {accountError}
+                  {/*
+                   * Об ошибке сохранения не сообщаем: аккаунт уже создан, а
+                   * темы можно выбрать позже — блок новостей без них
+                   * показывает свежий микс, и пугающая плашка здесь стоит
+                   * дороже, чем сама потеря настройки.
+                   */}
+                  <div className="flex items-center justify-between gap-3">
+                    <Button variant="ghost" onClick={skipInterests} disabled={isRegistering}>
+                      Пропустить
+                    </Button>
+                    <Button
+                      onClick={() => void finishInterests(data.interests)}
+                      disabled={isRegistering}
+                      data-testid="onboarding-interests-continue"
+                    >
+                      {data.interests.length > 0 ? interestsButtonLabel(data.interests) : 'Готово'}
+                    </Button>
+                  </div>
                 </div>
               )}
-
-              <div className="flex justify-between">
-                <button onClick={handleBack} className="btn-ghost">
-                  Назад
-                </button>
-                <button
-                  onClick={handleAccountSubmit}
-                  disabled={!data.name.trim() || !emailValid || data.password.length < 6 || isRegistering}
-                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isRegistering ? 'Создаём...' : 'Создать аккаунт'}
-                </button>
-              </div>
-            </div>
-          )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-surface">
+          <span role="status" className="text-body text-slate">
+            Загрузка…
+          </span>
+        </main>
+      }
+    >
+      <OnboardingForm />
+    </Suspense>
   );
 }

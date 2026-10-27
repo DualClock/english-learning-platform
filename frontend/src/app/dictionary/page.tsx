@@ -1,27 +1,33 @@
 'use client';
 
 import AppLayout from '@/components/AppLayout';
-import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useState, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'motion/react';
 import WordListsSection from '@/components/dictionary/WordListsSection';
-import { useSpeech } from '@/hooks/useSpeech';
-
-interface Word {
-  id: number;
-  text: string;
-  language?: string;
-  definitions: {
-    id: number;
-    definition: string;
-    partOfSpeech?: string;
-    example?: string;
-  }[];
-  createdAt: string;
-}
+import DictionarySkeleton from '@/components/dictionary/DictionarySkeleton';
+import DictionaryWordRow from '@/components/dictionary/DictionaryWordRow';
+import type { DictionaryWord } from '@/components/dictionary/types';
+import Pager from '@/components/Pager';
+import { useApiQuery } from '@/app/lib/use-api';
+import { apiMutate } from '@/app/lib/api-client';
+import { isPaged, type Paged } from '@/app/lib/paged';
+import PageHeader from '@/components/ui/PageHeader';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorState from '@/components/ui/ErrorState';
+import Button from '@/components/ui/Button';
+import {
+  AlertIcon,
+  PlusIcon,
+  RepeatIcon,
+  SearchIcon,
+} from '@/components/ui/icons';
+import { pluralWords } from '@/lib/plural';
+import { formatNumber } from '@/lib/format';
 
 function DictionaryTabs() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
@@ -31,109 +37,105 @@ function DictionaryTabs() {
   ];
 
   return (
-    <div className="flex gap-6 border-b border-[#D6D3CC] mb-6">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => router.push(tab.key === 'my' ? '/dictionary' : '/dictionary?tab=lists')}
-          className={`pb-3 px-1 text-sm font-medium transition-colors relative ${
-            activeTab === tab.key
-              ? 'text-[#356B52]'
-              : 'text-[#5A5F5A] hover:text-[#20231F]'
-          }`}
-        >
-          {tab.label}
-          {activeTab === tab.key && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#356B52]"></span>
-          )}
-        </button>
-      ))}
-    </div>
+    <nav aria-label="Разделы словаря" className="mb-6 flex gap-6">
+      {tabs.map((tab) => {
+        const active = activeTab === tab.key;
+        return (
+          <Link
+            key={tab.key}
+            href={tab.key === 'my' ? '/dictionary' : '/dictionary?tab=lists'}
+            aria-current={active ? 'page' : undefined}
+            className={`relative px-1 pb-2.5 text-body-sm font-medium transition-colors duration-fast ${
+              active ? 'text-primary' : 'text-slate hover:text-ink'
+            }`}
+          >
+            {tab.label}
+            {active && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
 function DictionaryContent() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { status } = useSession();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') === 'lists' ? 'lists' : 'my';
 
-  const [words, setWords] = useState<Word[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  // Применённый поиск: пустая строка — показываем весь словарь
+  const [appliedQuery, setAppliedQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [actionError, setActionError] = useState('');
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    } else if (status === 'authenticated') {
-      loadWords();
-    }
-  }, [status, router]);
+  const wordsPath = appliedQuery
+    ? `/api/dictionary/search?query=${encodeURIComponent(appliedQuery)}`
+    : `/api/dictionary?page=${page}&pageSize=50`;
 
-  const loadWords = async () => {
-    try {
-      const token = session?.accessToken;
-      const res = await fetch('http://localhost:5226/api/dictionary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  // Словарь берётся из общего кэша: повторный заход на вкладку рисуется сразу.
+  // Основной список приходит пагинированным конвертом, поиск — плоским массивом.
+  const {
+    data: wordsData,
+    error: wordsError,
+    isLoading: wordsLoading,
+    refresh: refreshWords
+  } = useApiQuery<Paged<DictionaryWord> | DictionaryWord[]>(
+    wordsPath,
+    { enabled: status === 'authenticated' }
+  );
 
-      if (!res.ok) throw new Error('Failed to load words');
+  const paged = isPaged<DictionaryWord>(wordsData) ? wordsData : null;
+  const words: DictionaryWord[] = paged ? paged.items : Array.isArray(wordsData) ? wordsData : [];
+  const totalCount = paged ? paged.totalCount : words.length;
+  const totalPages = paged ? paged.totalPages : 1;
+  const isInitialLoading = wordsLoading && wordsData === undefined;
+  const loadError = wordsError ? (appliedQuery ? 'Ошибка поиска' : 'Ошибка загрузки слов') : '';
+  // Ошибка загрузки показывается баннером только если слова на экране остались:
+  // пустой список с той же ошибкой — это уже состояние ErrorState.
+  const bannerError = actionError || (words.length > 0 ? loadError : '');
 
-      const data = await res.json();
-      setWords(data);
-      setIsLoading(false);
-    } catch {
-      setError('Ошибка загрузки слов');
-      setIsLoading(false);
-    }
-  };
+  const searchWords = () => {
+    const nextQuery = searchQuery.trim();
 
-  const searchWords = async () => {
-    if (!searchQuery.trim()) {
-      loadWords();
+    if (!nextQuery) {
+      setAppliedQuery('');
+      setPage(1);
+      // Повторный клик без запроса — принудительно обновляем словарь
+      if (!appliedQuery) refreshWords();
       return;
     }
 
-    try {
-      const token = session?.accessToken;
-      const res = await fetch(`http://localhost:5226/api/dictionary/search?query=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Search failed');
-
-      const data = await res.json();
-      setWords(data);
-    } catch {
-      setError('Ошибка поиска');
+    if (nextQuery === appliedQuery) {
+      refreshWords();
+      return;
     }
+
+    setPage(1);
+    setAppliedQuery(nextQuery);
   };
 
   const deleteWord = async (id: number) => {
     if (!confirm('Удалить это слово?')) return;
 
+    setActionError('');
     try {
-      const token = session?.accessToken;
-      await fetch(`http://localhost:5226/api/dictionary/${id}`, {
+      await apiMutate(`/api/dictionary/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        invalidate: ['/api/dictionary']
       });
 
-      setWords(words.filter(w => w.id !== id));
+      // Кэш уже сброшен — забираем актуальный список из сети
+      refreshWords();
     } catch {
-      setError('Ошибка удаления');
+      setActionError('Ошибка удаления');
     }
   };
 
-  const { speak } = useSpeech();
-
-  if (status === 'loading' || (isLoading && activeTab === 'my')) {
+  if (status === 'loading' || (activeTab === 'my' && isInitialLoading)) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
-        </div>
+        <DictionarySkeleton />
       </AppLayout>
     );
   }
@@ -141,10 +143,7 @@ function DictionaryContent() {
   if (activeTab === 'lists') {
     return (
       <AppLayout>
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#20231F] mb-2">Словарь</h1>
-          <p className="text-[#5A5F5A]">Готовые сборники слов по уровням и темам</p>
-        </div>
+        <PageHeader title="Словарь" subtitle="Готовые сборники слов по уровням и темам" />
         <Suspense fallback={null}>
           <DictionaryTabs />
         </Suspense>
@@ -153,102 +152,158 @@ function DictionaryContent() {
     );
   }
 
+  const isEmpty = totalCount === 0 && words.length === 0 && !appliedQuery;
+
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#20231F] mb-2">Словарь</h1>
-        <p className="text-[#5A5F5A]">{words.length} слов сохранено</p>
-      </div>
+      <PageHeader
+        title="Словарь"
+        subtitle={`${formatNumber(totalCount)} ${pluralWords(totalCount)} сохранено`}
+        actions={
+          /*
+           * В пустом словаре экранное действие одно — добавить. Две кнопки
+           * «Добавить» (в шапке и в пустом состоянии) заставляли выбирать
+           * между одинаковым, а «Учить слова» вела туда, где учить нечего.
+           */
+          isEmpty ? undefined : (
+            <div className="flex flex-wrap gap-3">
+              <Button href="/review" variant="secondary">
+                <RepeatIcon size={16} />
+                Учить слова
+              </Button>
+              <Button href="/dictionary/add" variant="primary">
+                <PlusIcon size={16} />
+                Добавить слово
+              </Button>
+            </div>
+          )
+        }
+      />
 
-      <Suspense fallback={null}>
-        <DictionaryTabs />
-      </Suspense>
+      {/* Вкладки «Мой словарь / Сборники» в пустом словаре нечего переключать */}
+      {!isEmpty && (
+        <Suspense fallback={null}>
+          <DictionaryTabs />
+        </Suspense>
+      )}
 
-      {/* Поиск и добавление */}
-      <div className="card p-6 mb-6">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Поиск слов..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchWords()}
-              className="input pl-10"
-            />
-            <svg className="absolute left-3 top-3.5 w-5 h-5 text-[#5A5F5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      {/* Поиск имеет смысл только когда есть что искать */}
+      {!isEmpty && (
+        <div className="card mb-6 p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <label htmlFor="dictionary-search" className="sr-only">
+                Поиск слов в словаре
+              </label>
+              <SearchIcon
+                size={20}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate"
+              />
+              <input
+                id="dictionary-search"
+                type="search"
+                placeholder="Поиск слов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchWords()}
+                className="input pl-10"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={searchWords} className="flex-1 sm:flex-none">
+                Найти
+              </Button>
+            </div>
           </div>
-          <button
-            onClick={searchWords}
-            className="btn-secondary"
-          >
-            Найти
-          </button>
-          <a
-            href="/dictionary/add"
-            className="btn-primary"
-          >
-            + Добавить
-          </a>
         </div>
-      </div>
+      )}
 
-      {error && (
-        <div className="mb-6 p-4 rounded-lg bg-[#B85C5C]/10 border border-[#B85C5C] text-[#B85C5C]">
-          {error}
+      {bannerError && (
+        <div
+          role="alert"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-semantic-error bg-surface-danger p-4 text-body-sm text-on-danger"
+        >
+          <span className="flex items-center gap-2">
+            <AlertIcon size={20} />
+            {bannerError}
+          </span>
+          <Button variant="secondary" onClick={() => { setActionError(''); refreshWords(); }}>
+            Попробовать снова
+          </Button>
         </div>
       )}
 
       {/* Список слов */}
-      {words.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-[#5A5F5A] mb-4">Словарь пуст</p>
-          <a href="/dictionary/add" className="btn-primary">
-            Добавить первое слово
-          </a>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {words.map((word) => (
-            <div key={word.id} className="card p-4 flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="text-xl font-bold text-[#20231F] hover:text-[#356B52] transition-colors"
-                  >
-                    {word.text}
-                  </button>
-                  <button
-                    onClick={() => speak(word.text)}
-                    className="p-1.5 text-base rounded-full hover:bg-[#E7ECE4] transition-colors"
-                    title="Произнести"
-                    aria-label={`Произнести ${word.text}`}
-                  >
-                    🔊
-                  </button>
-                  {word.definitions[0]?.partOfSpeech && (
-                    <span className="badge badge-primary">{word.definitions[0].partOfSpeech}</span>
-                  )}
-                </div>
-                <p className="text-[#5A5F5A] mt-1">{word.definitions[0]?.definition}</p>
-                {word.definitions[0]?.example && (
-                  <p className="text-[#5A5F5A] text-sm mt-1 italic">«{word.definitions[0].example}»</p>
-                )}
-              </div>
-              <button
-                onClick={() => deleteWord(word.id)}
-                className="ml-4 p-2 text-[#B85C5C] hover:bg-[#B85C5C]/10 rounded-lg transition-colors"
+      {loadError && words.length === 0 ? (
+        <ErrorState
+          title="Словарь не загрузился"
+          description={appliedQuery
+            ? 'Поиск не выполнился: сервер не ответил. Попробуйте ещё раз.'
+            : 'Сохранённые слова не пришли с сервера. Проверьте соединение и повторите.'}
+          onRetry={refreshWords}
+        />
+      ) : words.length === 0 ? (
+        <EmptyState
+          icon={appliedQuery ? <SearchIcon size={24} /> : undefined}
+          lexi={appliedQuery ? undefined : 'read'}
+          title={appliedQuery ? 'Ничего не нашлось' : 'В словаре пока пусто'}
+          description={appliedQuery
+            ? `Слова «${appliedQuery}» в вашем словаре нет.`
+            : 'Слова появляются сами, когда вы нажимаете на незнакомое слово в книге. Или добавьте вручную.'}
+          action={
+            appliedQuery ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearchQuery('');
+                  setAppliedQuery('');
+                  setPage(1);
+                }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          ))}
-        </div>
+                Сбросить поиск
+              </Button>
+            ) : (
+              /*
+               * Два равных пути: добавить вручную или пойти в библиотеку,
+               * откуда слова приходят сами. Раньше был один путь и текст,
+               * который отправлял в читалку, не давая к ней кнопки.
+               */
+              <>
+                <Button href="/dictionary/add" variant="primary">
+                  <PlusIcon size={16} />
+                  Добавить слово
+                </Button>
+                <Button href="/books" variant="secondary">
+                  Открыть библиотеку
+                </Button>
+              </>
+            )
+          }
+        />
+      ) : (
+        <motion.ul className="stagger space-y-3" initial={false}>
+          <AnimatePresence initial={false}>
+            {words.map((word) => (
+              <DictionaryWordRow
+                key={word.id}
+                word={word}
+                onDelete={deleteWord}
+                onUpdated={refreshWords}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.ul>
+      )}
+
+      {!appliedQuery && (
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(next) => {
+            setPage(next);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
     </AppLayout>
   );
@@ -258,9 +313,7 @@ export default function DictionaryPage() {
   return (
     <Suspense fallback={
       <AppLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#D6D3CC] border-t-[#356B52] rounded-full animate-spin"></div>
-        </div>
+        <DictionarySkeleton />
       </AppLayout>
     }>
       <DictionaryContent />

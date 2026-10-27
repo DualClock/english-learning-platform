@@ -15,7 +15,7 @@ public class StorySeederCoverTests : IDisposable
 
     public StorySeederCoverTests()
     {
-        _root = Path.Combine(Path.GetTempPath(), "elp-covers-" + Guid.NewGuid().ToString("N"));
+        _root = Path.Combine(AppContext.BaseDirectory, "elp-covers-" + Guid.NewGuid().ToString("N"));
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase("covers-" + Guid.NewGuid().ToString("N"))
             .Options;

@@ -1,49 +1,52 @@
+import { Skeleton } from '@/components/ui/LoadingState';
+
+/** Заготовка совпадает по форме с настоящим дашбордом, чтобы вход данных не сдвигал вёрстку. */
 export default function DashboardSkeleton() {
   return (
-    <div className="animate-pulse" aria-hidden="true">
-      {/* Шапка */}
-      <div className="mb-8">
-        <div className="h-4 w-40 bg-[#E7ECE4] rounded mb-3"></div>
-        <div className="h-8 w-72 bg-[#E7ECE4] rounded mb-3"></div>
-        <div className="h-4 w-96 max-w-full bg-[#E7ECE4] rounded"></div>
+    <div aria-busy="true">
+      <div className="mb-10">
+        <Skeleton className="mb-2 h-3 w-32" />
+        <Skeleton className="mb-3 h-8 w-72" />
+        <Skeleton className="h-4 w-96 max-w-full" />
       </div>
 
-      {/* Статистика */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <Skeleton className="mb-4 h-6 w-44" />
+      <div className="mb-8 grid gap-3 md:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl border border-[#D6D3CC] p-5 flex items-center gap-4"
-          >
-            <div className="w-11 h-11 rounded-xl bg-[#E7ECE4] shrink-0"></div>
-            <div className="flex-1">
-              <div className="h-7 w-12 bg-[#E7ECE4] rounded mb-2"></div>
-              <div className="h-3 w-24 bg-[#E7ECE4] rounded"></div>
+          <Skeleton key={i} className="h-24" />
+        ))}
+      </div>
+
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="card flex items-center gap-4">
+            <Skeleton className="h-11 w-11 shrink-0 rounded-md" />
+            <div className="min-w-0 grow space-y-2">
+              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-3 w-24" />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Главная карточка */}
-      <div className="h-5 w-44 bg-[#E7ECE4] rounded mb-4"></div>
-      <div className="bg-white rounded-2xl border border-[#D6D3CC] p-6 flex flex-col sm:flex-row gap-6 mb-8">
-        <div className="w-28 aspect-[3/4] bg-[#E7ECE4] rounded-xl shrink-0"></div>
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="h-6 w-64 max-w-full bg-[#E7ECE4] rounded mb-3"></div>
-          <div className="h-4 w-40 bg-[#E7ECE4] rounded mb-5"></div>
-          <div className="h-2 w-full max-w-md bg-[#E7ECE4] rounded-full mb-6"></div>
-          <div className="h-11 w-40 bg-[#E7ECE4] rounded-lg"></div>
+      <Skeleton className="mb-4 h-6 w-44" />
+      <div className="card mb-8 flex flex-col gap-6 sm:flex-row">
+        <Skeleton className="h-40 w-28 shrink-0 rounded-md" />
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-3">
+          <Skeleton className="h-7 w-64 max-w-full" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-2 w-full max-w-measure-sm rounded-full" />
+          <Skeleton className="h-11 w-40 rounded-md" />
         </div>
       </div>
 
-      {/* Быстрые действия */}
-      <div className="h-5 w-40 bg-[#E7ECE4] rounded mb-4"></div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Skeleton className="mb-4 h-6 w-40" />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-[#D6D3CC] p-4">
-            <div className="w-10 h-10 rounded-xl bg-[#E7ECE4] mb-3"></div>
-            <div className="h-4 w-24 bg-[#E7ECE4] rounded mb-2"></div>
-            <div className="h-3 w-20 bg-[#E7ECE4] rounded"></div>
+          <div key={i} className="card space-y-3 p-4">
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-20" />
           </div>
         ))}
       </div>

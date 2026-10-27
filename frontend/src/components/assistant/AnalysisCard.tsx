@@ -1,5 +1,7 @@
 'use client';
 
+import { CheckIcon, CloseIcon } from '@/components/ui/icons';
+
 export interface AssistantIssue {
   type: string;
   original: string;
@@ -15,13 +17,18 @@ export interface AssistantAnalysis {
   praise: string;
 }
 
-function scoreBadgeClass(score: number): string {
-  if (score >= 80) return 'bg-[#4A7C59]/15 text-[#4A7C59] border border-[#4A7C59]/30';
-  if (score >= 50) return 'bg-[#EBCB75]/25 text-[#8A6D1F] border border-[#EBCB75]';
-  return 'bg-[#B85C5C]/10 text-[#B85C5C] border border-[#B85C5C]/30';
+/**
+ * Оценка внутри жёлтой карточки: тон плашки совпал бы с тоном бейджа,
+ * поэтому цифра получает цвет, а подложка — нейтральную.
+ */
+function scoreClass(score: number): string {
+  if (score >= 80) return 'text-semantic-success';
+  if (score >= 50) return 'text-on-warning';
+  return 'text-semantic-error';
 }
 
-function issueTypeLabel(type: string): string {
+/** Бэкенд присылает код типа ошибки — показываем человеческое слово. */
+export function issueTypeLabel(type: string): string {
   switch (type) {
     case 'grammar':
       return 'грамматика';
@@ -36,44 +43,50 @@ function issueTypeLabel(type: string): string {
 
 export default function AnalysisCard({ analysis }: { analysis: AssistantAnalysis }) {
   return (
-    <div className="mt-2 rounded-xl border border-[#EBCB75]/60 bg-[#FFFDF5] p-4 animate-fade-in">
-      <div className="flex items-center gap-3 mb-3">
-        <span className={`badge ${scoreBadgeClass(analysis.score)}`}>{analysis.score}/100</span>
+    <div className="animate-fade-in mt-2 rounded-xl border border-hairline bg-surface-warning p-4">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <span className={`badge bg-canvas ${scoreClass(analysis.score)}`}>{analysis.score}/100</span>
         {analysis.praise && (
-          <p className="text-sm text-[#20231F] font-medium">{analysis.praise}</p>
+          <p className="text-body-sm font-medium text-ink">{analysis.praise}</p>
         )}
       </div>
 
       {analysis.issues.length > 0 ? (
-        <ul className="space-y-2 mb-3">
+        <ul className="stagger mb-3 space-y-2">
           {analysis.issues.map((issue, idx) => (
-            <li key={idx} className="rounded-lg bg-white border border-[#D6D3CC] p-3">
-              <span className="text-xs uppercase tracking-wide text-[#5A5F5A]">
+            <li key={idx} className="rounded-lg border border-hairline bg-canvas p-3">
+              <span className="text-caption uppercase tracking-wide text-slate">
                 {issueTypeLabel(issue.type)}
               </span>
-              <p className="text-sm mt-1">
-                <span className="text-[#B85C5C]">✗ {issue.original}</span>
-                <span className="text-[#5A5F5A] mx-2">→</span>
-                <span className="text-[#4A7C59] font-medium">✓ {issue.suggestion}</span>
+              <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm">
+                <span className="inline-flex items-center gap-1 text-semantic-error">
+                  <CloseIcon size={16} />
+                  {issue.original}
+                </span>
+                <span className="text-slate">→</span>
+                <span className="inline-flex items-center gap-1 font-medium text-semantic-success">
+                  <CheckIcon size={16} />
+                  {issue.suggestion}
+                </span>
               </p>
               {issue.explanation && (
-                <p className="text-xs text-[#5A5F5A] mt-1">{issue.explanation}</p>
+                <p className="mt-1 text-caption text-slate">{issue.explanation}</p>
               )}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[#4A7C59] mb-3">
+        <p className="mb-3 text-body-sm text-semantic-success">
           Ошибок не найдено — отличная работа!
         </p>
       )}
 
       {analysis.betterVersion && (
-        <div className="rounded-lg bg-[#E7ECE4] p-3">
-          <p className="text-xs uppercase tracking-wide text-[#356B52] mb-1">
+        <div className="rounded-lg bg-surface-success p-3">
+          <p className="mb-1 text-caption uppercase tracking-wide text-on-success">
             Как сказал бы носитель
           </p>
-          <p className="text-sm text-[#20231F]">{analysis.betterVersion}</p>
+          <p className="text-body-sm text-ink">{analysis.betterVersion}</p>
         </div>
       )}
     </div>
