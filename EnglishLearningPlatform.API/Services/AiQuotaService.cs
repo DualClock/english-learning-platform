@@ -61,6 +61,64 @@ public class AiQuotaService
     // Настраивается через Ai__GlobalDailyRequestLimit, по умолчанию 2000/сутки.
     public int GlobalRequestLimit => _configuration.GetValue("Ai:GlobalDailyRequestLimit", 2000);
 
+    /// <summary>
+    /// Отдельный дневной лимит для админки.
+    ///
+    /// Не переиспользует <see cref="RequestLimit"/>: админский ассистент пишет
+    /// статьи и примеры к словам — это десятки вызовов подряд за одну сессию
+    /// работы, и на общей пользовательской квоте (300) редактор упёрся бы в
+    /// отказ посреди текста. И наоборот: админ не должен съедать квоту, из-за
+    /// которой обычные ученики останутся без переводов.
+    ///
+    /// Ноль или отрицательное значение — ассистент выключен, а не «безлимит»:
+    /// иначе опечатка в конфиге открывает неограниченный расход.
+    /// </summary>
+    public int AdminRequestLimit => _configuration.GetValue("Ai:AdminDailyRequestLimit", 100);
+
+    /// <summary>
+    /// Сколько админских вызовов сделано за сутки. Считается по тем же логам,
+    /// но с фильтром по префиксу типа запроса: админские операции пишутся как
+    /// «admin-*», поэтому не смешиваются с ученическими.
+    /// </summary>
+    public async Task<int> GetAdminTodayRequestsAsync()
+    {
+        var cacheKey = $"ai-admin-usage:{DateTime.UtcNow:yyyyMMdd}";
+        if (_cache.TryGetValue(cacheKey, out int cached))
+        {
+            return cached;
+        }
+
+        var dayStart = DateTime.UtcNow.Date;
+        var requests = await _context.AiUsageLogs
+            .AsNoTracking()
+            .CountAsync(l => l.CreatedAt >= dayStart && l.RequestType.StartsWith(AdminRequestTypePrefix));
+
+        _cache.Set(cacheKey, requests, CounterCacheTtl);
+        return requests;
+    }
+
+    /// <summary>
+    /// Можно ли сделать ещё один админский вызов.
+    ///
+    /// Глобальный бюджет проверяется отдельно и здесь не дублируется: он
+    /// защищает счёт владельца целиком, и админский лимит — не повод его
+    /// обходить.
+    /// </summary>
+    public async Task<bool> IsWithinAdminQuotaAsync()
+    {
+        var limit = AdminRequestLimit;
+        if (limit <= 0) return false;
+
+        return await GetAdminTodayRequestsAsync() < limit;
+    }
+
+    /// <summary>
+    /// Префикс типа запроса для админских операций. Один в двух местах
+    /// (запись лога и подсчёт), поэтому константой: строка, набранная руками
+    /// в двух файлах, однажды разойдётся, и счётчик покажет ноль навсегда.
+    /// </summary>
+    public const string AdminRequestTypePrefix = "admin-";
+
     // Возвращает true, если пользователь может сделать ещё один AI-вызов
     public async Task<bool> IsWithinQuotaAsync(string userId)
     {

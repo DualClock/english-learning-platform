@@ -1,4 +1,4 @@
-using EnglishLearningPlatform.API.Data;
+﻿using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -223,10 +223,16 @@ public class SrsService
 
         // Слово без перевода нельзя проверить в карточке: не тянем его
         // в повторения, пока человек не добавит перевод в словаре.
+        // uw.Word.DeletedAt == null — не косметика: фильтр на Word прячет
+        // удалённое слово из выборки, но карточка UserWord остаётся на месте,
+        // и без этого условия она попадала в очередь повторов. Count ниже
+        // такое слово уже не считал, и «Повторить» показывало карточку,
+        // которой нет в счётчике.
         var dueQuery = _context.UserWords
             .Where(uw => uw.UserId == userId
                          && uw.LastReviewedAt != null
                          && (uw.NextReviewDate == null || uw.NextReviewDate <= now)
+                         && uw.Word.DeletedAt == null
                          && uw.Word.Definitions.Any(d => d.Definition != ""));
 
         var dueCount = await dueQuery.CountAsync();
@@ -241,6 +247,7 @@ public class SrsService
         var newQuery = _context.UserWords
             .Where(uw => uw.UserId == userId
                          && uw.LastReviewedAt == null
+                         && uw.Word.DeletedAt == null
                          && uw.Word.Definitions.Any(d => d.Definition != ""));
 
         var newCount = await newQuery.CountAsync();
@@ -261,6 +268,7 @@ public class SrsService
             .CountAsync(uw => uw.UserId == userId
                               && uw.LastReviewedAt != null
                               && (uw.NextReviewDate == null || uw.NextReviewDate <= DateTime.UtcNow)
+                              && uw.Word.DeletedAt == null
                               && uw.Word.Definitions.Any(d => d.Definition != ""));
     }
 

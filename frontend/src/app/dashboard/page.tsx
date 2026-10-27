@@ -22,6 +22,7 @@ import { displayNameOf } from '@/lib/display-name';
 import type { Paged } from '@/app/lib/paged';
 import WelcomeBackModal from '@/components/WelcomeBackModal';
 import DailyPlan from '@/components/dashboard/DailyPlan';
+import NewsForYou from '@/components/dashboard/NewsForYou';
 import LevelCard from '@/components/dashboard/LevelCard';
 import CheckpointCard from '@/components/dashboard/CheckpointCard';
 import { useApiQuery } from '@/app/lib/use-api';
@@ -168,6 +169,15 @@ export default function DashboardPage() {
               )}
 
               <DailyPlan />
+
+              {/*
+                * «Новости для тебя» — сразу под планом на сегодня, внутри той же
+                * колонки. Блок рисует себя только при непустом списке
+                * (`shouldShowNews` в lib/news.ts), поэтому пустой карточки на
+                * дашборде не появляется. Отдельного пункта меню у новостей нет:
+                * сайдбар на 16 пунктов уже не помещается в окно.
+                */}
+              <NewsForYou />
 
               {isNewAccount && <FirstLesson />}
             </div>

@@ -30,21 +30,15 @@ public class GrammarController : ControllerBase
 
     [HttpPost]
     [Route("/api/admin/seed-grammar")]
+    [Authorize(Roles = AppRoles.Admin)]
     [EnableRateLimiting("admin")]
     public async Task<ActionResult<object>> SeedGrammar(
         [FromServices] GrammarSeeder seeder,
-        [FromServices] IConfiguration configuration,
-        [FromServices] IWebHostEnvironment env,
-        [FromHeader(Name = "X-Seed-Key")] string? seedKey)
+        [FromServices] ContentCacheInvalidator cache)
     {
-        var configuredKey = configuration["Seeder:Key"];
-        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, env.IsDevelopment()))
-        {
-            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
-            return Unauthorized(new { message = "Invalid seed key" });
-        }
-
         var result = await seeder.SeedAsync();
+
+        cache.InvalidateCategories();
 
         if (result.Error != null)
         {

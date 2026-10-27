@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using EnglishLearningPlatform.API.Controllers;
 using EnglishLearningPlatform.API.Data;
@@ -322,6 +322,7 @@ public sealed class AccountDeletionHarness : IAsyncDisposable
                 options.Password.RequiredLength = 6;
                 options.Password.RequireNonAlphanumeric = false;
             })
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 

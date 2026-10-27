@@ -6,6 +6,8 @@ using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using EnglishLearningPlatform.API.Services.Reader;
 using EnglishLearningPlatform.API.Services.Guest;
+using EnglishLearningPlatform.API.Services.News;
+using EnglishLearningPlatform.API.Services.Seed;
 using EnglishLearningPlatform.API.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -210,7 +212,19 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+
+        // RoleClaimType — ключ, по которому проверяется роль в
+        // [Authorize(Roles = "...")]. Без него проверка идёт по
+        // ClaimTypes.Role из ClaimsIdentity — и не находит claim, выписанный
+        // под этим же URI, если mapping разошёлся. Значение совпадает с тем,
+        // что пишет AuthController (AppClaims.Role).
+        //
+        // NameClaimType намеренно не трогаем: 'sub' в Identity.Name не
+        // превращается, а userId в коде берут через ClaimTypes.NameIdentifier
+        // или FindFirst(sub). Настроить его на 'sub' — значит promised
+        // Identity.Name, которого не будет.
+        RoleClaimType = AppClaims.Role
     };
 });
 
@@ -274,14 +288,64 @@ builder.Services.AddScoped<EmailSender>();
 builder.Services.AddScoped<AuthEmailService>();
 builder.Services.AddScoped<ReminderService>();
 builder.Services.AddHostedService<ReminderBackgroundService>();
+// Синхронизация новостной ленты. NewsOptions собирается из секции «News»
+// один раз при старте: дефолты (2 ч / 2 мин / 120 дн) и их проверка живут
+// в NewsOptions.FromConfiguration, а не в виде `?? 2` по коду.
+builder.Services.AddSingleton(NewsOptions.FromConfiguration(builder.Configuration));
+
+// Источник подключается как INewsSource, а не как конкретный RssNewsSource:
+// NewsFetchService опрашивает ВСЕ источники из DI. Без этой регистрации он
+// получает пустую коллекцию и молча работает вхолостую — новостей нет, ошибок
+// в журнале тоже.
+//
+// HTTP-клиент создаёт сам RssNewsSource (статический, без прокси) — та же
+// причина, что у PopularBooksService: на машинах с локальным MITM-прокси
+// запрос к newsinlevels падает по таймауту. Поэтому AddHttpClient здесь не
+// используется: он инжектит клиент в конструктор, которого у класса нет.
+builder.Services.AddScoped<INewsSource, RssNewsSource>();
+
+builder.Services.AddScoped<NewsFetchService>();
+builder.Services.AddScoped<NewsCleanupService>();
+builder.Services.AddHostedService<NewsFetchBackgroundService>();
 builder.Services.AddScoped<GuestAnalyticsCleanupService>();
 builder.Services.AddHostedService<GuestAnalyticsCleanupBackgroundService>();
 builder.Services.AddScoped<BookAnalyzerService>();
 builder.Services.AddScoped<WordListSeeder>();
 builder.Services.AddScoped<WordExampleSeeder>();
 builder.Services.AddScoped<CategorySeeder>();
+builder.Services.AddScoped<RoleSeeder>();
+builder.Services.AddScoped<ContentCacheInvalidator>();
+
+// Singleton, а не Scoped: MarkdownRenderer держит собранный Markdig-pipeline
+// и экземпляр санитайзера. Ни того, ни другого нельзя пересоздавать на
+// каждый запрос — иначе теряется внутренний кэш парсера, и рендер статьи
+// становится дороже, чем сама отдача из базы. Состояния у класса нет.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Articles.MarkdownRenderer>();
+
+// Медиа-хранилище за интерфейсом: переезд на S3/MinIO не должен менять
+// контроллеры. Локальная реализация пишет под ContentRoot/uploads, а адреса
+// отдаёт относительными — платформа работает и с localhost, и по внешнему
+// адресу, и с телефона, а абсолютный адрес, собранный из base-url запроса,
+// ломается на каждом из этих случаев.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Media.IMediaStorage>(sp =>
+{
+    var env = sp.GetRequiredService<IWebHostEnvironment>();
+    return new EnglishLearningPlatform.API.Services.Media.LocalMediaStorage(
+        Path.Combine(env.ContentRootPath, "uploads"),
+        "/uploads",
+        sp.GetRequiredService<ILogger<EnglishLearningPlatform.API.Services.Media.LocalMediaStorage>>());
+});
+
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Import.WordImportParser>();
+
+// OpenAI-совместимый провайдер (DeepSeek, OpenRouter, Groq, Ollama).
+// Регистрируется всегда: если BaseUrl/ApiKey/Model пусты, IsConfigured
+// вернёт false, и AiService пойдёт прежним путём через Gemini.
+builder.Services.AddSingleton<EnglishLearningPlatform.API.Services.Ai.OpenAiCompatibleClient>();
 builder.Services.AddScoped<GrammarSeeder>();
 builder.Services.AddScoped<StorySeeder>();
+
+builder.Services.AddScoped<EnglishLearningPlatform.API.Services.Seed.ArticleSeeder>();
 builder.Services.AddHttpClient<FeedbackNotifier>();
 // Именованный клиент для HTTP-API почты (Brevo): переиспользует соединения и
 // не зависит от закрытых хостером SMTP-портов. Таймаут ставится на запрос.
@@ -343,9 +407,18 @@ app.UseStaticFiles(new StaticFileOptions
 // CORS должен быть ДО UseAuthentication
 app.UseCors("Frontend");
 
-app.UseRateLimiter();
-
+// Порядок: аутентификация ДО rate limiter.
+//
+// Партиция админских запросов строится по id пользователя (см.
+// RateLimitPartitionKeys.AdminIdentity). Если лимитер стоит раньше
+// UseAuthentication, User в HttpContext ещё пуст, и все админские вызовы мира
+// схлопываются в одну корзину по IP: 10 запросов на 5 минут на всех, включая
+// владельца. Лимитер, который читает claims, обязан идти после их разбора.
+//
+// Остальные партиции (auth, signup, upload, feedback) читают заголовки и тело
+// запроса — им порядок безразличен.
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -385,6 +458,10 @@ if (app.Environment.IsDevelopment())
 
     try
     {
+        // Роли — первыми: остальные сиды не зависят от них, но bootstrap
+        // админа должен отработать до того, как кто-то откроет /admin.
+        var roleSeed = await seedProvider.GetRequiredService<RoleSeeder>().SeedAsync();
+
         var wordListsSeed = await seedProvider.GetRequiredService<WordListSeeder>().SeedAsync();
 
         // Примеры к словам идут ПОСЛЕ словаря: сидер ищет WordLevel по тексту,
@@ -400,6 +477,22 @@ if (app.Environment.IsDevelopment())
         // копии всегда имеют владельца). Идемпотентно: повторный старт
         // пропускает уже созданные заголовки.
         var guestSeed = await seedProvider.GetRequiredService<GuestCatalogSeeder>().SeedAsync();
+
+        // Разделы статей и стартовый черновик. Без этого /articles открывается
+        // с пустой навигацией, а первый заход в админку начинается с ручного
+        // создания рубрик. Идемпотентно: удалённое и переименованное не
+        // воскрешается и не откатывается.
+        await seedProvider.GetRequiredService<ArticleSeeder>().SeedAsync();
+
+        seedLogger.LogInformation(
+            "Роли: создано {Created}, уже было {Existing}, админ {AdminState}",
+            roleSeed.RolesCreated,
+            roleSeed.RolesExisting,
+            roleSeed.AdminAssigned
+                ? $"назначен ({roleSeed.BootstrapUserId})"
+                : roleSeed.AdminAlreadyAssigned
+                    ? "уже был"
+                    : "не назначался");
 
         seedLogger.LogInformation(
             "Сиды: сборники — {WordLists} (списков {Lists}, слов {Words}), категории — {Categories}, грамматика — {Grammar} (юнитов {Units})",

@@ -132,14 +132,24 @@ public class AiService : IAiBackedService
         IMemoryCache cache,
         ILogger<AiService> logger,
         ApplicationDbContext context,
-        ResilientAiService resilient)
+        ResilientAiService resilient,
+        Services.Ai.OpenAiCompatibleClient? openAiClient = null,
+        AiQuotaService? quota = null)
     {
         _configuration = configuration;
         _cache = cache;
         _logger = logger;
         _context = context;
         _resilient = resilient;
+        // Необязательные зависимости: существующие тесты создают AiService
+        // вручную с пятью аргументами, и ломать их ради нового провайдера
+        // незачем. null означает «провайдер не настроен».
+        _openAiClient = openAiClient;
+        _quota = quota;
     }
+
+    private readonly Services.Ai.OpenAiCompatibleClient? _openAiClient;
+    private readonly AiQuotaService? _quota;
 
     public async Task<TranslationResult?> TranslateWordAsync(
         string word,
@@ -451,6 +461,111 @@ public class AiService : IAiBackedService
         _cache.Set(cacheKey, text, CacheTtl);
         return text;
     }
+
+    /// <summary>
+    /// Генерация текста для админки (статьи, примеры к словам).
+    ///
+    /// Отдельный метод, а не флаг у <see cref="GenerateJsonAsync"/>, по одной
+    /// причине: тип запроса пишется в AiUsageLogs, и по нему считается
+    /// админская квота. Если оставить тип «generate_json», админские вызовы
+    /// попадут в пользовательский счётчик — и наоборот, админский лимит
+    /// никогда не увидит собственных трат.
+    ///
+    /// `userId` пишется в лог для аудита: кто именно потратил бюджет.
+    /// </summary>
+    public async Task<string?> GenerateForAdminAsync(
+        string prompt,
+        string requestType,
+        string? userId,
+        int maxOutputTokens = 4096)
+    {
+        // Имя типа обязано начинаться с admin-: иначе админская квота его не
+        // посчитает, и лимит превращается в фикцию. Проверяем здесь, а не
+        // надеемся на вызывающий код.
+        if (!requestType.StartsWith(AiQuotaService.AdminRequestTypePrefix, StringComparison.Ordinal))
+        {
+            requestType = AiQuotaService.AdminRequestTypePrefix + requestType;
+        }
+
+        // Провайдер OpenAI-совместимого протокола идёт ПЕРВЫМ, если настроен:
+        // это прямой путь к модели без пересборки запроса в Gemini-конверт.
+        // Подходит DeepSeek, OpenRouter, Groq, Mistral, локальный Ollama.
+        if (_openAiClient?.IsConfigured == true)
+        {
+            var chat = await _openAiClient.CompleteAsync(
+                systemPrompt: AdminSystemPrompt,
+                userPrompt: prompt,
+                maxOutputTokens: maxOutputTokens,
+                temperature: 0.7,
+                ct: CancellationToken.None);
+
+            if (chat != null)
+            {
+                // Токены и имя модели в журнал: без этого админский лимит
+                // считает вызовы, но не расход, а вопрос «сколько это стоило»
+                // остаётся без ответа.
+                await _quota?.LogUsageAsync(
+                    userId, requestType, chat.Model,
+                    chat.PromptTokens, chat.CompletionTokens, success: true);
+
+                return StripMarkdownFences(chat.Text);
+            }
+
+            // Не вернулись — провайдер недоступен. Пробуем Gemini ниже, а не
+            // сдаёмся: у платформы уже есть резервные пути, и терять их ради
+            // нового провайдера незачем.
+            _logger.LogWarning(
+                "OpenAI-совместимый провайдер не ответил для {RequestType}, пробуем Gemini", requestType);
+        }
+
+        var apiKey = _configuration["Gemini:ApiKey"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            _logger.LogError("Ни один AI-провайдер не настроен: проверьте AiChat:* или Gemini:ApiKey");
+            return null;
+        }
+
+        // Кэш намеренно НЕ используется: админ ждёт свежий текст, и одинаковый
+        // промпт, отправленный дважды, означает «ещё вариант», а не «то же
+        // самое». Пользовательский кэш экономит на повторных переводах, здесь
+        // он вернул бы редактору тот же абзац, который ему не понравился.
+        string? responseJson;
+        try
+        {
+            responseJson = await CallGeminiAsync(
+                prompt, apiKey, temperature: 0.7, maxOutputTokens: maxOutputTokens,
+                requestType: requestType, userId: userId);
+        }
+        catch (AiUnavailableException ex)
+        {
+            _logger.LogWarning(ex, "Gemini unavailable for {RequestType}", requestType);
+            return null;
+        }
+
+        if (responseJson == null) return null;
+
+        var text = ExtractTextFromEnvelope(responseJson);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _logger.LogWarning("Empty text in Gemini response for {RequestType}", requestType);
+            return null;
+        }
+
+        return StripMarkdownFences(text);
+    }
+
+    /// <summary>
+    /// Системная роль для админских задач.
+    ///
+    /// Вынесено константой: открытый провайдер без системного сообщения
+    /// скатывается в «вот статья, вот длинное вступление». Роль задаёт тон
+    /// один раз, а не в каждом промпте.
+    /// </summary>
+    private const string AdminSystemPrompt =
+        "Ты — методист и автор учебных материалов по английскому языку для " +
+        "русскоязычной платформы Lexicon. Пишешь коротко, по делу, с примерами " +
+        "и переводом. Отвечаешь только тем, что просили: без вступлений, " +
+        "извинений и пояснений о себе.";
 
     private async Task<TranslationResult?> TranslateWithPromptAsync(string prompt, string apiKey, string word, string? userId)
     {

@@ -111,6 +111,13 @@ export const FeedbackIcon = (p: P) => (
     <path d="M8 10h8M8 14h5" />
   </Icon>
 );
+// Щит — пункт админки: обозначает «служебная зона», а не ещё один раздел учёбы.
+export const ShieldIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M9 12l2 2 4-4" />
+  </Icon>
+);
 export const SpinnerIcon = ({ className = '', ...p }: P) => (
   <Icon {...p} className={`animate-spin ${className.trim()}`}>
     <path d="M21 12a9 9 0 1 1-6.22-8.56" />

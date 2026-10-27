@@ -8,13 +8,14 @@ import FeedbackTrigger from './feedback/FeedbackTrigger';
 import UserAvatar from './UserAvatar';
 import { prefetchApi } from '@/app/lib/api-client';
 import { displayNameOf } from '@/lib/display-name';
-import { NAV_GROUPS, isRouteActive, type NavIconKey } from '@/lib/sidebar-nav';
+import { navGroupsFor, isRouteActive, type NavIconKey } from '@/lib/sidebar-nav';
 import { useCallback, type ComponentType } from 'react';
 import {
   BookOpenIcon,
   BooksIcon,
   BotIcon,
   FeedbackIcon,
+  ShieldIcon,
   FoldersIcon,
   HeadphonesIcon,
   HomeIcon,
@@ -69,6 +70,7 @@ const ICONS: Record<NavIconKey, ComponentType<IconProps>> = {
   user: UserIcon,
   sliders: SlidersIcon,
   feedback: FeedbackIcon,
+  shield: ShieldIcon,
 };
 
 interface SidebarProps {
@@ -123,7 +125,7 @@ export default function Sidebar({ open = true, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 px-3 py-4 overflow-y-auto" aria-label="Разделы">
-          {NAV_GROUPS.map((group, groupIndex) => (
+          {navGroupsFor(session?.roles).map((group, groupIndex) => (
             <div key={group.label} className={groupIndex > 0 ? 'mt-5' : undefined}>
               {/*
                * Лейбл группы — ориентир, а не пункт меню: он не кликается

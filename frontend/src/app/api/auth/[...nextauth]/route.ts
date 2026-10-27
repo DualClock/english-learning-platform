@@ -93,6 +93,7 @@ const handler = NextAuth({
             accentTheme: data.accentTheme ?? 'teal',
             token: data.token,
             refreshToken: data.refreshToken,
+            roles: Array.isArray(data.roles) ? data.roles : [],
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -112,6 +113,7 @@ const handler = NextAuth({
         token.avatarUrl = user.avatarUrl ?? null;
         token.avatarFrame = user.avatarFrame ?? 'none';
         token.accentTheme = user.accentTheme ?? 'teal';
+        token.roles = Array.isArray(user.roles) ? user.roles : [];
       }
 
       // update({ avatarUrl }) после смены аватара на клиенте
@@ -167,6 +169,10 @@ const handler = NextAuth({
       session.avatarFrame = token.avatarFrame ?? 'none';
       session.accentTheme = token.accentTheme ?? 'teal';
       session.tokenError = token.tokenError ?? null;
+      // Роль в сессии — для навигации и показа ссылки в /admin. Middleware
+      // читает её из зашифрованной куки независимо от этой строки, а данные
+      // всё равно защищает бэкенд: сессия — не источник прав.
+      session.roles = Array.isArray(token.roles) ? token.roles : [];
       if (token.userId) {
         session.user.id = token.userId;
       }

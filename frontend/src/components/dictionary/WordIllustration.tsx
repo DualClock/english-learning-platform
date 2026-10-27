@@ -7,6 +7,23 @@ type IllustrationSize = 'sm' | 'md' | 'lg';
 type IllustrationVariant = 'tile' | 'bare';
 
 /**
+ * URL загруженной картинки слова.
+ *
+ * В базе лежит относительный путь `/uploads/word-images/<guid>.webp` — он не
+ * зависит от хоста, поэтому переживает переезд и смену домена. Отдаёт файл API
+ * по публичному маршруту `/api/word-images/{name}`, как это и было задумано
+ * для картинок категорий (личные картинки пользователя живут в другом
+ * маршруте с проверкой владельца).
+ */
+export function uploadedImageSrc(imageUrl: string): string {
+  const prefix = '/uploads/word-images/';
+  if (!imageUrl.startsWith(prefix)) return imageUrl;
+  const name = imageUrl.slice(prefix.length);
+  const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5226';
+  return `${api}/api/word-images/${encodeURIComponent(name)}`;
+}
+
+/**
  * Размеры — одной таблицей: список берёт sm, флэшкарта lg, а слот на обороте
  * карточки резервирует ровно тот же класс. Иначе при перевороте карточка
  * меняет высоту и кнопки «Знаю / Не знаю» уезжают из-под пальца.
@@ -26,6 +43,14 @@ const ILLUSTRATION_SIZE_PX: Record<IllustrationSize, number> = {
 interface WordIllustrationProps {
   categorySlug: string;
   word: string;
+  /**
+   * Картинка, загруженная админом (/uploads/word-images/<guid>.webp).
+   *
+   * Приоритетнее статической иллюстрации: если человек загрузил фото, значит
+   * оно и должно показываться. Статическая остаётся фолбэком для слов, к
+   * которым фото нет.
+   */
+  imageUrl?: string | null;
   /** Перевод попадает в alt: подпись к картинке читается как «слово — перевод». */
   translation?: string;
   /** Явный alt, если контекст требует своей формулировки. Пустым быть не может. */
@@ -56,6 +81,7 @@ interface WordIllustrationProps {
 export default function WordIllustration({
   categorySlug,
   word,
+  imageUrl,
   translation,
   alt,
   size = 'md',
@@ -65,14 +91,19 @@ export default function WordIllustration({
   placeholder = false,
 }: WordIllustrationProps) {
   const sizeClass = ILLUSTRATION_SIZE_CLASS[size];
-  const src = illustrationSrc(categorySlug, word);
+  // Загруженное админом фото важнее статической иллюстрации: оно появилось
+  // позже и осознанно. Статическая остаётся на случай, когда фото нет.
+  const customSrc = imageUrl ? uploadedImageSrc(imageUrl) : null;
+  const src = customSrc ?? illustrationSrc(categorySlug, word);
   // Ошибка привязана к src, а не к экземпляру: в флэшкартах один и тот же
   // компонент переиспользуется для следующего слова, и старый сбой не должен
   // прятать уже существующую картинку.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const failed = failedSrc === src;
 
-  if (!hasIllustration(categorySlug, word) || failed) {
+  const available = customSrc ? true : hasIllustration(categorySlug, word);
+
+  if (!available || failed) {
     if (!placeholder) return null;
     return (
       <span

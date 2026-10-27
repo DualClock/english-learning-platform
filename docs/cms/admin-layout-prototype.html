@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lexicon CMS — AdminLayout и ContentList</title>
+<style>
+/* ── Токены: 1:1 из frontend/src/app/globals.css и tailwind.config.ts ────── */
+:root {
+  --color-primary:#0E7C7B; --color-primary-pressed:#0A6362; --color-primary-deep:#084F4E;
+  --color-navy:#0B2545; --color-navy-deep:#081A33; --color-link:#0B5FA5;
+  --color-canvas:#FFFFFF; --color-surface:#F6F7F9; --color-surface-soft:#FAFAFB;
+  --color-hairline:#E5E7EB; --color-hairline-soft:#EEF0F3; --color-hairline-strong:#C9CDD4;
+  --color-ink:#1A1D23; --color-charcoal:#373B44; --color-slate:#5D6470; --color-steel:#7A8089;
+  --color-muted:#AEB3BB; --color-on-dark:#FFFFFF; --color-on-dark-muted:#A8B3C7;
+  --color-success:#1A9C3C; --color-warning:#B45309; --color-error:#D92D20;
+  --surface-info:#DCECFA; --surface-success:#D9F3E1; --surface-warning:#FEF7D6; --surface-danger:#FDE0EC;
+  --surface-accent:#D6EFEE;
+  --radius-md:8px; --radius-lg:12px; --radius-xl:16px;
+  --font-sans:Inter, system-ui, sans-serif;
+  --font-heading:Manrope, Inter, system-ui, sans-serif;
+  --font-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow-soft:0 1px 2px rgba(15,15,15,.04);
+  --shadow-card:0 1px 2px rgba(15,15,15,.04), 0 4px 12px rgba(15,15,15,.04);
+}
+[data-theme="dark"] {
+  --color-canvas:#111418; --color-surface:#171B21; --color-surface-soft:#1C2128;
+  --color-hairline:#2A3038; --color-hairline-soft:#232830; --color-hairline-strong:#3A424D;
+  --color-ink:#F2F4F7; --color-charcoal:#D3D8DF; --color-slate:#9AA3AE; --color-steel:#78828F;
+  --color-muted:#5C6672; --color-navy:#0B2545; --color-navy-deep:#081A33;
+  --surface-info:#16303F; --surface-success:#14301E; --surface-warning:#33290F; --surface-danger:#3A1920;
+  --surface-accent:#12312F;
+  --shadow-card:0 1px 2px rgba(0,0,0,.3);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; height:100%; }
+body {
+  font-family:var(--font-sans); color:var(--color-ink); background:var(--color-surface);
+  -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5;
+}
+button { font:inherit; color:inherit; cursor:pointer; }
+a { color:inherit; text-decoration:none; }
+
+/* ── Каркас: сайдбар + рабочая область ───────────────────────────────────── */
+.shell { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+
+.sidebar {
+  background:var(--color-navy-deep); color:var(--color-on-dark);
+  display:flex; flex-direction:column; gap:2px; padding:16px 12px;
+  position:sticky; top:0; height:100vh;
+}
+.brand { display:flex; align-items:center; gap:10px; padding:4px 8px 18px; }
+.brand-mark {
+  width:28px; height:28px; border-radius:8px; background:var(--color-primary);
+  display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:15px;
+}
+.brand-text { font-family:var(--font-heading); font-weight:700; font-size:15px; letter-spacing:-.01em; }
+.brand-sub { font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--color-on-dark-muted); margin-top:1px; }
+
+.nav-group { font-size:10px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--color-on-dark-muted); padding:14px 10px 6px; }
+.nav-item {
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--radius-md);
+  color:var(--color-on-dark-muted); font-size:13.5px; transition:background .12s, color .12s;
+  width:100%; background:none; border:0; text-align:left;
+}
+.nav-item:hover { background:rgba(255,255,255,.06); color:var(--color-on-dark); }
+.nav-item[aria-current="page"] { background:rgba(14,124,123,.28); color:var(--color-on-dark); font-weight:550; }
+.nav-icon { width:16px; height:16px; flex:none; opacity:.85; }
+.nav-count {
+  margin-left:auto; font-size:11px; font-variant-numeric:tabular-nums;
+  background:rgba(255,255,255,.1); padding:1px 6px; border-radius:99px; color:var(--color-on-dark);
+}
+.sidebar-foot { margin-top:auto; border-top:1px solid rgba(255,255,255,.09); padding-top:12px; }
+.who { display:flex; align-items:center; gap:9px; padding:6px 8px; }
+.avatar { width:26px; height:26px; border-radius:99px; background:var(--color-primary-deep);
+  display:grid; place-items:center; font-size:11px; font-weight:600; flex:none; }
+.who-name { font-size:12.5px; line-height:1.2; }
+.who-role { font-size:10.5px; color:var(--color-on-dark-muted); }
+
+/* ── Шапка ───────────────────────────────────────────────────────────────── */
+.main { display:flex; flex-direction:column; min-width:0; }
+.topbar {
+  display:flex; align-items:center; gap:16px; padding:0 24px; height:56px;
+  background:var(--color-canvas); border-bottom:1px solid var(--color-hairline);
+  position:sticky; top:0; z-index:5;
+}
+.crumbs { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--color-slate); }
+.crumbs b { color:var(--color-ink); font-weight:600; }
+.crumb-sep { color:var(--color-muted); }
+.topbar-spacer { flex:1; }
+.btn {
+  display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 13px;
+  border-radius:var(--radius-md); border:1px solid var(--color-hairline-strong);
+  background:var(--color-canvas); font-size:13px; font-weight:550; transition:background .12s;
+}
+.btn:hover { background:var(--color-surface-soft); }
+.btn-primary { background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+.btn-primary:hover { background:var(--color-primary-pressed); }
+.btn:focus-visible, .nav-item:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
+.icon-btn { width:34px; height:34px; display:grid; place-items:center; border-radius:var(--radius-md);
+  border:1px solid transparent; background:none; }
+.icon-btn:hover { background:var(--color-surface); }
+
+/* ── Контент ─────────────────────────────────────────────────────────────── */
+.content { padding:22px 24px 40px; max-width:1180px; width:100%; }
+.page-head { display:flex; align-items:flex-start; gap:16px; margin-bottom:18px; }
+.page-title { font-family:var(--font-heading); font-size:22px; font-weight:700; letter-spacing:-.015em; margin:0; }
+.page-sub { font-size:13px; color:var(--color-slate); margin:3px 0 0; }
+
+/* ── Фильтры ─────────────────────────────────────────────────────────────── */
+.filters { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+.seg { display:inline-flex; background:var(--color-surface); border:1px solid var(--color-hairline);
+  border-radius:var(--radius-md); padding:2px; gap:2px; }
+.seg button { border:0; background:none; padding:5px 11px; border-radius:6px; font-size:12.5px;
+  color:var(--color-slate); font-weight:500; display:inline-flex; align-items:center; gap:6px; }
+.seg button[aria-pressed="true"] { background:var(--color-canvas); color:var(--color-ink);
+  font-weight:600; box-shadow:var(--shadow-soft); }
+.seg .n { font-size:11px; color:var(--color-muted); font-variant-numeric:tabular-nums; }
+.seg button[aria-pressed="true"] .n { color:var(--color-steel); }
+.search {
+  display:flex; align-items:center; gap:7px; height:32px; padding:0 10px; flex:1; min-width:200px;
+  border:1px solid var(--color-hairline-strong); border-radius:var(--radius-md); background:var(--color-canvas);
+}
+.search input { border:0; outline:0; background:none; font:inherit; font-size:13px; width:100%; color:var(--color-ink); }
+.search input::placeholder { color:var(--color-muted); }
+
+/* ── Таблица ─────────────────────────────────────────────────────────────── */
+.card { background:var(--color-canvas); border:1px solid var(--color-hairline);
+  border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  text-align:left; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--color-slate); font-weight:600; padding:10px 14px;
+  border-bottom:1px solid var(--color-hairline); background:var(--color-surface-soft);
+  white-space:nowrap;
+}
+tbody td { padding:11px 14px; border-bottom:1px solid var(--color-hairline-soft); vertical-align:middle; }
+tbody tr:last-child td { border-bottom:0; }
+tbody tr:hover { background:var(--color-surface-soft); }
+.t-title { font-weight:550; }
+.t-slug { font-family:var(--font-mono); font-size:11.5px; color:var(--color-steel); }
+.t-muted { color:var(--color-slate); font-size:12.5px; white-space:nowrap; }
+.num { font-variant-numeric:tabular-nums; }
+
+.badge {
+  display:inline-flex; align-items:center; gap:5px; padding:2px 8px 2px 7px; border-radius:99px;
+  font-size:11.5px; font-weight:600; white-space:nowrap;
+}
+.badge .dot { width:6px; height:6px; border-radius:99px; }
+.badge[data-s="published"] { background:var(--surface-success); color:#0F6B2A; }
+.badge[data-s="published"] .dot { background:var(--color-success); }
+.badge[data-s="draft"] { background:var(--surface-warning); color:#7A4A08; }
+.badge[data-s="draft"] .dot { background:var(--color-warning); }
+.badge[data-s="archived"] { background:var(--color-surface); color:var(--color-slate); border:1px solid var(--color-hairline); }
+.badge[data-s="archived"] .dot { background:var(--color-muted); }
+[data-theme="dark"] .badge[data-s="published"] { color:#7DD99A; }
+[data-theme="dark"] .badge[data-s="draft"] { color:#E8B96A; }
+
+.type-chip { font-size:11.5px; color:var(--color-slate); background:var(--color-surface);
+  border:1px solid var(--color-hairline); padding:1px 7px; border-radius:5px; white-space:nowrap; }
+
+.row-actions { display:flex; gap:2px; justify-content:flex-end; }
+.row-actions button { width:28px; height:28px; border-radius:6px; border:0; background:none;
+  color:var(--color-steel); display:grid; place-items:center; }
+.row-actions button:hover { background:var(--color-surface); color:var(--color-ink); }
+.row-actions button.danger:hover { background:var(--surface-danger); color:var(--color-error); }
+
+.foot { display:flex; align-items:center; gap:12px; padding:11px 14px;
+  border-top:1px solid var(--color-hairline); background:var(--color-surface-soft); }
+.foot .t-muted { font-size:12px; }
+.pager { margin-left:auto; display:flex; gap:4px; align-items:center; }
+.pager button { min-width:28px; height:28px; border-radius:6px; border:1px solid var(--color-hairline);
+  background:var(--color-canvas); font-size:12.5px; }
+.pager button[aria-current="true"] { background:var(--color-primary); border-color:var(--color-primary); color:#fff; font-weight:600; }
+.pager button:disabled { opacity:.45; cursor:default; }
+
+/* ── Панель управления прототипом (вне композиции) ───────────────────────── */
+.proto-bar {
+  position:fixed; bottom:14px; left:50%; transform:translateX(-50%); z-index:50;
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:rgba(11,37,69,.95); color:#fff; border-radius:99px;
+  font-size:12px; box-shadow:0 8px 24px rgba(0,0,0,.24); backdrop-filter:blur(6px);
+}
+.proto-bar button { background:rgba(255,255,255,.12); border:0; color:#fff; padding:4px 10px;
+  border-radius:99px; font-size:11.5px; }
+.proto-bar button[aria-pressed="true"] { background:var(--color-primary); }
+.proto-label { color:var(--color-on-dark-muted); font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
+@media (max-width:900px) {
+  .shell { grid-template-columns:1fr; }
+  /* Сайдбар на мобилке — только иконки в строку: полное меню здесь недоступно,
+     текст уходит в title, страница не получает горизонтальный скролл. */
+  .sidebar {
+    position:static; height:auto; flex-direction:row; gap:4px;
+    overflow-x:auto; padding:8px 10px; min-width:0;
+  }
+  .sidebar .brand { padding:0 10px 0 0; }
+  .brand-sub, .sidebar-foot, .nav-group { display:none; }
+  .nav-item { width:auto; padding:8px; }
+  .nav-item .label, .nav-item .nav-count { display:none; }
+  .topbar { padding:0 14px; gap:10px; }
+  .content { padding:16px 14px 32px; }
+  .page-title { font-size:19px; }
+  .hide-sm { display:none; }
+  /* Таблица на узком экране прокручивается внутри карточки: страница
+     горизонтально не едет, а данные остаются читаемыми. */
+  .card { overflow-x:auto; }
+  table { min-width:560px; }
+  .filters .search { order:3; flex-basis:100%; }
+  .topbar .btn:not(.btn-primary) { display:none; }
+  .topbar .icon-btn { display:none; }
+  .page-head { margin-bottom:14px; }
+  .page-sub { font-size:12.5px; }
+  /* Панель прототипа не имеет права накрывать последнюю строку. */
+  .content { padding-bottom:72px; }
+  .proto-bar { font-size:11px; gap:6px; padding:6px 9px; max-width:calc(100vw - 20px); }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ═══ САЙДБАР ═══════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div>
+        <div class="brand-text">Lexicon</div>
+        <div class="brand-sub">Админка</div>
+      </div>
+    </div>
+
+    <div class="nav-group">Контент</div>
+    <button class="nav-item" aria-current="page">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 3.5h11M2.5 8h11M2.5 12.5h7"/></svg>
+      <span class="label">Материалы</span> <span class="nav-count">24</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="5" height="5" rx="1"/><rect x="8.5" y="2.5" width="5" height="5" rx="1"/><rect x="2.5" y="8.5" width="5" height="5" rx="1"/><rect x="8.5" y="8.5" width="5" height="5" rx="1"/></svg>
+      <span class="label">Категории</span> <span class="nav-count">12</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2.5h7l3 3v8a.5.5 0 0 1-.5.5h-9.5a.5.5 0 0 1-.5-.5v-10.5a.5.5 0 0 1 .5-.5Z"/><path d="M10 2.5v3h3"/></svg>
+      <span class="label">Книги</span> <span class="nav-count">38</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4.5h11M2.5 8h8M2.5 11.5h5"/></svg>
+      <span class="label">Грамматика</span> <span class="nav-count">9</span>
+    </button>
+
+    <div class="nav-group">Библиотека</div>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><circle cx="6" cy="7" r="1"/><path d="m3 12 3-3 2.5 2.5L11 8l2 3.5"/></svg>
+      <span class="label">Медиа</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2.5v7m0 0 2.5-2.5M8 9.5 5.5 7"/><path d="M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2"/></svg>
+      <span class="label">Импорт слов</span>
+    </button>
+
+    <div class="nav-group">Система</div>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><circle cx="8" cy="8" r="2"/></svg>
+      <span class="label">Отзывы беты</span>
+    </button>
+    <button class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13c0-2.5 2.2-4 5-4s5 1.5 5 4"/></svg>
+      <span class="label">Пользователи</span>
+    </button>
+
+    <div class="sidebar-foot">
+      <div class="who">
+        <div class="avatar">НК</div>
+        <div>
+          <div class="who-name">nik@mail.com</div>
+          <div class="who-role">Администратор</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ РАБОЧАЯ ОБЛАСТЬ ══════════════════════════════════════════════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span>Админка</span><span class="crumb-sep">/</span><b>Материалы</b>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="icon-btn" title="Поиск" aria-label="Поиск">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
+      </button>
+      <a class="btn" href="#" onclick="return false">Открыть сайт ↗</a>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>
+        Новый материал
+      </button>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Материалы</h1>
+          <p class="page-sub">Статьи, новости и справки. Черновики видны только администраторам.</p>
+        </div>
+      </div>
+
+      <!-- Фильтры -->
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Фильтр по статусу">
+          <button aria-pressed="true" data-filter="all">Все <span class="n">24</span></button>
+          <button aria-pressed="false" data-filter="published">Опубликовано <span class="n">16</span></button>
+          <button aria-pressed="false" data-filter="draft">Черновики <span class="n">6</span></button>
+          <button aria-pressed="false" data-filter="archived">Архив <span class="n">2</span></button>
+        </div>
+        <label class="search">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-muted)"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
+          <input type="search" placeholder="Поиск по заголовку или slug" aria-label="Поиск материалов">
+        </label>
+      </div>
+
+      <!-- Таблица -->
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:38%">Заголовок</th>
+              <th>Тип</th>
+              <th>Статус</th>
+              <th class="hide-sm">Изменено</th>
+              <th class="hide-sm">Автор</th>
+              <th style="width:96px; text-align:right">Действия</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="foot">
+          <span class="t-muted num">1–8 из 24</span>
+          <div class="pager">
+            <button disabled aria-label="Назад">←</button>
+            <button aria-current="true">1</button>
+            <button>2</button>
+            <button>3</button>
+            <button aria-label="Вперёд">→</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="proto-bar">
+  <span class="proto-label">Прототип</span>
+  <button data-theme-btn="light" aria-pressed="true">Светлая</button>
+  <button data-theme-btn="dark" aria-pressed="false">Тёмная</button>
+  <button data-empty-btn="false" aria-pressed="false">Пустое состояние</button>
+</div>
+
+<script>
+const ITEMS = [
+  { title:'Как читать «Моби Дика» на уровне B2', slug:'moby-dick-b2', type:'Статья', status:'published', mod:'26 окт', author:'Ника К.' },
+  { title:'Новая коллекция: детективы Конан Дойла', slug:'sherlock-collection', type:'Новость', status:'published', mod:'26 окт', author:'Ника К.' },
+  { title:'Как работает интервальное повторение', slug:'srs-explained', type:'Справка', status:'draft', mod:'25 окт', author:'Мария П.' },
+  { title:'Подборка книг для A1', slug:'starter-books-a1', type:'Статья', status:'draft', mod:'25 окт', author:'Ника К.' },
+  { title:'Список слов: Банк и деньги', slug:'money-vocabulary', type:'Статья', status:'published', mod:'24 окт', author:'Мария П.' },
+  { title:'Устаревшая инструкция по загрузке EPUB', slug:'old-upload-guide', type:'Справка', status:'archived', mod:'22 окт', author:'Ника К.' },
+  { title:'Грамматика: времена группы Perfect', slug:'perfect-tenses', type:'Статья', status:'published', mod:'21 окт', author:'Мария П.' },
+  { title:'Что нового в сезоне 2026', slug:'season-2026', type:'Новость', status:'draft', mod:'20 окт', author:'Ника К.' },
+];
+
+const STATUS_LABEL = { published:'Опубликовано', draft:'Черновик', archived:'Архив' };
+
+const rows = document.getElementById('rows');
+let filter = 'all';
+let emptyMode = false;
+
+function render() {
+  if (emptyMode) {
+    rows.innerHTML = `<tr><td colspan="6" style="padding:56px 16px; text-align:center">
+      <div style="font-weight:600; margin-bottom:4px">Материалов пока нет</div>
+      <div style="color:var(--color-slate); font-size:13px; margin-bottom:14px">
+        Первый черновик не попадёт на сайт, пока вы его не опубликуете.</div>
+      <button class="btn btn-primary" style="height:32px">Новый материал</button>
+    </td></tr>`;
+    return;
+  }
+  const list = filter === 'all' ? ITEMS : ITEMS.filter(i => i.status === filter);
+  rows.innerHTML = list.map(i => `
+    <tr>
+      <td>
+        <div class="t-title">${i.title}</div>
+        <div class="t-slug">/${i.slug}</div>
+      </td>
+      <td><span class="type-chip">${i.type}</span></td>
+      <td><span class="badge" data-s="${i.status}"><span class="dot"></span>${STATUS_LABEL[i.status]}</span></td>
+      <td class="t-muted hide-sm">${i.mod}</td>
+      <td class="t-muted hide-sm">${i.author}</td>
+      <td>
+        <div class="row-actions">
+          <button title="Изменить" aria-label="Изменить">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-8 8H3v-2.5l8-8Z"/></svg>
+          </button>
+          <button class="danger" title="В архив" aria-label="В архив">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4.5h11M6 4.5V3h4v1.5M4 4.5l.8 8.5h6.4l.8-8.5"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('') || `<tr><td colspan="6" style="padding:40px 16px; text-align:center; color:var(--color-slate)">
+      В этом статусе нет материалов.</td></tr>`;
+}
+
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    filter = btn.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(b =>
+      b.setAttribute('aria-pressed', String(b === btn)));
+    render();
+  });
+});
+
+document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const theme = btn.dataset.themeBtn;
+    document.documentElement.dataset.theme = theme;
+    document.querySelectorAll('[data-theme-btn]').forEach(b =>
+      b.setAttribute('aria-pressed', String(b === btn)));
+  });
+});
+
+document.querySelector('[data-empty-btn]').addEventListener('click', (e) => {
+  emptyMode = !emptyMode;
+  e.currentTarget.setAttribute('aria-pressed', String(emptyMode));
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

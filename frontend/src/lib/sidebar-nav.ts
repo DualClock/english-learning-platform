@@ -27,7 +27,8 @@ export type NavIconKey =
   | 'bot'
   | 'user'
   | 'sliders'
-  | 'feedback';
+  | 'feedback'
+  | 'shield';
 
 export interface NavEntry {
   name: string;
@@ -84,6 +85,39 @@ export const NAV_GROUPS: NavGroup[] = [
 /** Плоский список маршрутов — для проверок полноты меню. */
 export function flatRoutes(): string[] {
   return NAV_GROUPS.flatMap((group) => group.items.map((item) => item.href));
+}
+
+/**
+ * Пункты админки. Отдельно от NAV_GROUPS, потому что зависят от роли, а
+ * NAV_GROUPS — статический состав меню обычного человека.
+ *
+ * Живут в данных, а не в компоненте: меню проверяется node:test без сборки,
+ * и правило «админ видит админку, остальные — нет» должно быть проверяемым.
+ */
+export const ADMIN_NAV_GROUP: NavGroup = {
+  label: 'Админка',
+  items: [
+    { name: 'Категории и слова', href: '/admin/content/categories', icon: 'folders' },
+    { name: 'Статьи', href: '/admin/content/articles', icon: 'pen' },
+    { name: 'Книги', href: '/admin/content', icon: 'books' },
+  ],
+};
+
+/**
+ * Меню для конкретного человека: обычные группы плюс админские, если роль
+ * Admin есть в сессии.
+ *
+ * Админская группа ставится ПЕРВОЙ, а не последней. Меню обычного человека
+ * занимает почти всю высоту окна, и внизу ссылка оказывалась за пределами
+ * прокрутки: человек входил админом, видел обычное меню и решал, что функций
+ * админа нет. Первый блок виден без прокрутки всегда.
+ *
+ * Это только навигация. Доступ закрывает middleware по роли и сам бэкенд
+ * через [Authorize(Roles = "Admin")] — скрытый пункт защитой не является.
+ */
+export function navGroupsFor(roles: readonly string[] | null | undefined): NavGroup[] {
+  const isAdmin = Array.isArray(roles) && roles.includes('Admin');
+  return isAdmin ? [ADMIN_NAV_GROUP, ...NAV_GROUPS] : NAV_GROUPS;
 }
 
 /**

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using EnglishLearningPlatform.API.Security;
@@ -253,36 +254,37 @@ public class RateLimitPartitionTests
     }
 
     [Fact]
-    public void AdminPolicy_PartitionsByPresentedKeyNotByIpPlusLogin()
+    public void AdminPolicy_PartitionsByAuthenticatedUserNotByIpPlusLogin()
     {
         // R-05: тело админских запросов поля email не содержит, поэтому
         // прошлая партиция (IP+email) превращалась в одну корзину на весь мир
-        // за прокси. Админский лимитер теперь смотрит только на X-Seed-Key.
-        var keyed = RateLimitPolicies.AdminPartition(
-            LoginRequest(ProxyIp, """{"email":"alice@example.com"}"""));
-        var keyedSameIp = RateLimitPolicies.AdminPartition(AdminKeyedRequest("alice-key"));
+        // за прокси. С CMS-0 ключ — id пользователя из разобранного JWT
+        // (заголовка X-Seed-Key в запросе больше нет).
+        var admin = RateLimitPolicies.AdminPartition(AdminRequest(userId: "admin-1"));
 
-        Assert.StartsWith("key:", keyedSameIp.PartitionKey, StringComparison.Ordinal);
-        Assert.DoesNotContain("alice-key", keyedSameIp.PartitionKey, StringComparison.Ordinal);
+        Assert.StartsWith("admin:", admin.PartitionKey, StringComparison.Ordinal);
+        Assert.DoesNotContain("admin-1", admin.PartitionKey, StringComparison.Ordinal);
 
-        // Тело запроса на админ-партицию больше не влияет: GET без тела и
-        // POST с email попадают в корзину по IP, если ключ не прислан.
-        var noKeyPost = RateLimitPolicies.AdminPartition(LoginRequest(ProxyIp, """{"email":"bob@example.com"}"""));
-        var noKeyGet = RateLimitPolicies.AdminPartition(AdminKeyedRequest(seedKey: null));
+        // Тело запроса на админ-партицию не влияет: GET без тела и POST с email
+        // попадают в корзину по IP, пока пользователь не аутентифицирован.
+        var noUserPost = RateLimitPolicies.AdminPartition(LoginRequest(ProxyIp, """{"email":"bob@example.com"}"""));
+        var noUserGet = RateLimitPolicies.AdminPartition(AdminRequest(userId: null));
 
-        Assert.Equal(noKeyPost.PartitionKey, noKeyGet.PartitionKey);
-        Assert.StartsWith("ip:", noKeyGet.PartitionKey, StringComparison.Ordinal);
+        Assert.Equal(noUserPost.PartitionKey, noUserGet.PartitionKey);
+        Assert.StartsWith("ip:", noUserGet.PartitionKey, StringComparison.Ordinal);
     }
 
-    private static DefaultHttpContext AdminKeyedRequest(string? seedKey)
+    private static DefaultHttpContext AdminRequest(string? userId)
     {
         var context = new DefaultHttpContext();
         context.Connection.RemoteIpAddress = IPAddress.Parse(ProxyIp);
         context.Request.Method = HttpMethods.Get;
 
-        if (seedKey != null)
+        if (userId != null)
         {
-            context.Request.Headers["X-Seed-Key"] = seedKey;
+            var identity = new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.NameIdentifier, userId) }, "Bearer");
+            context.User = new ClaimsPrincipal(identity);
         }
 
         return context;

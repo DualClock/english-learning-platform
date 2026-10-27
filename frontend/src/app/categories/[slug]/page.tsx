@@ -33,6 +33,8 @@ interface CategoryWord {
   transcription?: string;
   example?: string;
   exampleRu?: string;
+  /** Картинка, загруженная админом. null — используется статическая иллюстрация. */
+  imageUrl?: string | null;
   status: 'not_started' | 'learning' | 'learned';
   inDictionary: boolean;
 }
@@ -236,6 +238,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                       <WordIllustration
                         categorySlug={category.slug}
                         word={word.english}
+                        imageUrl={word.imageUrl}
                         translation={word.translation}
                         size="sm"
                       />

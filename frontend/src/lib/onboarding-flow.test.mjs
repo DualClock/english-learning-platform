@@ -4,20 +4,39 @@ import { test } from 'node:test';
 import {
   ONBOARDING_STEPS,
   POST_SIGNUP_PATH,
+  canLeaveInterests,
   canSubmitAccount,
   isValidEmail,
   isValidPassword,
   levelFromQuery,
+  nextStepAfter,
+  selectedInterestCount,
   stepNumber,
   totalSteps,
   welcomeHeadline,
 } from './onboarding-flow.ts';
 
-test('онбординг состоит из двух шагов, и первый — аккаунт', () => {
-  assert.equal(totalSteps(), 2);
-  assert.deepEqual(ONBOARDING_STEPS, ['account', 'goal']);
+test('онбординг начинается с аккаунта и идёт по порядку: аккаунт → цель → интересы', () => {
+  // Шаг интересов добавлен ПОСЛЕ цели: человек сначала регистрируется,
+  // потом рассказывает о себе, и только затем получает настройку новостей.
+  assert.equal(totalSteps(), 3);
+  assert.deepEqual(ONBOARDING_STEPS, ['account', 'goal', 'interests']);
   assert.equal(stepNumber('account'), 1);
   assert.equal(stepNumber('goal'), 2);
+  assert.equal(stepNumber('interests'), 3);
+});
+
+test('переходы между шагами не перескакивают через интерес', () => {
+  assert.equal(nextStepAfter('account'), 'goal');
+  assert.equal(nextStepAfter('goal'), 'interests');
+  assert.equal(nextStepAfter('interests'), null);
+});
+
+test('шаг интересов необязателен и не блокирует кнопку', () => {
+  assert.equal(canLeaveInterests([]), true);
+  assert.equal(canLeaveInterests(['sport']), true);
+  assert.equal(selectedInterestCount([]), 0);
+  assert.equal(selectedInterestCount(['sport', 'Sport', ' tech ']), 2);
 });
 
 test('теста уровня в онбординге нет: он живёт на /test, результат приходит адресом', () => {

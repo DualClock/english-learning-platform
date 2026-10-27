@@ -9,6 +9,14 @@ declare module 'next-auth' {
     avatarUrl?: string | null;
     avatarFrame?: string | null;
     accentTheme?: string | null;
+    /*
+     * Роли приходят из ответа /api/auth/login (поле roles) и живут в токене
+     * NextAuth до следующего refresh. Это подсказка для UI:
+     * настоящий гейт — [Authorize(Roles="Admin")] на бэкенде и middleware
+     * на /admin. Никакой компонент не должен считать наличие роли в сессии
+     * доказательством доступа к данным.
+     */
+    roles?: string[] | null;
   }
 
   interface Session {
@@ -16,6 +24,7 @@ declare module 'next-auth' {
     avatarFrame?: string | null;
     accentTheme?: string | null;
     tokenError?: string | null;
+    roles?: string[];
     user: {
       id: string;
       /*
@@ -38,5 +47,6 @@ declare module 'next-auth/jwt' {
     avatarUrl?: string | null;
     avatarFrame?: string | null;
     accentTheme?: string | null;
+    roles?: string[];
   }
 }

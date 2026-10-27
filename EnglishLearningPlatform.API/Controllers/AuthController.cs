@@ -1,8 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using EnglishLearningPlatform.API.Models;
+using EnglishLearningPlatform.API.Security;
 using EnglishLearningPlatform.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -123,7 +124,9 @@ public class AuthController : ControllerBase
         // сразу — иначе счётчик отстаёт на TTL кэша
         _registrationQuota.OnRegistrationCreated();
 
-        var token = GenerateJwtToken(user);
+        // Новый пользователь ролей не имеет — явный пустой список, а не
+        // «прочитаем из базы на всякий случай»: регистрация не может выдать Admin.
+        var token = GenerateJwtToken(user, Array.Empty<string>());
         var refreshToken = GenerateRefreshJwtToken(user);
 
         // Письмо-подтверждение не должно ломать регистрацию: если SMTP недоступен,
@@ -148,7 +151,8 @@ public class AuthController : ControllerBase
             avatarUrl = user.AvatarUrl,
             avatarFrame = user.AvatarFrame,
             accentTheme = user.AccentTheme,
-            emailConfirmed = user.EmailConfirmed
+            emailConfirmed = user.EmailConfirmed,
+            roles = Array.Empty<string>()
         });
     }
 
@@ -184,8 +188,11 @@ public class AuthController : ControllerBase
         // Успешный вход сбрасывает счётчик неудач
         await _userManager.ResetAccessFailedCountAsync(user);
 
-        // Генерируем JWT
-        var token = GenerateJwtToken(user);
+        // Генерируем JWT. Роли читаются из AspNetUserRoles: без них админский
+        // токен неотличим от пользовательского и [Authorize(Roles="Admin")]
+        // отвечает 403 даже владельцу.
+        var userRoles = await _userManager.GetRolesAsync(user);
+        var token = GenerateJwtToken(user, userRoles);
         var refreshToken = GenerateRefreshJwtToken(user);
 
         user.LastLoginAt = DateTime.UtcNow;
@@ -201,7 +208,11 @@ public class AuthController : ControllerBase
             avatarUrl = user.AvatarUrl,
             avatarFrame = user.AvatarFrame,
             accentTheme = user.AccentTheme,
-            emailConfirmed = user.EmailConfirmed
+            emailConfirmed = user.EmailConfirmed,
+            // Фронту нужен признак админа, чтобы нарисовать ссылку в /admin.
+            // Это подсказка для UI, а не защита: настоящий гейт — [Authorize]
+            // на бэкенде и middleware на /admin.
+            roles = userRoles
         });
     }
 
@@ -255,9 +266,14 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { message = "Invalid refresh token" });
             }
 
+            // Роли перечитываются при каждом refresh, а не переносятся из
+            // старого токена: снятие админки должно отзываться за один цикл
+            // обновления, иначе украденный токен живёт admin'ом до 7 дней.
+            var refreshedRoles = await _userManager.GetRolesAsync(user);
+
             return Ok(new
             {
-                token = GenerateJwtToken(user),
+                token = GenerateJwtToken(user, refreshedRoles),
                 refreshToken = GenerateRefreshJwtToken(user)
             });
         }
@@ -414,17 +430,41 @@ public class AuthController : ControllerBase
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private string GenerateJwtToken(User user)
+    private string GenerateJwtToken(User user) => BuildAccessToken(user, roles: Array.Empty<string>());
+
+    /// <summary>
+    /// Собирает access-токен. Роли читаются из AspNetUserRoles, а не берутся из
+    /// утверждения вызывающего: иначе любой код с доступом к сервису мог бы
+    /// выписать себе Admin. Единственный источник правды — база.
+    /// </summary>
+    internal string GenerateJwtToken(User user, IEnumerable<string> roles)
+        => BuildAccessToken(user, roles);
+
+    public async Task<IReadOnlyList<string>> GetRolesAsync(User user)
+        => (await _userManager.GetRolesAsync(user)).ToList();
+
+    private string BuildAccessToken(User user, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Роль — отдельным claim на каждую (пользователь может иметь несколько).
+        // ClaimTypes.Role, а не "role": это ключ, который читает
+        // [Authorize(Roles = "Admin")] при любом значении MapInboundClaims.
+        foreach (var role in roles)
+        {
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                claims.Add(new Claim(AppClaims.Role, role));
+            }
+        }
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],

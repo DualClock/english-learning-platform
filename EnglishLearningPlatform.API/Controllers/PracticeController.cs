@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Services;
@@ -42,7 +42,7 @@ public class PracticeController : ControllerBase
 
         // Берём с запасом: часть слов может отсеяться (дубли предложений, пустые определения)
         var words = await _context.UserWords.AsNoTracking()
-            .Where(uw => uw.UserId == userId)
+            .Where(uw => uw.UserId == userId && uw.Word.DeletedAt == null)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
             .OrderBy(_ => Guid.NewGuid())
@@ -168,7 +168,7 @@ public class PracticeController : ControllerBase
         }
 
         var userWords = await _context.UserWords.AsNoTracking()
-            .Where(uw => uw.UserId == userId)
+            .Where(uw => uw.UserId == userId && uw.Word.DeletedAt == null)
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)
             .ToListAsync();

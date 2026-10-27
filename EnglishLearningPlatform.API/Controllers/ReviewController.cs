@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
@@ -146,7 +146,10 @@ public class ReviewController : ControllerBase
 
         var userWords = await _context.UserWords
             .AsNoTracking()
+            // Удалённое админом слово не участвует в квизе: Include на него
+            // вернул бы null, и отбор ниже упал бы на uw.Word.Text.
             .Where(uw => uw.UserId == userId
+                         && uw.Word.DeletedAt == null
                          && uw.Word.Definitions.Any(d => d.Definition != ""))
             .Include(uw => uw.Word)
                 .ThenInclude(w => w.Definitions)

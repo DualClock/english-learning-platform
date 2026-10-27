@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EnglishLearningPlatform.API.Models;
 
-public class Book
+public class Book : ISoftDeletable
 {
     public int Id { get; set; }
 
@@ -52,6 +52,14 @@ public class Book
     public string? UploadedByUserId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Удаление книги из каталога: EPUB на диске и строки BookKeyWords остаются
+    // до отдельной уборки, а у пользователей сохраняются закладки и прогресс
+    // (UserBookProgress ссылается на Book с Cascade — физический DELETE его бы
+    // унёс, а читатель потерял бы место в книге).
+    public DateTime? DeletedAt { get; set; }
+
+    public string? DeletedByUserId { get; set; }
 
     // Навигационные свойства
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();

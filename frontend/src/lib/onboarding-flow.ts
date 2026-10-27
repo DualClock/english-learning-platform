@@ -10,17 +10,19 @@ export const CEFR_LEVELS = ['a1', 'a2', 'b1', 'b2', 'c1'] as const;
 export type CefrLevel = (typeof CEFR_LEVELS)[number];
 
 /**
- * Шаги онбординга. Ровно два, и оба — про аккаунт:
+ * Шаги онбординга. Ровно три, и все три — про человека, а не про тест:
  *  - `account` — email и пароль (имя необязательно);
- *  - `goal`    — зачем пришёл (можно пропустить).
+ *  - `goal`    — зачем пришёл (можно пропустить);
+ *  - `interests` — какие новости показывать на дашборде (тоже можно пропустить).
  *
  * Теста уровня здесь больше нет: он есть на `/test` и на лендинге, и его
  * результат приходит параметром `?level=`. Раньше онбординг начинался с того
  * же теста заново, и человек второй раз отвечал на те же 16 вопросов.
  */
-export type OnboardingStep = 'account' | 'goal';
 
-export const ONBOARDING_STEPS: readonly OnboardingStep[] = ['account', 'goal'];
+export type OnboardingStep = 'account' | 'goal' | 'interests';
+
+export const ONBOARDING_STEPS: readonly OnboardingStep[] = ['account', 'goal', 'interests'];
 
 export function stepNumber(step: OnboardingStep): number {
   return ONBOARDING_STEPS.indexOf(step) + 1;
@@ -86,4 +88,39 @@ export const NOTIFY_COPY = {
 export function welcomeHeadline(name: string | null | undefined): string {
   const clean = (name ?? '').trim();
   return clean ? `Добро пожаловать, ${clean}!` : 'Добро пожаловать!';
+}
+
+/**
+ * Новости без выбранной темы показывают всё (см. `lib/news.ts`), поэтому
+ * пропуск шага интересов — нормальный ответ, а не «не заполнил профиль».
+ * Принимает выбор, чтобы вызывающий код не решал это заново на своей стороне:
+ * блокировка кнопки жила бы в JSX, а не в одном месте с правилом.
+ */
+export function canLeaveInterests(selected: readonly string[]): boolean {
+  // Пустой список допустим намеренно: NEWS без выбранной темы показывают всё.
+  // Параметр оставлен ради единого контракта с остальными шагами — вызывающий
+  // код передаёт выбор сюда, чтобы правило шага жило под тестом, а не в JSX.
+  void selected;
+  return true;
+}
+
+/**
+ * Следующий шаг после выбора цели. Вынесено ради одной вещи: раньше переход
+ * был захардкожен кнопкой «Начать», и вставка шага между целью и
+ * регистрацией требовала поменять сразу три места (кнопка, пропуск, обработчик).
+ */
+export function nextStepAfter(step: OnboardingStep): OnboardingStep | null {
+  const index = ONBOARDING_STEPS.indexOf(step);
+  if (index < 0) return null;
+  return ONBOARDING_STEPS[index + 1] ?? null;
+}
+
+/** Сколько тем человек выбрал — для подписи кнопки на шаге интересов. */
+export function selectedInterestCount(selected: readonly string[]): number {
+  const seen = new Set<string>();
+  for (const value of selected) {
+    const clean = value.trim().toLowerCase();
+    if (clean) seen.add(clean);
+  }
+  return seen.size;
 }

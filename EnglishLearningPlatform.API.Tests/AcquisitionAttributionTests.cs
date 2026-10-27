@@ -1,4 +1,4 @@
-using EnglishLearningPlatform.API.Controllers;
+﻿using EnglishLearningPlatform.API.Controllers;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Services;
@@ -208,6 +208,7 @@ public class AcquisitionRegistrationTests
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 6;
         })
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         var provider = services.BuildServiceProvider();

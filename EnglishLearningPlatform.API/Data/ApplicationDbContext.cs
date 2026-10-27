@@ -47,6 +47,13 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<LeagueWeekState> LeagueWeekStates => Set<LeagueWeekState>();
     public DbSet<LeagueHistory> LeagueHistories => Set<LeagueHistory>();
 
+    // CMS: новости из фидов, статьи и интересы пользователей.
+    public DbSet<NewsItem> NewsItems => Set<NewsItem>();
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<ArticleSection> ArticleSections => Set<ArticleSection>();
+    public DbSet<ArticleRevision> ArticleRevisions => Set<ArticleRevision>();
+    public DbSet<UserInterest> UserInterests => Set<UserInterest>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -249,19 +256,40 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Category конфигурация
+        // Уникальность слага — только среди живых категорий. Софт-удалённая
+        // строка слагов не занимает: иначе админ, удаливший категорию, не
+        // сможет создать её заново с тем же адресом — 500 от нарушения
+        // индекса вместо понятной работы. Частичный индекс покрывает только
+        // неудалённые строки; восстановление конфликтующей категории проверяет
+        // контроллер.
         builder.Entity<Category>()
             .HasIndex(c => c.Slug)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("IX_Categories_Slug_Active")
+            .HasFilter("\"DeletedAt\" IS NULL");
 
+        // Та же логика, что у слага категории: удалённое слово не занимает
+        // пару (CategoryId, English), иначе повторно добавить его нельзя.
         builder.Entity<CategoryWord>()
             .HasIndex(cw => new { cw.CategoryId, cw.English })
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("IX_CategoryWords_Category_English_Active")
+            .HasFilter("\"DeletedAt\" IS NULL");
 
+        // RESTRICT, а не Cascade: удаление слова из категории не имеет права
+        // уносить прогресс пользователей (UserCategoryWordProgress). До CMS-1
+        // здесь стоял Cascade — один DELETE CategoryWords стирал «выучено» у
+        // всех сразу, и восстановить это было нельзя: строка прогресса не
+        // содержит ни даты, ни истории.
+        //
+        // Удаление теперь идёт через DeletedAt (см. HasQueryFilter ниже), а
+        // физический DELETE разрешён только после того, как прогресс по слову
+        // осознанно вычищен — и тогда база его не пропустит молча.
         builder.Entity<CategoryWord>()
             .HasOne(cw => cw.Category)
             .WithMany(c => c.Words)
             .HasForeignKey(cw => cw.CategoryId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<UserCategoryWordProgress>()
             .HasIndex(p => new { p.UserId, p.CategoryWordId })
@@ -273,11 +301,48 @@ public class ApplicationDbContext : IdentityDbContext<User>
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Restrict и здесь: строка прогресса принадлежит пользователю и
+        // переживает удаление категорийного слова.
         builder.Entity<UserCategoryWordProgress>()
             .HasOne(p => p.CategoryWord)
             .WithMany(cw => cw.UserProgresses)
             .HasForeignKey(p => p.CategoryWordId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Мягкое удаление контента. Фильтр стоит на каждой сущности отдельно,
+        // а не через общий generic-обход: EF требует явного
+        // HasQueryFilter на конкретном типе, и собрать его в цикле нельзя без
+        // рефлексии по модели.
+        //
+        // IgnoreQueryFilters() нужен админке (посмотреть удалённое) и уборке;
+        // кешированная выдача каталога этого фильтра не имеет, поэтому при
+        // удалении её кэш инвалидируется явно.
+        builder.Entity<Word>().HasQueryFilter(w => w.DeletedAt == null);
+        builder.Entity<Category>().HasQueryFilter(c => c.DeletedAt == null);
+        builder.Entity<Book>().HasQueryFilter(b => b.DeletedAt == null);
+
+        // У CategoryWord фильтра НЕТ — сознательно.
+        //
+        // Почему не так, как у остальных: у пользователя есть строка
+        // UserCategoryWordProgress с обязательным FK на CategoryWord. Если
+        // спрятать CategoryWord фильтром, EF предупреждает ровно о том, что
+        // произойдёт: запросы, которые идут от прогресса к слову
+        // (Include/навигация), начнут получать null там, где связь в базе
+        // цела. Вдобавок FindAsync и AnyAsync по удалённому слову начнут
+        // врать одинаково — «слова нет» вместо «слово удалено», и любой код
+        // восстановления потеряет возможность его найти.
+        //
+        // Вместо фильтра удалённое слово отсекается там, где выдача строится
+        // от Category.Words (GET /api/categories/{slug}/words) — явным
+        // `.Where(cw => cw.DeletedAt == null)`. Прогресс пользователя при этом
+        // остаётся читаемым, а категория в каталоге продолжает жить.
+
+        // Lookup удалённого: индекс по DeletedAt, чтобы фильтр не превращался
+        // в полный скан на больших таблицах.
+        builder.Entity<Word>().HasIndex(w => w.DeletedAt);
+        builder.Entity<Category>().HasIndex(c => c.DeletedAt);
+        builder.Entity<CategoryWord>().HasIndex(cw => cw.DeletedAt);
+        builder.Entity<Book>().HasIndex(b => b.DeletedAt);
 
         // Достижения: один код на пользователя
         builder.Entity<UserAchievement>()
@@ -408,5 +473,91 @@ public class ApplicationDbContext : IdentityDbContext<User>
         // Расход Azure Speech: одна строка на месяц, Period — ключ.
         builder.Entity<SpeechUsage>()
             .HasKey(u => u.Period);
+
+        // ─────────────────────────────────────────── CMS: новости и статьи
+
+        // Дедупликация новостей. Уникальный индекс, а не проверка в коде:
+        // два параллельных запуска фетчера (ручной «Обновить сейчас» поверх
+        // фонового) иначе создадут по строке на каждый материал.
+        builder.Entity<NewsItem>()
+            .HasIndex(n => n.ExternalId)
+            .IsUnique()
+            .HasDatabaseName("IX_NewsItems_ExternalId");
+
+        // Персональная выдача: свежие по уровню, только видимые.
+        builder.Entity<NewsItem>()
+            .HasIndex(n => new { n.IsHidden, n.PublishedAt })
+            .HasDatabaseName("IX_NewsItems_Visibility_PublishedAt");
+
+        builder.Entity<NewsItem>()
+            .HasIndex(n => new { n.Level, n.PublishedAt })
+            .HasDatabaseName("IX_NewsItems_Level_PublishedAt");
+
+        // Уборка старых новостей идёт по FetchedAt.
+        builder.Entity<NewsItem>()
+            .HasIndex(n => n.FetchedAt);
+
+        // Слаг раздела уникален среди живых — та же логика, что у категорий:
+        // удалённый раздел не должен блокировать создание одноимённого.
+        builder.Entity<ArticleSection>()
+            .HasIndex(s => s.Slug)
+            .IsUnique()
+            .HasDatabaseName("IX_ArticleSections_Slug_Active")
+            .HasFilter("\"DeletedAt\" IS NULL");
+
+        builder.Entity<ArticleSection>()
+            .HasQueryFilter(s => s.DeletedAt == null);
+
+        // Слаг статьи тоже уникален только среди живых.
+        builder.Entity<Article>()
+            .HasIndex(a => a.Slug)
+            .IsUnique()
+            .HasDatabaseName("IX_Articles_Slug_Active")
+            .HasFilter("\"DeletedAt\" IS NULL");
+
+        // Лента статей: опубликованные по дате публикации.
+        builder.Entity<Article>()
+            .HasIndex(a => new { a.Status, a.PublishedAt })
+            .HasDatabaseName("IX_Articles_Status_PublishedAt");
+
+        builder.Entity<Article>()
+            .HasQueryFilter(a => a.DeletedAt == null);
+
+        // Удаление раздела не уносит статьи: они переезжают в «без раздела»
+        // (SetNull), и их можно разложить заново. Cascade стёр бы тексты.
+        builder.Entity<Article>()
+            .HasOne(a => a.Section)
+            .WithMany(s => s.Articles)
+            .HasForeignKey(a => a.SectionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Ревизии живут и умирают вместе со статьёй: отдельной ценности без
+        // неё нет, а сироты в базе копятся.
+        builder.Entity<ArticleRevision>()
+            .HasOne(r => r.Article)
+            .WithMany(a => a.Revisions)
+            .HasForeignKey(r => r.ArticleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ArticleRevision>()
+            .HasIndex(r => new { r.ArticleId, r.Revision })
+            .IsUnique()
+            .HasDatabaseName("IX_ArticleRevisions_Article_Version");
+
+        // Один интерес — одна строка на пользователя.
+        builder.Entity<UserInterest>()
+            .HasIndex(i => new { i.UserId, i.Interest })
+            .IsUnique()
+            .HasDatabaseName("IX_UserInterests_User_Interest");
+
+        builder.Entity<UserInterest>()
+            .HasOne(i => i.User)
+            .WithMany()
+            .HasForeignKey(i => i.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Обратная выборка: «кто интересуется наукой» — для будущей рассылки.
+        builder.Entity<UserInterest>()
+            .HasIndex(i => i.Interest);
     }
 }

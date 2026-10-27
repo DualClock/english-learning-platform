@@ -41,7 +41,7 @@ public class CategoriesController : ControllerBase
             .ToDictionaryAsync(p => p.CategoryWordId, p => p.Status);
 
         var categories = await _context.Categories
-            .Include(c => c.Words)
+            .Include(c => c.Words.Where(w => w.DeletedAt == null))
             .OrderBy(c => c.Id)
             .ToListAsync();
 
@@ -80,7 +80,10 @@ public class CategoriesController : ControllerBase
     public async Task<ActionResult<object>> GetWords(string slug)
     {
         var category = await _context.Categories
-            .Include(c => c.Words)
+            // Удалённые слова отсекаются явно: у CategoryWord нет глобального
+            // фильтра (см. комментарий в ApplicationDbContext), потому что
+            // фильтр сломал бы чтение прогресса пользователя.
+            .Include(c => c.Words.Where(w => w.DeletedAt == null))
             .FirstOrDefaultAsync(c => c.Slug == slug);
 
         if (category == null) return NotFound();
@@ -108,6 +111,7 @@ public class CategoriesController : ControllerBase
                 w.Translation,
                 w.Transcription,
                 w.Example,
+                w.ImageUrl,
                 Status = progressByWord.TryGetValue(w.Id, out var status) ? status : "not_started",
                 InDictionary = userWordSet.Contains(w.English)
             })
@@ -137,6 +141,7 @@ public class CategoriesController : ControllerBase
                     // иначе под английской фразой из категории стоял бы перевод
                     // другой фразы из справочника.
                     ExampleRu = example == reference?.Example ? reference?.ExampleRu : null,
+                    w.ImageUrl,
                     w.Status,
                     w.InDictionary
                 };
@@ -205,21 +210,17 @@ public class CategoriesController : ControllerBase
 
     [HttpPost]
     [Route("/api/admin/seed-categories")]
+    [Authorize(Roles = AppRoles.Admin)]
     [EnableRateLimiting("admin")]
     public async Task<ActionResult<object>> SeedCategories(
         [FromServices] CategorySeeder seeder,
-        [FromServices] IConfiguration configuration,
-        [FromServices] IWebHostEnvironment env,
-        [FromHeader(Name = "X-Seed-Key")] string? seedKey)
+        [FromServices] ContentCacheInvalidator cache)
     {
-        var configuredKey = configuration["Seeder:Key"];
-        if (!AdminKeyGuard.IsAuthorized(seedKey, configuredKey, env.IsDevelopment()))
-        {
-            if (string.IsNullOrEmpty(configuredKey)) return Forbid();
-            return Unauthorized(new { message = "Invalid seed key" });
-        }
-
         var result = await seeder.SeedAsync();
+
+        // Сид меняет состав категорий; без сброса витрины ещё до 6 часов
+        // показывали бы прежний набор.
+        cache.InvalidateCategories();
 
         if (result.Error != null)
         {

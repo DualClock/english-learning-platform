@@ -1,4 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import { hasAdminRole } from '@/lib/admin-access';
 
 /*
  * Приватные разделы на сервере, а не в браузере.
@@ -8,10 +10,9 @@ import { NextResponse, type NextRequest } from 'next/server';
  * Для Яндекса это пустые, но проиндексированные страницы-дубли. Middleware
  * отвечает до рендеринга: нет куки сессии — сразу 307 на /login.
  *
- * Проверяется именно наличие куки, а не валидность JWT: NEXTAUTH_SECRET нужен
- * для декодирования, а middleware должен работать и на стенде без него.
- * Поддельную или просроченную куку по-прежнему отсекает клиентский гейт и
- * NextAuth на /api/* — это второй слой, а не замена первого.
+ * /admin проверяется строже: кроме куки нужна роль Admin в сессии. Для
+ * остальных разделов достаточно куки — поддельную или просроченную куку
+ * по-прежнему отсекает клиентский гейт и NextAuth на /api/*, это второй слой.
  *
  * Disallow в robots.txt от индекса не спасает, поэтому приватные ответы
  * получают X-Robots-Tag: noindex, nofollow — и без сессии, и с ней.
@@ -23,7 +24,21 @@ const SESSION_COOKIES = [
 
 const NO_INDEX = { 'X-Robots-Tag': 'noindex, nofollow' };
 
-export function middleware(request: NextRequest) {
+/**
+ * /admin без роли Admin — 404, а не 403.
+ *
+ * 403 говорит «раздел существует, но вам нельзя» — это подсказка для
+ * перебора. 404 не отличает админку от несуществующего пути.
+ */
+function notFound(): NextResponse {
+  const response = new NextResponse('Not Found', { status: 404 });
+  for (const [key, value] of Object.entries(NO_INDEX)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
+export async function middleware(request: NextRequest) {
   // Гостевой режим чтения: preview-глава открыта без сессии. Ветка стоит до
   // проверки куки и без X-Robots-Tag: страница нужна краулеру и человеку,
   // который ещё не завёл аккаунт, — иначе он получил бы пустую заглушку вместо
@@ -50,6 +65,29 @@ export function middleware(request: NextRequest) {
       redirect.headers.set(key, value);
     }
     return redirect;
+  }
+
+  // Админка: куки мало, нужна роль. Проверяется здесь, а не только в UI,
+  // потому что «кнопку не показываем» защитой не является — на /admin
+  // можно зайти по прямой ссылке.
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    let roles: string[] | undefined;
+
+    try {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      roles = Array.isArray(token?.roles) ? (token!.roles as string[]) : undefined;
+    } catch {
+      // Без NEXTAUTH_SECRET (или с битой кукой) расшифровать сессию нельзя.
+      // Честнее закрыть админку, чем пропустить.
+      roles = undefined;
+    }
+
+    if (!roles || !hasAdminRole(roles)) {
+      return notFound();
+    }
   }
 
   const response = NextResponse.next();

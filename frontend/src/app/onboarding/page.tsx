@@ -35,6 +35,13 @@ import {
   type OnboardingStep,
 } from '@/lib/onboarding-flow';
 import {
+  INTERESTS,
+  interestSavePath,
+  interestsButtonLabel,
+  normalizeInterests,
+  toggleInterest,
+} from '@/lib/interests';
+import {
   HONEYPOT_WRAPPER_STYLE,
   buildRegistrationPayload,
   detectTimeZoneId,
@@ -42,7 +49,7 @@ import {
 } from '@/lib/signup-payload';
 
 /*
- * Онбординг: два шага и ни одного обязательного вопроса сверх доступа.
+ * Онбординг: три шага и ни одного обязательного вопроса сверх доступа.
  *
  * Что было и почему это дорого стоило. Путь начинался с выбора уровня, затем
  * шёл тест из 16 вопросов, затем цель, затем время в день, и только на
@@ -52,9 +59,19 @@ import {
  *
  * Что теперь. Шаг 1 — email и пароль; имя необязательно и спрятано, бэкенд
  * выводит его из адреса. Шаг 2 — зачем пришёл, и его можно пропустить одной
- * кнопкой. Уровень приходит адресом (`?level=b1`) из /test или из ссылки
+ * кнопкой. Шаг 3 — какие новости показывать на дашборде, тоже необязательный.
+ * Уровень приходит адресом (`?level=b1`) из /test или из ссылки
  * лендинга; если его нет — остаётся пустым, а не «a1 по умолчанию»: уровень
  * влияет на рекомендации книг, и врать в профиле нельзя.
+ *
+ * Почему интересы спрашиваем ПОСЛЕ регистрации, а не до неё. Регистрация —
+ * это создание аккаунта, и всё, что стоит до неё, читается как условие
+ * входа. Интересы — настройка уже существующего аккаунта: ставятся отдельным
+ * шагом после входа (`POST /api/next/interests`), а пропуск ничего не ломает —
+ * без выбранных тем блок новостей показывает свежий микс. Заодно это
+ * единственный порядок, в котором запрос проходит: до входа прокси отдал бы 401.
+ * Меню это не затрагивает: отдельного пункта у новостей нет, сайдбар на 16
+ * пунктов уже не помещается в окно.
  *
  * После регистрации ведём в библиотеку (`/books?first=1`), а не на дашборд:
  * дашборд у нового аккаунта состоит из нулей и пустых карточек, библиотека —
@@ -81,6 +98,32 @@ function StepHeading({ title, hint }: { title: string; hint?: string }) {
 }
 
 /**
+ * Сохранение интересов. Вынесено отдельной функцией, потому что вызов идёт
+ * после `signIn`, а вход и запись настройки — разные вещи: неудачная запись
+ * не должна отменять созданный аккаунт и не должна держать человека на
+ * экране «Создаём…». Поэтому ошибка сохранения только пишется в консоль —
+ * темы можно выбрать позже, а блок новостей без них показывает микс.
+ */
+async function saveInterests(selected: readonly string[]): Promise<void> {
+  const interests = normalizeInterests(selected);
+  if (interests.length === 0) return;
+  try {
+    const res = await fetch(interestSavePath(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interests }),
+    });
+    if (!res.ok) {
+      // Диагностика в консоль: экран об этом молчит намеренно, но при
+      // разборе «темы не сохранились» нужен статус, а не догадки.
+      console.error('[интересы] ответ сервера', res.status, res.url);
+    }
+  } catch {
+    // Сеть недоступна — настройка не сохранилась, но аккаунт жив. Не мешаем.
+  }
+}
+
+/**
  * `useSearchParams` в Next 14 требует границы Suspense при пререндере:
  * без неё сборка ругается и страница уходит в клиентский рендер целиком.
  */
@@ -104,6 +147,9 @@ function OnboardingForm() {
     // ни одного канала возврата (пушей в продукте нет, подтверждение почты не
     // требуется), а отписка есть в настройках.
     notifications: true,
+    // Темы новостей. По умолчанию пусто: интересы — не обязательный вопрос,
+    // и «отметим всё за человека» значило бы записать в профиль догадку.
+    interests: [] as string[],
     // Honeypot (W1.4.4): поле «website» для ботов-автозаполнителей. Человек его
     // не видит и не трогает, поэтому для живого пользователя это всегда ''.
     website: '',
@@ -117,7 +163,9 @@ function OnboardingForm() {
   // трёх вариантов, которые были раньше.
   const minutes = 20;
 
-  const currentStepNumber = stepNumber(step === 'goal' ? 'goal' : 'account');
+  const currentStepNumber = stepNumber(
+    step === 'goal' || step === 'interests' ? step : 'account'
+  );
   const stepsTotal = totalSteps();
 
   const toggleGoal = (value: string) => {
@@ -127,6 +175,12 @@ function OnboardingForm() {
         ? prev.goals.filter((g) => g !== value)
         : [...prev.goals, value],
     }));
+  };
+
+  // Порядок в выборе — как в справочнике, а не как нажимали: при возврате на
+  // шаг галочки не должны оказаться вразнобой.
+  const toggleInterestKey = (key: string) => {
+    setData((prev) => ({ ...prev, interests: toggleInterest(prev.interests, key) }));
   };
 
   const register = async (aheadGoal?: string[]) => {
@@ -230,7 +284,7 @@ function OnboardingForm() {
         return;
       }
 
-      setStep('welcome');
+      setStep('interests');
       trackEvent('register');
     } catch {
       setAccountError('Сервер недоступен, попробуйте позже');
@@ -245,9 +299,33 @@ function OnboardingForm() {
     setStep('goal');
   };
 
+  /*
+   * Шаг цели остаётся точкой регистрации: аккаунт создаётся здесь, а шаг
+   * интересов идёт уже после входа и только дописывает настройку. Так
+   * цепочка не зависит от того, вернулся ли человек назад: пока аккаунта
+   * нет, `POST /api/next/interests` ответил бы 401.
+   */
   const skipGoal = () => {
     trackEvent('onboarding_goal_skipped');
     void register([]);
+  };
+
+  /**
+   * Завершение шага интересов: после успешной регистрации и входа (шаг
+   * `interests` открывается только из `register`) темы уходят отдельным
+   * запросом. Пропуск — не «стереть темы», а «пока без них»: `POST` с
+   * пустым массивом значил бы очистку, которой человек не просил.
+   */
+  const finishInterests = async (selected: string[]): Promise<void> => {
+    // Шаг отвечает за настройку, а не за аккаунт — ошибка записи не держит
+    // человека: он идёт дальше, блок новостей покажет свежий микс.
+    await saveInterests(selected);
+    setStep('welcome');
+  };
+
+  const skipInterests = () => {
+    trackEvent('onboarding_interests_skipped');
+    void finishInterests([]);
   };
 
   const handleComplete = () => {
@@ -529,6 +607,66 @@ function OnboardingForm() {
                       data-testid="onboarding-goal-continue"
                     >
                       {isRegistering ? 'Создаём…' : 'Начать'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {step === 'interests' && (
+                <div>
+                  <StepHeading
+                    title="Какие темы вам интересны?"
+                    hint="На дашборде появятся короткие новости по этим темам. Можно выбрать несколько — или пропустить: тогда покажем самый свежий микс."
+                  />
+
+                  {/*
+                   * Мультивыбор плашками, а не списком чекбоксов: тем десять,
+                   * и в карточках они занимают две-три строки вместо экрана.
+                   * `aria-pressed` — потому что визуально выбранная плашка
+                   * отличается только цветом, и скринридеру нужен явный статус.
+                   */}
+                  <div
+                    role="group"
+                    aria-label="Темы новостей"
+                    className="mb-8 flex flex-wrap gap-2"
+                  >
+                    {INTERESTS.map((interest) => {
+                      const selected = data.interests.includes(interest.key);
+                      return (
+                        <button
+                          key={interest.key}
+                          type="button"
+                          aria-pressed={selected}
+                          onClick={() => toggleInterestKey(interest.key)}
+                          data-testid={`onboarding-interest-${interest.key}`}
+                          className={`rounded-full border px-4 py-2 text-body-sm transition-[background-color,border-color,color] duration-fast ease-soft ${
+                            selected
+                              ? 'border-primary bg-surface-accent font-medium text-on-accent'
+                              : 'border-hairline-strong bg-canvas text-slate hover:border-primary hover:text-ink'
+                          }`}
+                        >
+                          {interest.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/*
+                   * Об ошибке сохранения не сообщаем: аккаунт уже создан, а
+                   * темы можно выбрать позже — блок новостей без них
+                   * показывает свежий микс, и пугающая плашка здесь стоит
+                   * дороже, чем сама потеря настройки.
+                   */}
+                  <div className="flex items-center justify-between gap-3">
+                    <Button variant="ghost" onClick={skipInterests} disabled={isRegistering}>
+                      Пропустить
+                    </Button>
+                    <Button
+                      onClick={() => void finishInterests(data.interests)}
+                      disabled={isRegistering}
+                      data-testid="onboarding-interests-continue"
+                    >
+                      {data.interests.length > 0 ? interestsButtonLabel(data.interests) : 'Готово'}
                     </Button>
                   </div>
                 </div>

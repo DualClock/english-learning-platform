@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -51,17 +52,24 @@ public static class RateLimitPartitionKeys
     }
 
     /// <summary>
-    /// Партиция админских эндпоинтов: своя корзина у того, кто прислал ключ,
-    /// и общая корзина по IP для тех, кто ключа не прислал. Значение ключа
-    /// не попадает в ключ партиции — только его хеш.
+    /// Партиция админских эндпоинтов.
+    ///
+    /// Ключ — id пользователя из успешной аутентификации, а не заголовок
+    /// X-Seed-Key: с CMS-0 админка защищена ролью ([Authorize(Roles=Admin)]),
+    /// и никакого ключа в запросе больше нет. Пока здесь читался отсутствующий
+    /// заголовок, условие всегда падало в ветку "ip:{...}" — то есть все
+    /// администраторы мира делили одну корзину в 10 запросов на 5 минут.
+    ///
+    /// До аутентификации (запрос без токена) Name пуст — такому запросу и
+    /// положено попадать в общий IP-bucket: он всё равно получит 401/403.
     /// </summary>
     public static string AdminIdentity(HttpContext context)
     {
-        var providedKey = context.Request.Headers[AdminKeyHeader].ToString();
+        var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        return string.IsNullOrWhiteSpace(providedKey)
+        return string.IsNullOrWhiteSpace(userId)
             ? $"ip:{IpOnly(context)}"
-            : $"key:{Hash(providedKey.Trim())}";
+            : $"admin:{Hash(userId)}";
     }
 
     /// <summary>Нормализованный email из JSON-тела запроса; "" если его нет.</summary>

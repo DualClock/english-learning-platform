@@ -1,4 +1,4 @@
-using EnglishLearningPlatform.API.Controllers;
+﻿using EnglishLearningPlatform.API.Controllers;
 using EnglishLearningPlatform.API.Data;
 using EnglishLearningPlatform.API.Models;
 using EnglishLearningPlatform.API.Services;
@@ -42,7 +42,8 @@ public class LoginLockoutTests
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
         })
-        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
         var provider = services.BuildServiceProvider();

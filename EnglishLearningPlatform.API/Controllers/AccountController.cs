@@ -236,6 +236,10 @@ public class AccountController : ControllerBase
             ("UserAchievements", (c, id, ct) => c.UserAchievements.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("UserGrammarProgresses", (c, id, ct) => c.UserGrammarProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("UserCategoryWordProgresses", (c, id, ct) => c.UserCategoryWordProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
+
+            // Интересы — персональные данные: по ним видно, чем человек
+            // увлекается. /privacy обещает удаление, значит строки уходят.
+            ("UserInterests", (c, id, ct) => c.UserInterests.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("UserBookProgresses", (c, id, ct) => c.UserBookProgresses.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("ReaderPocketWords", (c, id, ct) => c.ReaderPocketWords.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),
             ("AnalyticsEvents", (c, id, ct) => c.AnalyticsEvents.Where(x => x.UserId == id).ExecuteDeleteAsync(ct)),

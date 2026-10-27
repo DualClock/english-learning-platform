@@ -236,10 +236,21 @@ public static class RateLimitPolicies
             RateLimitPartitionKeys.AdminIdentity(context),
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(5),
+                // 10 запросов в 5 минут было разумно для служебных сидов,
+                // которые дёргают вручную. CMS меняет картину: админ правит
+                // контент пачками (создал категорию, накидал десять слов,
+                // поправил два), и старый лимит упирался в 429 посреди работы.
+                //
+                // 240/мин — это защита от бесконечного цикла в скрипте, а не
+                // ограничение живой работы. Партиция — по пользователю, так
+                // что один админ не влияет на другого.
+                PermitLimit = AdminPermitLimit,
+                Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             });
+
+    /// <summary>Лимит админских запросов: константа вынесена, чтобы тест и прод считали одинаково.</summary>
+    public const int AdminPermitLimit = 240;
 
     /// <summary>5 регистраций в час на email. Ключ — сам email, а не IP.</summary>
     public static RateLimitPartition<string> SignupPartition(HttpContext context) =>
