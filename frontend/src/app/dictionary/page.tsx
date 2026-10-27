@@ -152,57 +152,71 @@ function DictionaryContent() {
     );
   }
 
+  const isEmpty = totalCount === 0 && words.length === 0 && !appliedQuery;
+
   return (
     <AppLayout>
       <PageHeader
         title="Словарь"
         subtitle={`${formatNumber(totalCount)} ${pluralWords(totalCount)} сохранено`}
         actions={
-          <div className="flex flex-wrap gap-3">
-            <Button href="/review" variant="secondary">
-              <RepeatIcon size={16} />
-              Учить слова
-            </Button>
-            <Button href="/dictionary/add" variant="primary">
-              <PlusIcon size={16} />
-              Добавить слово
-            </Button>
-          </div>
+          /*
+           * В пустом словаре экранное действие одно — добавить. Две кнопки
+           * «Добавить» (в шапке и в пустом состоянии) заставляли выбирать
+           * между одинаковым, а «Учить слова» вела туда, где учить нечего.
+           */
+          isEmpty ? undefined : (
+            <div className="flex flex-wrap gap-3">
+              <Button href="/review" variant="secondary">
+                <RepeatIcon size={16} />
+                Учить слова
+              </Button>
+              <Button href="/dictionary/add" variant="primary">
+                <PlusIcon size={16} />
+                Добавить слово
+              </Button>
+            </div>
+          )
         }
       />
 
-      <Suspense fallback={null}>
-        <DictionaryTabs />
-      </Suspense>
+      {/* Вкладки «Мой словарь / Сборники» в пустом словаре нечего переключать */}
+      {!isEmpty && (
+        <Suspense fallback={null}>
+          <DictionaryTabs />
+        </Suspense>
+      )}
 
-      {/* Поиск и добавление */}
-      <div className="card mb-6 p-4 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <label htmlFor="dictionary-search" className="sr-only">
-              Поиск слов в словаре
-            </label>
-            <SearchIcon
-              size={20}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate"
-            />
-            <input
-              id="dictionary-search"
-              type="search"
-              placeholder="Поиск слов..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchWords()}
-              className="input pl-10"
-            />
-          </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={searchWords} className="flex-1 sm:flex-none">
-              Найти
-            </Button>
+      {/* Поиск имеет смысл только когда есть что искать */}
+      {!isEmpty && (
+        <div className="card mb-6 p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <label htmlFor="dictionary-search" className="sr-only">
+                Поиск слов в словаре
+              </label>
+              <SearchIcon
+                size={20}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate"
+              />
+              <input
+                id="dictionary-search"
+                type="search"
+                placeholder="Поиск слов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchWords()}
+                className="input pl-10"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={searchWords} className="flex-1 sm:flex-none">
+                Найти
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {bannerError && (
         <div
@@ -235,7 +249,7 @@ function DictionaryContent() {
           title={appliedQuery ? 'Ничего не нашлось' : 'В словаре пока пусто'}
           description={appliedQuery
             ? `Слова «${appliedQuery}» в вашем словаре нет.`
-            : 'Сохрани первое слово в читалке — оно появится здесь.'}
+            : 'Слова появляются сами, когда вы нажимаете на незнакомое слово в книге. Или добавьте вручную.'}
           action={
             appliedQuery ? (
               <Button
@@ -249,10 +263,20 @@ function DictionaryContent() {
                 Сбросить поиск
               </Button>
             ) : (
-              <Button href="/dictionary/add" variant="primary">
-                <PlusIcon size={16} />
-                Добавить первое слово
-              </Button>
+              /*
+               * Два равных пути: добавить вручную или пойти в библиотеку,
+               * откуда слова приходят сами. Раньше был один путь и текст,
+               * который отправлял в читалку, не давая к ней кнопки.
+               */
+              <>
+                <Button href="/dictionary/add" variant="primary">
+                  <PlusIcon size={16} />
+                  Добавить слово
+                </Button>
+                <Button href="/books" variant="secondary">
+                  Открыть библиотеку
+                </Button>
+              </>
             )
           }
         />

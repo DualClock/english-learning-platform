@@ -921,7 +921,13 @@ export default function SettingsPage() {
             />
           </div>
 
-          <Button variant="danger" onClick={handleLogout}>
+          {/*
+           * Выход — не опасное действие. Раньше он был danger-кнопкой и стоял
+           * в 24px над «Удалить аккаунт»: две красные кнопки рядом, одну из
+           * которых нажимать безопасно, а другую — нет. Выход стал обычным
+           * контуром, а удаление ушло под разделитель.
+           */}
+          <Button variant="secondary" onClick={handleLogout}>
             Выйти
           </Button>
 
@@ -931,7 +937,7 @@ export default function SettingsPage() {
            * заметки и загруженные EPUB без возможности восстановить, поэтому
            * сначала совпадение email, потом пароль.
            */}
-          <div className="mt-6 border-t border-hairline pt-5">
+          <div className="mt-8 border-t border-hairline pt-5">
             <h3 className="text-body-sm font-semibold text-ink">Удаление аккаунта</h3>
             <p className="mt-2 max-w-measure text-caption text-slate">
               Удаляются профиль, словарь и очередь повторения, прогресс по грамматике и темам, закладки и

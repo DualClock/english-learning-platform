@@ -21,7 +21,7 @@ const PORT = Number(process.env.E2E_PORT || 3100);
 
 export default defineConfig({
   testDir: './e2e',
-  testMatch: ['visual.spec.ts'],
+  testMatch: ['visual.spec.ts', 'dashboard-behaviour.spec.ts'],
   timeout: 120_000,
   expect: { timeout: 20_000 },
   fullyParallel: false,
@@ -38,11 +38,26 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        // DPR=1 у обоих проектов: гейт проверяет вёрстку, а не плотность экрана.
+        deviceScaleFactor: 1,
+      },
     },
     {
+      /*
+       * Мобильный профиль без «пикселей Pixel 5»: у него deviceScaleFactor 2.75,
+       * из-за чего снимок 390×4169 превращался в 1073×11465 и Playwright
+       * сжимал его при сравнении — результат «плыл» от прогона к прогону без
+       * единого изменения в вёрстке. Здесь важны ширина и тач, а не DPR.
+       */
       name: 'mobile',
-      use: { ...devices['Pixel 5'], viewport: { width: 390, height: 844 } },
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 1,
+      },
     },
   ],
 });

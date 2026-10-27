@@ -29,6 +29,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 
+/**
+ * Сколько достижений показывать до раскрытия. Девять — это три полных ряда
+ * в сетке lg:3, то есть ровный прямоугольник без обрубленного последнего ряда.
+ */
+const COLLAPSED_ACHIEVEMENTS = 9;
+
 interface Achievement {
   code: string;
   title: string;
@@ -299,6 +305,11 @@ function AchievementDialog({
 export default function ProgressPage() {
   const { status } = useSession();
   const [achievementFilter, setAchievementFilter] = useState<'all' | AchievementCategory>('all');
+  /**
+   * Стена достижений свёрнута, пока человек сам не попросит показать всё.
+   * Выбор категории в фильтре тоже означает «покажи список целиком».
+   */
+  const [showAllAchievements, setShowAllAchievements] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const achievementCloseRef = useRef<HTMLButtonElement>(null);
 
@@ -395,6 +406,20 @@ export default function ProgressPage() {
   const visibleAchievements = achievements.filter(
     (achievement) => achievementFilter === 'all' || achievementCategory(achievement.code) === achievementFilter
   );
+
+  /*
+   * «Ближайшее к получению» — то, до чего осталось меньше всего. Для нового
+   * аккаунта, где не открыто ни одного, первым делом показываем 2 цели с
+   * наибольшим прогрессом, а не стену из тридцати закрытых замков.
+   */
+  const nearest = [...achievements]
+    .filter((a) => !a.unlocked && (a.progress ?? 0) > 0)
+    .sort((a, b) => {
+      const ra = a.target > 0 ? (a.progress ?? 0) / a.target : 0;
+      const rb = b.target > 0 ? (b.progress ?? 0) / b.target : 0;
+      return rb - ra;
+    })
+    .slice(0, 2);
 
   return (
     <AppLayout>
@@ -559,7 +584,30 @@ export default function ProgressPage() {
             />
           ) : (
             <>
-              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Категории достижений">
+              {/*
+               * Сначала — то, что близко. У нового аккаунта здесь две цели с
+               * живым прогрессом вместо тридцати серых замков; остальные
+               * достижения раскрываются по кнопке.
+               */}
+              {nearest.length > 0 && achievementFilter === 'all' && !showAllAchievements && (
+                <div className="mb-6">
+                  <p className="mb-3 text-caption uppercase tracking-wide text-slate">
+                    Ближайшее к получению
+                  </p>
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {nearest.map((achievement) => (
+                      <li key={achievement.code}>
+                        <AchievementCard
+                          achievement={achievement}
+                          onSelect={() => setSelectedAchievement(achievement)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Категории достижений">
                 <button
                   type="button"
                   onClick={() => setAchievementFilter('all')}
@@ -592,16 +640,37 @@ export default function ProgressPage() {
                   description="Выберите другую категорию — достижения никуда не исчезли."
                 />
               ) : (
-                <ul className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {visibleAchievements.map((achievement) => (
-                    <li key={achievement.code}>
-                      <AchievementCard
-                        achievement={achievement}
-                        onSelect={() => setSelectedAchievement(achievement)}
-                      />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  {/*
+                   * Стена из тридцати карточек сразу — то, что читается как
+                   * чек-лист неудач. Показываем первые девять; остальное по
+                   * кнопке. Счётчик «N из M» в шапке говорит общий итог.
+                   */}
+                  <ul className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {(showAllAchievements
+                      ? visibleAchievements
+                      : visibleAchievements.slice(0, COLLAPSED_ACHIEVEMENTS)
+                    ).map((achievement) => (
+                      <li key={achievement.code}>
+                        <AchievementCard
+                          achievement={achievement}
+                          onSelect={() => setSelectedAchievement(achievement)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+
+                  {!showAllAchievements && visibleAchievements.length > COLLAPSED_ACHIEVEMENTS && (
+                    <div className="mt-4 text-center">
+                      <Button variant="secondary" onClick={() => setShowAllAchievements(true)}>
+                        Все достижения
+                        <span className="ml-1 tabular-nums opacity-70">
+                          {visibleAchievements.length}
+                        </span>
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
