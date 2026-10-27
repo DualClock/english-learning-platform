@@ -172,14 +172,24 @@ test('уровень вне шкалы не попадает в середину
   assert.ok(levelOrder(null) > levelOrder('C2'));
 });
 
-test('обложка рассказа допилизуется адресом бэкенда, чужая остаётся как есть', () => {
+/*
+ * Обложку рассказа НЕЛЬЗЯ склеивать с адресом бэкенда.
+ *
+ * Так было раньше — и на стенде это давало битые картинки: в NEXT_PUBLIC_API_URL
+ * лежит 127.0.0.1, страница открыта как localhost, картинка уходила
+ * кросс-доменным запросом, а CORS-политика бэкенда этот origin не разрешает.
+ * Статику /uploads/* фронт отдаёт сам через rewrite (next.config.mjs), так что
+ * правильный ответ — относительный путь без склейки. apiBase остаётся в
+ * подписи ради совместимости вызовов, но на результат не влияет.
+ */
+test('обложка рассказа остаётся относительной, чужая — как есть', () => {
   assert.equal(
     resolveCoverSrc('/uploads/covers/story-0.svg', 'https://api.test'),
-    'https://api.test/uploads/covers/story-0.svg',
+    '/uploads/covers/story-0.svg',
   );
   assert.equal(
     resolveCoverSrc('/uploads/covers/story-0.svg', 'https://api.test/'),
-    'https://api.test/uploads/covers/story-0.svg',
+    '/uploads/covers/story-0.svg',
   );
   assert.equal(resolveCoverSrc('https://covers.openlibrary.org/b/id/11-M.jpg', 'https://api.test'), 'https://covers.openlibrary.org/b/id/11-M.jpg');
   assert.equal(resolveCoverSrc(null, 'https://api.test'), null);

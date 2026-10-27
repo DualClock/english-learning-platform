@@ -35,7 +35,24 @@ import type { PublicBook } from './library.ts';
 export const GUEST_API_BASE =
   (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5226').replace(/\/+$/, '');
 
-export const GUEST_API_PREFIX = `${GUEST_API_BASE}/api/guest`;
+/*
+ * Гостевые запросы идут через тот же origin, что и страница, а не на адрес
+ * бэкенда из NEXT_PUBLIC_API_URL.
+ *
+ * Прямой путь не работал нигде, кроме машины разработчика: собранный адрес
+ * (127.0.0.1:5226) не совпадает с origin страницы (localhost:3100) — CORS
+ * бэкенда такой запрос режет. По внешнему адресу и с телефона хуже: там
+ * 127.0.0.1 — это сам телефон, и запрос уходил в никуда.
+ *
+ * Прокси `/api/next/*` читает куку, подставляет токен при наличии и ходит
+ * на бэкенд со стороны сервера, поэтому ни CORS, ни адрес бэкенда в браузер
+ * не утекают. Гостевые пути внесены в PUBLIC_PATHS прокси: у гостя сессии
+ * нет по определению, а ручки на бэкенде помечены `[AllowAnonymous]`.
+ */
+export const GUEST_API_PREFIX = '/api/next/guest';
+
+/** Адрес бэкенда напрямую — только серверным компонентам (guest-reader.server.ts). */
+export const GUEST_API_BASE_DIRECT = GUEST_API_BASE;
 
 export const GUEST_PREVIEW_BASE = '/reader/preview';
 
