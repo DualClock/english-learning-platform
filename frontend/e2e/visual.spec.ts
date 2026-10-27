@@ -150,13 +150,41 @@ async function suppressAchievementToasts(page: import('@playwright/test').Page) 
       /* приватный режим — всплывашки и так не сохранятся */
     }
 
-    // 2) Эндпоинт достижений отдаёт «ничего не разблокировано».
+    /*
+     * 2) Эндпоинт достижений отдаёт «ничего не разблокировано».
+     *
+     * Ответ обязан повторять полную форму UserProgress: страница /progress
+     * читает xp, level, metrics и остальные поля и падает на первом же
+     * отсутствующем. Раньше здесь был усечённый объект — и /progress
+     * уходил в error.tsx, а гейт честно это показывал.
+     */
     const realFetch = window.fetch.bind(window);
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
       if (/\/progress\/achievements(\?|$)/.test(url)) {
         return new Response(
-          JSON.stringify({ achievements: [], unlockedCount: 0, totalCount: 0 }),
+          JSON.stringify({
+            xp: 0,
+            level: 1,
+            levelTitle: 'Новичок',
+            levelStartXp: 0,
+            nextLevelXp: 50,
+            xpToNextLevel: 50,
+            levelProgressPercent: 0,
+            metrics: {
+              words: 0,
+              reviews: 0,
+              books: 0,
+              pages: 0,
+              grammarUnits: 0,
+              categoriesLearned: 0,
+              activeDays: 0,
+              streak: 0,
+              xp: 0,
+            },
+            achievements: [],
+            unlockedCount: 0,
+          }),
           { status: 200, headers: { 'content-type': 'application/json' } }
         );
       }
@@ -165,14 +193,92 @@ async function suppressAchievementToasts(page: import('@playwright/test').Page) 
   }, SEEN_PREFIX);
 }
 
+/**
+ * Остановить анимации в кадре.
+ *
+ * Маскот Lexi моргает: компонент ставит setTimeout на 4200 + Math.random()×3200
+ * мс и на 120 мс закрывает глаза. Эталон снимался с открытыми глазами, а
+ * следующий кадр иногда попадал в моргание — гейт падал на разнице век.
+ *
+ * getAnimations() здесь не помогает: у глаз не CSS-анимация и не Web Animation,
+ * а React-состояние, которое переключает таймер. Поэтому гасим источник —
+ * до первой отрисовки подменяем Math.random и setTimeout так, чтобы моргание
+ * не наступало никогда. Заодно останавливаем уже запущенные CSS-анимации.
+ *
+ * Ставится через addInitScript: таймеры планируются при монтировании маскота,
+ * то есть раньше, чем мы успеем что-то сделать из теста.
+ */
+function freezeAnimationsBeforeLoad(page: import('@playwright/test').Page) {
+  return page.addInitScript(() => {
+    // 1) Моргание не планируется: интервал моргания в маскоте — 4200 + random×3200.
+    Math.random = () => 0;
+
+    const realSetTimeout = window.setTimeout;
+    window.setTimeout = ((handler: TimerHandler, timeout?: number, ...args: unknown[]) => {
+      /*
+       * Моргание — единственный таймер с паузой больше 4 секунд, который
+       * срабатывает сам по себе. Всё остальное (подсказки, тосты) короче.
+       */
+      if (typeof timeout === 'number' && timeout >= 4000) {
+        return 0 as unknown as number;
+      }
+      return realSetTimeout(handler, timeout, ...args);
+    }) as typeof window.setTimeout;
+
+    // 2) Уже запущенные CSS-анимации — на паузу.
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getAnimations?.().forEach((a) => {
+        try {
+          a.pause();
+          a.currentTime = 0;
+        } catch {
+          /* не все поддерживают перемотку */
+        }
+      });
+    });
+  });
+}
+
+/**
+ * Убедиться, что снимаем страницу, а не экран ошибки.
+ *
+ * Во время массового снятия эталонов /progress один раз отрисовал error.tsx
+ * («Что-то пошло не так»): параллельные прогоны и прогревающийся API дали
+ * исключение в рендере. Гейт этого не заметил — он сравнил ошибку с ошибкой
+ * и остался зелёным. Эталон, узаконивший поломку, хуже отсутствия эталона.
+ *
+ * Поэтому перед снимком и после ожидания страница обязана быть «своей»: если
+ * на ней текст ошибки — тест падает с внятным сообщением, а не пишет эталон.
+ */
+async function assertNotErrorPage(page: import('@playwright/test').Page, name: string) {
+  const failed = await page.evaluate(() => {
+    const text = document.body.innerText;
+    return (
+      text.includes('Что-то пошло не так') ||
+      text.includes('Не удалось загрузить') ||
+      text.includes('Нет связи с сервером')
+    );
+  });
+
+  if (failed) {
+    const snippet = (await page.evaluate(() => document.body.innerText)).slice(0, 200).replace(/\s+/g, ' ');
+    throw new Error(
+      `Экран «${name}» отрисовал состояние ошибки вместо страницы. ` +
+        `Эталон не снимаю: он узаконил бы поломку. Видно на экране: ${snippet}`
+    );
+  }
+}
+
 test.describe('публичные экраны', () => {
   for (const screen of PUBLIC_SCREENS) {
     test(`${screen.name}`, async ({ page }) => {
       await freezeClockBeforeLoad(page);
       await suppressAchievementToasts(page);
+      await freezeAnimationsBeforeLoad(page);
       await page.goto(screen.path, { waitUntil: 'networkidle' });
       await settle(page);
       await hideToasts(page);
+      await assertNotErrorPage(page, screen.name);
       await expect(page).toHaveScreenshot(`${screen.name}.png`, {
         fullPage: true,
         // Допуск на сглаживание шрифтов между прогонами; раскладку не прощает.
@@ -195,9 +301,11 @@ test.describe('экраны приложения', () => {
     test(`${screen.name}`, async ({ page }) => {
       await freezeClockBeforeLoad(page);
       await suppressAchievementToasts(page);
+      await freezeAnimationsBeforeLoad(page);
       await page.goto(screen.path, { waitUntil: 'networkidle' });
       await settle(page);
       await hideToasts(page);
+      await assertNotErrorPage(page, screen.name);
       await expect(page).toHaveScreenshot(`${screen.name}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.01,
@@ -225,9 +333,11 @@ test.describe('читалка', () => {
     const id = readFileSync(idFile, 'utf8').trim();
     await freezeClockBeforeLoad(page);
     await suppressAchievementToasts(page);
+    await freezeAnimationsBeforeLoad(page);
     await page.goto(`/reader/${id}`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(3000);
     await hideToasts(page);
+    await assertNotErrorPage(page, 'reader');
     await expect(page).toHaveScreenshot('reader.png', {
       maxDiffPixelRatio: 0.01,
     });
